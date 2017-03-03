@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.configuration &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../index.html" />
+    <link rel="up" title="taucmdr" href="../taucmdr.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.configuration</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for taucmdr.configuration</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;TAU Commander installation configuration.</span>
+
+<span class="sd">TODO: Docs</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">from</span> <span class="nn">configobj</span> <span class="kn">import</span> <span class="n">ConfigObj</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage</span> <span class="kn">import</span> <span class="n">AbstractStorage</span><span class="p">,</span> <span class="n">StorageError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">ORDERED_LEVELS</span>
+
+
+<div class="viewcode-block" id="parse_config_string"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.parse_config_string">[docs]</a><span class="k">def</span> <span class="nf">parse_config_string</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a string to a bool, int, or float value if possible.</span>
+<span class="sd">    </span>
+<span class="sd">    Val may be any type, but if it&#39;s a string and that string can be cast to a bool, int, or float</span>
+<span class="sd">    then the typecast value is returned.  Otherwise val is returned unmodified.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        val: Value to parse.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Parsed value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">val</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;false&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="get"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.get">[docs]</a><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a dictionary of all configuration items or the value of one configuration item.</span>
+<span class="sd">    </span>
+<span class="sd">    If a storage object is given then returns the value(s) held in that storage.</span>
+<span class="sd">    Otherwise, searches :any:`ORDERED_LEVELS` for the first storage containing ``key``.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        key (str): Optional key string.</span>
+<span class="sd">        storage (AbstractStorage): Optional storage container.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: If ``key == None``, a dictionary of configuration items.</span>
+<span class="sd">        object: If ``key != None``, the value mapped to ``key``.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        KeyError: no storage contains ``key`` or ``storage != None`` and ``key not in storage``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">storage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="n">AbstractStorage</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">except</span> <span class="p">(</span><span class="n">StorageError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                    <span class="c1"># Project storage hasn&#39;t been initialized yet, or default isn&#39;t set</span>
+                    <span class="k">continue</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">ORDERED_LEVELS</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">items</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">iteritems</span><span class="p">())</span>
+                <span class="k">except</span> <span class="n">StorageError</span><span class="p">:</span>
+                    <span class="c1"># Storage hasn&#39;t been initialized yet</span>
+                    <span class="k">continue</span>
+            <span class="k">return</span> <span class="n">items</span>    </div>
+
+
+<div class="viewcode-block" id="put"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.put">[docs]</a><span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sets the value of a configuration item.</span>
+<span class="sd">    </span>
+<span class="sd">    If a storage object is given then sets ``key=value`` in that storage.</span>
+<span class="sd">    Otherwise, searches :any:`ORDERED_LEVELS` for the first storage that </span>
+<span class="sd">    contains ``key`` and updates the value of ``key`` in that storage container.</span>
+<span class="sd">    If no storage contains ``key`` then the value is set in :any:`ORDERED_LEVELS[0]`.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        key (str): Key string.</span>
+<span class="sd">        value (object): Value.</span>
+<span class="sd">        storage (AbstractStorage): Optional storage container.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">parse_config_string</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">storage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="n">AbstractStorage</span><span class="p">)</span>
+        <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">storage</span><span class="p">:</span>
+                <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">return</span>
+        <span class="n">ORDERED_LEVELS</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+            
+
+<div class="viewcode-block" id="delete"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.delete">[docs]</a><span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unsets the value of a configuration item.</span>
+<span class="sd">    </span>
+<span class="sd">    If a storage object is given then unsets ``key`` in that storage.</span>
+<span class="sd">    Otherwise, searches :any:`ORDERED_LEVELS` for the first storage that </span>
+<span class="sd">    contains ``key`` and unsets ``key`` in that storage container.  </span>
+<span class="sd">    If no storage contains ``key`` then the value is unset in :any:`ORDERED_LEVELS[0]`.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        key (str): Key string.</span>
+<span class="sd">        storage (AbstractStorage): Optional storage container.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        KeyError: no storage contains ``key`` or ``storage != None`` and ``key not in storage``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">storage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="n">AbstractStorage</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">storage</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">storage</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">return</span>
+        <span class="k">del</span> <span class="n">ORDERED_LEVELS</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="config_file_comment"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.config_file_comment">[docs]</a><span class="k">def</span> <span class="nf">config_file_comment</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">78</span><span class="p">,</span> <span class="n">line_comment</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">,</span> <span class="n">line_char</span><span class="o">=</span><span class="s1">&#39;=&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Formats a string as a configuration file comment.</span>
+<span class="sd">    </span>
+<span class="sd">    Adds a comment character to the start of each line and wraps lines at the specified</span>
+<span class="sd">    line width.  Empty lines are preserved.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        msg (str): Comment string.</span>
+<span class="sd">        box (bool): If true, draw horizontal lines before and after the message and add some whitespace.</span>
+<span class="sd">        width (int): Line width.</span>
+<span class="sd">        line_comment (str): String that starts a line comment.</span>
+<span class="sd">        line_char (str): Single character to replicate to form a horizontal line.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Lines of the comment without terminating &#39;\n&#39; characters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">hline</span> <span class="o">=</span> <span class="n">line_char</span><span class="o">*</span><span class="p">(</span><span class="n">width</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">line_comment</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">box</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">hline</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">msg</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> 
+                                       <span class="n">initial_indent</span><span class="o">=</span><span class="n">line_comment</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">subsequent_indent</span><span class="o">=</span><span class="n">line_comment</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_comment</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">box</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hline</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lines</span></div>
+
+
+<div class="viewcode-block" id="default_config"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.default_config">[docs]</a><span class="k">def</span> <span class="nf">default_config</span><span class="p">(</span><span class="n">config_file</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build a configuration object with default values from :any:`taucmdr.model`.</span>
+<span class="sd">    </span>
+<span class="sd">    Adds &quot;Target&quot;, &quot;Application&quot;, and &quot;Measurement&quot; sections defining default values for each model attribute.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        config_file (str): Use defaults in specified configuration file, if it exists. </span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        ConfigObj: Initialized configuration object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">taucmdr.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
+    <span class="kn">from</span> <span class="nn">taucmdr.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
+    <span class="kn">from</span> <span class="nn">taucmdr.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
+    
+    <span class="k">if</span> <span class="n">config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="n">write_empty_values</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="n">write_empty_values</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">Application</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">Target</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">comments</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="n">config_file_comment</span><span class="p">(</span><span class="s2">&quot;System-level </span><span class="si">%s</span><span class="s2"> configuration defaults.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                                        <span class="s2">&quot;New target configurations will use these values as the default&quot;</span>
+                                        <span class="s2">&quot; if no better value is available.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">box</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="ow">and</span> <span class="s1">&#39;primary_key&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">props</span> <span class="ow">and</span> <span class="s1">&#39;collection&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span> 
+                <span class="n">config</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">comments</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">config_file_comment</span><span class="p">(</span><span class="n">props</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="import_from_file"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.import_from_file">[docs]</a><span class="k">def</span> <span class="nf">import_from_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Import configuration options from a config file.</span>
+<span class="sd">    </span>
+<span class="sd">    Sets new or overrides existing configuration options.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        filepath (str): Path to the configuration file.</span>
+<span class="sd">        stoarge (AbstractStorage): Storage container.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        IOError: ``filepath`` is not readable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">file_accessible</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not accessible&quot;</span> <span class="o">%</span> <span class="n">filepath</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">sections</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">put</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="n">parse_config_string</span><span class="p">(</span><span class="n">val</span><span class="p">),</span> <span class="n">storage</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="open_config_file"><a class="viewcode-back" href="../../taucmdr.configuration.html#taucmdr.configuration.open_config_file">[docs]</a><span class="k">def</span> <span class="nf">open_config_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a configuration object initialized from values in `filepath` if it exists.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConfigObj</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">write_empty_values</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

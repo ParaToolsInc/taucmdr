@@ -1,0 +1,7 @@
+taucmdr.cli.commands.measurement.tests.test_delete module
+=========================================================
+
+.. automodule:: taucmdr.cli.commands.measurement.tests.test_delete
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+taucmdr.cli.commands.measurement.edit module
+============================================
+
+.. automodule:: taucmdr.cli.commands.measurement.edit
+    :members:
+    :undoc-members:
+    :show-inheritance:

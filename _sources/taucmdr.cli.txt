@@ -1,0 +1,27 @@
+taucmdr.cli package
+===================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cli.commands
+    taucmdr.cli.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.arguments
+   taucmdr.cli.cli_view
+   taucmdr.cli.command
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli
+    :members:
+    :undoc-members:
+    :show-inheritance:

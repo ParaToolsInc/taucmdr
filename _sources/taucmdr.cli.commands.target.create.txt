@@ -1,0 +1,7 @@
+taucmdr.cli.commands.target.create module
+=========================================
+
+.. automodule:: taucmdr.cli.commands.target.create
+    :members:
+    :undoc-members:
+    :show-inheritance:

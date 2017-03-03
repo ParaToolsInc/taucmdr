@@ -1,0 +1,7 @@
+taucmdr.cli.commands.tests.test_initialize module
+=================================================
+
+.. automodule:: taucmdr.cli.commands.tests.test_initialize
+    :members:
+    :undoc-members:
+    :show-inheritance:

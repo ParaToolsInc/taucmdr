@@ -1,0 +1,7 @@
+taucmdr.model.tests.test_compiler module
+========================================
+
+.. automodule:: taucmdr.model.tests.test_compiler
+    :members:
+    :undoc-members:
+    :show-inheritance:

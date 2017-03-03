@@ -1,0 +1,21 @@
+taucmdr.tests package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.tests.test_configuration
+   taucmdr.tests.test_error
+   taucmdr.tests.test_logger
+   taucmdr.tests.test_pylint
+   taucmdr.tests.test_util
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

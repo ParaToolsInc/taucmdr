@@ -1,0 +1,7 @@
+taucmdr.cf.storage.levels module
+================================
+
+.. automodule:: taucmdr.cf.storage.levels
+    :members:
+    :undoc-members:
+    :show-inheritance:

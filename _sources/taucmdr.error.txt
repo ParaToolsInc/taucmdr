@@ -1,0 +1,7 @@
+taucmdr.error module
+====================
+
+.. automodule:: taucmdr.error
+    :members:
+    :undoc-members:
+    :show-inheritance:

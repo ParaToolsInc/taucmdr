@@ -1,0 +1,7 @@
+taucmdr.cf.platforms module
+===========================
+
+.. automodule:: taucmdr.cf.platforms
+    :members:
+    :undoc-members:
+    :show-inheritance:

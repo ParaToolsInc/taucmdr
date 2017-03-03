@@ -1,0 +1,20 @@
+taucmdr.cli.commands.application.tests package
+==============================================
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.commands.application.tests.test_create
+   taucmdr.cli.commands.application.tests.test_delete
+   taucmdr.cli.commands.application.tests.test_edit
+   taucmdr.cli.commands.application.tests.test_list
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli.commands.application.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

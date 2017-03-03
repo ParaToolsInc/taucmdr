@@ -1,0 +1,7 @@
+taucmdr.cli.commands.trial.delete module
+========================================
+
+.. automodule:: taucmdr.cli.commands.trial.delete
+    :members:
+    :undoc-members:
+    :show-inheritance:

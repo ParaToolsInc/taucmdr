@@ -1,0 +1,7 @@
+taucmdr.mvc.controller module
+=============================
+
+.. automodule:: taucmdr.mvc.controller
+    :members:
+    :undoc-members:
+    :show-inheritance:

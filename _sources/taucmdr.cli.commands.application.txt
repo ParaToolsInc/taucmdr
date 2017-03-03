@@ -1,0 +1,28 @@
+taucmdr.cli.commands.application package
+========================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cli.commands.application.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.commands.application.copy
+   taucmdr.cli.commands.application.create
+   taucmdr.cli.commands.application.delete
+   taucmdr.cli.commands.application.edit
+   taucmdr.cli.commands.application.list
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli.commands.application
+    :members:
+    :undoc-members:
+    :show-inheritance:

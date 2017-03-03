@@ -1,0 +1,28 @@
+taucmdr.cf package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cf.compiler
+    taucmdr.cf.software
+    taucmdr.cf.storage
+    taucmdr.cf.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cf.objects
+   taucmdr.cf.platforms
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cf
+    :members:
+    :undoc-members:
+    :show-inheritance:

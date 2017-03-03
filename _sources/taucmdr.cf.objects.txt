@@ -1,0 +1,7 @@
+taucmdr.cf.objects module
+=========================
+
+.. automodule:: taucmdr.cf.objects
+    :members:
+    :undoc-members:
+    :show-inheritance:

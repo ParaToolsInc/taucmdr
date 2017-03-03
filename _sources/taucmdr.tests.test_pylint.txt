@@ -1,0 +1,7 @@
+taucmdr.tests.test_pylint module
+================================
+
+.. automodule:: taucmdr.tests.test_pylint
+    :members:
+    :undoc-members:
+    :show-inheritance:

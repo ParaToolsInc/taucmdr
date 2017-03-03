@@ -1,0 +1,7 @@
+taucmdr.model.compiler module
+=============================
+
+.. automodule:: taucmdr.model.compiler
+    :members:
+    :undoc-members:
+    :show-inheritance:

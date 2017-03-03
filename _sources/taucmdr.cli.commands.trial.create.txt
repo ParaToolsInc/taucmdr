@@ -1,0 +1,7 @@
+taucmdr.cli.commands.trial.create module
+========================================
+
+.. automodule:: taucmdr.cli.commands.trial.create
+    :members:
+    :undoc-members:
+    :show-inheritance:

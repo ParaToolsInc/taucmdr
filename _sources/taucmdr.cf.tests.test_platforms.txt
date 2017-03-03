@@ -1,0 +1,7 @@
+taucmdr.cf.tests.test_platforms module
+======================================
+
+.. automodule:: taucmdr.cf.tests.test_platforms
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+taucmdr.cli.commands.target.metrics module
+==========================================
+
+.. automodule:: taucmdr.cli.commands.target.metrics
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cli.arguments module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.cli package" href="taucmdr.cli.html" />
+    <link rel="next" title="taucmdr.cli.cli_view module" href="taucmdr.cli.cli_view.html" />
+    <link rel="prev" title="taucmdr.cli.tests.test_command module" href="taucmdr.cli.tests.test_command.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cli.arguments module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cli.tests.test_command.html">taucmdr.cli.tests.test_command module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cli.cli_view.html">taucmdr.cli.cli_view module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.cli.arguments">
+<span id="taucmdr-cli-arguments-module"></span><h1>taucmdr.cli.arguments module<a class="headerlink" href="#module-taucmdr.cli.arguments" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander command line interface (CLI).</p>
+<p>Extensions to <a class="reference external" href="https://docs.python.org/library/argparse.html#module-argparse" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse</span></code></a> to support the TAU Commander command line interface.</p>
+<dl class="class">
+<dt id="taucmdr.cli.arguments.Action">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">Action</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/argparse.html#Action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">argparse._AttributeHolder</span></code></p>
+<p>Action base class.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cli.arguments.ArgparseHelpFormatter">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">ArgparseHelpFormatter</code><span class="sig-paren">(</span><em>prog</em>, <em>indent_increment=2</em>, <em>max_help_position=30</em>, <em>width=74</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#ArgparseHelpFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.ArgparseHelpFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.RawDescriptionHelpFormatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.RawDescriptionHelpFormatter</span></code></a></p>
+<p>Custom help string formatter for argument parser.</p>
+<p>Provide proper help message alignment, line width, and formatting.
+Uses console line width (<a class="reference internal" href="taucmdr.logger.html#taucmdr.logger.LINE_WIDTH" title="taucmdr.logger.LINE_WIDTH"><code class="xref any py py-data docutils literal"><span class="pre">logger.LINE_WIDTH</span></code></a>) to format help
+messages appropriately so they don&#8217;t wrap in strange ways.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>prog</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the program.</li>
+<li><strong>indent_increment</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of spaces to indent wrapped lines.</li>
+<li><strong>max_help_position</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Column on which to begin subsequent lines of wrapped help strings.</li>
+<li><strong>width</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum help message length before wrapping.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="taucmdr.cli.arguments.ArgparseHelpFormatter.add_argument">
+<code class="descname">add_argument</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#ArgparseHelpFormatter.add_argument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.ArgparseHelpFormatter.add_argument" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">MutableGroupArgumentParser</code><span class="sig-paren">(</span><em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em>, <em>version=None</em>, <em>parents=[]</em>, <em>formatter_class=&lt;class 'argparse.HelpFormatter'&gt;</em>, <em>prefix_chars='-'</em>, <em>fromfile_prefix_chars=None</em>, <em>argument_default=None</em>, <em>conflict_handler='error'</em>, <em>add_help=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.ArgumentParser</span></code></a></p>
+<p>Argument parser with mutable groups and better help formatting.</p>
+<p><a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.ArgumentParser</span></code></a> doesn&#8217;t allow groups to change once set
+and generates &#8220;scruffy&#8221; looking help, so we fix this problems in this subclass.</p>
+<dl class="method">
+<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser._sorted_groups">
+<code class="descname">_sorted_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser._sorted_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser._sorted_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over action groups.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser.add_argument_group">
+<code class="descname">add_argument_group</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser.add_argument_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser.add_argument_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an argument group.</p>
+<p>If the group doesn&#8217;t exist it will be created.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> &#8211; Positional arguments to pass to <code class="xref any docutils literal"><span class="pre">ArgumentParser.add_argument_group</span></code></li>
+<li><strong>**kwargs</strong> &#8211; Keyword arguments to pass to <code class="xref any docutils literal"><span class="pre">ArgumentParser.add_argument_group</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An argument group object.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser.format_help">
+<code class="descname">format_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser.format_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser.format_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format command line help string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=True</em>, <em>include_optional=True</em>, <em>include_storage=False</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge arguments from a parser into this parser.</p>
+<p>Modify this parser by adding additional arguments taken from the supplied parser.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parser</strong> (<em>ArgumentParser</em>) &#8211; Parser to pull arguments from.</li>
+<li><strong>group_title</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Optional group title for merged arguments.</li>
+<li><strong>include_positional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include positional arguments.</li>
+<li><strong>include_optional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include optional arguments.</li>
+<li><strong>include_storage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include the storage level argument, see <a class="reference internal" href="#taucmdr.cli.arguments.STORAGE_LEVEL_FLAG" title="taucmdr.cli.arguments.STORAGE_LEVEL_FLAG"><code class="xref any py py-data docutils literal"><span class="pre">STORAGE_LEVEL_FLAG</span></code></a>.</li>
+<li><strong>exclude</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Strings identifying arguments that should be excluded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cli.arguments.ParseBooleanAction">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">ParseBooleanAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#ParseBooleanAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.ParseBooleanAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.Action" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.Action</span></code></a></p>
+<p>Argument parser action for boolean values.</p>
+<p>Essentially a wrapper around <a class="reference internal" href="taucmdr.util.html#taucmdr.util.parse_bool" title="taucmdr.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">taucmdr.util.parse_bool</span></code></a>.</p>
+<dl class="method">
+<dt id="taucmdr.cli.arguments.ParseBooleanAction.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>parser</em>, <em>namespace</em>, <em>value</em>, <em>unused_option_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#ParseBooleanAction.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.ParseBooleanAction.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the <cite>self.dest</cite> attribute in <cite>namespace</cite> to the parsed value of <cite>value</cite>.</p>
+<p>If <cite>value</cite> parses to a boolean via <a class="reference internal" href="taucmdr.util.html#taucmdr.util.parse_bool" title="taucmdr.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">taucmdr.util.parse_bool</span></code></a> then the
+attribute value is that boolean value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Argument parser object this group belongs to.</li>
+<li><strong>namespace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; Namespace to receive parsed value via setattr.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Value parsed from the command line/</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cli.arguments.ParsePackagePathAction">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">ParsePackagePathAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#ParsePackagePathAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.ParsePackagePathAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.Action" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.Action</span></code></a></p>
+<p>Argument parser action for software package paths.</p>
+<p>This action checks that an argument&#8217;s value is one of these cases:
+1) The path to an existing software package installation.
+2) The path to an archive file containing the software package.
+3) A URL to an archive file containing the software package.
+4) The magic word &#8220;download&#8221; or value that parses to True via <a class="reference internal" href="taucmdr.util.html#taucmdr.util.parse_bool" title="taucmdr.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">taucmdr.util.parse_bool</span></code></a>.
+5) A value that parses to False via <a class="reference internal" href="taucmdr.util.html#taucmdr.util.parse_bool" title="taucmdr.util.parse_bool"><code class="xref any py py-func docutils literal"><span class="pre">parse_bool</span></code></a>.</p>
+<dl class="method">
+<dt id="taucmdr.cli.arguments.ParsePackagePathAction.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>parser</em>, <em>namespace</em>, <em>value</em>, <em>unused_option_string=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#ParsePackagePathAction.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.ParsePackagePathAction.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the <cite>self.dest</cite> attribute in <cite>namespace</cite> to the parsed value of <cite>value</cite>.</p>
+<p>If <cite>value</cite> parses to a boolean True value then the attribute value is &#8216;download&#8217;.
+If <cite>value</cite> parses to a boolean False value then the attribute value is <code class="docutils literal"><span class="pre">None</span></code>.
+Otherwise the attribute value is the value of <cite>value</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parser</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Argument parser object this group belongs to.</li>
+<li><strong>namespace</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; Namespace to receive parsed value via setattr.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Value parsed from the command line.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="taucmdr.cli.arguments.REMAINDER">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">REMAINDER</code><em class="property"> = '...'</em><a class="headerlink" href="#taucmdr.cli.arguments.REMAINDER" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the remaining command-line arguments are gathered into a list.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="taucmdr.cli.arguments.STORAGE_LEVEL_FLAG">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">STORAGE_LEVEL_FLAG</code><em class="property"> = '&#64;'</em><a class="headerlink" href="#taucmdr.cli.arguments.STORAGE_LEVEL_FLAG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command line flag that indicates storage level.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="taucmdr.cli.arguments.SUPPRESS">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">SUPPRESS</code><em class="property"> = '==SUPPRESS=='</em><a class="headerlink" href="#taucmdr.cli.arguments.SUPPRESS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Suppress attribute creation in parsed argument namespace.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.cli.arguments.add_storage_flag">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">add_storage_flag</code><span class="sig-paren">(</span><em>parser</em>, <em>action</em>, <em>object_name</em>, <em>plural=False</em>, <em>exclusive=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#add_storage_flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.add_storage_flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add flag to indicate target storage container.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parser</strong> (<a class="reference internal" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="taucmdr.cli.arguments.MutableGroupArgumentParser"><em>MutableGroupArgumentParser</em></a>) &#8211; The parser to modify.</li>
+<li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The action that will be taken by the command, e.g. &#8220;delete&#8221; or &#8220;list&#8221;</li>
+<li><strong>object_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The type of object that will be manipulated, e.g. &#8220;application&#8221; or &#8220;measurement&#8221;</li>
+<li><strong>plural</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Pluralize help message if True.</li>
+<li><strong>exclusive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Only one storage level may be specified if True.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.cli.arguments.get_parser">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">get_parser</code><span class="sig-paren">(</span><em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#get_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.get_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds an argument parser.</p>
+<p>The returned argument parser accepts no arguments.
+Use <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser.add_argument" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse.ArgumentParser.add_argument</span></code></a> to add arguments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>prog</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the program.</li>
+<li><strong>usage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Description of the program&#8217;s usage.</li>
+<li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to display before the argument help.</li>
+<li><strong>epilog</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to display after the argument help.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The customized argument parser object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="taucmdr.cli.arguments.MutableGroupArgumentParser">MutableGroupArgumentParser</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.cli.arguments.get_parser_from_model">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">get_parser_from_model</code><span class="sig-paren">(</span><em>model</em>, <em>use_defaults=True</em>, <em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em>, <em>positional_primary_key=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#get_parser_from_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.get_parser_from_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds an argument parser from a model&#8217;s attributes.</p>
+<p>The returned argument parser will accept arguments as defined by the model&#8217;s <cite>argparse</cite>
+attribute properties, where the arguments to <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser.add_argument" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">argparse.ArgumentParser.add_argument</span></code></a>
+are specified as keyword arguments.</p>
+<p class="rubric">Examples</p>
+<p>Given this model attribute:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&#39;openmp&#39;: {
+    &#39;type&#39;: &#39;boolean&#39;,
+    &#39;description&#39;: &#39;application uses OpenMP&#39;,
+    &#39;default&#39;: False,
+    &#39;argparse&#39;: {&#39;flags&#39;: (&#39;--openmp&#39;,),
+                 &#39;metavar&#39;: &#39;T/F&#39;,
+                 &#39;nargs&#39;: &#39;?&#39;,
+                 &#39;const&#39;: True,
+                 &#39;action&#39;: ParseBooleanAction},
+}
+</pre></div>
+</div>
+<p>The returned parser will accept the <code class="docutils literal"><span class="pre">--openmp</span></code> flag accepting zero or one arguments
+with &#8216;T/F&#8217; as the metavar.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is omitted the default value of False will
+be used.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is provided with zero arguments, the const value of True will
+be used.  If <code class="docutils literal"><span class="pre">--openmp</span></code> is provided with one argument then the provided argument will
+be passed to a ParseBooleanAction instance to generate a boolean value.  The argument&#8217;s
+help description will appear as &#8220;application uses OpenMP&#8221; if the <code class="docutils literal"><span class="pre">--help</span></code> argument is given.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> (<a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><em>Model</em></a>) &#8211; Model to construct arguments from.</li>
+<li><strong>use_defaults</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, use the model attribute&#8217;s default value
+as the argument&#8217;s value if argument is not specified.</li>
+<li><strong>prog</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the program.</li>
+<li><strong>usage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Description of the program&#8217;s usage.</li>
+<li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to display before the argument help.</li>
+<li><strong>epilog</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to display after the argument help.</li>
+<li><strong>positional_primary_key</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, automatically add a positional argument for the primary key.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The customized argument parser object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="taucmdr.cli.arguments.MutableGroupArgumentParser">MutableGroupArgumentParser</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.cli.arguments.parse_storage_flag">
+<code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">parse_storage_flag</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#parse_storage_flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.parse_storage_flag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cli.tests.test_command.html">taucmdr.cli.tests.test_command module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cli.cli_view.html">taucmdr.cli.cli_view module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

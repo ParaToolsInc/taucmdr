@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.model.measurement module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.model package" href="taucmdr.model.html" />
+    <link rel="next" title="taucmdr.model.project module" href="taucmdr.model.project.html" />
+    <link rel="prev" title="taucmdr.model.experiment module" href="taucmdr.model.experiment.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.model.measurement module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.model.experiment.html">taucmdr.model.experiment module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.model.project.html">taucmdr.model.project module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.model.measurement">
+<span id="taucmdr-model-measurement-module"></span><h1>taucmdr.model.measurement module<a class="headerlink" href="#module-taucmdr.model.measurement" title="Permalink to this headline">¶</a></h1>
+<p>Measurement data model.</p>
+<p><a class="reference internal" href="#taucmdr.model.measurement.Measurement" title="taucmdr.model.measurement.Measurement"><code class="xref any py py-class docutils literal"><span class="pre">Measurement</span></code></a> completely describes the performance data measurements
+we wish to perform.  It is often the case that we do not wish to gather all
+the available data in a single run since overhead would be extreme.  Different
+measurements allow us to take different views of the application&#8217;s performance.</p>
+<dl class="class">
+<dt id="taucmdr.model.measurement.Measurement">
+<em class="property">class </em><code class="descclassname">taucmdr.model.measurement.</code><code class="descname">Measurement</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/measurement.html#Measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.measurement.Measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.model.Model</span></code></a></p>
+<p>Measurement data model.</p>
+<dl class="attribute">
+<dt id="taucmdr.model.measurement.Measurement.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'taucmdr.model.project.Project'&gt;, 'measurements')}</em><a class="headerlink" href="#taucmdr.model.measurement.Measurement.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.measurement.Measurement.attributes">
+<code class="descname">attributes</code><em class="property"> = {'memory_alloc': {'default': False, 'argparse': {'group': 'memory', 'flags': ('--memory-alloc',)}, 'type': 'boolean', 'description': 'record memory allocation and deallocation events'}, 'sample': {'default': True, 'argparse': {'group': 'instrumentation', 'flags': ('--sample',)}, 'compat': {True: (&lt;function condition at 0x7f84dea09aa0&gt;, &lt;function condition at 0x7f84dea09b90&gt;, &lt;function condition at 0x7f84dea09cf8&gt;, &lt;function condition at 0x7f84dea09de8&gt;, &lt;function condition at 0x7f84dea09f50&gt;)}, 'type': 'boolean', 'description': 'use event-based sampling to gather performance data'}, 'io': {'default': False, 'argparse': {'flags': ('--io',)}, 'type': 'boolean', 'description': 'measure time spent in POSIX I/O calls'}, 'compiler_inst': {'compat': {&lt;function &lt;lambda&gt; at 0x7f84de9f67d0&gt;: (&lt;function condition at 0x7f84de9f62a8&gt;, &lt;function condition at 0x7f84de9f6398&gt;, &lt;function condition at 0x7f84de9f6500&gt;, &lt;function condition at 0x7f84de9f65f0&gt;, &lt;function condition at 0x7f84de9f6758&gt;)}, 'argparse': {'const': 'always', 'nargs': '?', 'choices': ('always', 'fallback', 'never'), 'flags': ('--compiler-inst',), 'group': 'instrumentation', 'metavar': 'mode'}, 'description': 'use compiler-generated callbacks to gather performance data', 'default': 'never', 'rebuild_required': True, 'type': 'string'}, 'heap_usage': {'default': False, 'argparse': {'group': 'memory', 'flags': ('--heap-usage',)}, 'type': 'boolean', 'description': 'measure heap memory usage'}, 'throttle_per_call': {'default': 10, 'argparse': {'nargs': '?', 'flags': ('--throttle-per-call',), 'metavar': 'us', 'const': 10}, 'type': 'integer', 'description': 'lightweight event duration threshold in microseconds'}, 'opencl': {'compat': {True: (&lt;function condition at 0x7f84de9e4758&gt;, &lt;function condition at 0x7f84de9e4848&gt;)}, 'argparse': {'flags': ('--opencl',)}, 'description': 'measure OpenCL events', 'default': False, 'rebuild_required': False, 'type': 'boolean'}, 'link_only': {'default': False, 'argparse': {'group': 'instrumentation', 'flags': ('--link-only',)}, 'rebuild_required': True, 'type': 'boolean', 'description': &quot;don't instrument, only link the TAU library to the application&quot;}, 'reuse_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'flags': ('--reuse-inst-files',)}, 'compat': {True: &lt;function condition at 0x7f84de9e4d70&gt;}, 'type': 'boolean', 'description': 'reuse and preserve instrumented files after compilation'}, 'keep_inst_files': {'default': False, 'argparse': {'group': 'instrumentation', 'flags': ('--keep-inst-files',)}, 'compat': {True: &lt;function condition at 0x7f84de9e4c08&gt;}, 'type': 'boolean', 'description': &quot;don't remove instrumented files after compilation&quot;}, 'comm_matrix': {'default': False, 'argparse': {'flags': ('--comm-matrix',)}, 'type': 'boolean', 'description': 'record the point-to-point communication matrix'}, 'source_inst': {'compat': {'automatic': &lt;function condition at 0x7f84de9f6140&gt;}, 'argparse': {'const': 'automatic', 'nargs': '?', 'choices': ('automatic', 'manual', 'never'), 'flags': ('--source-inst',), 'group': 'instrumentation', 'metavar': 'mode'}, 'description': 'use hooks inserted into the application source code to gather performance data', 'default': 'never', 'rebuild_required': True, 'type': 'string'}, 'shmem': {'compat': {True: (&lt;function condition at 0x7f84de9e4488&gt;, &lt;function condition at 0x7f84de9e4578&gt;, &lt;function condition at 0x7f84de9e4668&gt;)}, 'argparse': {'flags': ('--shmem',)}, 'description': 'use SHMEM library wrapper to measure time spent in SHMEM methods', 'default': False, 'rebuild_required': True, 'type': 'boolean'}, 'profile': {'default': 'tau', 'argparse': {'const': 'tau', 'nargs': '?', 'choices': ('tau', 'merged', 'cubex', 'none'), 'flags': ('--profile',), 'group': 'output format', 'metavar': '&lt;format&gt;'}, 'compat': {'cubex': &lt;function condition at 0x7f84dea097d0&gt;}, 'type': 'string', 'description': 'generate application profiles'}, 'callpath': {'default': 100, 'argparse': {'group': 'data', 'nargs': '?', 'flags': ('--callpath',), 'metavar': 'depth', 'const': 100}, 'type': 'integer', 'description': 'maximum depth for callpath recording'}, 'trace': {'default': 'none', 'argparse': {'const': 'slog2', 'nargs': '?', 'choices': ('slog2', 'otf2', 'none'), 'flags': ('--trace',), 'group': 'output format', 'metavar': '&lt;format&gt;'}, 'compat': {'otf2': &lt;function condition at 0x7f84dea09938&gt;}, 'type': 'string', 'description': 'generate application traces'}, 'mpi': {'compat': {True: (&lt;function condition at 0x7f84de9f6938&gt;, &lt;function condition at 0x7f84de9f6a28&gt;, &lt;function condition at 0x7f84de9f6b18&gt;)}, 'argparse': {'flags': ('--mpi',)}, 'description': 'use MPI library wrapper to measure time spent in MPI methods', 'default': False, 'rebuild_required': True, 'type': 'boolean'}, 'metrics': {'compat': {&lt;function &lt;lambda&gt; at 0x7f84de9e4aa0&gt;: (&lt;function condition at 0x7f84de9e4938&gt;, &lt;function condition at 0x7f84de9e4a28&gt;)}, 'argparse': {'group': 'data', 'flags': ('--metrics',), 'metavar': '&lt;metric&gt;'}, 'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS', 'default': ['TIME'], 'rebuild_required': True, 'type': 'array'}, 'openmp': {'compat': {'ompt': (&lt;function condition at 0x7f84de9f6d70&gt;, &lt;function condition at 0x7f84de9f6ed8&gt;, &lt;function condition at 0x7f84de9f6f50&gt;, &lt;function condition at 0x7f84de9e4050&gt;), 'opari': &lt;function condition at 0x7f84de9f6c08&gt;, 'gomp': (&lt;function condition at 0x7f84de9e40c8&gt;, &lt;function condition at 0x7f84de9e4230&gt;, &lt;function condition at 0x7f84de9e42a8&gt;, &lt;function condition at 0x7f84de9e4320&gt;)}, 'argparse': {'flags': ('--openmp',), 'metavar': 'library', 'choices': ('ignore', 'opari', 'ompt', 'gomp')}, 'description': 'use specified library to measure time spent in OpenMP directives', 'default': 'ignore', 'rebuild_required': True, 'type': 'string'}, 'projects': {'via': 'measurements', 'description': 'projects using this measurement', 'collection': &lt;class 'taucmdr.model.project.Project'&gt;}, 'throttle': {'default': True, 'argparse': {'flags': ('--throttle',)}, 'type': 'boolean', 'description': 'throttle lightweight events to reduce overhead'}, 'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'measurement configuration name'}, 'throttle_num_calls': {'default': 100000, 'argparse': {'nargs': '?', 'flags': ('--throttle-num-calls',), 'metavar': 'count', 'const': 100000}, 'type': 'integer', 'description': 'lightweight event call count threshold'}, 'cuda': {'compat': {True: &lt;function condition at 0x7f84de9e4398&gt;}, 'argparse': {'flags': ('--cuda',)}, 'description': 'measure cuda events via the CUPTI interface', 'default': False, 'rebuild_required': False, 'type': 'boolean'}}</em><a class="headerlink" href="#taucmdr.model.measurement.Measurement.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.measurement.Measurement.is_selected">
+<code class="descname">is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/measurement.html#Measurement.is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.measurement.Measurement.is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this target configuration is part of the selected experiment, False otherwise.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.measurement.Measurement.key_attribute">
+<code class="descname">key_attribute</code><em class="property"> = 'name'</em><a class="headerlink" href="#taucmdr.model.measurement.Measurement.key_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.measurement.Measurement.name">
+<code class="descname">name</code><em class="property"> = 'Measurement'</em><a class="headerlink" href="#taucmdr.model.measurement.Measurement.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.measurement.Measurement.on_create">
+<code class="descname">on_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/measurement.html#Measurement.on_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.measurement.Measurement.on_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.measurement.Measurement.on_update">
+<code class="descname">on_update</code><span class="sig-paren">(</span><em>changes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/measurement.html#Measurement.on_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.measurement.Measurement.on_update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.measurement.Measurement.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'measurement')])</em><a class="headerlink" href="#taucmdr.model.measurement.Measurement.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.model.measurement.attributes">
+<code class="descclassname">taucmdr.model.measurement.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/measurement.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.measurement.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct attributes dictionary for the measurement model.</p>
+<p>We build the attributes in a function so that classes like <code class="docutils literal"><span class="pre">taucmdr.module.project.Project</span></code> are
+fully initialized and usable in the returned dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Attributes dictionary.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.model.experiment.html">taucmdr.model.experiment module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.model.project.html">taucmdr.model.project module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

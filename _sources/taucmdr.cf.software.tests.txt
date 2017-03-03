@@ -1,0 +1,23 @@
+taucmdr.cf.software.tests package
+=================================
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cf.software.tests.test_binutils_installation
+   taucmdr.cf.software.tests.test_installation
+   taucmdr.cf.software.tests.test_libunwind_installation
+   taucmdr.cf.software.tests.test_papi_installation
+   taucmdr.cf.software.tests.test_pdt_installation
+   taucmdr.cf.software.tests.test_scorep_installation
+   taucmdr.cf.software.tests.test_tau_installation
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cf.software.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

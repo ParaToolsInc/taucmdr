@@ -1,0 +1,30 @@
+taucmdr.cf.software package
+===========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cf.software.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cf.software.binutils_installation
+   taucmdr.cf.software.installation
+   taucmdr.cf.software.libunwind_installation
+   taucmdr.cf.software.papi_installation
+   taucmdr.cf.software.pdt_installation
+   taucmdr.cf.software.scorep_installation
+   taucmdr.cf.software.tau_installation
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cf.software
+    :members:
+    :undoc-members:
+    :show-inheritance:

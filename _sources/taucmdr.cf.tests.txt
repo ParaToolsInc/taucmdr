@@ -1,0 +1,17 @@
+taucmdr.cf.tests package
+========================
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cf.tests.test_platforms
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cf.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

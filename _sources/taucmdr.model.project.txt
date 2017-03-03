@@ -1,0 +1,7 @@
+taucmdr.model.project module
+============================
+
+.. automodule:: taucmdr.model.project
+    :members:
+    :undoc-members:
+    :show-inheritance:

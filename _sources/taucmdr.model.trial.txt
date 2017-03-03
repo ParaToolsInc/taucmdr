@@ -1,0 +1,7 @@
+taucmdr.model.trial module
+==========================
+
+.. automodule:: taucmdr.model.trial
+    :members:
+    :undoc-members:
+    :show-inheritance:

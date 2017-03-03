@@ -1,0 +1,26 @@
+taucmdr.cf.compiler package
+===========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cf.compiler.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cf.compiler.host
+   taucmdr.cf.compiler.mpi
+   taucmdr.cf.compiler.shmem
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cf.compiler
+    :members:
+    :undoc-members:
+    :show-inheritance:

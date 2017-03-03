@@ -1,0 +1,7 @@
+taucmdr.cli.commands.target.delete module
+=========================================
+
+.. automodule:: taucmdr.cli.commands.target.delete
+    :members:
+    :undoc-members:
+    :show-inheritance:

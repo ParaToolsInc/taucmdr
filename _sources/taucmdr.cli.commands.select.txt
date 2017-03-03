@@ -1,0 +1,7 @@
+taucmdr.cli.commands.select module
+==================================
+
+.. automodule:: taucmdr.cli.commands.select
+    :members:
+    :undoc-members:
+    :show-inheritance:

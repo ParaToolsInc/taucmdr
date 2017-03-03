@@ -1,0 +1,7 @@
+taucmdr.cf.compiler.shmem module
+================================
+
+.. automodule:: taucmdr.cf.compiler.shmem
+    :members:
+    :undoc-members:
+    :show-inheritance:

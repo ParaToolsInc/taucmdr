@@ -1,0 +1,30 @@
+taucmdr.model package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.model.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.model.application
+   taucmdr.model.compiler
+   taucmdr.model.experiment
+   taucmdr.model.measurement
+   taucmdr.model.project
+   taucmdr.model.target
+   taucmdr.model.trial
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.model
+    :members:
+    :undoc-members:
+    :show-inheritance:

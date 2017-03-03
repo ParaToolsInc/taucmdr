@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.model.compiler module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.model package" href="taucmdr.model.html" />
+    <link rel="next" title="taucmdr.model.experiment module" href="taucmdr.model.experiment.html" />
+    <link rel="prev" title="taucmdr.model.application module" href="taucmdr.model.application.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.model.compiler module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.model.application.html">taucmdr.model.application module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.model.experiment.html">taucmdr.model.experiment module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="taucmdr-model-compiler-module">
+<h1>taucmdr.model.compiler module<a class="headerlink" href="#taucmdr-model-compiler-module" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-taucmdr.model.compiler"></span><p>Compiler data model.</p>
+<p>TAU only works reliablly when the same compiler is used to build both the application
+source code and TAU itself.  If the system compiler changes TAU can break entirely.
+This data tracks the system compilers so we can warn the user if they have changed.</p>
+<dl class="class">
+<dt id="taucmdr.model.compiler.Compiler">
+<em class="property">class </em><code class="descclassname">taucmdr.model.compiler.</code><code class="descname">Compiler</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#Compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.Compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.model.Model</span></code></a></p>
+<p>Compiler data model.</p>
+<dl class="attribute">
+<dt id="taucmdr.model.compiler.Compiler.associations">
+<code class="descname">associations</code><em class="property"> = {}</em><a class="headerlink" href="#taucmdr.model.compiler.Compiler.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.compiler.Compiler.attributes">
+<code class="descname">attributes</code><em class="property"> = {'libraries': {'required': False, 'type': 'array', 'description': 'extra libraries to link when compiling with this compiler'}, 'include_path': {'required': False, 'type': 'array', 'description': 'extra paths to search for include files when compiling with this compiler'}, 'role': {'required': True, 'type': 'string', 'description': 'role this command plays in the compiler family, e.g. CXX or MPI_CC'}, 'uid': {'required': True, 'type': 'string', 'description': 'compiler unique identifier'}, 'family': {'required': True, 'type': 'string', 'description': &quot;compiler's family name&quot;}, 'wrapped': {'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'compiler wrapped by this compiler'}, 'path': {'required': True, 'type': 'string', 'description': 'absolute path to the compiler command'}, 'compiler_flags': {'required': False, 'type': 'array', 'description': 'extra flags to use when compiling with this compiler'}, 'library_path': {'required': False, 'type': 'array', 'description': 'extra paths to search for libraries when compiling with this compiler'}}</em><a class="headerlink" href="#taucmdr.model.compiler.Compiler.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.compiler.Compiler.installation">
+<code class="descname">installation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#Compiler.installation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.Compiler.installation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets information about this compiler installation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Information about the installed compiler command.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler">InstalledCompiler</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.compiler.Compiler.name">
+<code class="descname">name</code><em class="property"> = 'Compiler'</em><a class="headerlink" href="#taucmdr.model.compiler.Compiler.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.compiler.Compiler.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_CC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_UPC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'wrapped'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_CC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_CC')])</em><a class="headerlink" href="#taucmdr.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.compiler.Compiler.verify">
+<code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#Compiler.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.Compiler.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the system state matches the recorded compiler information.</p>
+<p>May execute the compiler or other commands, check filesystem paths, and check environment variables
+to determine if this compiler record is still valid.  This operation may be expensive.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Information on the compiler installation matching this record.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler">InstalledCompiler</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+This compiler record is no longer valid.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.model.compiler.CompilerController">
+<em class="property">class </em><code class="descclassname">taucmdr.model.compiler.</code><code class="descname">CompilerController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#CompilerController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.CompilerController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller" title="taucmdr.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.controller.Controller</span></code></a></p>
+<p>Compiler data controller.</p>
+<dl class="method">
+<dt id="taucmdr.model.compiler.CompilerController.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>comp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#CompilerController.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.CompilerController.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records information about an installed compiler command in the database.</p>
+<p>If the compiler has already been registered then do not update the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>comp</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler"><em>InstalledCompiler</em></a>) &#8211; Information about an installed compiler.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Data controller for the installed compiler&#8217;s data.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#taucmdr.model.compiler.Compiler" title="taucmdr.model.compiler.Compiler">Compiler</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.model.compiler.attributes">
+<code class="descclassname">taucmdr.model.compiler.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.model.application.html">taucmdr.model.application module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.model.experiment.html">taucmdr.model.experiment module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

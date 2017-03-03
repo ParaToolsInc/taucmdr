@@ -1,0 +1,7 @@
+taucmdr.cf.software.installation module
+=======================================
+
+.. automodule:: taucmdr.cf.software.installation
+    :members:
+    :undoc-members:
+    :show-inheritance:

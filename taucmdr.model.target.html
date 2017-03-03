@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.model.target module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.model package" href="taucmdr.model.html" />
+    <link rel="next" title="taucmdr.model.trial module" href="taucmdr.model.trial.html" />
+    <link rel="prev" title="taucmdr.model.project module" href="taucmdr.model.project.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.model.target module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.model.project.html">taucmdr.model.project module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.model.trial.html">taucmdr.model.trial module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.model.target">
+<span id="taucmdr-model-target-module"></span><h1>taucmdr.model.target module<a class="headerlink" href="#module-taucmdr.model.target" title="Permalink to this headline">¶</a></h1>
+<p>Target data model.</p>
+<p><a class="reference internal" href="#taucmdr.model.target.Target" title="taucmdr.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a> fully describes the hardware and software environment that our
+experiments will be performed in.  The hardware architecture, available compilers,
+and system libraries are described in the target record.  There will be multiple
+target records for any physical computer system since each target record uniquely
+describes a specific set of system features.  For example, if both GNU and Intel
+compilers are installed then there will target configurations for each compiler family.</p>
+<dl class="class">
+<dt id="taucmdr.model.target.Target">
+<em class="property">class </em><code class="descclassname">taucmdr.model.target.</code><code class="descname">Target</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.model.Model</span></code></a></p>
+<p>Target data model.</p>
+<dl class="method">
+<dt id="taucmdr.model.target.Target.architecture">
+<code class="descname">architecture</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.architecture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.architecture" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.target.Target.associations">
+<code class="descname">associations</code><em class="property"> = {'projects': (&lt;class 'taucmdr.model.project.Project'&gt;, 'targets')}</em><a class="headerlink" href="#taucmdr.model.target.Target.associations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.target.Target.attributes">
+<code class="descname">attributes</code><em class="property"> = {'MPI_FC': {'rebuild_required': True, 'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI Fortran compiler command'}, 'shmem_include_path': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-include-path',), 'metavar': '&lt;path&gt;'}, 'rebuild_required': True, 'type': 'array', 'description': 'paths to search for SHMEM header files when building SHMEM applications'}, 'tau_source': {'compat': {True: &lt;function condition at 0x7f84de9fec08&gt;}, 'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--tau',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|nightly)'}, 'description': 'path or URL to a TAU installation or archive file', 'default': 'download', 'rebuild_required': True, 'type': 'string'}, 'host_arch': {'compat': {'KNC': (&lt;function condition at 0x7f84de9fe050&gt;, &lt;function condition at 0x7f84de9fe0c8&gt;, &lt;function condition at 0x7f84de9fe140&gt;, &lt;function condition at 0x7f84de9fe1b8&gt;, &lt;function condition at 0x7f84de9fe230&gt;, &lt;function condition at 0x7f84de9fe2a8&gt;, &lt;function condition at 0x7f84de9fe320&gt;)}, 'argparse': {'group': 'host', 'flags': ('--arch',), 'metavar': '&lt;arch&gt;', 'choices': ['x86_64', 'KNL', 'ppc64le', 'arm32', 'ppc64', 'BGL', 'KNC', 'BGP', 'BGQ', 'arm64', 'ibm64']}, 'description': 'host architecture', 'default': 'x86_64', 'required': True, 'rebuild_required': True, 'type': 'string'}, 'mpi_library_path': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x7f84de9fe668&gt;, &lt;function condition at 0x7f84de9fe758&gt;, &lt;function condition at 0x7f84de9fe848&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-library-path',), 'metavar': '&lt;path&gt;'}, 'rebuild_required': True, 'type': 'array', 'description': 'paths to search for MPI library files when building MPI applications'}, 'Host_CC': {'rebuild_required': True, 'argparse': {'group': 'host', 'flags': ('--cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host C compiler command'}, 'binutils_source': {'compat': {&lt;function &lt;lambda&gt; at 0x7f84de9fed70&gt;: &lt;function condition at 0x7f84de9fecf8&gt;}, 'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--binutils',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'description': 'path or URL to a GNU binutils installation or archive file', 'default': 'download', 'rebuild_required': True, 'type': 'string'}, 'SHMEM_CC': {'rebuild_required': True, 'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM C compiler command'}, 'Host_UPC': {'rebuild_required': True, 'argparse': {'group': 'Universal Parallel C', 'flags': ('--upc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'Universal Parallel C compiler command'}, 'scorep_source': {'compat': {&lt;function &lt;lambda&gt; at 0x7f84de9f7410&gt;: (&lt;function condition at 0x7f84de9f7140&gt;, &lt;function condition at 0x7f84de9f72a8&gt;, &lt;function condition at 0x7f84de9f7398&gt;, &lt;function condition at 0x7f84de9f7488&gt;)}, 'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--scorep',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'description': 'path or URL to a Score-P installation or archive file', 'default': 'download', 'rebuild_required': True, 'type': 'string'}, 'MPI_CC': {'rebuild_required': True, 'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI C compiler command'}, 'SHMEM_CXX': {'rebuild_required': True, 'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM C++ compiler command'}, 'forced_makefile': {'argparse': {'flags': ('--from-tau-makefile',), 'metavar': '&lt;path&gt;'}, 'rebuild_required': True, 'type': 'string', 'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)'}, 'shmem_libraries': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-libraries',), 'metavar': '&lt;flag&gt;'}, 'rebuild_required': True, 'type': 'array', 'description': 'libraries to link to when building SHMEM applications'}, 'shmem_library_path': {'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-library-path',), 'metavar': '&lt;path&gt;'}, 'rebuild_required': True, 'type': 'array', 'description': 'paths to search for SHMEM library files when building SHMEM applications'}, 'mpi_include_path': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x7f84de9fe398&gt;, &lt;function condition at 0x7f84de9fe488&gt;, &lt;function condition at 0x7f84de9fe578&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-include-path',), 'metavar': '&lt;path&gt;'}, 'rebuild_required': True, 'type': 'array', 'description': 'paths to search for MPI header files when building MPI applications'}, 'pdt_source': {'default': 'download', 'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--pdt',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'rebuild_required': True, 'type': 'string', 'description': 'path or URL to a PDT installation or archive file'}, 'MPI_CXX': {'rebuild_required': True, 'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'MPI C++ compiler command'}, 'Host_FC': {'rebuild_required': True, 'argparse': {'group': 'host', 'flags': ('--fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'Host Fortran compiler command'}, 'Host_CXX': {'rebuild_required': True, 'argparse': {'group': 'host', 'flags': ('--cxx',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': True, 'description': 'Host C++ compiler command'}, 'projects': {'via': 'targets', 'description': 'projects using this target', 'collection': &lt;class 'taucmdr.model.project.Project'&gt;}, 'host_os': {'argparse': {'group': 'host', 'flags': ('--os',), 'metavar': '&lt;os&gt;', 'choices': ['CNL', 'Darwin', 'CNK', 'Android', 'Linux']}, 'description': 'host operating system', 'default': 'Linux', 'required': True, 'rebuild_required': True, 'type': 'string'}, 'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'target configuration name'}, 'SHMEM_FC': {'rebuild_required': True, 'argparse': {'group': 'Symmetric Hierarchical Memory (SHMEM)', 'flags': ('--shmem-fc',), 'metavar': '&lt;command&gt;'}, 'model': &lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'required': False, 'description': 'SHMEM Fortran compiler command'}, 'papi_source': {'compat': {&lt;function &lt;lambda&gt; at 0x7f84de9fef50&gt;: &lt;function condition at 0x7f84de9feed8&gt;}, 'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--papi',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'description': 'path or URL to a PAPI installation or archive file', 'default': 'download', 'rebuild_required': True, 'type': 'string'}, 'libunwind_source': {'default': 'download', 'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--libunwind',), 'metavar': '(&lt;path&gt;|&lt;url&gt;|download|None)'}, 'rebuild_required': True, 'type': 'string', 'description': 'path or URL to a libunwind installation or archive file'}, 'cuda': {'argparse': {'action': &lt;class 'taucmdr.cli.arguments.ParsePackagePathAction'&gt;, 'group': 'software package', 'flags': ('--cuda',), 'metavar': '&lt;path&gt;'}, 'rebuild_required': True, 'type': 'string', 'description': 'path to NVIDIA CUDA installation (enables OpenCL support)'}, 'mpi_libraries': {'compat': {&lt;type 'bool'&gt;: (&lt;function condition at 0x7f84de9fe938&gt;, &lt;function condition at 0x7f84de9fea28&gt;, &lt;function condition at 0x7f84de9feb18&gt;)}, 'argparse': {'group': 'Message Passing Interface (MPI)', 'flags': ('--mpi-libraries',), 'metavar': '&lt;flag&gt;'}, 'rebuild_required': True, 'type': 'array', 'description': 'libraries to link to when building MPI applications'}}</em><a class="headerlink" href="#taucmdr.model.target.Target.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.check_compiler">
+<code class="descname">check_compiler</code><span class="sig-paren">(</span><em>compiler_cmd</em>, <em>compiler_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.check_compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.check_compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks a compiler command its arguments for compatibility with this target configuration.</p>
+<p>Checks that the given compiler matches at least one, <strong>but possibly more</strong>, of the compilers
+used in the target. Also performs any special checkes for invalid compiler arguments,
+e.g. -mmic is only for native KNC.</p>
+<p>If the given compiler command and arguments are compatible with this target then information about
+matching compiler installations is returned as a list of n <a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler"><code class="xref any py py-class docutils literal"><span class="pre">InstalledCompiler</span></code></a> instances.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The compiler command as passed by the user.</li>
+<li><strong>compiler_args</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Information about matching installed compilers as <a class="reference internal" href="taucmdr.model.compiler.html#taucmdr.model.compiler.Compiler" title="taucmdr.model.compiler.Compiler"><code class="xref any py py-class docutils literal"><span class="pre">Compiler</span></code></a> instances.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+The compiler or command line arguments are incompatible with this target.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.compilers">
+<code class="descname">compilers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.compilers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.compilers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about the compilers used by this target configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Collection of installed compilers used by this target.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerSet" title="taucmdr.cf.compiler.InstalledCompilerSet">InstalledCompilerSet</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.cupti_metrics">
+<code class="descname">cupti_metrics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.cupti_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.cupti_metrics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.is_selected">
+<code class="descname">is_selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.is_selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.is_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if this target configuration is part of the selected experiment, False otherwise.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.target.Target.key_attribute">
+<code class="descname">key_attribute</code><em class="property"> = 'name'</em><a class="headerlink" href="#taucmdr.model.target.Target.key_attribute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.target.Target.name">
+<code class="descname">name</code><em class="property"> = 'Target'</em><a class="headerlink" href="#taucmdr.model.target.Target.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.on_update">
+<code class="descname">on_update</code><span class="sig-paren">(</span><em>changes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.on_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.on_update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.operating_system">
+<code class="descname">operating_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.operating_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.operating_system" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.papi_metrics">
+<code class="descname">papi_metrics</code><span class="sig-paren">(</span><em>event_type='PRESET'</em>, <em>include_modifiers=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.papi_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.papi_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>List PAPI metrics available on this target.</p>
+<p>Returns a list of (name, description) tuples corresponding to the
+requested PAPI event type and possibly the event modifiers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>event_type</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Either &#8220;PRESET&#8221; or &#8220;NATIVE&#8221;.</li>
+<li><strong>include_modifiers</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True include event modifiers,
+e.g. BR_INST_EXEC:NONTAKEN_COND as well as BR_INST_EXEC.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of event name/description tuples.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.model.target.Target.references">
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'target')])</em><a class="headerlink" href="#taucmdr.model.target.Target.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.sources">
+<code class="descname">sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get paths to all source packages known to this target.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Software package paths indexed by package name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.target.Target.tau_metrics">
+<code class="descname">tau_metrics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#Target.tau_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.Target.tau_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>List TAU metrics available on this target.</p>
+<p>Returns a list of (name, description) tuples.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of event name/description tuples.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.model.target.attributes">
+<code class="descclassname">taucmdr.model.target.</code><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct attributes dictionary for the target model.</p>
+<p>We build the attributes in a function so that classes like <code class="docutils literal"><span class="pre">taucmdr.module.project.Project</span></code> are
+fully initialized and usable in the returned dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Attributes dictionary.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.model.target.knc_require_k1om">
+<code class="descclassname">taucmdr.model.target.</code><code class="descname">knc_require_k1om</code><span class="sig-paren">(</span><em>*_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#knc_require_k1om"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.knc_require_k1om" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compatibility checking callback for use with data models.</p>
+<p>Requires that the Intel k1om tools be installed if the host architecture is KNC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Invalid compiler family specified in target configuration.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.model.target.papi_source_default">
+<code class="descclassname">taucmdr.model.target.</code><code class="descname">papi_source_default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/target.html#papi_source_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.target.papi_source_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose the best default PAPI source.</p>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.model.project.html">taucmdr.model.project module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.model.trial.html">taucmdr.model.trial module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

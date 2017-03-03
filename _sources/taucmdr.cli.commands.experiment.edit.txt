@@ -1,0 +1,7 @@
+taucmdr.cli.commands.experiment.edit module
+===========================================
+
+.. automodule:: taucmdr.cli.commands.experiment.edit
+    :members:
+    :undoc-members:
+    :show-inheritance:

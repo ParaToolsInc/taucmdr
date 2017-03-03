@@ -1,0 +1,7 @@
+taucmdr.model.application module
+================================
+
+.. automodule:: taucmdr.model.application
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,36 @@
+taucmdr.cli.commands package
+============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cli.commands.application
+    taucmdr.cli.commands.experiment
+    taucmdr.cli.commands.measurement
+    taucmdr.cli.commands.project
+    taucmdr.cli.commands.target
+    taucmdr.cli.commands.tests
+    taucmdr.cli.commands.trial
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.commands.__main__
+   taucmdr.cli.commands.build
+   taucmdr.cli.commands.configure
+   taucmdr.cli.commands.dashboard
+   taucmdr.cli.commands.help
+   taucmdr.cli.commands.initialize
+   taucmdr.cli.commands.select
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli.commands
+    :members:
+    :undoc-members:
+    :show-inheritance:

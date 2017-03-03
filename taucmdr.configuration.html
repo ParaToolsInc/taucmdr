@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.configuration module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr package" href="taucmdr.html" />
+    <link rel="next" title="taucmdr.error module" href="taucmdr.error.html" />
+    <link rel="prev" title="taucmdr.tests.test_util module" href="taucmdr.tests.test_util.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.configuration module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.tests.test_util.html">taucmdr.tests.test_util module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.error.html">taucmdr.error module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.configuration">
+<span id="taucmdr-configuration-module"></span><h1>taucmdr.configuration module<a class="headerlink" href="#module-taucmdr.configuration" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander installation configuration.</p>
+<p>TODO: Docs</p>
+<dl class="function">
+<dt id="taucmdr.configuration.config_file_comment">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">config_file_comment</code><span class="sig-paren">(</span><em>msg</em>, <em>box=False</em>, <em>width=78</em>, <em>line_comment='#'</em>, <em>line_char='='</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#config_file_comment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.config_file_comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats a string as a configuration file comment.</p>
+<blockquote>
+<div><p>Adds a comment character to the start of each line and wraps lines at the specified
+line width.  Empty lines are preserved.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>msg (str): Comment string.
+box (bool): If true, draw horizontal lines before and after the message and add some whitespace.
+width (int): Line width.
+line_comment (str): String that starts a line comment.
+line_char (str): Single character to replicate to form a horizontal line.</dd>
+<dt>Returns:</dt>
+<dd>list: Lines of the comment without terminating &#8216;</dd>
+</dl>
+</div></blockquote>
+<p>&#8216; characters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.default_config">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">default_config</code><span class="sig-paren">(</span><em>config_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#default_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.default_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a configuration object with default values from <a class="reference internal" href="taucmdr.model.html"><em>taucmdr.model package</em></a>.</p>
+<p>Adds &#8220;Target&#8221;, &#8220;Application&#8221;, and &#8220;Measurement&#8221; sections defining default values for each model attribute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>config_file</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Use defaults in specified configuration file, if it exists.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Initialized configuration object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ConfigObj</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.delete">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">delete</code><span class="sig-paren">(</span><em>key</em>, <em>storage=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unsets the value of a configuration item.</p>
+<p>If a storage object is given then unsets <code class="docutils literal"><span class="pre">key</span></code> in that storage.
+Otherwise, searches <a class="reference internal" href="taucmdr.cf.storage.levels.html#taucmdr.cf.storage.levels.ORDERED_LEVELS" title="taucmdr.cf.storage.levels.ORDERED_LEVELS"><code class="xref any py py-data docutils literal"><span class="pre">ORDERED_LEVELS</span></code></a> for the first storage that
+contains <code class="docutils literal"><span class="pre">key</span></code> and unsets <code class="docutils literal"><span class="pre">key</span></code> in that storage container.
+If no storage contains <code class="docutils literal"><span class="pre">key</span></code> then the value is unset in <code class="xref any docutils literal"><span class="pre">ORDERED_LEVELS[0]</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Key string.</li>
+<li><strong>storage</strong> (<a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage" title="taucmdr.cf.storage.AbstractStorage"><em>AbstractStorage</em></a>) &#8211; Optional storage container.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211;
+no storage contains <code class="docutils literal"><span class="pre">key</span></code> or <code class="docutils literal"><span class="pre">storage</span> <span class="pre">!=</span> <span class="pre">None</span></code> and <code class="docutils literal"><span class="pre">key</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">storage</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.get">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">get</code><span class="sig-paren">(</span><em>key=None</em>, <em>storage=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of all configuration items or the value of one configuration item.</p>
+<p>If a storage object is given then returns the value(s) held in that storage.
+Otherwise, searches <a class="reference internal" href="taucmdr.cf.storage.levels.html#taucmdr.cf.storage.levels.ORDERED_LEVELS" title="taucmdr.cf.storage.levels.ORDERED_LEVELS"><code class="xref any py py-data docutils literal"><span class="pre">ORDERED_LEVELS</span></code></a> for the first storage containing <code class="docutils literal"><span class="pre">key</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Optional key string.</li>
+<li><strong>storage</strong> (<a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage" title="taucmdr.cf.storage.AbstractStorage"><em>AbstractStorage</em></a>) &#8211; Optional storage container.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If <code class="docutils literal"><span class="pre">key</span> <span class="pre">==</span> <span class="pre">None</span></code>, a dictionary of configuration items.
+object: If <code class="docutils literal"><span class="pre">key</span> <span class="pre">!=</span> <span class="pre">None</span></code>, the value mapped to <code class="docutils literal"><span class="pre">key</span></code>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211;
+no storage contains <code class="docutils literal"><span class="pre">key</span></code> or <code class="docutils literal"><span class="pre">storage</span> <span class="pre">!=</span> <span class="pre">None</span></code> and <code class="docutils literal"><span class="pre">key</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">storage</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.import_from_file">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">import_from_file</code><span class="sig-paren">(</span><em>filepath</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#import_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.import_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import configuration options from a config file.</p>
+<p>Sets new or overrides existing configuration options.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filepath</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the configuration file.</li>
+<li><strong>stoarge</strong> (<a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage" title="taucmdr.cf.storage.AbstractStorage"><em>AbstractStorage</em></a>) &#8211; Storage container.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+<code class="docutils literal"><span class="pre">filepath</span></code> is not readable.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.open_config_file">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">open_config_file</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#open_config_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.open_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a configuration object initialized from values in <cite>filepath</cite> if it exists.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.parse_config_string">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">parse_config_string</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#parse_config_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.parse_config_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string to a bool, int, or float value if possible.</p>
+<p>Val may be any type, but if it&#8217;s a string and that string can be cast to a bool, int, or float
+then the typecast value is returned.  Otherwise val is returned unmodified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>val</strong> &#8211; Value to parse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Parsed value.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.configuration.put">
+<code class="descclassname">taucmdr.configuration.</code><code class="descname">put</code><span class="sig-paren">(</span><em>key</em>, <em>value</em>, <em>storage=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/configuration.html#put"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.configuration.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the value of a configuration item.</p>
+<p>If a storage object is given then sets <code class="docutils literal"><span class="pre">key=value</span></code> in that storage.
+Otherwise, searches <a class="reference internal" href="taucmdr.cf.storage.levels.html#taucmdr.cf.storage.levels.ORDERED_LEVELS" title="taucmdr.cf.storage.levels.ORDERED_LEVELS"><code class="xref any py py-data docutils literal"><span class="pre">ORDERED_LEVELS</span></code></a> for the first storage that
+contains <code class="docutils literal"><span class="pre">key</span></code> and updates the value of <code class="docutils literal"><span class="pre">key</span></code> in that storage container.
+If no storage contains <code class="docutils literal"><span class="pre">key</span></code> then the value is set in <code class="xref any docutils literal"><span class="pre">ORDERED_LEVELS[0]</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Key string.</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><em>object</em></a>) &#8211; Value.</li>
+<li><strong>storage</strong> (<a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage" title="taucmdr.cf.storage.AbstractStorage"><em>AbstractStorage</em></a>) &#8211; Optional storage container.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.tests.test_util.html">taucmdr.tests.test_util module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.error.html">taucmdr.error module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

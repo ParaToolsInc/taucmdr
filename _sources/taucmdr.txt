@@ -1,0 +1,33 @@
+taucmdr package
+===============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cf
+    taucmdr.cli
+    taucmdr.gui
+    taucmdr.model
+    taucmdr.mvc
+    taucmdr.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.configuration
+   taucmdr.error
+   taucmdr.logger
+   taucmdr.progress
+   taucmdr.util
+
+Module contents
+---------------
+
+.. automodule:: taucmdr
+    :members:
+    :undoc-members:
+    :show-inheritance:

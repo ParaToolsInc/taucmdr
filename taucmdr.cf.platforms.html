@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cf.platforms module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.cf package" href="taucmdr.cf.html" />
+    <link rel="next" title="taucmdr.cli package" href="taucmdr.cli.html" />
+    <link rel="prev" title="taucmdr.cf.objects module" href="taucmdr.cf.objects.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cf.platforms module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.objects.html">taucmdr.cf.objects module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cli.html">taucmdr.cli package</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.cf.platforms">
+<span id="taucmdr-cf-platforms-module"></span><h1>taucmdr.cf.platforms module<a class="headerlink" href="#module-taucmdr.cf.platforms" title="Permalink to this headline">¶</a></h1>
+<p>Supported computing platforms.</p>
+<p>I&#8217;d rather call this module &#8220;taucmdr.cf.platform&#8221; but that would conflict with <a class="reference external" href="https://docs.python.org/library/platform.html#module-platform" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">platform</span></code></a>.</p>
+<dl class="class">
+<dt id="taucmdr.cf.platforms.Architecture">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.platforms.</code><code class="descname">Architecture</code><span class="sig-paren">(</span><em>name</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#Architecture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.Architecture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.objects.KeyedRecord</span></code></a></p>
+<p>Information about a processor architecture.</p>
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.Architecture.name">
+<code class="descname">name</code><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Short string identifying this architecture.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.Architecture.description">
+<code class="descname">description</code><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.description" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Description of the architecture.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="taucmdr.cf.platforms.Architecture.detect">
+<em class="property">classmethod </em><code class="descname">detect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#Architecture.detect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect the processor architecture we are currently executing on.</p>
+<p>Mostly relies on Python&#8217;s platform module but may also probe
+environment variables and file systems in cases where the arch
+isn&#8217;t immediately known to Python.  These tests may be expensive
+so the detected value is cached to improve performance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The matching architecture description.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#taucmdr.cf.platforms.Architecture" title="taucmdr.cf.platforms.Architecture">Architecture</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Host architecture not supported.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.platforms.Architecture.is_arm">
+<code class="descname">is_arm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#Architecture.is_arm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.is_arm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.platforms.Architecture.is_bluegene">
+<code class="descname">is_bluegene</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#Architecture.is_bluegene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.is_bluegene" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.platforms.Architecture.is_ibm">
+<code class="descname">is_ibm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#Architecture.is_ibm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.is_ibm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.platforms.Architecture.is_mic">
+<code class="descname">is_mic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#Architecture.is_mic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.Architecture.is_mic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cf.platforms.OperatingSystem">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.platforms.</code><code class="descname">OperatingSystem</code><span class="sig-paren">(</span><em>name</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#OperatingSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.OperatingSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.objects.KeyedRecord</span></code></a></p>
+<p>Information about an operating system.</p>
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.OperatingSystem.name">
+<code class="descname">name</code><a class="headerlink" href="#taucmdr.cf.platforms.OperatingSystem.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Short string identifying this operating system.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.OperatingSystem.description">
+<code class="descname">description</code><a class="headerlink" href="#taucmdr.cf.platforms.OperatingSystem.description" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Description of the operating system.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="taucmdr.cf.platforms.OperatingSystem.detect">
+<em class="property">classmethod </em><code class="descname">detect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#OperatingSystem.detect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.OperatingSystem.detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect the operating system we are currently running on.</p>
+<p>Mostly relies on Python&#8217;s platform module but may also probe
+environment variables and file systems in cases where the arch
+isn&#8217;t immediately known to Python.  These tests may be expensive
+so the detected value is cached to improve performance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The matching operating system description.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#taucmdr.cf.platforms.OperatingSystem" title="taucmdr.cf.platforms.OperatingSystem">OperatingSystem</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Host operating system not supported.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cf.platforms.TauMagic">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.platforms.</code><code class="descname">TauMagic</code><span class="sig-paren">(</span><em>arch_os</em>, <em>name</em>, <em>preferred_families</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#TauMagic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.TauMagic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.objects.KeyedRecord</span></code></a></p>
+<p>Maps (architecture, operating system) tuples to TAU&#8217;s magic words.</p>
+<p>The key is a (Architecture, OperatingSystem) tuple since TAU&#8217;s architecture mapping is not one-to-one.
+The magic word &#8216;ibm64linux&#8217; corresponds to several different archiectures and operating sytems and
+TAU&#8217;s magic &#8216;x86_64&#8217; could be a tradional CPU or a KNL.  TAU Commander needs to know the &#8220;real&#8221; CPU
+architecture and operating system so it can chose the right compilers and dependencies for TAU.</p>
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.TauMagic.name">
+<code class="descname">name</code><a class="headerlink" href="#taucmdr.cf.platforms.TauMagic.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>Name of the TAU architecture (the magic word)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.TauMagic.architecture">
+<code class="descname">architecture</code><a class="headerlink" href="#taucmdr.cf.platforms.TauMagic.architecture" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Architecture</em></p>
+<p>Architecture object for this TAU architecture.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.TauMagic.operating_system">
+<code class="descname">operating_system</code><a class="headerlink" href="#taucmdr.cf.platforms.TauMagic.operating_system" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OperatingSystem</em></p>
+<p>OperatingSystem object for this TAU architecture.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.platforms.TauMagic.preferred_families">
+<code class="descname">preferred_families</code><a class="headerlink" href="#taucmdr.cf.platforms.TauMagic.preferred_families" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>Preferred compiler families indexed by <a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase" title="taucmdr.cf.compiler.Knowledgebase"><code class="xref any py py-class docutils literal"><span class="pre">Knowledgebase</span></code></a>.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="taucmdr.cf.platforms.TauMagic.detect">
+<em class="property">classmethod </em><code class="descname">detect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/platforms.html#TauMagic.detect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.platforms.TauMagic.detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect TAU magic for the target we are currently executing on.</p>
+<p>Mostly relies on Python&#8217;s platform module but may also probe
+environment variables and file systems in cases where the arch
+isn&#8217;t immediately known to Python.  These tests may be expensive
+so the detected value is cached to improve performance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The matching taucmdr architecture description.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#taucmdr.cf.platforms.TauMagic" title="taucmdr.cf.platforms.TauMagic">TauMagic</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Host architecture or operating system not supported.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.objects.html">taucmdr.cf.objects module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cli.html">taucmdr.cli package</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

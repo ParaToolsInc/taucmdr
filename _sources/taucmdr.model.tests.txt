@@ -1,0 +1,23 @@
+taucmdr.model.tests package
+===========================
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.model.tests.test_application
+   taucmdr.model.tests.test_compiler
+   taucmdr.model.tests.test_experiment
+   taucmdr.model.tests.test_measurement
+   taucmdr.model.tests.test_project
+   taucmdr.model.tests.test_target
+   taucmdr.model.tests.test_trial
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.model.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

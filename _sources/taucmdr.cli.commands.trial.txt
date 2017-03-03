@@ -1,0 +1,29 @@
+taucmdr.cli.commands.trial package
+==================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cli.commands.trial.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.commands.trial.create
+   taucmdr.cli.commands.trial.delete
+   taucmdr.cli.commands.trial.edit
+   taucmdr.cli.commands.trial.export
+   taucmdr.cli.commands.trial.list
+   taucmdr.cli.commands.trial.show
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli.commands.trial
+    :members:
+    :undoc-members:
+    :show-inheritance:

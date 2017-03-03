@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cf.software.libunwind_installation module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.cf.software package" href="taucmdr.cf.software.html" />
+    <link rel="next" title="taucmdr.cf.software.papi_installation module" href="taucmdr.cf.software.papi_installation.html" />
+    <link rel="prev" title="taucmdr.cf.software.installation module" href="taucmdr.cf.software.installation.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cf.software.libunwind_installation module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.software.installation.html">taucmdr.cf.software.installation module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.software.papi_installation.html">taucmdr.cf.software.papi_installation module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.cf.software.libunwind_installation">
+<span id="taucmdr-cf-software-libunwind-installation-module"></span><h1>taucmdr.cf.software.libunwind_installation module<a class="headerlink" href="#module-taucmdr.cf.software.libunwind_installation" title="Permalink to this headline">¶</a></h1>
+<p>libunwind software installation management.</p>
+<p>libunwind is used for symbol resolution during sampling, compiler-based
+instrumentation, and other measurement approaches.</p>
+<dl class="class">
+<dt id="taucmdr.cf.software.libunwind_installation.LibunwindInstallation">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.software.libunwind_installation.</code><code class="descname">LibunwindInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/libunwind_installation.html#LibunwindInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.libunwind_installation.LibunwindInstallation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation" title="taucmdr.cf.software.installation.AutotoolsInstallation"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.software.installation.AutotoolsInstallation</span></code></a></p>
+<p>Encapsulates a libunwind installation.</p>
+<dl class="method">
+<dt id="taucmdr.cf.software.libunwind_installation.LibunwindInstallation.configure">
+<code class="descname">configure</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/libunwind_installation.html#LibunwindInstallation.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.configure" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.libunwind_installation.LibunwindInstallation.make">
+<code class="descname">make</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em>, <em>parallel=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/libunwind_installation.html#LibunwindInstallation.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build libunwind.</p>
+<p>libunwind&#8217;s test programs often fail to build but the library itself
+compiles just fine, so we just keep pressing on to &#8216;make install&#8217;
+even if &#8216;make&#8217; appears to have died.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.libunwind_installation.LibunwindInstallation.make_install">
+<code class="descname">make_install</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em>, <em>parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/libunwind_installation.html#LibunwindInstallation.make_install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.make_install" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.software.installation.html">taucmdr.cf.software.installation module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.software.papi_installation.html">taucmdr.cf.software.papi_installation module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

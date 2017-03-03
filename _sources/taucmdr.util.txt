@@ -1,0 +1,7 @@
+taucmdr.util module
+===================
+
+.. automodule:: taucmdr.util
+    :members:
+    :undoc-members:
+    :show-inheritance:

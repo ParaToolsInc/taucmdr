@@ -1,0 +1,18 @@
+taucmdr.mvc.tests package
+=========================
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.mvc.tests.test_controller
+   taucmdr.mvc.tests.test_model
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.mvc.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

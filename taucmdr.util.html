@@ -1,0 +1,514 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.util module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr package" href="taucmdr.html" />
+    <link rel="prev" title="taucmdr.progress module" href="taucmdr.progress.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.util module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.progress.html">taucmdr.progress module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.util">
+<span id="taucmdr-util-module"></span><h1>taucmdr.util module<a class="headerlink" href="#module-taucmdr.util" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions.</p>
+<p>Handles system manipulation and status tasks, e.g. subprocess management or file creation.</p>
+<dl class="function">
+<dt id="taucmdr.util._zipimporter_iter_modules">
+<code class="descclassname">taucmdr.util.</code><code class="descname">_zipimporter_iter_modules</code><span class="sig-paren">(</span><em>archive</em>, <em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#_zipimporter_iter_modules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util._zipimporter_iter_modules" title="Permalink to this definition">¶</a></dt>
+<dd><p>The missing zipimporter.iter_modules method.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.archive_toplevel">
+<code class="descclassname">taucmdr.util.</code><code class="descname">archive_toplevel</code><span class="sig-paren">(</span><em>archive</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#archive_toplevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.archive_toplevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the top-level directory in an archive.</p>
+<dl class="docutils">
+<dt>Assumes that the archive file is rooted in a single top-level directory::</dt>
+<dd><dl class="first last docutils">
+<dt>foo</dt>
+<dd>/bar
+/baz</dd>
+</dl>
+</dd>
+</dl>
+<p>The top-level directory here is &#8220;foo&#8221;
+This routine will return stupid results for archives with multiple top-level elements.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to archive file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+<cite>archive</cite> could not be read.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Directory name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.calculate_uid">
+<code class="descclassname">taucmdr.util.</code><code class="descname">calculate_uid</code><span class="sig-paren">(</span><em>parts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#calculate_uid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.calculate_uid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new unique identifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>parts</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; <strong>Ordered</strong> list of strings to include in the UID calcuation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A string of hexidecimal digits uniquely calculated from <cite>parts</cite>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.camelcase">
+<code class="descclassname">taucmdr.util.</code><code class="descname">camelcase</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#camelcase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.camelcase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string to CamelCase.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; String to convert.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><cite>name</cite> in CamelCase.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.color_text">
+<code class="descclassname">taucmdr.util.</code><code class="descname">color_text</code><span class="sig-paren">(</span><em>text</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#color_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.color_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use <code class="xref any docutils literal"><span class="pre">termcolor.colored</span></code> to colorize text.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>text</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to colorize.</li>
+<li><strong>*args</strong> &#8211; Positional arguments to pass to <code class="xref any docutils literal"><span class="pre">termcolor.colored</span></code>.</li>
+<li><strong>**kwargs</strong> &#8211; Keyword arguments to pass to <code class="xref any docutils literal"><span class="pre">termcolor.colored</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The colorized text.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.create_archive">
+<code class="descclassname">taucmdr.util.</code><code class="descname">create_archive</code><span class="sig-paren">(</span><em>fmt</em>, <em>dest</em>, <em>items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#create_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.create_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new archive file in the specified format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fmt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Archive fmt, e.g. &#8216;zip&#8217; or &#8216;tgz&#8217;.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the archive file that will be created.</li>
+<li><strong>items</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Items (i.e. files or folders) to add to the archive.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.create_subprocess">
+<code class="descclassname">taucmdr.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em>, <em>show_progress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a subprocess.</p>
+<p>See <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.Popen" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.Popen</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
+<li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
+<li><strong>log</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to the debug log.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Subprocess return code.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.download">
+<code class="descclassname">taucmdr.util.</code><code class="descname">download</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em>, <em>timeout=8</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads or copies files.</p>
+<p><cite>src</cite> may be a file path or URL.  The destination folder will be created
+if it doesn&#8217;t exist.  Download is via curl, wget, or Python&#8217;s urllib as appropriate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path or URL to source file.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to file copy or download destination.</li>
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum time in seconds for the connection to the server.  0 for no timeout.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+File copy or download failed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.extract_archive">
+<code class="descclassname">taucmdr.util.</code><code class="descname">extract_archive</code><span class="sig-paren">(</span><em>archive</em>, <em>dest</em>, <em>show_progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#extract_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.extract_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts archive file to dest.</p>
+<p>Supports compressed and uncompressed tar archives. Destination folder will
+be created if it doesn&#8217;t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to archive file to extract.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Destination folder.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Full path to extracted files.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code> &#8211;
+Failed to extract archive.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.file_accessible">
+<code class="descclassname">taucmdr.util.</code><code class="descname">file_accessible</code><span class="sig-paren">(</span><em>filepath</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#file_accessible"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.file_accessible" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a file is accessable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filepath</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to file to check.</li>
+<li><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File access mode to test, e.g. &#8216;r&#8217; or &#8216;rw&#8217;</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True if the file exists and can be opened in the specified mode, False otherwise.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.get_command_output">
+<code class="descclassname">taucmdr.util.</code><code class="descname">get_command_output</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#get_command_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.get_command_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the possibly cached output of a command.</p>
+<p>Just <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.check_output" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.check_output</span></code></a> with a cache.
+Subprocess stderr is always sent to subprocess stdout.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command and its command line arguments.</li>
+<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Change directory to <cite>cwd</cite> if given, otherwise use <a class="reference external" href="https://docs.python.org/library/os.html#os.getcwd" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.getcwd</span></code></a>.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before launching cmd.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.CalledProcessError" title="(in Python v2.7)"><code class="xref py py-exc docutils literal"><span class="pre">subprocess.CalledProcessError</span></code></a> &#8211;
+return code was non-zero.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Subprocess output.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.hline">
+<code class="descclassname">taucmdr.util.</code><code class="descname">hline</code><span class="sig-paren">(</span><em>title</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#hline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.hline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a colorful horizontal rule for console output.</p>
+<p>Uses <a class="reference internal" href="taucmdr.logger.html#taucmdr.logger.LINE_WIDTH" title="taucmdr.logger.LINE_WIDTH"><code class="xref any py py-data docutils literal"><span class="pre">logger.LINE_WIDTH</span></code></a> to generate a string of &#8216;=&#8217; characters
+as wide as the terminal.  <cite>title</cite> is included in the string near the
+left of the horizontal line.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Text to put on the horizontal rule.</li>
+<li><strong>*args</strong> &#8211; Positional arguments to pass to <code class="xref any docutils literal"><span class="pre">termcolor.colored</span></code>.</li>
+<li><strong>**kwargs</strong> &#8211; Keyword arguments to pass to <code class="xref any docutils literal"><span class="pre">termcolor.colored</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The horizontal rule.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.human_size">
+<code class="descclassname">taucmdr.util.</code><code class="descname">human_size</code><span class="sig-paren">(</span><em>num</em>, <em>suffix='B'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#human_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.human_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a byte count to human readable units.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>num</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number to convert.</li>
+<li><strong>suffix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Unit suffix, e.g. &#8216;B&#8217; for bytes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><cite>num</cite> as a human readable string.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.is_url">
+<code class="descclassname">taucmdr.util.</code><code class="descname">is_url</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#is_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.is_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if <cite>url</cite> is a URL.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; String to check</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if <cite>url</cite> is a URL, False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.mkdirp">
+<code class="descclassname">taucmdr.util.</code><code class="descname">mkdirp</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#mkdirp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.mkdirp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a directory and all its parents.</p>
+<p>Works just like <code class="docutils literal"><span class="pre">mkdir</span> <span class="pre">-p</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Paths to create.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.mkdtemp">
+<code class="descclassname">taucmdr.util.</code><code class="descname">mkdtemp</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#mkdtemp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.mkdtemp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like tempfile.mkdtemp but directory will be recursively deleted when program exits.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.parse_bool">
+<code class="descclassname">taucmdr.util.</code><code class="descname">parse_bool</code><span class="sig-paren">(</span><em>value</em>, <em>additional_true=None</em>, <em>additional_false=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#parse_bool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.parse_bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a value to a boolean value.</p>
+<p>If <cite>value</cite> is a string try to interpret it as a bool:
+* [&#8216;1&#8217;, &#8216;t&#8217;, &#8216;y&#8217;, &#8216;true&#8217;, &#8216;yes&#8217;, &#8216;on&#8217;] ==&gt; True
+* [&#8216;0&#8217;, &#8216;f&#8217;, &#8216;n&#8217;, &#8216;false&#8217;, &#8216;no&#8217;, &#8216;off&#8217;] ==&gt; False
+Otherwise raise TypeError.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>value</strong> &#8211; value to parse to a boolean.</li>
+<li><strong>additional_true</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for True.</li>
+<li><strong>additional_false</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; optional additional string values that stand for False.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if  <cite>value</cite> is true, False if <cite>value</cite> is false.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211;
+<cite>value</cite> does not parse.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.rmtree">
+<code class="descclassname">taucmdr.util.</code><code class="descname">rmtree</code><span class="sig-paren">(</span><em>path</em>, <em>ignore_errors=False</em>, <em>onerror=None</em>, <em>attempts=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#rmtree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.rmtree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around shutil.rmtree to work around stale or slow NFS directories.</p>
+<p>Tries repeatedly to recursively remove <cite>path</cite> and sleeps between attempts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>path</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A directory but not a symbolic link to a directory.</li>
+<li><strong>ignore_errors</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True then errors resulting from failed removals will be ignored.
+If False or omitted, such errors are handled by calling a handler
+specified by <cite>onerror</cite> or, if that is omitted, they raise an exception.</li>
+<li><strong>onerror</strong> &#8211; Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.</li>
+<li><strong>attempts</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of times to repeat shutil.rmtree before giving up.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.uncolor_text">
+<code class="descclassname">taucmdr.util.</code><code class="descname">uncolor_text</code><span class="sig-paren">(</span><em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#uncolor_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.uncolor_text" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.walk_packages">
+<code class="descclassname">taucmdr.util.</code><code class="descname">walk_packages</code><span class="sig-paren">(</span><em>path</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#walk_packages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.walk_packages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fix <a class="reference external" href="https://docs.python.org/library/pkgutil.html#pkgutil.walk_packages" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">pkgutil.walk_packages</span></code></a> to work with Python zip files.</p>
+<p>Python&#8217;s default <code class="xref any docutils literal"><span class="pre">zipimporter</span></code> doesn&#8217;t provide an <cite>iter_modules</cite> method so
+<a class="reference external" href="https://docs.python.org/library/pkgutil.html#pkgutil.walk_packages" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">pkgutil.walk_packages</span></code></a> silently fails to list modules and packages when
+they are in a zip file.  This implementation works around this.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.which">
+<code class="descclassname">taucmdr.util.</code><code class="descname">which</code><span class="sig-paren">(</span><em>program</em>, <em>use_cached=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#which"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.which" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to a program command.</p>
+<p>Program must exist and be executable.
+Searches the system PATH and the current directory.
+Caches the result.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>program</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; program to find.</li>
+<li><strong>use_cached</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If False then don&#8217;t use cached results.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Full path to program or None if program can&#8217;t be found.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.progress.html">taucmdr.progress module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

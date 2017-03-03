@@ -1,7 +1,7 @@
-tau
-===
+taucmdr
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   tau
+   taucmdr

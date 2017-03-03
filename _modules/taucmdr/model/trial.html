@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.model.trial &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
+    <link rel="up" title="taucmdr.model" href="../model.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.model.trial</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for taucmdr.model.trial</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Trial data model.</span>
+
+<span class="sd">Every application of an :any:`Experiment` produces a new :any:`Trial`.  The trial</span>
+<span class="sd">record completely describes the hardware and software environment that produced</span>
+<span class="sd">the performance data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
+<span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">taucmdr.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;trial number&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Experiment</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;this trial&#39;s experiment&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;command line executed when performing the trial&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;directory the trial was performed in&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;shell environment the trial was performed in&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;begin_time&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;datetime&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;date and time the trial began&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;datetime&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;date and time the trial ended&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;return_code&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;return code of the command executed when performing the trial&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;data_size&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;the size in bytes of the trial data&quot;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--description&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;text&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;description of this trial&quot;</span>
+        <span class="p">},</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TrialError"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.TrialError">[docs]</a><span class="k">class</span> <span class="nc">TrialError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates there was an error while performing an experiment trial.&quot;&quot;&quot;</span>
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Please check the selected configuration for errors or&quot;</span>
+                   <span class="s2">&quot; send &#39;</span><span class="si">%(logfile)s</span><span class="s2">&#39; to  </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TrialController"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.TrialController">[docs]</a><span class="k">class</span> <span class="nc">TrialController</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Trial data controller.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_perform_bluegene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="s1">&#39;qsub&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;At the moment, TAU Commander requires qsub to launch on BlueGene&quot;</span><span class="p">)</span>
+        <span class="c1"># Move TAU environment parameters to the command line</span>
+        <span class="n">env_parts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                <span class="n">env_parts</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\:&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\=&quot;</span><span class="p">)</span>
+        <span class="n">env_str</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">env_parts</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()])</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;--env&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">env_str</span><span class="p">]</span> <span class="o">+</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Failed to add job to the queue.&quot;</span><span class="p">,</span>
+                             <span class="s2">&quot;Verify that the right input parameters were specified.&quot;</span><span class="p">,</span>
+                             <span class="s2">&quot;Check the program output for error messages.&quot;</span><span class="p">,</span>
+                             <span class="s2">&quot;Does the selected application configuration correctly describe this program?&quot;</span><span class="p">,</span>
+                             <span class="s2">&quot;Does the selected measurement configuration specifiy the right measurement methods?&quot;</span><span class="p">,</span>
+                             <span class="s2">&quot;Does the selected target configuration match the runtime environment?&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The job has been added to the queue.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span>
+
+    <span class="k">def</span> <span class="nf">_perform_interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">banner</span><span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+            <span class="n">headline</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">{:=&lt;{}}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;== </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> at </span><span class="si">%s</span><span class="s1"> ==&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">time</span><span class="p">),</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">headline</span><span class="p">)</span>
+
+        <span class="n">banner</span><span class="p">(</span><span class="s1">&#39;BEGIN&#39;</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;begin_time&#39;</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;end_time&#39;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">,</span> <span class="s1">&#39;return_code&#39;</span><span class="p">:</span> <span class="n">retval</span><span class="p">},</span> <span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
+            <span class="n">banner</span><span class="p">(</span><span class="s1">&#39;END&#39;</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">end_time</span><span class="p">)</span>
+
+        <span class="n">data_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;data_size&#39;</span><span class="p">:</span> <span class="n">data_size</span><span class="p">},</span> <span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Program exited with nonzero status code: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Program died without producing performance data.&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;Verify that the right input parameters were specified.&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;Check the program output for error messages.&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;Does the selected application configuration correctly describe this program?&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;Does the selected measurement configuration specifiy the right measurement methods?&quot;</span><span class="p">,</span>
+                                 <span class="s2">&quot;Does the selected target configuration match the runtime environment?&quot;</span><span class="p">)</span>
+
+        <span class="n">measurement</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">profile_files</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">profiles</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> produced </span><span class="si">%s</span><span class="s2"> profile files.&quot;</span><span class="p">,</span> <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">profiles</span><span class="p">))</span>
+            <span class="n">negative_profiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">prof</span> <span class="k">for</span> <span class="n">prof</span> <span class="ow">in</span> <span class="n">profiles</span> <span class="k">if</span> <span class="s1">&#39;profile.-1&#39;</span> <span class="ow">in</span> <span class="n">prof</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">negative_profiles</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> produced a profile with negative node number!&quot;</span>
+                               <span class="s2">&quot; This usually indicates that process-level parallelism was not initialized,&quot;</span>
+                               <span class="s2">&quot; (e.g. MPI_Init() was not called) or there was a problem in instrumentation.&quot;</span>
+                               <span class="s2">&quot; Check the compilation output and verify that MPI_Init (or similar) was called.&quot;</span><span class="p">,</span>
+                               <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">negative_profiles</span><span class="p">:</span>
+                    <span class="n">new_name</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.-1.&quot;</span><span class="p">,</span> <span class="s2">&quot;.0.&quot;</span><span class="p">)</span> 
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_name</span><span class="p">):</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Renaming </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;The profile numbers for trial </span><span class="si">%d</span><span class="s2"> are wrong.&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;Check that the application configuration is correct.&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;Check that the measurement configuration is correct.&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;Check for instrumentation failure in the compilation log.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Trial did not produce any profiles.&quot;</span><span class="p">)</span>
+        <span class="n">traces</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">trace_files</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">traces</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> produced </span><span class="si">%s</span><span class="s2"> trace files.&quot;</span><span class="p">,</span> <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">traces</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Application completed successfuly but did not produce any traces.&quot;</span><span class="p">)</span>            
+        <span class="k">return</span> <span class="n">retval</span>
+
+<div class="viewcode-block" id="TrialController.perform"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.TrialController.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Performs a trial of an experiment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            expr (Experiment): Experiment data.</span>
+<span class="sd">            cmd (str): Command to profile, with command line arguments.</span>
+<span class="sd">            cwd (str): Working directory to perform trial in.</span>
+<span class="sd">            env (dict): Environment variables to set before performing the trial.</span>
+<span class="sd">            description (str): Description of this trial.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trial_number</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">next_trial_number</span><span class="p">()</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;New trial number is </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">trial_number</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="n">trial_number</span><span class="p">,</span>
+                <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span>
+                <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">),</span>
+                <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">cwd</span><span class="p">,</span>
+                <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="s1">&#39;FIXME&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;begin_time&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())}</span>
+        <span class="k">if</span> <span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
+        <span class="n">trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># Tell TAU to send profiles and traces to the trial prefix</span>
+        <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PROFILEDIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
+        <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TRACEDIR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
+        <span class="n">measurement</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span> <span class="ow">or</span> <span class="n">measurement</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cubex&#39;</span><span class="p">:</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_EXPERIMENT_DIRECTORY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
+        
+        <span class="n">targ</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">targ</span><span class="o">.</span><span class="n">architecture</span><span class="p">()</span><span class="o">.</span><span class="n">is_bluegene</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_bluegene</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perform_interactive</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Trial"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial">[docs]</a><span class="k">class</span> <span class="nc">Trial</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Trial data model.&quot;&quot;&quot;</span>
+
+    <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
+
+    <span class="n">__controller__</span> <span class="o">=</span> <span class="n">TrialController</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]))</span>
+
+<div class="viewcode-block" id="Trial.on_create"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;Cannot create directory </span><span class="si">%r</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
+                                     <span class="s1">&#39;Check that you have `write` access&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Trial.on_delete"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.on_delete">[docs]</a>    <span class="k">def</span> <span class="nf">on_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Could not remove trial data at &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Trial.profile_files"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.profile_files">[docs]</a>    <span class="k">def</span> <span class="nf">profile_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get this trial&#39;s profile files.</span>
+
+<span class="sd">        Returns paths to profile files (profile.X.Y.Z).  If the trial produced </span>
+<span class="sd">        MULTI__ directories then paths to every profile below every MULTI__ </span>
+<span class="sd">        directory are returned. If the trial produced a merged file retun the</span>
+<span class="sd">        *.xml file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Paths to profile files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_profiles</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">path</span><span class="p">:</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;profile.*.*.*&#39;</span><span class="p">))</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">multi_dir</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;MULTI__*&#39;</span><span class="p">)):</span>
+            <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">list_profiles</span><span class="p">(</span><span class="n">multi_dir</span><span class="p">))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">list_profiles</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tauprofile.xml&#39;</span><span class="p">)))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.cubex&#39;</span><span class="p">)))</span>
+        <span class="n">profiles</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.cfg&#39;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">profiles</span></div>
+
+<div class="viewcode-block" id="Trial.trace_files"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.trace_files">[docs]</a>    <span class="k">def</span> <span class="nf">trace_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">post_process</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get this trial&#39;s trace files.</span>
+
+<span class="sd">        Returns paths to trace files: *.[trc,edf,slog2,def,evt,otf2].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Paths to trace files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.trc&#39;</span><span class="p">))</span>
+        <span class="n">edf_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.edf&#39;</span><span class="p">))</span>
+        <span class="n">def_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;traces/*.def&#39;</span><span class="p">))</span>
+        <span class="n">evt_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;traces/*.evt&#39;</span><span class="p">))</span>
+        <span class="n">slog2_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.slog2&#39;</span><span class="p">))</span>
+        <span class="n">otf2_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;traces.otf2&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">post_process</span> <span class="ow">and</span> <span class="n">trc_files</span> <span class="ow">and</span> <span class="n">edf_files</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">slog2_file</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.trc&#39;</span><span class="p">)):</span>
+                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau_treemerge.pl&#39;</span><span class="p">]</span>
+                <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Nonzero return code from tau_treemerge.pl&quot;</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau2slog2&#39;</span><span class="p">,</span> <span class="s1">&#39;tau.trc&#39;</span><span class="p">,</span> <span class="s1">&#39;tau.edf&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;tau.slog2&#39;</span><span class="p">]</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">slog2_file</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.slog2&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">post_process</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">def_files</span> <span class="o">+</span> <span class="n">evt_files</span> <span class="o">+</span> <span class="n">slog2_file</span> <span class="o">+</span> <span class="n">otf2_files</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trc_files</span> <span class="o">+</span> <span class="n">edf_files</span> <span class="o">+</span> <span class="n">def_files</span> <span class="o">+</span> <span class="n">evt_files</span> <span class="o">+</span> <span class="n">otf2_files</span></div>
+
+<div class="viewcode-block" id="Trial.execute_command"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.execute_command">[docs]</a>    <span class="k">def</span> <span class="nf">execute_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute a command as part of an experiment trial.</span>
+
+<span class="sd">        Creates a new subprocess for the command and checks for TAU data files</span>
+<span class="sd">        when the subprocess exits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            expr (Experiment): Experiment data.</span>
+<span class="sd">            cmd (str): Command to profile, with command line arguments.</span>
+<span class="sd">            cwd (str): Working directory to perform trial in.</span>
+<span class="sd">            env (dict): Environment variables to set before performing the trial.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Subprocess return code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">tau_env_opts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;TAU_&#39;</span><span class="p">))</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_env_opts</span><span class="p">))</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd_str</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
+            <span class="n">errno_hint</span> <span class="o">=</span> <span class="p">{</span><span class="n">errno</span><span class="o">.</span><span class="n">EPERM</span><span class="p">:</span> <span class="s2">&quot;Check filesystem permissions&quot;</span><span class="p">,</span>
+                          <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span> <span class="s2">&quot;Check paths and command line arguments&quot;</span><span class="p">,</span>
+                          <span class="n">errno</span><span class="o">.</span><span class="n">ENOEXEC</span><span class="p">:</span> <span class="s2">&quot;Check that this host supports &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">target</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]}</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t execute </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd_str</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> <span class="n">errno_hint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">retval</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Return code </span><span class="si">%d</span><span class="s2"> from &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="p">,</span> <span class="n">cmd_str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span></div></div>
+
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

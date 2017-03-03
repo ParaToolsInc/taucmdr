@@ -1,0 +1,7 @@
+taucmdr.cf.storage.project module
+=================================
+
+.. automodule:: taucmdr.cf.storage.project
+    :members:
+    :undoc-members:
+    :show-inheritance:

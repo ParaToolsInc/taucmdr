@@ -1,0 +1,28 @@
+taucmdr.cli.commands.project package
+====================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cli.commands.project.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.commands.project.create
+   taucmdr.cli.commands.project.delete
+   taucmdr.cli.commands.project.edit
+   taucmdr.cli.commands.project.list
+   taucmdr.cli.commands.project.select
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli.commands.project
+    :members:
+    :undoc-members:
+    :show-inheritance:

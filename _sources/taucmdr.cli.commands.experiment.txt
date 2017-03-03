@@ -1,0 +1,28 @@
+taucmdr.cli.commands.experiment package
+=======================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    taucmdr.cli.commands.experiment.tests
+
+Submodules
+----------
+
+.. toctree::
+
+   taucmdr.cli.commands.experiment.create
+   taucmdr.cli.commands.experiment.delete
+   taucmdr.cli.commands.experiment.edit
+   taucmdr.cli.commands.experiment.list
+   taucmdr.cli.commands.experiment.select
+
+Module contents
+---------------
+
+.. automodule:: taucmdr.cli.commands.experiment
+    :members:
+    :undoc-members:
+    :show-inheritance:

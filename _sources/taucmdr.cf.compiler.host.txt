@@ -1,0 +1,7 @@
+taucmdr.cf.compiler.host module
+===============================
+
+.. automodule:: taucmdr.cf.compiler.host
+    :members:
+    :undoc-members:
+    :show-inheritance:

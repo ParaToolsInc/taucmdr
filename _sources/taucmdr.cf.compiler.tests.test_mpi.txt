@@ -1,0 +1,7 @@
+taucmdr.cf.compiler.tests.test_mpi module
+=========================================
+
+.. automodule:: taucmdr.cf.compiler.tests.test_mpi
+    :members:
+    :undoc-members:
+    :show-inheritance:

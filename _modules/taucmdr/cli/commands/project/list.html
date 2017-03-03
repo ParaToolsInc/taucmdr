@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cli.commands.project.list &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '1.0a
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../../../../index.html" />
+    <link rel="up" title="taucmdr.cli" href="../../../cli.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cli.commands.project.list</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for taucmdr.cli.commands.project.list</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;``measurement list`` subcommand.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.cli_view</span> <span class="kn">import</span> <span class="n">ListCommand</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.target.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_list_cmd</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.application.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">application_list_cmd</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.measurement.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">measurement_list_cmd</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_list_cmd</span>
+<span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
+
+
+<div class="viewcode-block" id="ProjectListCommand"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.project.list.html#taucmdr.cli.commands.project.list.ProjectListCommand">[docs]</a><span class="k">class</span> <span class="nc">ProjectListCommand</span><span class="p">(</span><span class="n">ListCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for the `list` subcommand of command line views.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">_name_list</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+            <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="n">attr</span><span class="p">]])</span>
+        <span class="n">dashboard_columns</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;align&#39;</span><span class="p">:</span> <span class="s1">&#39;r&#39;</span><span class="p">},</span>
+                             <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Targets&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="n">_name_list</span><span class="p">(</span><span class="s1">&#39;targets&#39;</span><span class="p">)},</span>
+                             <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Applications&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="n">_name_list</span><span class="p">(</span><span class="s1">&#39;applications&#39;</span><span class="p">)},</span>
+                             <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Measurements&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="n">_name_list</span><span class="p">(</span><span class="s1">&#39;measurements&#39;</span><span class="p">)},</span>
+                             <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;# Experiments&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;experiments&#39;</span><span class="p">])}]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectListCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">Project</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">dashboard_columns</span><span class="o">=</span><span class="n">dashboard_columns</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProjectListCommand.main"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.project.list.html#taucmdr.cli.commands.project.list.ProjectListCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Command program entry point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argv (list): Command line arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+        <span class="n">style_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">style</span><span class="p">]</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;style&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">parse_storage_flag</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">single</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+            <span class="n">proj_name</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title_fmt</span> <span class="o">=</span> <span class="s2">&quot;Project Configuration (</span><span class="si">%(storage_path)s</span><span class="s2">)&quot;</span>
+            <span class="n">target_list_cmd</span><span class="o">.</span><span class="n">title_fmt</span> <span class="o">=</span> <span class="s2">&quot;Targets in project &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">proj_name</span>
+            <span class="n">application_list_cmd</span><span class="o">.</span><span class="n">title_fmt</span> <span class="o">=</span> <span class="s2">&quot;Applications in project &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">proj_name</span>
+            <span class="n">measurement_list_cmd</span><span class="o">.</span><span class="n">title_fmt</span> <span class="o">=</span> <span class="s2">&quot;Measurements in project &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">proj_name</span>
+            <span class="n">experiment_list_cmd</span><span class="o">.</span><span class="n">title_fmt</span> <span class="o">=</span> <span class="s2">&quot;Experiments in project &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">proj_name</span>
+
+        <span class="n">retval</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ProjectListCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">single</span><span class="p">:</span>
+            <span class="n">storage</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">storage</span><span class="p">)</span>
+            <span class="n">proj</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+            <span class="k">for</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="p">((</span><span class="n">target_list_cmd</span><span class="p">,</span> <span class="s1">&#39;targets&#39;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="n">application_list_cmd</span><span class="p">,</span> <span class="s1">&#39;applications&#39;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="n">measurement_list_cmd</span><span class="p">,</span> <span class="s1">&#39;measurements&#39;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="n">experiment_list_cmd</span><span class="p">,</span> <span class="s1">&#39;experiments&#39;</span><span class="p">)):</span>
+                <span class="n">primary_key</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">prop</span><span class="p">][</span><span class="s1">&#39;collection&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">key_attribute</span>
+                <span class="n">records</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">records</span><span class="p">:</span>
+                    <span class="n">cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">record</span><span class="p">[</span><span class="n">primary_key</span><span class="p">]</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">]</span> <span class="o">+</span> <span class="n">style_args</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: No </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">prop</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;bold&#39;</span><span class="p">])</span>
+                    <span class="k">print</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.  Use `</span><span class="si">%s</span><span class="s2">` to view available </span><span class="si">%s</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">prop</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">proj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;force_tau_options&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Project &#39;</span><span class="si">%s</span><span class="s2">&#39; will add &#39;</span><span class="si">%s</span><span class="s2">&#39; to TAU_OPTIONS without error checking.&quot;</span><span class="p">,</span> 
+                                    <span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">proj</span><span class="p">[</span><span class="s1">&#39;force_tau_options&#39;</span><span class="p">]))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">ExperimentSelectionError</span><span class="p">:</span>
+                <span class="k">print</span> <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;No selected experiment: &#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">)</span> <span class="o">+</span> 
+                       <span class="s1">&#39;Use `</span><span class="si">%s</span><span class="s1">` to create or select an experiment.&#39;</span> <span class="o">%</span> <span class="n">select_cmd</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s2">&quot;Selected Experiment: &quot;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">retval</span></div></div>
+
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ProjectListCommand</span><span class="p">()</span>
+
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>
