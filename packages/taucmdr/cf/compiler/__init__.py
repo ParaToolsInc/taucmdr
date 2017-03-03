@@ -631,8 +631,10 @@ class InstalledCompiler(object):
             try:
                 self._version_string = util.get_command_output(cmd)
             except CalledProcessError:
-                raise ConfigurationError("Invalid version flags %s for compiler '%s'" % 
-                                         (self.info.family.version_flags, self.absolute_path))
+                raise ConfigurationError("Compiler command '%s' failed." % ' '.join(cmd),
+                                         "Check that this command works outside of TAU.",
+                                         "Check loaded modules and environment variables.",
+                                         "Verify that the compiler's license is valid.")
             except OSError:
                 raise ConfigurationError("Compiler '%s' no longer exists or is not executable" % 
                                          self.absolute_path)

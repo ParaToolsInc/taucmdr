@@ -33,10 +33,10 @@ See http://en.wikipedia.org/wiki/Model-view-controller
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
-from taucmdr.error import UniqueAttributeError, InternalError, ModelError
+from taucmdr.error import UniqueAttributeError, InternalError, ModelError, ProjectSelectionError
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE
-from taucmdr.model.project import Project, ProjectSelectionError
+from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 

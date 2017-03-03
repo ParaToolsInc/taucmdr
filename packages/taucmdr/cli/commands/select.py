@@ -28,7 +28,7 @@
 """``select`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
-from taucmdr.error import ConfigurationError
+from taucmdr.error import ConfigurationError, ExperimentSelectionError
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -167,7 +167,7 @@ class SelectCommand(AbstractCommand):
             name = getattr(args, 'name', "%s-%s-%s" % (targ['name'], app['name'], meas['name']))
         try:
             Experiment.select(name)
-        except ConfigurationError:
+        except ExperimentSelectionError as err:
             args = [name,
                     '--target', targ['name'],
                     '--application', app['name'],

@@ -33,7 +33,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
-from taucmdr.error import ConfigurationError, IncompatibleRecordError
+from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 
 
@@ -352,7 +352,7 @@ class Measurement(Model):
 
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
-        from taucmdr.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+        from taucmdr.model.project import Project
         try:
             selected = Project.controller().selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):

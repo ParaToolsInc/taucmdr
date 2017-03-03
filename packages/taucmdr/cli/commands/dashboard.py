@@ -28,10 +28,11 @@
 """``dashboard`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
+from taucmdr.error import ProjectSelectionError
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
-from taucmdr.model.project import Project, ProjectSelectionError
+from taucmdr.model.project import Project
 
 
 class DashboardCommand(AbstractCommand):

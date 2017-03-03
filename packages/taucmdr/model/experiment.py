@@ -35,7 +35,7 @@ The selected experiment will be used for application compilation and trial visua
 import os
 import fasteners
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
+from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
@@ -104,7 +104,7 @@ class Experiment(Model):
         """Changes the selected experiment in the current project.
         
         Raises:
-            ConfigurationError: No experiment with the given name in the currently selected project.
+            ExperimentSelectionError: No experiment with the given name in the currently selected project.
 
         Args:
             name (str): Name of the experiment to select.
@@ -115,7 +115,7 @@ class Experiment(Model):
         data = {"name": name, "project": proj.eid}
         matching = expr_ctrl.search(data)
         if not matching:
-            raise ConfigurationError("There is no experiment named '%s' in project '%s'." % (name, proj['name']))
+            raise ExperimentSelectionError("There is no experiment named '%s' in project '%s'." % (name, proj['name']))
         elif len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:

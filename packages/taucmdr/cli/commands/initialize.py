@@ -31,8 +31,8 @@ import os
 import platform
 from taucmdr import util
 from taucmdr import EXIT_SUCCESS, EXIT_WARNING
-from taucmdr.error import InternalError, ConfigurationError
-from taucmdr.model.project import Project, ProjectSelectionError
+from taucmdr.error import InternalError, ConfigurationError, ProjectSelectionError
+from taucmdr.model.project import Project
 from taucmdr.model.target import Target
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand

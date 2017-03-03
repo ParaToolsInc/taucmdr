@@ -38,7 +38,8 @@ compilers are installed then there will target configurations for each compiler 
 import os
 import glob
 from taucmdr import logger, util
-from taucmdr.error import InternalError, ConfigurationError, IncompatibleRecordError
+from taucmdr.error import InternalError, ConfigurationError, IncompatibleRecordError 
+from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
@@ -417,7 +418,7 @@ class Target(Model):
 
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
-        from taucmdr.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+        from taucmdr.model.project import Project
         try:
             selected = Project.controller().selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):

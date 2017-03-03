@@ -28,6 +28,7 @@
 """``measurement list`` subcommand."""
 
 from taucmdr import util
+from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.cli.commands.select import COMMAND as select_cmd
@@ -35,7 +36,7 @@ from taucmdr.cli.commands.target.list import COMMAND as target_list_cmd
 from taucmdr.cli.commands.application.list import COMMAND as application_list_cmd
 from taucmdr.cli.commands.measurement.list import COMMAND as measurement_list_cmd
 from taucmdr.cli.commands.experiment.list import COMMAND as experiment_list_cmd
-from taucmdr.model.project import Project, ExperimentSelectionError
+from taucmdr.model.project import Project
 
 
 class ProjectListCommand(ListCommand):

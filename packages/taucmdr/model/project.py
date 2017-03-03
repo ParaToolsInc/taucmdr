@@ -91,33 +91,6 @@ def attributes():
     }
 
 
-class ProjectSelectionError(ConfigurationError):
-    
-    def __init__(self, value, *hints):
-        from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
-        from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
-        from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
-        if not hints:
-            hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
-                     "Use `%s <project_name>` to select a project configuration." % project_select_cmd,
-                     "Use `%s` to see available project configurations." % project_list_cmd)    
-        super(ProjectSelectionError, self).__init__(value, *hints)
-
-
-class ExperimentSelectionError(ConfigurationError):
-    
-    def __init__(self, value, *hints):
-        from taucmdr.cli.commands.select import COMMAND as select_cmd
-        from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
-        from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
-        from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
-        if not hints:
-            hints = ("Use `%s` or `%s` to create a new experiment." % (select_cmd, experiment_create_cmd),
-                     "Use `%s` to see current project configuration." % dashboard_cmd,
-                     "Use `%s` to see available project configurations." % project_list_cmd)    
-        super(ExperimentSelectionError, self).__init__(value, *hints)
-
-
 class ProjectController(Controller):
     """Project data controller."""
     
@@ -190,7 +163,9 @@ class Project(Model):
                                 if props.get('model') == Compiler:
                                     new_comp = Compiler.controller(self.storage).one(new_value)
                                     old_comp = Compiler.controller(self.storage).one(old_value)
-                                    message = {attr: (old_comp['path'], new_comp['path'])}
+                                    new_path = new_comp['path'] if new_comp else None
+                                    old_path = old_comp['path'] if old_comp else None
+                                    message = {attr: (old_path, new_path)}
                                 else:
                                     message = {attr: (old_value, new_value)}
                                 self.controller(self.storage).push_to_topic('rebuild_required', message)

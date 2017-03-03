@@ -36,7 +36,7 @@ specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
 import os
-from taucmdr.error import IncompatibleRecordError, ConfigurationError
+from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
@@ -182,7 +182,7 @@ class Application(Model):
 
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
-        from taucmdr.model.project import Project, ProjectSelectionError, ExperimentSelectionError
+        from taucmdr.model.project import Project
         try:
             selected = Project.controller().selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):

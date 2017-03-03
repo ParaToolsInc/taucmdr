@@ -56,9 +56,9 @@ class Error(Exception):
                    "\n"
                    "%(value)s\n"
                    "\n"
-                   "%(backtrace)s"
+                   "%(backtrace)s\n"
                    "This is a bug in TAU Commander.\n"
-                   "Please use --log to enable debug logging and send '%(logfile)s' to %(contact)s for assistance.")
+                   "Please send '%(logfile)s' to %(contact)s for assistance.")
     
     def __init__(self, value, *hints):
         """Initialize the Error instance.
@@ -159,6 +159,37 @@ class ImmutableRecordError(ConfigurationError):
 
 class IncompatibleRecordError(ConfigurationError):
     """Indicates that a pair of data records are incompatible.""" 
+
+
+class ProjectSelectionError(ConfigurationError):
+    """Indicates an error while selecting a project."""
+    
+    def __init__(self, value, *hints):
+        from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
+        from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
+        from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
+        if not hints:
+            hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
+                     "Use `%s <project_name>` to select a project configuration." % project_select_cmd,
+                     "Use `%s` to see available project configurations." % project_list_cmd)    
+        super(ProjectSelectionError, self).__init__(value, *hints)
+
+
+class ExperimentSelectionError(ConfigurationError):
+    """Indicates an error while selecting an experiment."""
+    
+    def __init__(self, value, *hints):
+        from taucmdr.cli.commands.select import COMMAND as select_cmd
+        from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+        from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
+        from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
+        if not hints:
+            hints = ("Use `%s` or `%s` to create a new experiment." % (select_cmd, experiment_create_cmd),
+                     "Use `%s` to see current project configuration." % dashboard_cmd,
+                     "Use `%s` to see available project configurations." % project_list_cmd)    
+        super(ExperimentSelectionError, self).__init__(value, *hints)
+
+
 
 
 def excepthook(etype, value, tb):
