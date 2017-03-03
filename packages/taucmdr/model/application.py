@@ -65,21 +65,21 @@ def attributes():
             'description': 'application uses OpenMP',
             'default': False,
             'argparse': {'flags': ('--openmp',)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'pthreads': {
             'type': 'boolean',
             'description': 'application uses pthreads',
             'default': False,
             'argparse': {'flags': ('--pthreads',)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'tbb': {
             'type': 'boolean',
             'description': 'application uses Thread Building Blocks (TBB)',
             'default': False,
             'argparse': {'flags': ('--tbb',)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'mpi': {
             'type': 'boolean',
@@ -87,7 +87,7 @@ def attributes():
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
             'compat': {True: Measurement.require('mpi', True)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'cuda': {
             'type': 'boolean',
@@ -95,7 +95,7 @@ def attributes():
             'description': 'application uses NVIDIA CUDA',
             'argparse': {'flags': ('--cuda',)},
             'compat': {True: Target.require('cuda')},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'opencl': {
             'type': 'boolean',
@@ -104,21 +104,21 @@ def attributes():
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
                               Measurement.encourage('opencl', True))},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'shmem': {
             'type': 'boolean',
             'default': False,
             'description': 'application uses SHMEM',
             'argparse': {'flags': ('--shmem',)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'mpc': {
             'type': 'boolean',
             'default': False,
             'description': 'application uses MPC',
             'argparse': {'flags': ('--mpc',)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'select_file': {
             'type': 'string',
@@ -126,7 +126,7 @@ def attributes():
             'argparse': {'flags': ('--select-file',),
                          'metavar': 'path'},
             'compat': {True: Measurement.exclude('source_inst', 'never')},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
         'linkage': {
             'type': 'string',
@@ -136,7 +136,7 @@ def attributes():
                          'metavar': '<linkage>',
                          'choices': ('static', 'dynamic')},
             'compat': {'static': Target.exclude('host_os', DARWIN)},
-            'on_change': Application.attribute_changed
+            'rebuild_required': True
         },
     }
 
@@ -145,12 +145,6 @@ class Application(Model):
     """Application data model."""
 
     __attributes__ = attributes
-
-    @classmethod
-    def attribute_changed(cls, model, attr, new_value):
-        if model.is_selected():
-            old_value = model.get(attr, None)
-            cls.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
 
     def _check_select_file(self):
         try:
@@ -164,7 +158,7 @@ class Application(Model):
     def on_create(self):
         self._check_select_file()
 
-    def on_update(self):
+    def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
         expr_ctrl = Experiment.controller(self.storage)
@@ -181,6 +175,10 @@ class Application(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         self._check_select_file()
+        if self.is_selected():
+            for attr, change in changes.iteritems():
+                if self.attributes[attr].get('rebuild_required'):
+                    self.controller(self.storage).push_to_topic('rebuild_required', {attr: change})
 
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""

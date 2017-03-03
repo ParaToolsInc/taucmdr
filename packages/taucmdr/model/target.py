@@ -124,7 +124,7 @@ def attributes():
                          'group': 'host',
                          'metavar': '<os>',
                          'choices': OperatingSystem.keys()},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'host_arch': {
             'type': 'string',
@@ -143,7 +143,7 @@ def attributes():
                         Target.require(MPI_CC.keyword, knc_intel_mpi_only),
                         Target.require(MPI_CXX.keyword, knc_intel_mpi_only),
                         Target.require(MPI_FC.keyword, knc_intel_mpi_only))},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         CC.keyword: {
             'model': Compiler,
@@ -152,7 +152,7 @@ def attributes():
             'argparse': {'flags': ('--cc',),
                          'group': 'host',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         CXX.keyword: {
             'model': Compiler,
@@ -161,7 +161,7 @@ def attributes():
             'argparse': {'flags': ('--cxx',),
                          'group': 'host',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         FC.keyword: {
             'model': Compiler,
@@ -170,7 +170,7 @@ def attributes():
             'argparse': {'flags': ('--fc',),
                          'group': 'host',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         UPC.keyword: {
             'model': Compiler,
@@ -179,7 +179,7 @@ def attributes():
             'argparse': {'flags': ('--upc',),
                          'group': 'Universal Parallel C',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         MPI_CC.keyword: {
             'model': Compiler,
@@ -188,7 +188,7 @@ def attributes():
             'argparse': {'flags': ('--mpi-cc',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         MPI_CXX.keyword: {
             'model': Compiler,
@@ -197,7 +197,7 @@ def attributes():
             'argparse': {'flags': ('--mpi-cxx',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         MPI_FC.keyword: {
             'model': Compiler,
@@ -206,7 +206,7 @@ def attributes():
             'argparse': {'flags': ('--mpi-fc',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'mpi_include_path': {
             'type': 'array',
@@ -217,7 +217,7 @@ def attributes():
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'mpi_library_path': {
             'type': 'array',
@@ -228,7 +228,7 @@ def attributes():
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'mpi_libraries': {
             'type': 'array',
@@ -239,7 +239,7 @@ def attributes():
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         SHMEM_CC.keyword: {
             'model': Compiler,
@@ -248,7 +248,7 @@ def attributes():
             'argparse': {'flags': ('--shmem-cc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         SHMEM_CXX.keyword: {
             'model': Compiler,
@@ -257,7 +257,7 @@ def attributes():
             'argparse': {'flags': ('--shmem-cxx',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         SHMEM_FC.keyword: {
             'model': Compiler,
@@ -266,7 +266,7 @@ def attributes():
             'argparse': {'flags': ('--shmem-fc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'shmem_include_path': {
             'type': 'array',
@@ -274,7 +274,7 @@ def attributes():
             'argparse': {'flags': ('--shmem-include-path',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<path>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'shmem_library_path': {
             'type': 'array',
@@ -282,7 +282,7 @@ def attributes():
             'argparse': {'flags': ('--shmem-library-path',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<path>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'shmem_libraries': {
             'type': 'array',
@@ -290,7 +290,7 @@ def attributes():
             'argparse': {'flags': ('--shmem-libraries',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<flag>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'cuda': {
             'type': 'string',
@@ -299,7 +299,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'tau_source': {
             'type': 'string',
@@ -310,7 +310,7 @@ def attributes():
                          'metavar': '(<path>|<url>|download|nightly)',
                          'action': ParsePackagePathAction},
             'compat': {True: Target.require('tau_source')},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'pdt_source': {
             'type': 'string',
@@ -320,7 +320,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'binutils_source': {
             'type': 'string',
@@ -331,7 +331,7 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'libunwind_source': {
             'type': 'string',
@@ -341,7 +341,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'papi_source': {
             'type': 'string',
@@ -352,7 +352,7 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'scorep_source': {
             'type': 'string',
@@ -366,14 +366,14 @@ def attributes():
                                                    Target.require(CC.keyword),
                                                    Target.require(CXX.keyword),
                                                    Target.require(FC.keyword))},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
             'argparse': {'flags': ('--from-tau-makefile',),
                          'metavar': '<path>'},
-            'on_change': Target.attribute_changed
+            'rebuild_required': True
         }
     }
 
@@ -387,13 +387,7 @@ class Target(Model):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
         
-    @classmethod
-    def attribute_changed(cls, model, attr, new_value):
-        if model.is_selected():
-            old_value = model.get(attr, None)
-            Target.controller(model.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
-    
-    def on_update(self):
+    def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
         expr_ctrl = Experiment.controller()
@@ -409,7 +403,18 @@ class Target(Model):
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-    
+        if self.is_selected():
+            for attr, change in changes.iteritems():
+                props = self.attributes[attr] 
+                if props.get('rebuild_required'):
+                    if props.get('model', None) == Compiler:
+                        old_comp = Compiler.controller(self.storage).one(change[0])
+                        new_comp = Compiler.controller(self.storage).one(change[1])
+                        message = {attr: (old_comp['path'], new_comp['path'])}
+                    else:
+                        message = {attr: change}
+                    self.controller(self.storage).push_to_topic('rebuild_required', message)
+
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
         from taucmdr.model.project import Project, ProjectSelectionError, ExperimentSelectionError

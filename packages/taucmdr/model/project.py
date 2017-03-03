@@ -79,7 +79,6 @@ def attributes():
         'experiment': {
             'model': Experiment,
             'description': 'the current experiment',
-            'on_change': Project.on_experiment_change
         },
         'force_tau_options': {
             'type': 'array',
@@ -168,34 +167,33 @@ class Project(Model):
 
     __controller__ = ProjectController
     
-    @classmethod
-    def _check_rebuild_required(cls, model_attr, old, new):
+    def on_update(self, changes):
         from taucmdr.model.experiment import Experiment
-        model_cls = Experiment.attributes[model_attr]['model']
-        model_new = new.populate(model_attr)
-        model_old = old.populate(model_attr)
-        changed = {}
-        for attr, props in model_cls.attributes.iteritems():
-            if 'on_change' in props:
-                old_value = model_old.get(attr, None)
-                new_value = model_new.get(attr, None)
-                if old_value != new_value:
-                    changed[attr] = (old_value, new_value)
-        return changed
-    
-    @classmethod
-    def on_experiment_change(cls, model, attr, new_value):
-        from taucmdr.model.experiment import Experiment
-        old_value = model.get(attr, None)
+        from taucmdr.model.compiler import Compiler
+        try:
+            old_value, new_value = changes['experiment']
+        except KeyError:
+            # We only care about changes to experiment
+            return
         if old_value and new_value:
-            new = Experiment.controller().one(new_value)
-            old = Experiment.controller().one(old_value)
-            rebuild_required = {}
+            new_expr = Experiment.controller().one(new_value)
+            old_expr = Experiment.controller().one(old_value)
             for model_attr in 'target', 'application', 'measurement':
-                if old[model_attr] != new[model_attr]:
-                    rebuild_required.update(cls._check_rebuild_required(model_attr, old, new))
-            if rebuild_required:
-                cls.controller(model.storage).push_to_topic('rebuild_required', rebuild_required)
+                if old_expr[model_attr] != new_expr[model_attr]:
+                    new_model = new_expr.populate(model_attr)
+                    old_model = old_expr.populate(model_attr)
+                    for attr, props in new_model.attributes.iteritems():
+                        if props.get('rebuild_required'):
+                            new_value = new_model.get(attr, None)
+                            old_value = old_model.get(attr, None)
+                            if old_value != new_value:
+                                if props.get('model') == Compiler:
+                                    new_comp = Compiler.controller(self.storage).one(new_value)
+                                    old_comp = Compiler.controller(self.storage).one(old_value)
+                                    message = {attr: (old_comp['path'], new_comp['path'])}
+                                else:
+                                    message = {attr: (old_value, new_value)}
+                                self.controller(self.storage).push_to_topic('rebuild_required', message)
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):

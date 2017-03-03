@@ -226,17 +226,12 @@ class Controller(object):
                 raise ModelError(self.model, "no attribute named '%s'" % attr)
         with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
-            changing = self.search(keys)
+            old_records = self.search(keys)
             database.update(data, keys, table_name=self.model.name)
-            for model in changing:
-                for attr, new_value in data.iteritems():
-                    try:
-                        on_change = self.model.attributes[attr]['on_change']
-                    except KeyError:
-                        pass
-                    else:
-                        if not (attr in model and model[attr] == new_value):
-                            on_change(model, attr, new_value)
+            changes = {}
+            for model in old_records:
+                changes[model.eid] = {attr: (model.get(attr), new_value) for attr, new_value in data.iteritems()
+                                      if not (attr in model and model.get(attr) == new_value)}
                 for attr, foreign in self.model.associations.iteritems():
                     try:
                         # 'collection' attribute is iterable
@@ -261,10 +256,10 @@ class Controller(object):
                         self._associate(model, foreign_cls, added, via)
                     if deled:
                         self._disassociate(model, foreign_cls, deled, via)
-            changed = self.search(keys)
-            for model in changed:
+            updated_records = self.search(keys)
+            for model in updated_records:
                 model.check_compatibility(model)
-                model.on_update()
+                model.on_update(changes[model.eid])
 
     def unset(self, fields, keys):
         """Unset recorded data fields and update associations.
@@ -287,27 +282,21 @@ class Controller(object):
                 raise ModelError(self.model, "no attribute named '%s'" % attr)
         with self.storage as database:
             # Get the list of affected records **before** updating the data so foreign keys are correct
-            changing = self.search(keys)
+            old_records = self.search(keys)
             database.unset(fields, keys, table_name=self.model.name)
-            for model in changing:
-                for attr in fields:
-                    try:
-                        on_change = self.model.attributes[attr]['on_change']
-                    except KeyError:
-                        pass
-                    else:
-                        if attr in model.keys():
-                            on_change(model, attr, None)
+            changes = {}
+            for model in old_records:
+                changes[model.eid] = {attr: (model.get(attr), None) for attr in fields if attr in model}
                 for attr, foreign in self.model.associations.iteritems():
                     if attr in fields:
                         foreign_cls, via = foreign
                         old_foreign_keys = model.get(attr, None)
                         if old_foreign_keys:
                             self._disassociate(model, foreign_cls, old_foreign_keys, via)
-            changed = self.search(keys)
-            for model in changed:
+            unset_records = self.search(keys)
+            for model in unset_records:
                 model.check_compatibility(model)
-                model.on_update()
+                model.on_update(changes[model.eid])
 
     def delete(self, keys):
         """Delete recorded data and update associations.

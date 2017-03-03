@@ -137,7 +137,7 @@ class Model(StorageRecord):
     def on_create(self):
         """Callback to be invoked after a new data record is created.""" 
 
-    def on_update(self): 
+    def on_update(self, changes): 
         """Callback to be invoked after a data record is updated."""
 
     def on_delete(self): 

@@ -118,7 +118,7 @@ def attributes():
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
             'compat': {'automatic': Target.exclude('pdt_source', None)},
-            'on_change': Measurement.attribute_changed
+            'rebuild_required': True
         },
         'compiler_inst': {
             'type': 'string',
@@ -136,7 +136,7 @@ def attributes():
                         Target.require('libunwind_source'),
                         Target.exclude('libunwind_source', None),
                         Target.exclude('host_os', DARWIN))},
-            'on_change': Measurement.attribute_changed
+            'rebuild_required': True
         },
         'link_only': {
             'type': 'boolean',
@@ -144,7 +144,7 @@ def attributes():
             'description': "don't instrument, only link the TAU library to the application",
             'argparse': {'flags': ('--link-only',),
                          'group': 'instrumentation'},
-            'on_change': Measurement.attribute_changed
+            'rebuild_required': True
         },
         'mpi': {
             'type': 'boolean',
@@ -155,7 +155,7 @@ def attributes():
                        (Target.require(MPI_CC.keyword),
                         Target.require(MPI_CXX.keyword),
                         Target.require(MPI_FC.keyword))},
-            'on_change': Measurement.attribute_changed
+            'rebuild_required': True
         },
         'openmp': {
             'type': 'string',
@@ -176,14 +176,15 @@ def attributes():
                         Target.require(CC.keyword, gomp_gnu_only),
                         Target.require(CXX.keyword, gomp_gnu_only),
                         Target.require(FC.keyword, gomp_gnu_only))},
-            'on_change': Measurement.attribute_changed
+            'rebuild_required': True
         },
         'cuda': {
             'type': 'boolean',
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
-            'compat': {True: Target.require('cuda')}
+            'compat': {True: Target.require('cuda')},
+            'rebuild_required': False
         },
         'shmem': {
             'type': 'boolean',
@@ -194,7 +195,7 @@ def attributes():
                        (Target.require(SHMEM_CC.keyword),
                         Target.require(SHMEM_CXX.keyword),
                         Target.require(SHMEM_FC.keyword))},
-            'on_change': Measurement.attribute_changed
+            'rebuild_required': True
         },
         'opencl': {
             'type': 'boolean',
@@ -202,7 +203,8 @@ def attributes():
             'description': 'measure OpenCL events',
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
-                              Application.require('opencl'))}
+                              Application.require('opencl'))},
+            'rebuild_required': False
         },
         'callpath': {
             'type': 'integer',
@@ -219,7 +221,6 @@ def attributes():
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',)},
-            'on_change': Measurement.attribute_changed
         },
         'heap_usage': {
             'type': 'boolean',
@@ -234,7 +235,6 @@ def attributes():
             'description': 'record memory allocation and deallocation events',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
-            'on_change': Measurement.attribute_changed
         },
         'metrics': {
             'type': 'array',
@@ -246,7 +246,7 @@ def attributes():
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
                        (Target.require('papi_source'), 
                         Target.exclude('papi_source', None))},
-            'on_change': Measurement.metrics_changed
+            'rebuild_required': True
         },
         'keep_inst_files': {
             'type': 'boolean',
@@ -302,21 +302,6 @@ class Measurement(Model):
     
     __attributes__ = attributes
 
-    @classmethod
-    def attribute_changed(cls, meas, attr, new_value):
-        if meas.is_selected():
-            old_value = meas.get(attr, None)
-            cls.controller(meas.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
-    
-    @classmethod
-    def metrics_changed(cls, meas, attr, new_value):
-        if meas.is_selected():
-            old_value = meas.get(attr, [])
-            old_papi = [metric for metric in old_value if 'PAPI' in metric]
-            new_papi = [metric for metric in new_value if 'PAPI' in metric]
-            if bool(old_papi) != bool(new_papi):
-                cls.controller(meas.storage).push_to_topic('rebuild_required', {attr: (old_value, new_value)})
-
     def on_create(self):
         def get_flag(key):
             return self.attributes[key]['argparse']['flags'][0]
@@ -337,7 +322,7 @@ class Measurement(Model):
                                      "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
                                                                     sample_flag, link_only_flag))
 
-    def on_update(self):
+    def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
         expr_ctrl = Experiment.controller()
@@ -353,6 +338,17 @@ class Measurement(Model):
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
+        if self.is_selected():
+            for attr, change in changes.iteritems():
+                if self.attributes[attr].get('rebuild_required'):
+                    if attr == 'metrics':
+                        old_value, new_value = change
+                        old_papi = [metric for metric in old_value if 'PAPI' in metric]
+                        new_papi = [metric for metric in new_value if 'PAPI' in metric]
+                        if bool(old_papi) != bool(new_papi):
+                            self.controller(self.storage).push_to_topic('rebuild_required', {attr: change})
+                    else:
+                        self.controller(self.storage).push_to_topic('rebuild_required', {attr: change})
 
     def is_selected(self):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
