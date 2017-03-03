@@ -653,12 +653,12 @@ class TauInstallation(Installation):
                 if self.measure_openmp == 'gomp':
                     # If you configure with -openmp only you get the GOMP API wrapper.
                     pass
-                if self.measure_openmp == 'ompt':
+                elif self.measure_openmp == 'ompt':
                     tags.add('ompt')
                 elif self.measure_openmp == 'opari':
                     tags.add('opari')
                 else:
-                    raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
+                    raise InternalError("Invalid value for measure_openmp: '%s'" % self.measure_openmp)
         if self.tbb_support:
             tags.add('tbb')
         if self.mpi_support:
