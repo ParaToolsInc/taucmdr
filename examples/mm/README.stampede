@@ -1,0 +1,7 @@
+To compile examples on a Intel compiler Linux system:
+
+1) MPI only: make -f Makefile.intel MPI=1
+2) OPENMP only : make -f Makefile.intel OPENMP=1
+3) MPI+OPENMP : make -f Makefile.intel OPENMP=1 MPI=1
+
+NOTE:  make sure to "make clean" before creating a new example
