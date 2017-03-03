@@ -293,8 +293,8 @@ class Controller(object):
                         old_foreign_keys = model.get(attr, None)
                         if old_foreign_keys:
                             self._disassociate(model, foreign_cls, old_foreign_keys, via)
-            unset_records = self.search(keys)
-            for model in unset_records:
+            updated_records = self.search(keys)
+            for model in updated_records:
                 model.check_compatibility(model)
                 model.on_update(changes[model.eid])
 
