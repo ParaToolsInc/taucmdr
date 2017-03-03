@@ -100,6 +100,7 @@ from setuptools import Command
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 
+
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 
 # Check if sphinx is installed
@@ -369,6 +370,7 @@ setuptools.setup(
 
     # Testing
     test_suite='taucmdr',
+    tests_require=['pylint'],
 
     # Metadata for upload to PyPI
     author=AUTHOR,
