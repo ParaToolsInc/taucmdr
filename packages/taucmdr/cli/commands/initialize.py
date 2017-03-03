@@ -32,12 +32,10 @@ import platform
 from taucmdr import util
 from taucmdr import EXIT_SUCCESS, EXIT_WARNING
 from taucmdr.error import InternalError, ConfigurationError
-from taucmdr.cli import arguments
-from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.project import Project, ProjectSelectionError
 from taucmdr.model.target import Target
-from taucmdr.cf.storage.project import ProjectStorageError
-from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
+from taucmdr.cli import arguments
+from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.arguments import ParseBooleanAction
 from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
 from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
@@ -46,6 +44,8 @@ from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
 from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
+from taucmdr.cf.storage.project import ProjectStorageError
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
 from taucmdr.cf.compiler.host import FC
 

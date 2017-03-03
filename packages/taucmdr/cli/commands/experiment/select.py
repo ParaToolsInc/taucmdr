@@ -37,20 +37,21 @@ class ExperimentSelectCommand(AbstractCommand):
     """``experiment select`` subcommand."""
 
     def _construct_parser(self):
-        usage = "%s experiment" % self.command
+        usage = "%s <experiment_name>" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('experiment', help="Experiment name", metavar='<name>')
+        parser.add_argument('name', help="Experiment name", metavar='<experiment_name>')
         return parser
-    
+        
     def main(self, argv):
         args = self._parse_args(argv)
-        name = args.experiment
+        name = args.name
         Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)
-        self.logger.info(Experiment.rebuild_required())   
+        rebuild_required = Experiment.rebuild_required()
+        if rebuild_required: 
+            self.logger.info(rebuild_required)
         return EXIT_SUCCESS
 
 
-COMMAND = ExperimentSelectCommand(__name__, 
-                                  summary_fmt=("Select an experiment.\n"
-                                               "Use `experiment list` to see all experiments."))
+COMMAND = ExperimentSelectCommand(__name__, summary_fmt=("Select an experiment.\n"
+                                                         "Use `experiment list` to see all experiment configurations."))

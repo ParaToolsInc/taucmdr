@@ -140,10 +140,10 @@ install: build
 # Build python files and set system-level defaults
 	$(ECHO)$(PYTHON) setup.py install --force
 # Copy archive files to system-level src, if available
-	@mkdir -p $(INSTALLDIR)/.system/src
-	@cp -v packages/*.tgz $(INSTALLDIR)/.system/src 2>/dev/null || true
-	@cp -v packages/*.tar.* $(INSTALLDIR)/.system/src 2>/dev/null || true
-	@cp -v packages/*.zip $(INSTALLDIR)/.system/src 2>/dev/null || true
+	@mkdir -p $(INSTALLDIR)/system/src
+	@cp -v packages/*.tgz $(INSTALLDIR)/system/src 2>/dev/null || true
+	@cp -v packages/*.tar.* $(INSTALLDIR)/system/src 2>/dev/null || true
+	@cp -v packages/*.zip $(INSTALLDIR)/system/src 2>/dev/null || true
 # Build dependencies using archives and system-level defaults
 	$(ECHO)$(PYTHON) setup.py install --force --initialize
 # Add PYTHON_FLAGS to python command line in bin/tau

@@ -51,7 +51,7 @@ def attributes():
             'primary_key': True,
             'type': 'integer',
             'required': True,
-            'description': 'trial unique identifier'
+            'description': 'trial number'
         },
         'experiment': {
             'model': Experiment,
@@ -88,7 +88,13 @@ def attributes():
         'data_size': {
             'type': 'integer',
             'description': "the size in bytes of the trial data"
-        }
+        },
+        'description': {
+            'type': 'string',
+            'argparse': {'flags': ('--description',),
+                         'metavar': '<text>'},
+            'description': "description of this trial"
+        },
     }
 
 
@@ -193,7 +199,7 @@ class TrialController(Controller):
             raise TrialError("Application completed successfuly but did not produce any traces.")            
         return retval
 
-    def perform(self, expr, cmd, cwd, env):
+    def perform(self, expr, cmd, cwd, env, description):
         """Performs a trial of an experiment.
 
         Args:
@@ -201,16 +207,19 @@ class TrialController(Controller):
             cmd (str): Command to profile, with command line arguments.
             cwd (str): Working directory to perform trial in.
             env (dict): Environment variables to set before performing the trial.
+            description (str): Description of this trial.
         """
         trial_number = expr.next_trial_number()
         LOGGER.debug("New trial number is %d", trial_number)
-        trial = self.create({'number': trial_number,
-                             'experiment': expr.eid,
-                             'command': ' '.join(cmd),
-                             'cwd': cwd,
-                             'environment': 'FIXME',
-                             'begin_time': str(datetime.utcnow())})
-
+        data = {'number': trial_number,
+                'experiment': expr.eid,
+                'command': ' '.join(cmd),
+                'cwd': cwd,
+                'environment': 'FIXME',
+                'begin_time': str(datetime.utcnow())}
+        if description is not None:
+            data['description'] = str(description)
+        trial = self.create(data)
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix

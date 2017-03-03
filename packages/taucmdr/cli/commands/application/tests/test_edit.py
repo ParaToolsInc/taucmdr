@@ -37,6 +37,12 @@ from taucmdr.cli.commands.application import edit
 class EditTest(tests.TestCase):
     """Tests for :any:`application.edit`."""
 
+    def test_noargs(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, [])
+        self.assertIn('too few arguments', stderr)
+        self.assertFalse(stdout)
+
     def test_edit(self):
         self.reset_project_storage()
         argv = ['app1', '--new-name', 'app2']

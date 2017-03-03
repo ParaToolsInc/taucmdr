@@ -154,7 +154,8 @@ class DeleteCommand(AbstractCliView):
     def _construct_parser(self):
         key_attr = self.model.key_attribute
         usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
-        epilog = "WARNING: This cannot be undone."
+        epilog = util.color_text("WARNING: THIS OPERATION IS NOT REVERSABLE!",
+                                 'yellow', attrs=['bold', 'blink'])
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,
@@ -187,6 +188,7 @@ class EditCommand(AbstractCliView):
     
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Modify %(model_name)s configurations.")
+        self.include_new_key_flag = kwargs.pop('include_new_key_flag', True)
         super(EditCommand, self).__init__(*args, **kwargs)
         
     def _construct_parser(self):
@@ -197,12 +199,13 @@ class EditCommand(AbstractCliView):
                                                  prog=self.command,
                                                  usage=usage,
                                                  description=self.summary)
-        group = parser.add_argument_group('%s arguments' % self.model_name)
-        group.add_argument('--new-%s' % key_attr,
-                           help="change the configuration's %s" % key_attr,
-                           metavar='<new_%s>' % key_attr, 
-                           dest='new_key',
-                           default=arguments.SUPPRESS)
+        if self.include_new_key_flag:
+            group = parser.add_argument_group('%s arguments' % self.model_name)
+            group.add_argument('--new-%s' % key_attr,
+                               help="change the configuration's %s" % key_attr,
+                               metavar='<new_%s>' % key_attr, 
+                               dest='new_key',
+                               default=arguments.SUPPRESS)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "modify", self.model_name)
         return parser

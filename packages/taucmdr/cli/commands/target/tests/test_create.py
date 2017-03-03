@@ -34,8 +34,10 @@ Functions used for unit tests of create.py.
 import os
 import unittest
 from taucmdr import tests, util
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler.host import CC, CXX, FC
 from taucmdr.cli.commands.target.create import COMMAND as create_cmd
+
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`target.create`."""
@@ -88,7 +90,6 @@ class CreateTest(tests.TestCase):
             self.assertEqual(os.path.basename(path), expected, 
                              "Target[%s] is '%s', not '%s'" % (role, path, expected))
 
-
     @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_host_family_pgi(self):
         self.reset_project_storage()
@@ -96,7 +97,6 @@ class CreateTest(tests.TestCase):
         self.assertIn("Added target", stdout)
         self.assertIn("test_targ", stdout)
         self.assertFalse(stderr)
-
         from taucmdr.cf.storage.levels import PROJECT_STORAGE
         from taucmdr.model.target import Target
         ctrl = Target.controller(PROJECT_STORAGE)
@@ -104,3 +104,15 @@ class CreateTest(tests.TestCase):
         path = test_targ.populate(CC.keyword)['path']
         self.assertEqual('pgcc', os.path.basename(path), "Target[CC] is '%s', not 'pgcc'" % path)
 
+    def test_cc_flag(self):
+        self.reset_project_storage()
+        cc_cmd = self.get_compiler(CC)
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--cc', cc_cmd])
+        self.assertIn("Added target 'test_targ' to project configuration", stdout)
+        self.assertFalse(stderr)
+        
+    def test_cxx_as_cc_flag(self):
+        self.reset_project_storage()
+        cxx_cmd = self.get_compiler(CXX)
+        self.assertRaises(ConfigurationError, self.exec_command, create_cmd, ['test_targ', '--cc', cxx_cmd])
+        

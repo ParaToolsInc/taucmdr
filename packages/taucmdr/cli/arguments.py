@@ -369,7 +369,8 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
                                       formatter_class=ArgparseHelpFormatter)
 
 
-def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None):
+def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None,
+                          positional_primary_key=True):
     """Builds an argument parser from a model's attributes.
     
     The returned argument parser will accept arguments as defined by the model's `argparse` 
@@ -406,6 +407,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         usage (str): Description of the program's usage.
         description (str): Text to display before the argument help.
         epilog (str): Text to display after the argument help.
+        positional_primary_key (bool): If True, automatically add a positional argument for the primary key.
 
     Returns:
         MutableGroupArgumentParser: The customized argument parser object.        
@@ -420,7 +422,10 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         try:
             options = dict(props['argparse'])
         except KeyError:
-            continue
+            if 'primary_key' in props and positional_primary_key:
+                options = {'metavar': '<%s_%s>' % (model.name.lower(), attr)}
+            else:
+                continue
         if use_defaults:
             options['default'] = props.get('default', argparse.SUPPRESS) 
         else:
@@ -443,6 +448,25 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         else:
             del options['flags']
             options['dest'] = attr
+        prop_type = props.get('type', 'string')
+        if prop_type == 'array':
+            if 'nargs' not in options:
+                options['nargs'] = '+'
+        elif prop_type == 'boolean':
+            if 'action' not in options:
+                options['action'] = ParseBooleanAction
+            if 'nargs' not in options:
+                options['nargs'] = '?'
+            if 'const' not in options:
+                options['const'] = True
+            if 'metavar' not in options:
+                options['metavar'] = 'T/F'
+        else:
+            if 'type' not in options:
+                options['type'] = {'integer': int,
+                                   'float': float,
+                                   'boolean': str,
+                                   'string': str}[prop_type]
         group.add_argument(*flags, **options)
     return parser
 

@@ -36,7 +36,7 @@ import unittest
 from taucmdr import tests, TAU_HOME
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands import build
+from taucmdr.cli.commands.build import COMMAND as BUILD_COMMAND
 from taucmdr.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from taucmdr.cli.commands.trial.create import COMMAND as CREATE_COMMAND
 
@@ -44,21 +44,86 @@ from taucmdr.cli.commands.trial.create import COMMAND as CREATE_COMMAND
 class ListTest(tests.TestCase):
     """Tests for :any:`trial.list`."""
     
+    def test_notrials(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
+        self.assertIn("No trials.", stdout)
+        self.assertFalse(stderr)
+
+    def test_notrials_one(self):
+        self.reset_project_storage(project_name='proj1')
+        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['100'])
+        self.assertIn("No trial with number='100'", stderr)
+        self.assertFalse(stdout)
+
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list(self):
         self.reset_project_storage(project_name='proj1')
         shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
         cc_cmd = self.get_compiler(CC)
         argv = [cc_cmd, 'hello.c']
-        self.exec_command(build.COMMAND, argv)
+        self.exec_command(BUILD_COMMAND, argv)
         self.exec_command(CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('./a.out', stdout)
-        self.assertIn('0', stdout)
+        self.assertIn('  0  ', stdout)
+        self.assertFalse(stderr)
+        
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_list_one(self):
+        self.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        cc_cmd = self.get_compiler(CC)
+        argv = [cc_cmd, 'hello.c']
+        self.exec_command(BUILD_COMMAND, argv)
+        self.exec_command(CREATE_COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['0'])
+        self.assertIn('./a.out', stdout)
+        self.assertIn('  0  ', stdout)
+        self.assertFalse(stderr)
+    
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_list_multiple(self):
+        self.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        cc_cmd = self.get_compiler(CC)
+        argv = [cc_cmd, 'hello.c']
+        self.exec_command(BUILD_COMMAND, argv)
+        for _ in xrange(3):
+            self.exec_command(CREATE_COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['0', '1', '2'])
+        self.assertIn('./a.out', stdout)
+        self.assertIn('  0  ', stdout)
+        self.assertIn('  1  ', stdout)
+        self.assertIn('  2  ', stdout)
         self.assertFalse(stderr)
 
-    def test_wrongnumber(self):
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_list_multiple_subset(self):
         self.reset_project_storage(project_name='proj1')
-        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['0'])
-        self.assertIn("No trial with number='0'", stderr)
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        cc_cmd = self.get_compiler(CC)
+        argv = [cc_cmd, 'hello.c']
+        self.exec_command(BUILD_COMMAND, argv)
+        for _ in xrange(4):
+            self.exec_command(CREATE_COMMAND, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['1', '3'])
+        self.assertIn('./a.out', stdout)
+        self.assertIn('  1  ', stdout)
+        self.assertIn('  3  ', stdout)
+        self.assertNotIn('  0  ', stdout)
+        self.assertNotIn('  2  ', stdout)
+        self.assertFalse(stderr)
+
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_list_one_invalid(self):
+        self.reset_project_storage(project_name='proj1')
+        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+        cc_cmd = self.get_compiler(CC)
+        argv = [cc_cmd, 'hello.c']
+        self.exec_command(BUILD_COMMAND, argv)
+        self.exec_command(CREATE_COMMAND, ['./a.out'])
+        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['100'])
+        self.assertIn("No trial with number='100'", stderr)
         self.assertFalse(stdout)
+    

@@ -25,31 +25,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``measurement edit`` subcommand."""
+"""``trial edit`` subcommand."""
 
-from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli.cli_view import EditCommand
-from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
-from taucmdr.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
-from taucmdr.model.measurement import Measurement
-from taucmdr.model.experiment import Experiment
+from taucmdr.model.trial import Trial
 
 
-class MeasurementEditCommand(EditCommand):
-    """``measurement edit`` subcommand."""
-    
-    def _update_record(self, store, data, key):
-        try:
-            retval = super(MeasurementEditCommand, self)._update_record(store, data, key)
-        except (ImmutableRecordError, IncompatibleRecordError) as err:
-            err.hints = ["Use `%s` to create a modified copy of the measurement" % measurement_copy_cmd,
-                         "Use `%s` to delete the experiments." % experiment_delete_cmd]
-            raise err
-        if not retval:
-            rebuild_required = Experiment.rebuild_required()
-            if rebuild_required: 
-                self.logger.info(rebuild_required)
-        return retval       
-
-
-COMMAND = MeasurementEditCommand(Measurement, __name__)
+COMMAND = EditCommand(Trial, __name__, summary_fmt="Edit experiment trials.",
+                      include_storage_flag=False, include_new_key_flag=False)

@@ -55,7 +55,8 @@ class TrialCreateCommand(CreateCommand):
 
     def _construct_parser(self):
         usage = "%s [arguments] [--] <command> [command_arguments]" % self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser = arguments.get_parser_from_model(Trial, prog=self.command, usage=usage, description=self.summary,
+                                                 positional_primary_key=False)
         parser.add_argument('cmd',
                             help="Executable command, e.g. './a.out'",
                             metavar='<command>')
@@ -86,7 +87,7 @@ class TrialCreateCommand(CreateCommand):
                         application_cmd = application_cmd[idx:]
                     else:
                         raise ConfigurationError("TAU is having trouble parsing the command line arguments",
-                                                 "Check that the command is correct, i.e. does it work without TAU?",
+                                                 "Check that the command is correct. Does it work without TAU?",
                                                  ("Use '--' to seperate %s and its arguments from the application"
                                                   " command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd))
                 else:
@@ -99,16 +100,16 @@ class TrialCreateCommand(CreateCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
+        description = getattr(args, 'description', None)
         application_cmd = [args.cmd] + args.cmd_args
         try:
             launcher_cmd = args.launcher
         except AttributeError:
             launcher_cmd, application_cmd = self._detect_launcher(application_cmd)
-
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         expr = proj.experiment()
-        return expr.managed_run(launcher_cmd, application_cmd)
+        return expr.managed_run(launcher_cmd, application_cmd, description)
 
 
-COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Run an application under a new experiment trial.")
+COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Create new trial of the selected experiment.")

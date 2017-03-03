@@ -599,7 +599,11 @@ class InstalledCompiler(object):
         info_list = _CompilerInfo.find(command, family, role)
         if len(info_list) == 1:
             return InstalledCompiler(absolute_path, info_list[0])
-        raise ConfigurationError("Unable to identify compiler '%s'" % absolute_path)
+        msg_parts = ["Unable to identify ",
+                     (family.name + " " if family else ""),
+                     (role.language + " " if role else ""),
+                     "compiler '%s'" % absolute_path]
+        raise ConfigurationError(''.join(msg_parts))
 
 
     def unwrap(self):
