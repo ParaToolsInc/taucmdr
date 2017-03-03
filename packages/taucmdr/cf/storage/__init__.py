@@ -70,6 +70,9 @@ class StorageRecord(object):
 
     def __iter__(self):
         return iter(self.element)
+    
+    def __contains__(self, key):
+        return key in self.element
 
     def items(self):
         return self.element.items()
