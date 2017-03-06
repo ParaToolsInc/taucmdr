@@ -35,7 +35,7 @@ some performance data (profiles, traces, etc.).
 
 import os
 from taucmdr import logger
-from taucmdr.error import InternalError, ConfigurationError
+from taucmdr.error import InternalError, ConfigurationError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
