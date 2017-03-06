@@ -56,7 +56,6 @@ def attributes():
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 
-    ompt_intel_only = require_compiler_family(INTEL, "OMPT for OpenMP measurement only works with Intel compilers")
     gomp_gnu_only = require_compiler_family(GNU, "GOMP for OpenMP measurement only works with GNU compilers")
 
     return {
@@ -165,12 +164,10 @@ def attributes():
                          'metavar': 'library',
                          'choices': ('ignore', 'opari', 'ompt', 'gomp')},
             'compat': {'opari':
-                       Application.require('openmp', True),
-                       'ompt':
                        (Application.require('openmp', True),
-                        Target.require(CC.keyword, ompt_intel_only),
-                        Target.require(CXX.keyword, ompt_intel_only),
-                        Target.require(FC.keyword, ompt_intel_only)),
+                       Measurement.discourage('source_inst', 'never')),
+                       'ompt':
+                       Application.require('openmp', True),
                        'gomp':
                        (Application.require('openmp', True),
                         Target.require(CC.keyword, gomp_gnu_only),
