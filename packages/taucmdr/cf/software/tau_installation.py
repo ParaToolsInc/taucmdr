@@ -536,10 +536,7 @@ class TauInstallation(Installation):
                 flags.append('-pthread')
             else:
                 flags.append('-openmp')
-                if self.measure_openmp == 'gomp':
-                    # If you configure with -openmp only you get the GOMP API wrapper.
-                    pass
-                elif self.measure_openmp == 'ompt':
+                if self.measure_openmp == 'ompt':
                     flags.append('-ompt=download')
                 elif self.measure_openmp == 'opari':
                     flags.append('-opari')
@@ -650,10 +647,7 @@ class TauInstallation(Installation):
                 tags.add('pthread')
             else:
                 tags.add('openmp')
-                if self.measure_openmp == 'gomp':
-                    # If you configure with -openmp only you get the GOMP API wrapper.
-                    pass
-                elif self.measure_openmp == 'ompt':
+                if self.measure_openmp == 'ompt':
                     tags.add('ompt')
                 elif self.measure_openmp == 'opari':
                     tags.add('opari')

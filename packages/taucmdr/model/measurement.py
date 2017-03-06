@@ -56,8 +56,6 @@ def attributes():
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 
-    gomp_gnu_only = require_compiler_family(GNU, "GOMP for OpenMP measurement only works with GNU compilers")
-
     return {
         'projects': {
             'collection': Project,
@@ -162,17 +160,12 @@ def attributes():
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
                          'metavar': 'library',
-                         'choices': ('ignore', 'opari', 'ompt', 'gomp')},
+                         'choices': ('ignore', 'opari', 'ompt')},
             'compat': {'opari':
                        (Application.require('openmp', True),
                        Measurement.discourage('source_inst', 'never')),
                        'ompt':
                        Application.require('openmp', True),
-                       'gomp':
-                       (Application.require('openmp', True),
-                        Target.require(CC.keyword, gomp_gnu_only),
-                        Target.require(CXX.keyword, gomp_gnu_only),
-                        Target.require(FC.keyword, gomp_gnu_only))},
             'rebuild_required': True
         },
         'cuda': {
