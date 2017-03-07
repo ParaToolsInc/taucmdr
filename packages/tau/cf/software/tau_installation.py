@@ -773,6 +773,8 @@ class TauInstallation(Installation):
             tau_opts.add('-optMemDbg')
         if self.openmp_support and self.source_inst != 'never':
             tau_opts.add('-optContinueBeforeOMP')
+        if logger.LOG_LEVEL != 'DEBUG':
+            tau_opts.add('-optQuiet')
         try:
             tau_opts.update(self.force_tau_options)
         except AttributeError:
