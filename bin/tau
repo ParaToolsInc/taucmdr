@@ -39,11 +39,11 @@ if __name__ == '__main__':
         __file__ = sys.executable
 
     here = os.path.realpath(os.path.dirname(__file__))
-    os.environ['__TAU_HOME__'] = os.path.join(here, '..')
-    os.environ['__TAU_SCRIPT__'] = os.path.basename(__file__)
+    os.environ['__TAUCMDR_HOME__'] = os.path.join(here, '..')
+    os.environ['__TAUCMDR_SCRIPT__'] = os.path.basename(__file__)
     packages = os.path.join(here, '..', 'packages')
     sys.path.insert(0, packages)
 
-    from tau.cli.commands.__main__ import COMMAND as cli_main_cmd
+    from taucmdr.cli.commands.__main__ import COMMAND as cli_main_cmd
     sys.exit(cli_main_cmd.main(sys.argv[1:]))
 
