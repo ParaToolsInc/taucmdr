@@ -386,7 +386,7 @@ class TauInstallation(Installation):
                 raise SoftwarePackageError("TAU I/O wrapper libraries not found in '%s'" % shared_dir)
             LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
             io_wrapper_dir = os.path.join(self.lib_path, 'wrappers', 'io_wrapper')
-            iowrap_link_options = os.path.join(io_wrapper_dir, 'link_options.taucmdr')
+            iowrap_link_options = os.path.join(io_wrapper_dir, 'link_options.tau')
             if not os.path.exists(iowrap_link_options):
                 raise SoftwarePackageError("TAU I/O wrapper link options not found in '%s'" % io_wrapper_dir)
             LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
