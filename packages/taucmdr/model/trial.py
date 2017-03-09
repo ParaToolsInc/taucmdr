@@ -329,7 +329,7 @@ class Trial(Model):
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
         try:
-            retval = util.create_subprocess(cmd, cwd=cwd, env=env)
+            retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
         except OSError as err:
             target = expr.populate('target')
             errno_hint = {errno.EPERM: "Check filesystem permissions",

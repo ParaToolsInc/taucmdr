@@ -163,9 +163,8 @@ def attributes():
                          'choices': ('ignore', 'opari', 'ompt')},
             'compat': {'opari':
                        (Application.require('openmp', True),
-                       Measurement.discourage('source_inst', 'never')),
-                       'ompt':
-                       Application.require('openmp', True)},
+                        Measurement.discourage('source_inst', 'never')),
+                       'ompt': Application.require('openmp', True)},
             'rebuild_required': True
         },
         'cuda': {
