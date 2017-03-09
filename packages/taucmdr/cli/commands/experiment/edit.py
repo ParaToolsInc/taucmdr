@@ -27,8 +27,37 @@
 #
 """``experiment edit`` subcommand."""
 
+from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
+from taucmdr.model.project import Project
+from taucmdr.model.target import Target
+from taucmdr.model.application import Application
+from taucmdr.model.measurement import Measurement
 from taucmdr.model.experiment import Experiment
 
 
-COMMAND = EditCommand(Experiment, __name__, include_storage_flag=False)
+class ExperimentEditCommand(EditCommand):
+    
+    def main(self, argv):
+        args = self._parse_args(argv)
+        store = arguments.parse_storage_flag(args)[0]
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
+
+        proj_ctrl = Project.controller()
+        for model in Target, Application, Measurement:
+            attr = model.name.lower()
+            if attr in data:
+                record = model.controller(proj_ctrl.storage).one({'name': data[attr]})
+                data[attr] = record.eid
+             
+        key_attr = self.model.key_attribute
+        try:
+            data[key_attr] = args.new_key
+        except AttributeError:
+            pass
+        key = getattr(args, key_attr)
+        return self._update_record(store, data, key)
+
+    
+
+COMMAND = ExperimentEditCommand(Experiment, __name__, include_storage_flag=False)

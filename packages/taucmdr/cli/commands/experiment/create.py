@@ -34,7 +34,6 @@ from taucmdr.model.project import Project
 from taucmdr.model.target import Target
 from taucmdr.model.application import Application
 from taucmdr.model.measurement import Measurement
-from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
@@ -42,24 +41,12 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE
 class ExperimentCreateCommand(CreateCommand):
     
     def _construct_parser(self):
-        usage = '%s <experiment_name> [arguments]' % self.command
-        parser = arguments.get_parser_from_model(Experiment, prog=self.command, usage=usage, description=self.summary)
-        group = parser.add_argument_group('Experiment Arguments')
-        group.add_argument('--target',
-                           help="Target configuration name",
-                           metavar='<name>',
-                           required=True,
-                           default=arguments.SUPPRESS)
-        group.add_argument('--application',
-                           help="Application configuration name",
-                           metavar='<name>',
-                           required=True,
-                           default=arguments.SUPPRESS)
-        group.add_argument('--measurement',
-                           help="Measurement configuration name",
-                           metavar='<name>',
-                           required=True,
-                           default=arguments.SUPPRESS)
+        parser = super(ExperimentCreateCommand, self)._construct_parser()
+        # All three options must be given to create the experiments
+        # pylint: disable=protected-access
+        parser._option_string_actions['--target'].required = True
+        parser._option_string_actions['--application'].required = True
+        parser._option_string_actions['--measurement'].required = True
         return parser
     
     def _create_record(self, store, data):
@@ -88,4 +75,5 @@ class ExperimentCreateCommand(CreateCommand):
         return self._create_record(PROJECT_STORAGE, data)
     
 
-COMMAND = ExperimentCreateCommand(Experiment, __name__, summary_fmt="Create a new experiment from project components.")
+COMMAND = ExperimentCreateCommand(Experiment, __name__, summary_fmt="Create a new experiment from project components.",
+                                  include_storage_flag=False)

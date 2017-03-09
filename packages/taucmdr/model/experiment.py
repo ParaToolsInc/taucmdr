@@ -67,16 +67,22 @@ def attributes():
             'model': Target,
             'required': True,
             'description': "The experiment's hardware/software configuration",
+            'argparse': {'flags': ('--target',),
+                         'metavar': '<name>'}
         },
         'application': {
             'model': Application,
             'required': True,
             'description': "Application this experiment uses",
+            'argparse': {'flags': ('--application',),
+                         'metavar': '<name>'}
         },
         'measurement': {
             'model': Measurement,
             'required': True,
             'description': "Measurement parameters for this experiment",
+            'argparse': {'flags': ('--measurement',),
+                         'metavar': '<name>'}
         },
         'trials': {
             'collection': Trial,
