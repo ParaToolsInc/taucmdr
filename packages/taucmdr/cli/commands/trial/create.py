@@ -106,9 +106,7 @@ class TrialCreateCommand(CreateCommand):
             launcher_cmd = args.launcher
         except AttributeError:
             launcher_cmd, application_cmd = self._detect_launcher(application_cmd)
-        proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected()
-        expr = proj.experiment()
+        expr = Project.selected().experiment()
         return expr.managed_run(launcher_cmd, application_cmd, description)
 
 

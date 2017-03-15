@@ -343,7 +343,7 @@ class Measurement(Model):
         """Returns True if this target configuration is part of the selected experiment, False otherwise."""
         from taucmdr.model.project import Project
         try:
-            selected = Project.controller().selected().experiment()
+            selected = Project.selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
         return selected['measurement'] == self.eid

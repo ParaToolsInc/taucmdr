@@ -145,7 +145,7 @@ class MainCommand(AbstractCommand):
         elif 'show'.startswith(cmd):
             shortcut = ['trial', 'show']
         elif 'metrics'.startswith(cmd):
-            expr = Project.controller().selected().experiment()
+            expr = Project.selected().experiment()
             targ_name = expr.populate('target')['name']
             shortcut = ['target', 'metrics']
             cmd_args.insert(0, targ_name)

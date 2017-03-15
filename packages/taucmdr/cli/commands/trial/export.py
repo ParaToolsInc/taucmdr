@@ -56,8 +56,7 @@ class TrialExportCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
-        proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected()
+        proj = Project.selected()
         expr = proj.experiment()
         numbers = []
         for num in getattr(args, 'numbers', []):

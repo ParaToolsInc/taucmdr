@@ -153,8 +153,7 @@ class SelectCommand(AbstractCommand):
         if not argv:
             self.parser.error("too few arguments.")
         args = self._parse_args(argv)
-        proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected()
+        proj = Project.selected()
         targ, app, meas, expr = self._parse_implicit(args)
         expr = self._parse_explicit_experiment(args, expr)
         if expr:

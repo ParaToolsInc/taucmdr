@@ -66,9 +66,7 @@ class BuildCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
-        proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected()
-        expr = proj.experiment()
+        expr = Project.selected().experiment()
         return expr.managed_build(args.cmd, args.cmd_args)
 
 

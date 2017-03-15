@@ -126,9 +126,8 @@ class CreateCommand(AbstractCliView):
             self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
         if ctrl.storage is PROJECT_STORAGE:
             from taucmdr.cli.commands.project.edit import COMMAND as project_edit_cmd
-            proj_ctrl = Project.controller()
             try:
-                proj = proj_ctrl.selected()
+                proj = Project.selected()
             except ProjectSelectionError:
                 self.logger.info("Created a new %s '%s'. Use `%s` to add the new %s to a project.", 
                                  self.model_name, key, project_edit_cmd, self.model_name)

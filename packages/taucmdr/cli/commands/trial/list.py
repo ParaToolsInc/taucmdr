@@ -46,7 +46,7 @@ class TrialListCommand(ListCommand):
                 keys = [int(key) for key in keys]
             except ValueError:
                 self.parser.error("Invalid trial number '%s'.  Trial numbers are positive integers starting from 0.")
-        expr = Project.controller().selected().experiment()
+        expr = Project.selected().experiment()
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
         return [rec for rec in records if rec['experiment'] == expr.eid]
 

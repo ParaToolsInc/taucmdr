@@ -174,6 +174,10 @@ class Project(Model):
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
     
+    @classmethod
+    def selected(cls, storage=PROJECT_STORAGE):
+        return cls.__controller__(cls, storage).selected()
+    
     @property
     def prefix(self):
         return os.path.join(self.storage.prefix, self['name'])
