@@ -549,8 +549,6 @@ class TauInstallation(Installation):
         useropts = ['-O2', '-g']
         if self.target_arch is INTEL_KNL:
             useropts.append('-DTAU_MAX_THREADS=512')
-        # FIXME: Workaround for TAU's broken Fortran wrapper for Intel MPI 17.0.1 20161005
-        useropts.append('-DTAU_MPI_F_STATUSES_IGNORE_ABSENT=1') 
         flags.append('-useropt=%s' % '#'.join(useropts))
         
         cmd = ['./configure'] + flags
