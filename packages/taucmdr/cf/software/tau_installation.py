@@ -947,9 +947,7 @@ class TauInstallation(Installation):
             use_tau_exec = (self.measure_opencl or
                             self.tbb_support or
                             self.pthreads_support or
-                            (self.source_inst == 'never' and
-                             self.compiler_inst == 'never' and
-                             not self.link_only))
+                            (self.source_inst == 'never' and self.compiler_inst == 'never'))
         if use_tau_exec:
             tau_exec_opts = opts
             tags = self.get_tags()
