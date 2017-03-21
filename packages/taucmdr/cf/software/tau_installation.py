@@ -889,7 +889,8 @@ class TauInstallation(Installation):
         use_wrapper = (self.source_inst != 'never' or
                        self.compiler_inst != 'never' or
                        self.measure_openmp == 'opari' or
-                       self.application_linkage == 'static')
+                       self.application_linkage == 'static' or
+                       self.link_only)
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
