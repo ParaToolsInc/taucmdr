@@ -156,7 +156,10 @@ class TrialController(Controller):
             end_time = str(datetime.utcnow())
             banner('END', expr.name, end_time)
 
-        data_size = sum(os.path.getsize(os.path.join(trial.prefix, f)) for f in os.listdir(trial.prefix))
+	data_size = 0
+	for dir_path, _, file_names in os.walk(trial.prefix):
+	    for f in file_names:
+	        data_size += os.path.getsize(os.path.join(dir_path, f))
         self.update({'data_size': data_size}, trial.eid)
         if retval != 0:
             if data_size != 0:
