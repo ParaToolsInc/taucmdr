@@ -28,7 +28,7 @@
 """``experiment create`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
-from taucmdr.error import UniqueAttributeError
+from taucmdr.error import UniqueAttributeError, ConfigurationError
 from taucmdr.model.experiment import Experiment
 from taucmdr.model.project import Project
 from taucmdr.model.target import Target
@@ -65,8 +65,14 @@ class ExperimentCreateCommand(CreateCommand):
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected()
         targ = Target.controller(proj_ctrl.storage).one({'name': args.target})
+        if targ is None:
+            self.parser.error("A target with name %s does not exist." %args.target)
         app = Application.controller(proj_ctrl.storage).one({'name': args.application})
+        if app is None:
+            self.parser.error("An application with name %s does not exist." %args.application)
         meas = Measurement.controller(proj_ctrl.storage).one({'name': args.measurement})
+        if meas is None:
+            self.parser.error("A measurement with name %s does not exist." %args.measurement)
         data = {'name': args.name,
                 'project': proj.eid,
                 'target': targ.eid,
