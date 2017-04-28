@@ -33,6 +33,8 @@ Functions used for unit tests of select.py.
 
 from taucmdr import tests
 from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
+from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 
 
 class SelectTest(tests.TestCase):
@@ -43,3 +45,9 @@ class SelectTest(tests.TestCase):
         self.assertIn('too few arguments', stderr)
         self.assertFalse(stdout)
 
+    def test_incomatiblemetrics(self):
+        self.reset_project_storage()
+        self.assertCommandReturnValue(0, measurement_create_cmd, ['meas1', '--metrics', 'PAPI_TEST'])
+        self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'meas1', '--target', 'targ1'])
+        stdout,_ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
+        self.assertIn('WARNING', stdout)
