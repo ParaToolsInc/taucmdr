@@ -1077,8 +1077,6 @@ class TauInstallation(Installation):
     def check_metrics(self):
         """Checks metrics for compatibility.
 
-        Raises:
-            ConfigurationError if there are incompatible metrics.
         """
         if not self._uses_papi():
             return
@@ -1087,8 +1085,10 @@ class TauInstallation(Installation):
             event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
             cmd = [event_chooser_cmd, 'PRESET'] + papi_metrics
             if util.create_subprocess(cmd, stdout=False, show_progress=False):
-                raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." %
-                                         ', '.join(papi_metrics),
-                                         "Use papi_avail to check metric availability.",
-                                         "Spread the desired metrics over multiple measurements.",
-                                         "Choose fewer metrics.")
+                LOGGER.warning("PAPI metrics [%s] are not compatible on the current host.\n\n" 
+                                         "You may ignore this warning if you are cross-compiling.\n\n"
+                                         "If you are compiling for the current host:\n\n"
+                                         "   * Use papi_avail to check metric availability.\n"
+                                         "   * Spread the desired metrics over multiple measurements.\n"
+                                         "   * Choose fewer metrics.\n",
+                                         ', '.join(papi_metrics))
