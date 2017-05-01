@@ -289,7 +289,7 @@ class Install(InstallCommand):
         if have_shmem:
             self._configure_project(['--shmem=True'])
         if have_mpi and have_shmem:
-            self._configure_project(['--mpi=True --shmem=True'])
+            self._configure_project(['--mpi=True', '--shmem=True'])
 
         # Indicate success
         print taucmdr.version_banner()
