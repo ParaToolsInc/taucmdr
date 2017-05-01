@@ -414,7 +414,7 @@ class Experiment(Model):
             if meas['trace'] == 'none':
                 profile_format = PROFILE_EXPORT_FORMATS[0]
             else:
-                profile_format = PROFILE_EXPORT_FORMATS[1]
+                profile_format = PROFILE_EXPORT_FORMATS[3]
         assert profile_format in PROFILE_EXPORT_FORMATS
         if not export_location:
             export_location = os.getcwd()
