@@ -33,8 +33,10 @@ PAPI is used to measure hardware performance counters.
 import os
 import sys
 import fileinput
-from xml.etree import ElementTree as etree
+from subprocess import CalledProcessError
+from xml.etree import ElementTree
 from taucmdr import logger, util
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 LOGGER = logger.get_logger(__name__)
@@ -70,6 +72,46 @@ class PapiInstallation(AutotoolsInstallation):
         if not self._xml_event_info:
             self.install()
             xml_event_info = util.get_command_output(os.path.join(self.bin_path, 'papi_xml_event_info'))
-            self._xml_event_info = etree.fromstring(xml_event_info)
+            self._xml_event_info = ElementTree.fromstring(xml_event_info)
         return self._xml_event_info
     
+    def check_metrics(self, metrics):
+        papi_metrics = [metric.replace('PAPI_NATIVE:', '') for metric in metrics if metric.startswith("PAPI")]
+        if not papi_metrics:
+            return
+        event_chooser_cmd = os.path.join(self.bin_path, 'papi_event_chooser')
+        cmd = [event_chooser_cmd, 'PRESET'] + papi_metrics
+        try:
+            util.get_command_output(cmd)
+        except CalledProcessError as err:
+            for line in err.output.split('\n'):
+                if "can't be counted with others" in line:
+                    parts = line.split()
+                    try:
+                        event = parts[1]
+                        code = int(parts[-1])
+                    except (IndexError, ValueError):
+                        continue
+                    if code == -1:
+                        why = ": %s is not compatible with other events" % event
+                    elif code == -8:
+                        why = ": %s cannot be counted due to resource limitations" % event
+                    else:
+                        why = ": %s is not supported on this host" % event
+                    break
+                elif "can't be found" in line:
+                    parts = line.split()
+                    try:
+                        event = parts[1]
+                    except IndexError:
+                        continue
+                    why = ": event %s is not available on the current host" % event
+                    break
+            else:
+                why = ', and output from papi_event_chooser was not parsable.'
+            raise ConfigurationError(("PAPI metrics [%s] are not compatible on the current host%s."
+                                      "\n\nYou may ignore this warning if you are cross-compiling.") %
+                                     (', '.join(papi_metrics), why),
+                                     "Use papi_avail to check metric availability.",
+                                     "Spread the desired metrics over multiple measurements.",
+                                     "Choose fewer metrics.")
