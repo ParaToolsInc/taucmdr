@@ -36,6 +36,8 @@ from taucmdr.cf.storage.levels import ORDERED_LEVELS
 from taucmdr.cf.storage.levels import highest_writable_storage 
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
+from taucmdr.cf.compiler import InstalledCompilerSet
+from taucmdr.cf.platforms import Architecture, OperatingSystem
 
 LOGGER = logger.get_logger(__name__)
 
@@ -146,6 +148,16 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
+        assert isinstance(name, basestring)
+        assert isinstance(title, basestring)
+        assert isinstance(sources, dict)
+        assert isinstance(target_arch, Architecture)
+        assert isinstance(target_os, OperatingSystem)
+        assert isinstance(compilers, InstalledCompilerSet)
+        assert isinstance(repos, dict) or repos is None
+        assert isinstance(commands, dict) or commands is None
+        assert isinstance(libraries, dict) or libraries is None
+        assert isinstance(headers, dict) or headers is None
         self.dependencies = {}
         self.name = name
         self.title = title
