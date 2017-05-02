@@ -310,7 +310,6 @@ class _CompilerInfo(TrackedInstance):
         
     @classmethod
     def _find(cls, command, family, role):
-        # pylint: disable=too-many-return-statements
         if command and family and role:
             return [info for info in family.members.get(role, []) if info.command == command]
         elif command and family:
