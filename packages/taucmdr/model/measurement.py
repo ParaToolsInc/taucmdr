@@ -37,6 +37,15 @@ from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSe
 from taucmdr.mvc.model import Model
 
 
+def _profile_format_merged_compat_check(lhs, lhs_attr, lhs_value, rhs):
+    from taucmdr.model.application import Application
+    if isinstance(rhs, Application):
+        if not (rhs['mpi'] or rhs['shmem']):
+            lhs_name = lhs.name.lower()
+            rhs_name = rhs.name.lower()
+            raise IncompatibleRecordError("%s = %s in %s requires either mpi = True or shmem = True in %s" % 
+                                          (lhs_attr, lhs_value, lhs_name, rhs_name))
+
 
 def attributes():
     """Construct attributes dictionary for the measurement model.
@@ -50,9 +59,7 @@ def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.application import Application
-    from taucmdr.model import require_compiler_family
     from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
-    from taucmdr.cf.compiler.host import INTEL, GNU, CC, CXX, FC
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 
@@ -78,7 +85,8 @@ def attributes():
                          'nargs': '?',
                          'choices': ('tau', 'merged', 'cubex', 'none'),
                          'const': 'tau'},
-            'compat': {'cubex': Target.exclude('scorep_source', None)},
+            'compat': {'cubex': Target.exclude('scorep_source', None),
+                       'merged': _profile_format_merged_compat_check},
         },
         'trace': {
             'type': 'string',
