@@ -81,11 +81,11 @@ else
   endif
 endif
 
-# Miniconda configuration
-USE_MINICONDA = true
+# Conda configuration
+USE_CONDA = true
 ifeq ($(OS),Darwin)
 ifeq ($(ARCH),i386)
-  USE_MINICONDA = false
+  USE_CONDA = false
 endif
 endif
 ifeq ($(OS),Darwin)
@@ -94,7 +94,7 @@ else
   ifeq ($(OS),Linux)
     CONDA_OS = Linux
   else
-    USE_MINICONDA = false
+    USE_CONDA = false
   endif
 endif
 ifeq ($(ARCH),x86_64)
@@ -103,22 +103,22 @@ else
   ifeq ($(ARCH),i386)
     CONDA_ARCH = x86
   else
-    USE_MINICONDA = false
+    USE_CONDA = false
   endif
 endif
-CONDA_VERSION = 4.2.12
-CONDA_REPO = https://repo.continuum.io/miniconda
-CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
+CONDA_VERSION = 4.3.1
+CONDA_REPO = https://repo.continuum.io/archive
+CONDA_PKG = Anaconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = packages/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
 CONDA = $(CONDA_DEST)/bin/python
 
-ifeq ($(USE_MINICONDA),true)
+ifeq ($(USE_CONDA),true)
   PYTHON_EXE = $(CONDA)
   PYTHON_FLAGS = -E
 else
-  $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
+  $(warning WARNING: There are no conda packages for this system: $(OS), $(ARCH).)
   PYTHON_EXE = $(shell which python)
   PYTHON_FLAGS =
   ifeq ($(PYTHON_EXE),)
