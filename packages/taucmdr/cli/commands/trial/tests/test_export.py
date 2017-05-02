@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2017, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,23 +31,30 @@ Functions used for unit tests of select.py.
 """
 
 
-from taucmdr import tests
-from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
-from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+import shutil
+import unittest
+import os
+from taucmdr import tests, TAU_HOME
+from taucmdr.cf.platforms import HOST_ARCH
+from taucmdr.cf.compiler.host import CC
+from taucmdr.cli.commands import build
+from taucmdr.cli.commands.trial import create, export
+from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_command
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 
 
 class SelectTest(tests.TestCase):
     
-    def test_noargs(self):
-        self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, SELECT_COMMAND, [])
-        self.assertIn('too few arguments', stderr)
-        self.assertFalse(stdout)
-
-    def test_incomatiblemetrics(self):
-        self.reset_project_storage()
-        self.assertCommandReturnValue(0, measurement_create_cmd, ['meas1', '--metrics', 'PAPI_TEST'])
-        self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'meas1', '--target', 'targ1'])
-        stdout,_ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
-        self.assertIn('WARNING', stdout)
+    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_export_format(self):
+        self.reset_project_storage(project_name='proj1')
+        self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'trace', '--target', 'targ1'])
+	self.exec_command(experiment_select_command, ['exp2'])
+	shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
+	cc_cmd = self.get_compiler(CC)
+	argv = [cc_cmd, 'hello.c']
+	self.exec_command(build.COMMAND, argv)
+	self.exec_command(create.COMMAND, ['./a.out'])
+	self.exec_command(export.COMMAND, ['0'])
+	files = ','.join(os.listdir('.'))
+	self.assertIn('trial0.tgz', files)

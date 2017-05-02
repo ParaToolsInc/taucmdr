@@ -148,6 +148,7 @@ class TauInstallation(Installation):
                  shmem_include_path,
                  shmem_library_path,
                  shmem_libraries,
+                 shmem_version,
                  mpc_support,
                  # Instrumentation methods and options
                  source_inst,
@@ -198,6 +199,7 @@ class TauInstallation(Installation):
             shmem_include_path (list):  Paths to search for SHMEM header files.
             shmem_library_path (list): Paths to search for SHMEM library files.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
+            shmem_version (str): OpenSHMEM standard version compliance infomation.
             mpc_support (bool): Enable or disable MPC support in TAU.
             source_inst (bool): Enable or disable source-based instrumentation in TAU.
             compiler_inst (bool): Enable or disable compiler-based instrumentation in TAU.
@@ -246,6 +248,7 @@ class TauInstallation(Installation):
         self.shmem_include_path = shmem_include_path
         self.shmem_library_path = shmem_library_path
         self.shmem_libraries = shmem_libraries
+        self.shmem_version = shmem_version
         self.mpc_support = mpc_support
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
@@ -549,6 +552,10 @@ class TauInstallation(Installation):
         useropts = ['-O2', '-g']
         if self.target_arch is INTEL_KNL:
             useropts.append('-DTAU_MAX_THREADS=512')
+        if self.shmem_support:
+            shmem_version = str(self.shmem_version).split('.')
+            if int(shmem_version[0]) == 1 and int(shmem_version[1]) <= 2:
+                useropts.append('-DSHMEM_1_2')
         flags.append('-useropt=%s' % '#'.join(useropts))
         
         cmd = ['./configure'] + flags
@@ -1077,8 +1084,6 @@ class TauInstallation(Installation):
     def check_metrics(self):
         """Checks metrics for compatibility.
 
-        Raises:
-            ConfigurationError if there are incompatible metrics.
         """
         if not self._uses_papi():
             return
@@ -1087,8 +1092,10 @@ class TauInstallation(Installation):
             event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
             cmd = [event_chooser_cmd, 'PRESET'] + papi_metrics
             if util.create_subprocess(cmd, stdout=False, show_progress=False):
-                raise ConfigurationError("PAPI metrics [%s] are not compatible on this target." %
-                                         ', '.join(papi_metrics),
-                                         "Use papi_avail to check metric availability.",
-                                         "Spread the desired metrics over multiple measurements.",
-                                         "Choose fewer metrics.")
+                LOGGER.warning("PAPI metrics [%s] are not compatible on the current host.\n\n" 
+                                         "You may ignore this warning if you are cross-compiling.\n\n"
+                                         "If you are compiling for the current host:\n\n"
+                                         "   * Use papi_avail to check metric availability.\n"
+                                         "   * Spread the desired metrics over multiple measurements.\n"
+                                         "   * Choose fewer metrics.\n",
+                                         ', '.join(papi_metrics))

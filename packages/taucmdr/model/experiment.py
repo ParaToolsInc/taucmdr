@@ -241,6 +241,7 @@ class Experiment(Model):
                     shmem_include_path=target.get('shmem_include_path', []),
                     shmem_library_path=target.get('shmem_library_path', []),
                     shmem_libraries=target.get('shmem_libraries', []),
+                    shmem_version=target.get_or_default('shmem_version'),
                     mpc_support=application.get_or_default('mpc'),
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
@@ -414,7 +415,7 @@ class Experiment(Model):
             if meas['trace'] == 'none':
                 profile_format = PROFILE_EXPORT_FORMATS[0]
             else:
-                profile_format = PROFILE_EXPORT_FORMATS[1]
+                profile_format = PROFILE_EXPORT_FORMATS[3]
         assert profile_format in PROFILE_EXPORT_FORMATS
         if not export_location:
             export_location = os.getcwd()
