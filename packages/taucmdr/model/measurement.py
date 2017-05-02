@@ -37,7 +37,7 @@ from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSe
 from taucmdr.mvc.model import Model
 
 
-def _profile_format_merged_compat_check(lhs, lhs_attr, lhs_value, rhs):
+def _merged_profile_compat(lhs, lhs_attr, lhs_value, rhs):
     from taucmdr.model.application import Application
     if isinstance(rhs, Application):
         if not (rhs['mpi'] or rhs['shmem']):
@@ -86,7 +86,7 @@ def attributes():
                          'choices': ('tau', 'merged', 'cubex', 'none'),
                          'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None),
-                       'merged': _profile_format_merged_compat_check},
+                       'merged': _merged_profile_compat},
         },
         'trace': {
             'type': 'string',
