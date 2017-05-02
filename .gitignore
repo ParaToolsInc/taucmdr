@@ -102,3 +102,7 @@ setup.cfg
 # Deployment private and public key, but DO store encrypted private key for Travis-CI
 id_rsa_Travis2GH
 id_rsa_Travis2GH.pub
+
+# Jupyter files
+.ipynb_checkpoints
+*.ipynb
