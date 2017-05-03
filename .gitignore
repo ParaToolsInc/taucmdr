@@ -67,6 +67,7 @@ tauprofile.xml
 *.zip
 *.tar.*
 *.tgz
+*.cubex
 
 # Misc
 *~
