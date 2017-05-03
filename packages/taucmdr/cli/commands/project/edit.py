@@ -193,13 +193,13 @@ class ProjectEditCommand(EditCommand):
         except AttributeError:
             pass
         else:
-            # Unset force_tau_options if it was already set and --force-taucmdr-options=none 
+            # Unset force_tau_options if it was already set and --force-tau-options=none 
             if updates.pop('force_tau_options', False) and [i.lower().strip() for i in force_tau_options] == ['none']:
                 proj_ctrl.unset(['force_tau_options'], {'name': project_name})
-                self.logger.info("Removed 'force-taucmdr-options' from project configuration '%s'.", project_name)
+                self.logger.info("Removed 'force-tau-options' from project configuration '%s'.", project_name)
             else:
                 updates['force_tau_options'] = force_tau_options
-                self.logger.info("Added 'force-taucmdr-options' to project configuration '%s'.", project_name)
+                self.logger.info("Added 'force-tau-options' to project configuration '%s'.", project_name)
 
         proj_ctrl.update(updates, {'name': project_name})
         for model in added:
