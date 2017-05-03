@@ -209,7 +209,7 @@ class InitializeCommand(AbstractCommand):
             measurement_names.append('profile')
         if args.trace:
             _safe_execute(measurement_create_cmd, 
-                          ['trace', '--profile=none', '--trace=slog2',
+                          ['trace', '--profile=none', '--trace=slog2', '--callpath=0',
                            '--sample=False', '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')
