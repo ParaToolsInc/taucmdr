@@ -39,13 +39,13 @@ class DeleteTest(tests.TestCase):
 
     def test_delete(self):
         self.reset_project_storage(project_name='proj1')
-        self.exec_command(create.COMMAND, ['app2'])
+        self.assertCommandReturnValue(0, create.COMMAND, ['app2'])
         stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['app2'])
         self.assertIn('Deleted application', stdout)
         self.assertFalse(stderr)
 
     def test_wrongname(self):
         self.reset_project_storage(project_name='proj1')
-        _, _, stderr = self.exec_command(delete.COMMAND, ['app2'])
+        _, stderr = self.assertNotCommandReturnValue(0, delete.COMMAND, ['app2'])
         self.assertIn('application delete <application_name> [arguments]', stderr)
         self.assertIn('application delete: error: No project-level application with name', stderr)

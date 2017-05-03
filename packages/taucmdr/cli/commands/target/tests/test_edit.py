@@ -53,20 +53,20 @@ class EditTest(tests.TestCase):
     def test_wrongname(self):
         self.reset_project_storage(project_name='proj1')
         argv = ['targ2', '--new-name', 'targ3']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: No project-level target with name', stderr)
 
     def test_wrongarg(self):
         self.reset_project_storage(project_name='proj1')
         argv = ['app1', '--arg', 'T']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: unrecognized arguments: --arg', stderr)
         
     def test_ambiguousarg(self):
         self.reset_project_storage(project_name='proj1')
         argv = ['targ1', '--mpi', 'T']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: ambiguous option: --mpi could match --mpi-', stderr)

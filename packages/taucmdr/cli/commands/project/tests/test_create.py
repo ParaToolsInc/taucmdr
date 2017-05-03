@@ -45,7 +45,7 @@ class CreateTest(tests.TestCase):
 
     def test_duplicatename(self):
         self.reset_project_storage(project_name='proj1')
-        _, _, stderr = self.exec_command(create_cmd, ['proj1'])
+        _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['proj1'])
         self.assertIn('project create <project_name> [targets] [applications] [measurements] [arguments]', stderr)
         self.assertIn('project create: error: A project named', stderr)
         self.assertIn('already exists', stderr)

@@ -31,13 +31,11 @@ Functions used for unit tests of select.py.
 """
 
 
-import shutil
 import unittest
 import os
-from taucmdr import tests, TAU_HOME
+from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands import build
 from taucmdr.cli.commands.trial import create, export
 from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_command
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -49,12 +47,9 @@ class SelectTest(tests.TestCase):
     def test_export_format(self):
         self.reset_project_storage(project_name='proj1')
         self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'trace', '--target', 'targ1'])
-	self.exec_command(experiment_select_command, ['exp2'])
-	shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-	cc_cmd = self.get_compiler(CC)
-	argv = [cc_cmd, 'hello.c']
-	self.exec_command(build.COMMAND, argv)
-	self.exec_command(create.COMMAND, ['./a.out'])
-	self.exec_command(export.COMMAND, ['0'])
-	files = ','.join(os.listdir('.'))
-	self.assertIn('trial0.tgz', files)
+        self.assertCommandReturnValue(0, experiment_select_command, ['exp2'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
+        self.assertCommandReturnValue(0, export.COMMAND, ['0'])
+        files = ','.join(os.listdir('.'))
+        self.assertIn('trial0.tgz', files)

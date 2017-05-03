@@ -29,14 +29,11 @@
 
 Functions used for unit tests of create.py.
 """
-#pylint: disable=missing-docstring
 
-import shutil
 import unittest
-from taucmdr import tests, TAU_HOME
+from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands.build import COMMAND as build_cmd
 from taucmdr.cli.commands.trial.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
@@ -45,9 +42,7 @@ class CreateTest(tests.TestCase):
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_create(self):
         self.reset_project_storage()
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
         self.assertIn('END Experiment', stdout)
@@ -58,9 +53,7 @@ class CreateTest(tests.TestCase):
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_create_with_description(self):
         self.reset_project_storage()
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
         args = ['--description', 'Created by test_create_with_description', '--', './a.out']
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, args)
         self.assertIn('BEGIN', stdout)

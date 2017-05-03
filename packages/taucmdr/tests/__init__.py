@@ -38,9 +38,8 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-from taucmdr import logger, EXIT_SUCCESS, EXIT_FAILURE
+from taucmdr import logger, TAU_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
-
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -228,6 +227,15 @@ class TestCase(unittest.TestCase):
         retval, stdout, stderr = self.exec_command(cmd, argv)
         self.assertNotEqual(retval, return_value)
         return stdout, stderr
+    
+    def assertManagedBuild(self, return_value, compiler_role, compiler_args, src):
+        from taucmdr.cli.commands.build import COMMAND as build_command
+        test_src = os.path.join(TAU_HOME, '.testfiles', src)
+        test_dst = os.path.join(get_test_workdir(), src)
+        shutil.copyfile(test_src, test_dst)
+        cc_cmd = self.get_compiler(compiler_role)
+        args = [cc_cmd] + compiler_args + [src]
+        self.assertCommandReturnValue(return_value, build_command, args)
     
 
 class TestRunner(unittest.TextTestRunner):

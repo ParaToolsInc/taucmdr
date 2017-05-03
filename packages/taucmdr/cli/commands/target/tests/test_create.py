@@ -51,7 +51,7 @@ class CreateTest(tests.TestCase):
 
     def test_no_args(self):
         self.reset_project_storage(project_name='proj1')
-        _, _, stderr = self.exec_command(create_cmd, [])
+        _, stderr = self.assertNotCommandReturnValue(0, create_cmd, [])
         self.assertIn('error: too few arguments', stderr)
 
     def test_h_arg(self):
@@ -68,7 +68,7 @@ class CreateTest(tests.TestCase):
 
     def test_duplicatename(self):
         self.reset_project_storage(project_name='proj1')
-        _, _, stderr = self.exec_command(create_cmd, ['targ1'])
+        _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['targ1'])
         self.assertIn('target create <target_name> [arguments]', stderr)
         self.assertIn('target create: error: A target with name', stderr)
         self.assertIn('already exists', stderr)
