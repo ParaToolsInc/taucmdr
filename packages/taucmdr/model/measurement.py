@@ -33,18 +33,11 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 
-
-def _merged_profile_compat(lhs, lhs_attr, lhs_value, rhs):
-    from taucmdr.model.application import Application
-    if isinstance(rhs, Application):
-        if not (rhs['mpi'] or rhs['shmem']):
-            lhs_name = lhs.name.lower()
-            rhs_name = rhs.name.lower()
-            raise IncompatibleRecordError("%s = %s in %s requires either mpi = True or shmem = True in %s" % 
-                                          (lhs_attr, lhs_value, lhs_name, rhs_name))
+LOGGER = logger.get_logger(__name__)
 
 
 def attributes():
@@ -62,6 +55,24 @@ def attributes():
     from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
+    
+    def _merged_profile_compat(lhs, lhs_attr, lhs_value, rhs):
+        if isinstance(rhs, Application):
+            if not (rhs['mpi'] or rhs['shmem']):
+                lhs_name = lhs.name.lower()
+                rhs_name = rhs.name.lower()
+                raise IncompatibleRecordError("%s = %s in %s requires either mpi = True or shmem = True in %s" % 
+                                              (lhs_attr, lhs_value, lhs_name, rhs_name))
+
+
+    def _discourage_callpath(lhs, lhs_attr, lhs_value, rhs):
+        if isinstance(rhs, Measurement):
+            if rhs.get('callpath', 0) > 0:
+                lhs_name = lhs.name.lower()
+                rhs_name = rhs.name.lower()
+                LOGGER.warning("%s = %s in %s recommends against callpath > 0 in %s",
+                               lhs_attr, lhs_value, lhs_name, rhs_name)
+
 
     return {
         'projects': {
@@ -98,7 +109,8 @@ def attributes():
                          'nargs': '?',
                          'choices':('slog2', 'otf2', 'none'),
                          'const': 'slog2'},
-            'compat': {'otf2': Target.exclude('scorep_source', None)}
+            'compat': {'otf2': Target.exclude('scorep_source', None),
+                       lambda x: x != 'none': _discourage_callpath}
         },
         'sample': {
             'type': 'boolean',
@@ -211,7 +223,7 @@ def attributes():
                          'group': 'data',
                          'metavar': 'depth',
                          'nargs': '?',
-                         'const': 100},
+                         'const': 100}
         },
         'io': {
             'type': 'boolean',

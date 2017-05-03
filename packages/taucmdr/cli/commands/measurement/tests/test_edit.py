@@ -32,6 +32,8 @@ Functions used for unit tests of edit.py.
 
 
 from taucmdr import tests
+from taucmdr.model.measurement import Measurement
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.measurement.create import COMMAND as CREATE_COMMAND
 from taucmdr.cli.commands.measurement.edit import COMMAND as EDIT_COMMAND
 
@@ -45,7 +47,7 @@ class EditTest(tests.TestCase):
         self.assertFalse(stdout)
 
     def test_edit(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         old_name = 'meas01'
         new_name = 'meas02'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [old_name])
@@ -54,16 +56,50 @@ class EditTest(tests.TestCase):
         self.assertFalse(stderr)       
 
     def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['meas1', '--new-name', 'meas2']
         _, stderr = self.assertNotCommandReturnValue(0, EDIT_COMMAND, argv)
         self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
         self.assertIn('measurement edit: error: No project-level measurement with name', stderr)
         
     def test_wrongarg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         name = 'meas01'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
         _, stderr = self.assertNotCommandReturnValue(0, EDIT_COMMAND, ['meas01', '--track-mpi', 'T'])
         self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
         self.assertIn('measurement edit: error: unrecognized arguments', stderr)
+
+    def test_trace_edit(self):
+        self.reset_project_storage()
+        name = 'test_trace_edit'
+        create_args = [name, '--profile', 'tau', '--trace', 'none', '--callpath', '10']
+        stdout, stderr = self.assertCommandReturnValue(0, CREATE_COMMAND, create_args)
+        self.assertFalse(stderr)
+        self.assertIn("Added measurement '%s' to project" % name, stdout)
+        self.assertNotIn("WARNING", stdout)
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        self.assertIsInstance(meas, Measurement)
+        self.assertEqual(meas['callpath'], 10)
+        self.assertEqual(meas['profile'], 'tau')
+        self.assertEqual(meas['trace'], 'none')
+        stdout, stderr = self.assertCommandReturnValue(0, EDIT_COMMAND, [name, '--trace', 'slog2'])
+        self.assertFalse(stderr)
+        self.assertIn("WARNING", stdout)
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        self.assertIsInstance(meas, Measurement)
+        self.assertEqual(meas['callpath'], 10)
+        self.assertEqual(meas['profile'], 'tau')
+        self.assertEqual(meas['trace'], 'slog2')
+
+    def test_trace_callpath_edit(self):
+        self.reset_project_storage()
+        name = 'test_trace_callpath_edit'
+        stdout, stderr = self.assertCommandReturnValue(0, CREATE_COMMAND, [name, '--trace'])
+        self.assertFalse(stderr)
+        self.assertIn("Added measurement '%s' to project" % name, stdout)
+        self.assertNotIn("WARNING", stdout)
+        stdout, stderr = self.assertCommandReturnValue(0, EDIT_COMMAND, [name, '--callpath', '100'])
+        self.assertFalse(stderr)
+        self.assertIn("WARNING", stdout)
+

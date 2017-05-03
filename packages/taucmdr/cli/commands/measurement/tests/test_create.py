@@ -32,19 +32,21 @@ Functions used for unit tests of create.py.
 
 
 from taucmdr import tests
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.model.measurement import Measurement
 from taucmdr.cli.commands.measurement.create import COMMAND as create_cmd
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`measurement.create`."""
 
     def test_create(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['meas01'])
         self.assertIn('Added measurement \'meas01\' to project configuration', stdout)
         self.assertFalse(stderr)
         
     def test_duplicatename(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertCommandReturnValue(0, create_cmd, ['meas01'])
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['meas01'])
         self.assertIn('measurement create <measurement_name> [arguments]', stderr)
@@ -52,11 +54,45 @@ class CreateTest(tests.TestCase):
         self.assertIn('already exists', stderr)
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
+
+    def test_trace_callpath(self):
+        self.reset_project_storage()
+        name = 'trace_callpath'
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace'])
+        self.assertFalse(stderr)
+        self.assertIn("Added measurement '%s' to project" % name, stdout)
+        self.assertNotIn("WARNING", stdout)
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
+        self.assertIsInstance(meas, Measurement)
+        self.assertEqual(meas['callpath'], 0)
+
+    def test_trace_callpath_0(self):
+        self.reset_project_storage()
+        name = 'test_trace_callpath_0'
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace', '--callpath', '0'])
+        self.assertFalse(stderr)
+        self.assertIn("Added measurement '%s' to project" % name, stdout)
+        self.assertNotIn("WARNING", stdout)
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        self.assertIsInstance(meas, Measurement)
+        self.assertEqual(meas['callpath'], 0)
+
+    def test_trace_callpath_10(self):
+        self.reset_project_storage()
+        name = 'test_discourage_callpath'       
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace', '--callpath', '10'])
+        self.assertFalse(stderr)
+        self.assertIn("Added measurement '%s' to project" % name, stdout)
+        self.assertIn("WARNING", stdout)
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        self.assertIsInstance(meas, Measurement)
+        self.assertEqual(meas['callpath'], 10)
+
