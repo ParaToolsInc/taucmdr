@@ -40,6 +40,7 @@ import shutil
 import urllib
 import pkgutil
 import tarfile
+import gzip
 import tempfile
 import urlparse
 import hashlib
@@ -53,6 +54,7 @@ from taucmdr.progress import ProgressIndicator, progress_spinner
 
 
 LOGGER = logger.get_logger(__name__)
+
 
 _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
@@ -87,6 +89,13 @@ def mkdtemp(*args, **kwargs):
     path = tempfile.mkdtemp(*args, **kwargs)
     _DTEMP_STACK.append(path)
     return path
+
+
+def copy_file(src, dest, show_progress=True):
+    """Works just like :any:`shutil.copy` except with progress bars."""
+    context = progress_spinner if show_progress else _null_context
+    with context():
+        shutil.copy(src, dest)
 
 
 def mkdirp(*args):
@@ -337,24 +346,43 @@ def extract_archive(archive, dest, show_progress=True):
     return full_dest
 
 
-def create_archive(fmt, dest, items):
+def create_archive(fmt, dest, items, cwd=None, show_progress=True):
     """Creates a new archive file in the specified format.
     
     Args:
         fmt (str): Archive fmt, e.g. 'zip' or 'tgz'.
         dest (str): Path to the archive file that will be created.
-        items (list): Items (i.e. files or folders) to add to the archive. 
+        items (list): Items (i.e. files or folders) to add to the archive.
+        cwd (str): Current working directory while creating the archive. 
     """
-    if fmt == 'zip':
-        with ZipFile(dest, 'w') as archive:
-            archive.comment = "Created by TAU Commander"
-            for item in items:
-                archive.write(item)
-    elif fmt in ('tar', 'tgz', 'tar.bz2'):
-        mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
-        with tarfile.open(dest, mode_map[fmt]) as archive:
-            for item in items:
-                archive.add(item)
+    if cwd:
+        oldcwd = os.getcwd()
+        os.chdir(cwd)
+    if show_progress:
+        LOGGER.info("Writing '%s'...", dest)
+        context = progress_spinner
+    else:
+        context = _null_context
+    with context():
+        try:
+            if fmt == 'zip':
+                with ZipFile(dest, 'w') as archive:
+                    archive.comment = "Created by TAU Commander"
+                    for item in items:
+                        archive.write(item)
+            elif fmt in ('tar', 'tgz', 'tar.bz2'):
+                mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
+                with tarfile.open(dest, mode_map[fmt]) as archive:
+                    for item in items:
+                        archive.add(item)
+            elif fmt == 'gz':
+                with open(items[0], 'rb') as fin, gzip.open(dest, 'wb') as fout:
+                    shutil.copyfileobj(fin, fout)
+            else:
+                raise InternalError("Invalid archive format: %s" % fmt)
+        finally:
+            if cwd:
+                os.chdir(oldcwd)
 
 
 def file_accessible(filepath, mode='r'):
