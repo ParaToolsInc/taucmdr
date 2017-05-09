@@ -212,7 +212,6 @@ class TauInstallation(Installation):
             shmem_include_path (list):  Paths to search for SHMEM header files.
             shmem_library_path (list): Paths to search for SHMEM library files.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
-            shmem_version (str): OpenSHMEM standard version compliance infomation.
             mpc_support (bool): Enable or disable MPC support in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
             compiler_inst (str): Policy for compiler-based instrumentation, one of "always", "fallback", or "never".
@@ -254,7 +253,6 @@ class TauInstallation(Installation):
         assert isinstance(shmem_include_path, list) or shmem_include_path is None
         assert isinstance(shmem_library_path, list) or shmem_library_path is None
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
-        assert isinstance(shmem_version, basestring)
         assert mpc_support in (True, False)
         assert source_inst in ("automatic", "manual", "never")
         assert compiler_inst in ("always", "fallback", "never")
@@ -314,7 +312,6 @@ class TauInstallation(Installation):
         self.shmem_include_path = shmem_include_path if shmem_include_path is not None else [] 
         self.shmem_library_path = shmem_library_path if shmem_library_path is not None else []
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
-        self.shmem_version = shmem_version
         self.mpc_support = mpc_support
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
@@ -622,10 +619,6 @@ class TauInstallation(Installation):
         useropts = ['-O2', '-g']
         if self.target_arch is INTEL_KNL:
             useropts.append('-DTAU_MAX_THREADS=512')
-        if self.shmem_support:
-            shmem_version = str(self.shmem_version).split('.')
-            if int(shmem_version[0]) == 1 and int(shmem_version[1]) <= 2:
-                useropts.append('-DSHMEM_1_2')
         flags.append('-useropt=%s' % '#'.join(useropts))
         
         cmd = ['./configure'] + flags
