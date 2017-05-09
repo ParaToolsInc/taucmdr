@@ -331,15 +331,6 @@ def attributes():
                          'metavar': '<flag>'},
             'rebuild_required': True
         },
-        'shmem_version': {
-            'type': 'string',
-            'description': 'the SHMEM installation complies with this version of the OpenSHMEM standard',
-            'default': '1.3',
-            'argparse': {'flags': ('--shmem-version', ),
-                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<flag>'},
-            'rebuild_required': True
-        },
         'cuda': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA installation (enables OpenCL support)',

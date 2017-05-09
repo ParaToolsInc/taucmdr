@@ -162,7 +162,6 @@ class TauInstallation(Installation):
                  shmem_include_path=None,
                  shmem_library_path=None,
                  shmem_libraries=None,
-                 shmem_version="1.3",
                  mpc_support=False,
                  # Instrumentation methods and options
                  source_inst="never",
