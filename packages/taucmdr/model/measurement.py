@@ -96,7 +96,9 @@ def attributes():
                          'nargs': '?',
                          'choices': ('tau', 'merged', 'cubex', 'none'),
                          'const': 'tau'},
-            'compat': {'cubex': Target.exclude('scorep_source', None),
+            'compat': {'cubex': (Target.exclude('scorep_source', None),
+                                 Application.require('mpi', True),
+                                 Measurement.require('mpi', True)),
                        'merged': _merged_profile_compat},
         },
         'trace': {
