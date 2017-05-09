@@ -29,20 +29,28 @@
 
 TAU is the core software package of TAU Commander.
 """
+# Settle down pylint.  This is a big, ugly file and there's not much we can do about it.
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-lines
+
 
 import os
 import glob
 import shutil
+import resource
+from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags
-from taucmdr.cf.compiler import host as host_compilers
-from taucmdr.cf.compiler.host import CC, CXX, FC, UPC
+from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
+from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, TAU_CRAYCNL
-
+from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, TAU_CRAYCNL, HOST_ARCH, HOST_OS
 
 LOGGER = logger.get_logger(__name__)
 
@@ -119,6 +127,10 @@ TAU_COMPILER_WRAPPERS = {CC: 'tau_cc.sh',
 
 TAU_MINIMAL_COMPILERS = [CC, CXX]
 
+PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
+
+TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
+
 
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
@@ -127,55 +139,57 @@ class TauInstallation(Installation):
     unusually complex to consider all the corner cases.  This is where most
     of the systemization of TAU is actually implemented so it can get ugly.
     """
-    # Settle down pylint.  This is a big, ugly class and there's not much we can do about it.
-    # pylint: disable=too-many-instance-attributes, too-many-arguments, too-many-locals, too-many-statements
 
-    def __init__(self, sources, target_arch, target_os, compilers,
-                 # Application support features
-                 application_linkage,
-                 openmp_support,
-                 pthreads_support,
-                 tbb_support,
-                 mpi_support,
-                 mpi_include_path,
-                 mpi_library_path,
-                 mpi_libraries,
-                 cuda_support,
-                 cuda_prefix,
-                 opencl_support,
-                 opencl_prefix,
-                 shmem_support,
-                 shmem_include_path,
-                 shmem_library_path,
-                 shmem_libraries,
-                 shmem_version,
-                 mpc_support,
+    def __init__(self, 
+                 sources=None,
+                 target_arch=HOST_ARCH,
+                 target_os=HOST_OS,
+                 compilers=None,
+                 # TAU feature suppport
+                 application_linkage='dynamic',
+                 openmp_support=False,
+                 pthreads_support=False,
+                 tbb_support=False,
+                 mpi_support=False,
+                 mpi_include_path=None,
+                 mpi_library_path=None,
+                 mpi_libraries=None,
+                 cuda_support=False,
+                 cuda_prefix=None,
+                 opencl_support=False,
+                 opencl_prefix=None,
+                 shmem_support=False,
+                 shmem_include_path=None,
+                 shmem_library_path=None,
+                 shmem_libraries=None,
+                 shmem_version="1.3",
+                 mpc_support=False,
                  # Instrumentation methods and options
-                 source_inst,
-                 compiler_inst,
-                 link_only,
-                 io_inst,
-                 keep_inst_files,
-                 reuse_inst_files,
-                 select_file,
+                 source_inst="never",
+                 compiler_inst="never",
+                 link_only=False,
+                 io_inst=False,
+                 keep_inst_files=False,
+                 reuse_inst_files=False,
+                 select_file=None,
                  # Measurement methods and options
-                 profile,
-                 trace,
-                 sample,
-                 metrics,
-                 measure_mpi,
-                 measure_openmp,
-                 measure_opencl,
-                 measure_cuda,
-                 measure_shmem,
-                 measure_heap_usage,
-                 measure_memory_alloc,
-                 measure_comm_matrix,
-                 callpath_depth,
-                 throttle,
-                 throttle_per_call,
-                 throttle_num_calls,
-                 forced_makefile):
+                 profile="tau",
+                 trace="none",
+                 sample=False,
+                 metrics=None,
+                 measure_mpi=False,
+                 measure_openmp="ignore",
+                 measure_opencl=False,
+                 measure_cuda=False,
+                 measure_shmem=False,
+                 measure_heap_usage=False,
+                 measure_memory_alloc=False,
+                 measure_comm_matrix=False,
+                 callpath_depth=100,
+                 throttle=True,
+                 throttle_per_call=10,
+                 throttle_num_calls=100000,
+                 forced_makefile=None):
         """Initialize the TAU installation wrapper class.
 
         Args:
@@ -201,19 +215,19 @@ class TauInstallation(Installation):
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             shmem_version (str): OpenSHMEM standard version compliance infomation.
             mpc_support (bool): Enable or disable MPC support in TAU.
-            source_inst (bool): Enable or disable source-based instrumentation in TAU.
-            compiler_inst (bool): Enable or disable compiler-based instrumentation in TAU.
+            source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
+            compiler_inst (str): Policy for compiler-based instrumentation, one of "always", "fallback", or "never".
             link_only (bool): True to disable instrumentation and link TAU libraries.
             io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
             select_file (str): Path to selective instrumentation file.
-            profile (str): Enable or disable profiling.
-            trace (str): Enable or disable tracing.
+            profile (str): Format for profile files, one of "tau", "merged", "cubex", or "none".
+            trace (str): Format for trace files, one of "slog2", "otf2", or "none".
             sample (bool): Enable or disable event-based sampling.
             metrics (list): Metrics to measure, e.g. ['TIME', 'PAPI_FP_INS']
             measure_mpi (bool): If True then measure time spent in MPI calls.
-            measure_openmp (str): String specifying OpenMP measurement method, e.g. 'opari' or 'ompt'
+            measure_openmp (str): String specifying OpenMP measurement method, one of "ignore", "ompt", or "opari".
             measure_cuda (bool): If True then measure time spent in CUDA calls.
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
             measure_heap_usage (bool): If True then measure memory usage.
@@ -225,6 +239,59 @@ class TauInstallation(Installation):
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
+        assert application_linkage in ('static', 'dynamic')
+        assert openmp_support in (True, False)
+        assert pthreads_support in (True, False)
+        assert tbb_support in (True, False)
+        assert mpi_support in (True, False)
+        assert isinstance(mpi_include_path, list) or mpi_include_path is None
+        assert isinstance(mpi_library_path, list) or mpi_library_path is None
+        assert isinstance(mpi_libraries, list) or mpi_libraries is None
+        assert cuda_support in (True, False)
+        assert isinstance(cuda_prefix, basestring) or cuda_prefix is None
+        assert opencl_support in (True, False)
+        assert isinstance(opencl_prefix, basestring) or opencl_prefix is None
+        assert shmem_support in (True, False)
+        assert isinstance(shmem_include_path, list) or shmem_include_path is None
+        assert isinstance(shmem_library_path, list) or shmem_library_path is None
+        assert isinstance(shmem_libraries, list) or shmem_libraries is None
+        assert isinstance(shmem_version, basestring)
+        assert mpc_support in (True, False)
+        assert source_inst in ("automatic", "manual", "never")
+        assert compiler_inst in ("always", "fallback", "never")
+        assert link_only in (True, False)
+        assert io_inst in (True, False)
+        assert keep_inst_files in (True, False)
+        assert reuse_inst_files in (True, False)
+        assert isinstance(select_file, basestring) or select_file is None
+        assert profile in ("tau", "merged", "cubex", "none")
+        assert trace in ("slog2", "otf2", "none")
+        assert profile != "none" or trace != "none"
+        assert sample in (True, False)
+        assert isinstance(metrics, list) or metrics is None
+        assert measure_mpi in (True, False)
+        assert measure_openmp in ("ignore", "ompt", "opari")
+        assert measure_opencl in (True, False)
+        assert measure_cuda in (True, False)
+        assert measure_shmem in (True, False)
+        assert measure_heap_usage in (True, False)
+        assert measure_memory_alloc in (True, False)
+        assert measure_comm_matrix in (True, False)
+        assert isinstance(callpath_depth, int)
+        assert throttle in (True, False)
+        assert isinstance(throttle_per_call, int)
+        assert isinstance(throttle_num_calls, int)
+        assert isinstance(forced_makefile, basestring) or forced_makefile is None
+        
+        if compilers is None:
+            try:
+                gnu_compilers = GNU.installation()
+            except ConfigurationError:
+                raise SoftwarePackageError("GNU compilers (required to build TAU) could not be found.")
+            compilers = InstalledCompilerSet('FIXME', Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
+        if sources is None:
+            sources = {'tau': 'download'}
+
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os,
                                               compilers, REPOS, COMMANDS, None, None)
         self._tau_makefile = None
@@ -239,15 +306,15 @@ class TauInstallation(Installation):
         self.pthreads_support = pthreads_support
         self.tbb_support = tbb_support
         self.mpi_support = mpi_support
-        self.mpi_include_path = mpi_include_path
-        self.mpi_library_path = mpi_library_path
-        self.mpi_libraries = mpi_libraries
+        self.mpi_include_path = mpi_include_path if mpi_include_path is not None else [] 
+        self.mpi_library_path = mpi_library_path if mpi_library_path is not None else []
+        self.mpi_libraries = mpi_libraries if mpi_libraries is not None else []
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
-        self.shmem_include_path = shmem_include_path
-        self.shmem_library_path = shmem_library_path
-        self.shmem_libraries = shmem_libraries
+        self.shmem_include_path = shmem_include_path if shmem_include_path is not None else [] 
+        self.shmem_library_path = shmem_library_path if shmem_library_path is not None else []
+        self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.shmem_version = shmem_version
         self.mpc_support = mpc_support
         self.source_inst = source_inst
@@ -260,7 +327,7 @@ class TauInstallation(Installation):
         self.profile = profile
         self.trace = trace
         self.sample = sample
-        self.metrics = metrics
+        self.metrics = metrics if metrics is not None else []
         self.measure_mpi = measure_mpi
         self.measure_openmp = measure_openmp
         self.measure_opencl = measure_opencl
@@ -289,7 +356,7 @@ class TauInstallation(Installation):
             if sources['scorep']:
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
-
+    
     def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
@@ -337,6 +404,10 @@ class TauInstallation(Installation):
 
     def verify(self):
         super(TauInstallation, self).verify()
+        
+        # Check PAPI metrics for compatibility
+        if self._uses_papi():
+            self.dependencies['papi'].check_metrics(self.metrics)
 
         # Check for TAU libraries
         tau_makefile = self.get_makefile()
@@ -850,13 +921,16 @@ class TauInstallation(Installation):
             env['SCOREP_ENABLE_PROFILING'] = '1'
         else:
             env['TAU_PROFILE'] = '0'
+            env['SCOREP_ENABLE_PROFILING'] = 'false'
         if self.trace == 'slog2':
             env['TAU_TRACE'] = '1'
         elif self.trace == 'otf2':
             env['TAU_TRACE'] = '1'
             env['SCOREP_ENABLE_TRACING'] = '1'
+            env['SCOREP_TOTAL_MEMORY'] = '1024M'
         else:
             env['TAU_TRACE'] = '0'
+            env['SCOREP_ENABLE_TRACING'] = 'false'
         env['TAU_SAMPLING'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
@@ -920,6 +994,7 @@ class TauInstallation(Installation):
         Returns:
             int: Compiler return value (always 0 if no exception raised).
         """
+        self.install()
         opts, env = self.compiletime_config()
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
@@ -947,6 +1022,7 @@ class TauInstallation(Installation):
             tuple: (cmd, env) where `cmd` is the new command line and `env` is a dictionary of environment
                    variables to set before running the application command.
         """
+        self.install()
         opts, env = self.runtime_config()
         if self.application_linkage == 'static':
             use_tau_exec = False
@@ -967,135 +1043,238 @@ class TauInstallation(Installation):
         else:
             cmd = launcher_cmd + application_cmd
         return cmd, env
-
-    def show_profile(self, path, tool_name=None):
-        """Shows profile data in the specified file or folder.
-
-        Args:
-            path (str): Path to the directory containing profile files or MULTI__ directories.
-            tool_name (str): Name of the profile visualization tool to use, e.g. 'pprof'.
-
-        Returns:
-            int: Return code of the visualization tool.
-        """
-        LOGGER.debug("Showing profile files at '%s'", path)
+    
+    def _check_java(self):
+        abspath = util.which('java')
+        if not abspath:
+            raise ConfigurationError("'java' not found in PATH")
+        try:
+            stdout = util.get_command_output([abspath, '-version'])
+        except (CalledProcessError, OSError) as err:
+            raise ConfigurationError("Failed to get Java version: %s" % err)
+        if 'Java(TM)' not in stdout:
+            LOGGER.warning("'%s' does not appear to be Oracle Java.  Visual performance may be poor.", abspath)
+    
+    def _check_X11(self):  # pylint: disable=invalid-name
         _, env = self.runtime_config()
-        tools = (tool_name,) if tool_name else ('paraprof', 'pprof')
-        for tool in (os.path.join(self.bin_path, x) for x in tools):
-            if not os.path.isdir(path):
-                cmd = [tool, path]
-            else:
-                profiles = 'tauprofile.xml', 'profile.cubex'
-                for profile in (os.path.join(path, x) for x in profiles):
-                    if os.path.isfile(profile):
-                        cmd = [tool, profile]
-                        break
-                else:
-                    cmd = [tool]
-            if util.create_subprocess(cmd, cwd=path, env=env) == 0:
-                break
-            LOGGER.warning("%s failed", tool)
-        else:
-            raise ConfigurationError("All visualization or reporting tools failed to open '%s'" % path,
-                                     "Check Java installation, X11 installation,"
-                                     " network connectivity, and file permissions")
-
-    def show_trace(self, path, tool_name=None):
-        """Shows trace data in the specified file or folder.
-
-        Merges the traces and converts them if needed.
-
+        try:
+            display = env['DISPLAY']
+        except KeyError:
+            raise ConfigurationError("X11 display not configured.",
+                                     "Try setting the DISPLAY environment variable.")
+        try:
+            host, _ = display.split(':')
+        except ValueError:
+            LOGGER.warning("Cannot parse DISPLAY environment variable.")
+        if host:
+            LOGGER.warning("X11 appears to be forwarded to a remote display. Visual performance may be poor.")
+    
+    def get_data_format(self, path):
+        """Guess the data format of a file path.
+        
+        Look at a file's extension and guess what kind of performance data it might be.
+        
         Args:
-            path (str): Path to the directory containing trace files.
-            tool_name (str): Name of the profile visualization tool to use, e.g. 'vampir'.
-
+            path (str): File path.
+            
         Returns:
-            int: Return code of the visualization tool.
-        """
-        LOGGER.debug("Showing trace files at '%s'", path)
-        _, env = self.runtime_config()
-        if self.trace == 'otf2' and tool_name is None:
-            tool_name = 'vampir'
-            LOGGER.info('otf2 requires vampir')
-        if tool_name is None:
-            tool_name = 'jumpshot'
-        if tool_name == 'jumpshot':
-            if not os.path.isdir(path):
-                raise InternalError("Individual trace files not yet supported.")
-            tau_slog2 = os.path.join(path, 'taucmdr.slog2')
-            if not os.path.isfile(tau_slog2):
-                if not os.path.isfile(os.path.join(path, 'taucmdr.trc')):
-                    trc_files = glob.glob(os.path.join(path, '*.trc'))
-                    edf_files = glob.glob(os.path.join(path, '*.edf'))
-                    if not (trc_files and edf_files):
-                        raise ConfigurationError("No *.trc or *.edf files!")
-                    cmd = ['tau_treemerge.pl']
-                    retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-                    if retval != 0:
-                        raise InternalError("Nonzero return code from tau_treemerge.pl")
-                cmd = ['tau2slog2', 'taucmdr.trc', 'taucmdr.edf', '-o', 'taucmdr.slog2']
-                retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-                if retval != 0:
-                    raise InternalError("Nonzero return code from %s" % ' '.join(cmd))
-            LOGGER.info("Opening %s in %s", tau_slog2, tool_name)
-            cmd = [tool_name, tau_slog2]
-            retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-        elif tool_name == 'vampir' or tool_name == 'vampirserver':
-            import resource
-            tau_otf2 = os.path.join(path, 'traces.otf2')
-            if not os.path.isfile(tau_otf2):
-                raise ConfigurationError("otf2 trace files not found.")
-            evt_files = glob.glob(os.path.join(path, 'traces/*.evt'))
-            def_files = glob.glob(os.path.join(path, 'traces/*.def'))
-            if len(evt_files) + len(def_files) > resource.getrlimit(resource.RLIMIT_NOFILE)[0]:
-                raise ConfigurationError("Too many trace files, use Vampir server to view.")
-            if not util.which('vampir'):
-                raise ConfigurationError("Vampir not found in PATH. Contact ParaTools for more information on Vampir.")
-            LOGGER.info("Opening %s in %s", tau_otf2, tool_name)
-            cmd = [tool_name, tau_otf2]
-            retval = util.create_subprocess(cmd, cwd=path, env=env, log=False)
-        else:
-            raise InternalError("Only vampir and jumpshot supported at this time")
-        if retval == 0:
-            return
-        else:
-            raise ConfigurationError("Trace visualizer failed to open '%s'" % path,
-                                     "Check Java installation, X11 installation,"
-                                     " network connectivity, and file permissions")
-
-    def pack_profiles(self, prefix, ppk_file):
-        """Create a PPK file from profile.* files.
-
-        Args:
-            prefix (str): Path to the directory containing profile.* files.
-            ppk_file (str): Absolute path to the PPK file that will be created.
-
+            str: String indicating the data format.
+        
         Raises:
-            ConfigurationError: paraprof failed to pack the profiles.
+            ConfigurationError: Cannot determine the file's data format.
         """
+        root, ext = os.path.splitext(path)
+        if os.path.isdir(path) or root == 'profile':
+            return 'tau'
+        elif ext == '.ppk':
+            return 'ppk'
+        elif ext == '.xml':
+            return 'merged'
+        elif ext == '.cubex':
+            return 'cubex'
+        elif ext == '.slog2':
+            return 'slog2'
+        elif ext == '.otf2':
+            return 'otf2'
+        elif ext == '.gz':
+            root, ext = os.path.splitext(root)
+            if ext == '.xml':
+                return 'merged'
+        raise ConfigurationError("Cannot determine data format of '%s'" % path)
+
+    def is_profile_format(self, fmt):
+        """Return True if ``fmt`` is a string indicating a profile data format."""
+        return fmt in ('tau', 'ppk', 'merged', 'cubex')
+
+    def is_trace_format(self, fmt):
+        """Return True if ``fmt`` is a string indicating a trace data format."""
+        return fmt in ('slog2', 'otf2')
+
+    def _show_unknown(self, tool):
+        def launcher(_, paths, env):
+            cmd = [tool] + paths
+            LOGGER.warning("'%s' not supported. Trying command '%s'", tool, ' '.join(cmd))
+            try:
+                return util.create_subprocess(cmd, env=env)
+            except (CalledProcessError, OSError) as err:
+                raise ConfigurationError("'%s' failed: %s" % (tool, err))
+        return launcher
+
+    def _show_paraprof(self, fmt, paths, env):
+        self._check_java()
+        self._check_X11()
+        for path in paths:
+            if not os.path.exists(path):
+                raise ConfigurationError("Profile file '%s' does not exist" % path)
+        if fmt == 'tau':
+            retval = 0
+            for path in paths:
+                retval += util.create_subprocess([os.path.join(self.bin_path, 'paraprof')], cwd=path, env=env)
+            return retval
+        else:
+            return util.create_subprocess([os.path.join(self.bin_path, 'paraprof')] + paths, env=env)
+    
+    def _show_pprof(self, fmt, paths, env):
+        if fmt != 'tau':
+            raise ConfigurationError("pprof cannot open profiles in '%s' format" % fmt)
+        retval = 0
+        for path in paths:
+            if not os.path.exists(path):
+                raise ConfigurationError("Profile file '%s' does not exist" % path)
+            retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=path, env=env)
+        return retval
+    
+    def _show_jumpshot(self, fmt, paths, env):
+        if fmt != 'slog2':
+            raise ConfigurationError("jumpshot cannot open traces in '%s' format" % fmt)
+        self._check_java()
+        self._check_X11()
+        retval = 0
+        for path in paths:
+            if not os.path.exists(path):
+                raise ConfigurationError("Trace file '%s' does not exist" % path)
+            cwd = os.path.dirname(path)
+            retval += util.create_subprocess([os.path.join(self.bin_path, 'jumpshot'), path], 
+                                             cwd=cwd, env=env, stdout=False)
+        return retval
+    
+    def _show_vampir(self, fmt, paths, env):
+        if fmt != 'otf2':
+            raise ConfigurationError("Vampir cannot open traces in '%s' format" % fmt)
+        if not util.which('vampir'):
+            raise ConfigurationError("Vampir not found in PATH.")
+        self._check_java()
+        self._check_X11()
+        retval = 0
+        for path in paths:
+            if not os.path.exists(path):
+                raise ConfigurationError("Trace file '%s' does not exist" % path)
+            cwd = os.path.dirname(path)
+            evt_files = glob.glob(os.path.join(cwd, 'traces/*.evt'))
+            def_files = glob.glob(os.path.join(cwd, 'traces/*.def'))
+            if len(evt_files) + len(def_files) > resource.getrlimit(resource.RLIMIT_NOFILE)[0]:
+                raise ConfigurationError("Too many trace files, use vampirserver to view.")
+            retval += util.create_subprocess(['vampir', path], cwd=cwd, env=env)
+        return retval
+
+    def show_data_files(self, dataset, profile_tools=None, trace_tools=None):
+        """Displays profile and trace data.
+        
+        Opens one more more data analysis tools to display the specified data files. 
+        
+        Args:
+            dataset (dict): Lists of paths to data files indexed by data format.  See :any:`get_data_format`.
+            profile_tools (list): Visualization or data processing tools for profiles.
+            trace_tools (list): Visualization or data processing tools for traces.
+            
+        Raises:
+            ConfigurationError: An error occurred while displaying a data file.
+        """
+        self.install()
         _, env = self.runtime_config()
-        cmd = ['paraprof', '--pack', ppk_file]
-        retval = util.create_subprocess(cmd, cwd=prefix, env=env)
-        if retval:
-            raise ConfigurationError("ParaProf command '%s' failed in '%s'" % (' '.join(cmd), prefix),
+        for fmt, paths in dataset.iteritems():
+            if self.is_profile_format(fmt):
+                tools = profile_tools if profile_tools is not None else PROFILE_ANALYSIS_TOOLS
+            elif self.is_trace_format(fmt):
+                tools = trace_tools if trace_tools is not None else TRACE_ANALYSIS_TOOLS
+            else:
+                raise InternalError("Unhandled data format '%s'" % fmt)
+            for tool in tools:
+                try:
+                    launcher = getattr(self, '_show_'+tool)
+                except AttributeError:
+                    launcher = self._show_unknown(tool)
+                try:
+                    retval = launcher(fmt, paths, env)
+                except ConfigurationError as err:
+                    LOGGER.warning("%s failed: %s", tool, err)
+                else:
+                    if retval == 0:
+                        break
+                    LOGGER.warning("%s returned %d, trying another tool", tool, retval)
+            else:
+                raise ConfigurationError("All analysis tools failed",
+                                         "Check Java installation, X11 installation,"
+                                         " network connectivity, and file permissions")
+
+    def create_ppk_file(self, dest, src, remove_existing=True):
+        """Write a PPK file at ``dest`` from the data at ``src``.
+        
+        Args:
+            dest (str): Path to the PPK file to create.
+            src (str): Directory containing TAU profiles to convert to PPK format.
+            remove_existing (bool): If True, delete ``dest`` before writing it.
+        """
+        self.install()
+        _, env = self.runtime_config()
+        self._check_java()
+        if os.path.exists(dest):
+            os.remove(dest)
+        cmd = ['paraprof', '--pack', dest]
+        LOGGER.info("Writing '%s'...", dest)
+        if util.create_subprocess(cmd, cwd=src, env=env, stdout=False, show_progress=True):
+            raise ConfigurationError("'%s' failed in '%s'" % (' '.join(cmd), src),
                                      "Make sure Java is installed and working",
                                      "Install the most recent Java from http://java.com")
 
-    def check_metrics(self):
-        """Checks metrics for compatibility.
-
+    def merge_tau_trace_files(self, prefix):
+        """Use tau_treemerge.pl to merge multiple TAU trace files into a single edf and a single trc file.
+        
+        The new edf file and trc file are written to ``prefix``.
+        
+        Args: 
+            prefix (str): Path to the directory containing *.trc and *.edf files.
         """
-        if not self._uses_papi():
-            return
-        papi_metrics = [metric.replace('PAPI_NATIVE:', '') for metric in self.metrics if metric.startswith("PAPI")]
-        if papi_metrics:
-            event_chooser_cmd = os.path.join(self.dependencies['papi'].bin_path, 'papi_event_chooser')
-            cmd = [event_chooser_cmd, 'PRESET'] + papi_metrics
-            if util.create_subprocess(cmd, stdout=False, show_progress=False):
-                LOGGER.warning("PAPI metrics [%s] are not compatible on the current host.\n\n" 
-                                         "You may ignore this warning if you are cross-compiling.\n\n"
-                                         "If you are compiling for the current host:\n\n"
-                                         "   * Use papi_avail to check metric availability.\n"
-                                         "   * Spread the desired metrics over multiple measurements.\n"
-                                         "   * Choose fewer metrics.\n",
-                                         ', '.join(papi_metrics))
+        self.install()
+        trc_files = glob.glob(os.path.join(prefix, '*.trc'))
+        edf_files = glob.glob(os.path.join(prefix, '*.edf'))
+        if not trc_files:
+            raise ConfigurationError("No *.trc files at '%s'" % prefix)
+        if not edf_files:
+            raise ConfigurationError("No *.edf files at '%s'" % prefix)
+        merged_trc = os.path.join(prefix, 'tau.trc')
+        merged_edf = os.path.join(prefix, 'tau.edf')
+        if os.path.isfile(merged_trc):
+            raise ConfigurationError("Remove '%s' before merging *.trc files")
+        if os.path.isfile(merged_edf):
+            raise ConfigurationError("Remove '%s' before merging *.edf files")
+        cmd = [os.path.join(self.bin_path, 'tau_treemerge.pl')]
+        LOGGER.info("Merging %d TAU trace files...", len(trc_files) + len(edf_files))
+        if util.create_subprocess(cmd, cwd=prefix, stdout=False, log=True, show_progress=True):
+            raise InternalError("Nonzero return code from tau_treemerge.pl")
+
+    def tau_trace_to_slog2(self, trc, edf, slog2):
+        """Convert a TAU trace file to SLOG2 format.
+        
+        Args:
+            trc (str): Path to the trc file.
+            edf (str): Path to the edf file.
+            slog2 (str): Path to the slog2 file to create.
+        """
+        self.install()
+        LOGGER.info("Converting TAU trace files to SLOG2 format...")
+        cmd = [os.path.join(self.bin_path, 'tau2slog2'), trc, edf, '-o', slog2]
+        if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
+            raise InternalError("Nonzero return code from tau2slog2")
+        if not os.path.exists(slog2):
+            raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")                

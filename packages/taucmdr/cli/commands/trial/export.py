@@ -28,26 +28,23 @@
 """``trial export`` subcommand."""
 
 import os
+from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.project import Project
-from taucmdr.model.experiment import PROFILE_EXPORT_FORMATS
+
 
 class TrialExportCommand(AbstractCommand):
     """``trial export`` subcommand."""
     
     def _construct_parser(self):
-        usage = "%s [trial_number] [trial_number] ... [arguments]" % self.command
+        usage = "%s [trial_number...] [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('--export-location', 
+        parser.add_argument('--destination', 
                             help="location to store exported trial data",
                             metavar='<path>',
                             default=os.getcwd())
-        parser.add_argument('--profile-format', 
-                            help="specify format of profiles",
-                            metavar='<format>',
-                            choices=PROFILE_EXPORT_FORMATS)
-        parser.add_argument('numbers', 
+        parser.add_argument('trial_numbers', 
                             help="show details for specified trials",
                             metavar='trial_number',
                             nargs='*',
@@ -56,16 +53,16 @@ class TrialExportCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
-        proj = Project.selected()
-        expr = proj.experiment()
-        numbers = []
-        for num in getattr(args, 'numbers', []):
+        trial_numbers = []
+        for num in getattr(args, 'trial_numbers', []):
             try:
-                numbers.append(int(num))
+                trial_numbers.append(int(num))
             except ValueError:
                 self.parser.error("Invalid trial number: %s" % num)
-        export_location = args.export_location
-        profile_format = args.profile_format
-        return expr.export(trial_numbers=numbers, export_location=export_location, profile_format=profile_format)
+        expr = Project.selected().experiment()
+        for trial in expr.trials(trial_numbers):
+            trial.export(args.destination)
+        return EXIT_SUCCESS
+
 
 COMMAND = TrialExportCommand(__name__, summary_fmt="Export trial data.")

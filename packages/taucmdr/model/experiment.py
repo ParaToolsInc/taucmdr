@@ -44,8 +44,6 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
 
 LOGGER = logger.get_logger(__name__)
 
-PROFILE_EXPORT_FORMATS = ['ppk', 'zip', 'tar', 'tgz', 'tar.bz2']
-
 
 def attributes():
     from taucmdr.model.target import Target
@@ -337,107 +335,36 @@ class Experiment(Model):
         cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
         return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env, description)
 
-    def _get_trials(self, trial_numbers=None):
-        """Returns trial data for the given trial numbers.
+    def trials(self, trial_numbers=None):
+        """Get a list of modeled trial records.
 
-        If no trial numbers are given, return the most recent trial.
+        If `bool(trial_numbers)` is False, return the most recent trial.
+        Otherwise return a list of Trial objects for the given trial numbers.
 
         Args:
-            trial_numbers (list): List of numbers of trials to retrieve or None.
+            trial_numbers (list): List of numbers of trials to retrieve.
 
         Returns:
-            list: Trial data.
+            list: Modeled trial records.
 
         Raises:
-            ConfigurationError: Invalid trial number or no trials in this experiment.
+            ConfigurationError: Invalid trial number or no trials in selected experiment.
         """
         if trial_numbers:
-            trials = []
             for num in trial_numbers:
+                trials = []
                 found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
                 if not found:
-                    raise ConfigurationError("No trial number %d in experiment %s" % (num, self.name))
+                    raise ConfigurationError("Experiment '%s' has no trial with number %s" % (self.name, num))
                 trials.append(found)
+            return trials
         else:
             trials = self.populate('trials')
-            if trials:
-                found = trials[0]
-                for trial in trials[1:]:
-                    if trial['begin_time'] > found['begin_time']:
-                        found = trial
-                trials = [found]
-        if not trials:
-            raise ConfigurationError("No trials in experiment %s" % self['name'])
-        for trial in trials:
-            trial_size = trial.get('data_size', 0)
-            if trial_size <= 0:
-                raise ConfigurationError("Trial %s is empty." %trial['number'])
-        return trials
+            if not trials:
+                raise ConfigurationError("No trials in experiment %s" % self['name'])
+            found = trials[0]
+            for trial in trials[1:]:
+                if trial['begin_time'] > found['begin_time']:
+                    found = trial
+            return [found]
 
-    def show(self, profile_tool=None, trace_tool=None, trial_numbers=None):
-        """Show experiment trial data.
-
-        Shows the most recent trial or all trials with given numbers.
-
-        Args:
-            profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.
-            trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.
-            trial_numbers (list): Numbers of trials to show.
-
-        Raises:
-            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
-        """
-        tau = self.configure()
-        meas = self.populate('measurement')
-        for trial in self._get_trials(trial_numbers):
-            prefix = trial.prefix
-            if meas['profile'] != 'none':
-                tau.show_profile(prefix, profile_tool)
-            if meas['trace'] != 'none':
-                tau.show_trace(prefix, trace_tool)
-
-    def export(self, profile_format=None, trial_numbers=None, export_location=None):
-        """Export experiment trial data.
-
-        Exports the most recent trial or all trials with given numbers.
-
-        Args:
-            profile_format (str): File format for exported profiles, see :any:`PROFILE_EXPORT_FORMATS`
-            export_location (str): Directory to contain exported profiles.
-            trial_numbers (list): Numbers of trials to show.
-
-        Raises:
-            ConfigurationError: Invalid trial numbers or no trial data for this experiment.
-        """
-        tau = self.configure()
-        if profile_format is None:
-            meas = self.populate('measurement')
-            if meas['trace'] == 'none':
-                profile_format = PROFILE_EXPORT_FORMATS[0]
-            else:
-                profile_format = PROFILE_EXPORT_FORMATS[3]
-        assert profile_format in PROFILE_EXPORT_FORMATS
-        if not export_location:
-            export_location = os.getcwd()
-        if profile_format == 'ppk':
-            for trial in self._get_trials(trial_numbers):
-                ppk_file = self['name'] + '.trial' + str(trial['number']) + '.ppk'
-                tau.pack_profiles(trial.prefix, os.path.join(export_location, ppk_file))
-        elif profile_format in ('zip', 'tar', 'tgz', 'tar.bz2'):
-            for trial in self._get_trials(trial_numbers):
-                trial_number = str(trial['number'])
-                archive_file = self['name'] + '.trial' + trial_number + '.' + profile_format
-                profile_files = [os.path.join(trial_number, os.path.basename(x))
-                                 for x in trial.profile_files()]
-                _, env = tau.runtime_config()
-                trace_files = [os.path.join(trial_number, x[len(trial.prefix)+1:])
-                               for x in trial.trace_files(env, True)]
-                exportable_files = profile_files + trace_files
-                old_cwd = os.getcwd()
-                os.chdir(os.path.dirname(trial.prefix))
-                try:
-                    util.create_archive(profile_format, os.path.join(export_location, archive_file), exportable_files)
-                finally:
-                    os.chdir(old_cwd)
-        else:
-            raise ConfigurationError("Invalid profile format: %s" % profile_format)
