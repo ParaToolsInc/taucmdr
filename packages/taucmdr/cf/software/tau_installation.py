@@ -1228,7 +1228,7 @@ class TauInstallation(Installation):
         self.install()
         _, env = self.runtime_config()
         self._check_java()
-        if os.path.exists(dest):
+        if remove_existing and os.path.exists(dest):
             os.remove(dest)
         cmd = ['paraprof', '--pack', dest]
         LOGGER.info("Writing '%s'...", dest)
