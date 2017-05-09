@@ -54,6 +54,8 @@ _DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
 
 class MutableArgumentGroup(argparse._ArgumentGroup):
     """Argument group that allows its actions to be modified after creation."""
+    # We're changing the behavior of the superclass so we need to access protected members
+    # pylint: disable=protected-access
     
     def __init__(self, *args, **kwargs):
         super(MutableArgumentGroup, self).__init__(*args, **kwargs)

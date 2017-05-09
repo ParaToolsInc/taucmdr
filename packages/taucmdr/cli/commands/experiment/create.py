@@ -39,6 +39,7 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
 class ExperimentCreateCommand(CreateCommand):
+    """``experiment create`` subcommand."""
     
     def _construct_parser(self):
         parser = super(ExperimentCreateCommand, self)._construct_parser()
