@@ -45,16 +45,16 @@ class BuildTest(tests.TestCase):
 
     def test_abspath_compat(self):
         self.reset_project_storage()
-        cc_cmd = self.get_compiler(CC)
+        cc_cmd = self.assertCompiler(CC)
         self.assertTrue(os.path.isabs(cc_cmd))
         self.assertTrue(build_command.is_compatible(cc_cmd))
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, build_command, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, build_command, ['--help'])
         self.assertIn('Show this help message and exit', stdout)

@@ -38,13 +38,13 @@ class ListTest(tests.TestCase):
     """Tests for :any:`application.list`."""
 
     def test_list(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('app1', stdout)
         self.assertFalse(stderr)
         
     def test_wrongname(self):
-        self.reset_project_storage(app_name='app1')
+        self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['app2'])
         self.assertIn("No application with name='app2'", stderr)
         self.assertFalse(stdout)

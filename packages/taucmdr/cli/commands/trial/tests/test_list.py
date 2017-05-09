@@ -42,20 +42,20 @@ class ListTest(tests.TestCase):
     """Tests for :any:`trial.list`."""
     
     def test_notrials(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn("No trials.", stdout)
         self.assertFalse(stderr)
 
     def test_notrials_one(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['100'])
         self.assertIn("No trial with number='100'", stderr)
         self.assertFalse(stdout)
 
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
@@ -65,7 +65,7 @@ class ListTest(tests.TestCase):
         
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_one(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['0'])
@@ -75,7 +75,7 @@ class ListTest(tests.TestCase):
     
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_multiple(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         for _ in xrange(3):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
@@ -88,7 +88,7 @@ class ListTest(tests.TestCase):
 
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_multiple_subset(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         for _ in xrange(4):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
@@ -102,7 +102,7 @@ class ListTest(tests.TestCase):
 
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_one_invalid(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['100'])

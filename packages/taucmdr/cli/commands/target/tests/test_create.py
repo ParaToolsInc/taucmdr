@@ -43,31 +43,31 @@ class CreateTest(tests.TestCase):
     """Tests for :any:`target.create`."""
 
     def test_create(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['targ02']
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
         self.assertIn('Added target \'targ02\' to project configuration \'proj1\'', stdout)
         self.assertFalse(stderr)
 
     def test_no_args(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, [])
         self.assertIn('error: too few arguments', stderr)
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Create target configurations.', stdout)
         self.assertIn('Show this help message and exit', stdout)
 
     def test_duplicatename(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['targ1'])
         self.assertIn('target create <target_name> [arguments]', stderr)
         self.assertIn('target create: error: A target with name', stderr)
@@ -106,13 +106,13 @@ class CreateTest(tests.TestCase):
 
     def test_cc_flag(self):
         self.reset_project_storage()
-        cc_cmd = self.get_compiler(CC)
+        cc_cmd = self.assertCompiler(CC)
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--cc', cc_cmd])
         self.assertIn("Added target 'test_targ' to project configuration", stdout)
         self.assertFalse(stderr)
         
     def test_cxx_as_cc_flag(self):
         self.reset_project_storage()
-        cxx_cmd = self.get_compiler(CXX)
+        cxx_cmd = self.assertCompiler(CXX)
         self.assertRaises(ConfigurationError, self.exec_command, create_cmd, ['test_targ', '--cc', cxx_cmd])
         

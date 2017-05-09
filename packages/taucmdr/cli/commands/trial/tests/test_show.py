@@ -41,7 +41,7 @@ class ShowTest(tests.TestCase):
     
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_show(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
         argv = ['0', '--profile-tool', 'pprof']

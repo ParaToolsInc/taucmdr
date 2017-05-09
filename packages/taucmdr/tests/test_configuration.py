@@ -38,11 +38,11 @@ from taucmdr.cf.storage.project import ProjectStorageError
 class ConfigurationTest(tests.TestCase):
        
     def test_get_unset(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         self.assertRaises(KeyError, configuration.get, key='some_key', storage=None)
     
     def test_get_unset_all_levels(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         for storage in ORDERED_LEVELS:
             self.assertRaises(KeyError, configuration.get, key='some_key', storage=storage)
 
@@ -52,7 +52,7 @@ class ConfigurationTest(tests.TestCase):
         self.assertRaises(KeyError, configuration.get, key='some_key', storage=None)
 
     def test_put_get(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         test_key = 'test_put_get_key'
         test_value = 'test_put_get_value'
         configuration.put(test_key, test_value)
@@ -60,7 +60,7 @@ class ConfigurationTest(tests.TestCase):
         self.assertEqual(test_value, value)
 
     def test_put_get_all_levels(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         for storage in ORDERED_LEVELS:
             test_key = 'test_put_get_all_levels_key_'+storage.name
             test_value = 'test_put_get_all_levels_value_'+storage.name
@@ -88,7 +88,7 @@ class ConfigurationTest(tests.TestCase):
                         self.assertRaises(KeyError, configuration.get, key=test_key, storage=other_storage)
 
     def test_delete_unset(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         self.assertRaises(KeyError, configuration.delete, key='some_key', storage=None)
         
     def test_parse_config_string(self):
@@ -98,7 +98,7 @@ class ConfigurationTest(tests.TestCase):
             test_value = configuration.get(test_key)
             self.assertIsInstance(test_value, get_type)
             self.assertEqual(get_val, test_value)
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         check_value_type("True", True, bool)
         check_value_type("TRUE", True, bool)
         check_value_type("true", True, bool)

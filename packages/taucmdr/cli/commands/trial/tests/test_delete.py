@@ -44,7 +44,7 @@ class DeleteTest(tests.TestCase):
 
     @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_delete(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, create_command, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, delete_command, ['0'])
@@ -52,7 +52,7 @@ class DeleteTest(tests.TestCase):
         self.assertFalse(stderr)
         
     def test_wrongnumber(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, delete_command, ['-1'])
         self.assertIn('trial delete <trial_number> [arguments]', stderr)
         self.assertIn('trial delete: error: No trial number -1 in the current experiment.', stderr)

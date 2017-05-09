@@ -45,7 +45,7 @@ class EditTest(tests.TestCase):
         self.assertFalse(stdout)
 
     def test_rename(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['proj1', '--new-name', 'proj2']
         self.assertCommandReturnValue(0, edit.COMMAND, argv)
         proj_ctrl = Project.controller()
@@ -54,7 +54,7 @@ class EditTest(tests.TestCase):
         self.assertCommandReturnValue(0, edit.COMMAND, ['proj2', '--new-name', 'proj1'])
     
     def test_set_tau_force_options(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         proj_ctrl = Project.controller()
         # Check that 'force-tau-options' is unset in the new project configuration
         proj1 = proj_ctrl.one({'name': 'proj1'})
@@ -70,7 +70,7 @@ class EditTest(tests.TestCase):
         self.assertListEqual(proj1['force_tau_options'], [tau_options])
         
     def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['proj2', '--new-name', 'proj3']
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('project edit <project_name> [arguments]', stderr)
@@ -78,7 +78,7 @@ class EditTest(tests.TestCase):
         self.assertIn('is not a project name.', stderr)
         
     def test_wrongarg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['app1', '--arg', 'arg1']
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('project edit <project_name> [arguments]', stderr)

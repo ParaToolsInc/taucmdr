@@ -38,16 +38,16 @@ class HelpTest(tests.TestCase):
     """Unit tests for `taucmdr help`"""
     
     def test_help(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['build']
         self.assertCommandReturnValue(0, help_command, argv)
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, help_command, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, help_command, ['--help'])
         self.assertIn('Show this help message and exit', stdout)

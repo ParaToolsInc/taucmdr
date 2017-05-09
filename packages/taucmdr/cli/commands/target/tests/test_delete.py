@@ -38,7 +38,7 @@ class DeleteTest(tests.TestCase):
     """Tests for :any:`target.delete`."""
     
     def test_delete(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['targ2']
         self.assertCommandReturnValue(0, create.COMMAND, argv)
         stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, argv)
@@ -46,7 +46,7 @@ class DeleteTest(tests.TestCase):
         self.assertFalse(stderr)
         
     def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, delete.COMMAND, ['targ2'])
         self.assertIn('target delete <target_name> [arguments]', stderr)
         self.assertIn('target delete: error: No project-level target with name', stderr)

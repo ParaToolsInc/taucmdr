@@ -53,29 +53,29 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_invalid_targ_name(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ_err', '--application', 'app1', '--measurement', 'sample'])
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
 
     def test_invalid_app_name(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ1', '--application', 'app_err', '--measurement', 'sample'])
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
 
     def test_invalid_meas_name(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_err'])
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)

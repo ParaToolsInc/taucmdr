@@ -27,29 +27,42 @@
 #
 """Test functions.
 
-Functions used for unit tests of select.py.
+Functions used for unit tests of export.py.
 """
 
-
-import unittest
 import os
-from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH
+from taucmdr import tests, EXIT_SUCCESS
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands.trial import create, export
-from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_command
-from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+from taucmdr.cf.compiler.mpi import MPI_CC
+from taucmdr.cf.compiler.shmem import SHMEM_CC
+from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
+from taucmdr.cli.commands.trial.export import COMMAND as trial_export_cmd
+from taucmdr.model.project import Project
 
 
-class SelectTest(tests.TestCase):
+class ExportTest(tests.TestCase):
     
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
-    def test_export_format(self):
-        self.reset_project_storage(project_name='proj1')
-        self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'trace', '--target', 'targ1'])
-        self.assertCommandReturnValue(0, experiment_select_command, ['exp2'])
+    def test_export_tau_profile(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['profile'], 'tau')
+        self.assertEqual(meas['trace'], 'none')
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
-        self.assertCommandReturnValue(0, export.COMMAND, ['0'])
-        files = ','.join(os.listdir('.'))
-        self.assertIn('trial0.tgz', files)
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['./a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.ppk'
+        self.assertTrue(os.path.exists(export_file))
+
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_export_merged_profile(self):
+        self.reset_project_storage('--mpi')
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['profile'], 'tau')
+        self.assertEqual(meas['trace'], 'none')
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4' './a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.ppk'
+        self.assertTrue(os.path.exists(export_file))
