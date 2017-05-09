@@ -38,6 +38,7 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
+from unittest import skipIf, skipUnless
 from taucmdr import logger, TAU_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
@@ -88,7 +89,6 @@ def cleanup():
         for path in _DIR_STACK:
             sys.stderr.write("\nWARNING: Test directory '%s' still exists, attempting to clean now...\n" % path)
             _destroy_test_workdir(path)
-
 atexit.register(cleanup)
 
 
@@ -102,6 +102,13 @@ def _null_decorator(_):
     return _
 
 def skipUnlessHaveCompiler(role):
+    """Decorator to skip test functions when no compiler fills the given role.
+    
+    If no installed compiler can fill this role then skip the test and report "<role> compiler not found".
+    
+    Args:
+        role (_CompilerRole): A compiler role.
+    """
     # pylint: disable=invalid-name
     try:
         InstalledCompiler.find_any(role)

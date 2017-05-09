@@ -31,7 +31,6 @@ Functions used for unit tests of delete.py.
 """
 
 
-import unittest
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
@@ -42,7 +41,7 @@ from taucmdr.cli.commands.trial.delete import COMMAND as delete_command
 class DeleteTest(tests.TestCase):
     """Tests for :any:`trial.delete`."""
 
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_delete(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')

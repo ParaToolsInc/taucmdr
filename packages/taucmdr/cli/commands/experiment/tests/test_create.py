@@ -31,7 +31,6 @@ Functions used for unit tests of create.py.
 """
 #pylint: disable=missing-docstring 
 
-import unittest
 from taucmdr import tests, util
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
@@ -39,7 +38,7 @@ from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
 
 class CreateTest(tests.TestCase):
     
-    @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
+    @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_pgi(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'PGI'])

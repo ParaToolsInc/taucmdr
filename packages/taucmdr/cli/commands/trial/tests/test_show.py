@@ -31,7 +31,6 @@ Functions used for unit tests of show.py.
 """
 
 
-import unittest
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cli.commands.trial import show, create
@@ -39,7 +38,7 @@ from taucmdr.cf.compiler.host import CC
 
 class ShowTest(tests.TestCase):
     
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_show(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')

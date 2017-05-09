@@ -32,7 +32,6 @@ Functions used for unit tests of create.py.
 #pylint: disable=missing-docstring
 
 import os
-import unittest
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler.host import CC, CXX, FC
@@ -73,7 +72,7 @@ class CreateTest(tests.TestCase):
         self.assertIn('target create: error: A target with name', stderr)
         self.assertIn('already exists', stderr)
 
-    @unittest.skipUnless(util.which('icc'), "Intel compilers required for this test")
+    @tests.skipUnless(util.which('icc'), "Intel compilers required for this test")
     def test_host_family_intel(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'Intel'])
@@ -90,7 +89,7 @@ class CreateTest(tests.TestCase):
             self.assertEqual(os.path.basename(path), expected, 
                              "Target[%s] is '%s', not '%s'" % (role, path, expected))
 
-    @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
+    @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_host_family_pgi(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'PGI'])
