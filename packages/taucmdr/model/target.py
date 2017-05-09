@@ -384,11 +384,12 @@ def attributes():
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
-            'default': 'download',
+            'default': 'download' if HOST_OS is not DARWIN else None,
             'argparse': {'flags': ('--libunwind',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
         'papi_source': {
