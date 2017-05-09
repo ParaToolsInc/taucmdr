@@ -52,7 +52,17 @@ STORAGE_LEVEL_FLAG = "@"
 _DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
 
 
-class MutableGroupArgumentParser(argparse.ArgumentParser):
+class MutableArgumentGroup(argparse._ArgumentGroup):
+    """Argument group that allows its actions to be modified after creation."""
+    
+    def __init__(self, *args, **kwargs):
+        super(MutableArgumentGroup, self).__init__(*args, **kwargs)
+    
+    def __getitem__(self, option_string):
+        return self._option_string_actions[option_string]
+
+
+class MutableArgumentGroupParser(argparse.ArgumentParser):
     """Argument parser with mutable groups and better help formatting.
 
     :py:class:`argparse.ArgumentParser` doesn't allow groups to change once set 
@@ -60,6 +70,9 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
     """
     # We're changing the behavior of the superclass so we need to access protected members
     # pylint: disable=protected-access
+
+    def __getitem__(self, option_string):
+        return self._option_string_actions[option_string]
 
     def add_argument_group(self, *args, **kwargs):
         """Returns an argument group.
@@ -77,8 +90,10 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
         for group in self._action_groups:
             if group.title == title:
                 return group
-        return super(MutableGroupArgumentParser, self).add_argument_group(*args, **kwargs)
-
+        group = MutableArgumentGroup(self, *args, **kwargs)
+        self._action_groups.append(group)
+        return group
+    
     def format_help(self):
         """Format command line help string."""
         formatter = self._get_formatter()
@@ -111,7 +126,7 @@ class MutableGroupArgumentParser(argparse.ArgumentParser):
                 yield group
                 
     def merge(self, parser, group_title=None, 
-              include_positional=True, include_optional=True, include_storage=False, exclude=None):
+              include_positional=False, include_optional=True, include_storage=False, exclude=None):
         """Merge arguments from a parser into this parser.
         
         Modify this parser by adding additional arguments taken from the supplied parser.
@@ -360,9 +375,9 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
         epilog (str): Text to display after the argument help.
 
     Returns:
-        MutableGroupArgumentParser: The customized argument parser object.
+        MutableArgumentGroupParser: The customized argument parser object.
     """
-    return MutableGroupArgumentParser(prog=prog,
+    return MutableArgumentGroupParser(prog=prog,
                                       usage=usage,
                                       description=description,
                                       epilog=epilog,
@@ -410,9 +425,9 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         positional_primary_key (bool): If True, automatically add a positional argument for the primary key.
 
     Returns:
-        MutableGroupArgumentParser: The customized argument parser object.        
+        MutableArgumentGroupParser: The customized argument parser object.        
     """
-    parser = MutableGroupArgumentParser(prog=prog,
+    parser = MutableArgumentGroupParser(prog=prog,
                                         usage=usage,
                                         description=description,
                                         epilog=epilog,
@@ -474,7 +489,7 @@ def add_storage_flag(parser, action, object_name, plural=False, exclusive=True):
     """Add flag to indicate target storage container.
     
     Args:
-        parser (MutableGroupArgumentParser): The parser to modify.
+        parser (MutableArgumentGroupParser): The parser to modify.
         action (str): The action that will be taken by the command, e.g. "delete" or "list"
         object_name (str): The type of object that will be manipulated, e.g. "application" or "measurement"
         plural (bool): Pluralize help message if True.
