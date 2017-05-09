@@ -42,12 +42,12 @@ class CreateTest(tests.TestCase):
     def test_pgi(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'PGI'])
-        self.assertIn('Added target \'test_targ\' to project configuration', stdout)
+        self.assertIn("Added target 'test_targ' to project configuration", stdout)
         self.assertFalse(stderr)
         stdout, stderr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_PGI'])
-        self.assertIn('Added measurement \'meas_PGI\' to project configuration', stdout)
+        self.assertIn("Added measurement 'meas_PGI' to project configuration", stdout)
         self.assertFalse(stderr)
-        argv = ['test_targ', 'meas_PGI']
+        argv = ['exp2', '--target', 'test_targ', '--application', 'app1', '--measurement', 'meas_PGI']
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
         
@@ -63,18 +63,21 @@ class CreateTest(tests.TestCase):
 
     def test_invalid_targ_name(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ_err', '--application', 'app1', '--measurement', 'sample'])
+        argv = ['exp2', '--target', 'targ_err', '--application', 'app1', '--measurement', 'sample']
+        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
 
     def test_invalid_app_name(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ1', '--application', 'app_err', '--measurement', 'sample'])
+        argv = ['exp2', '--target', 'targ1', '--application', 'app_err', '--measurement', 'sample']
+        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
 
     def test_invalid_meas_name(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_err'])
+        argv = ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_err']
+        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
