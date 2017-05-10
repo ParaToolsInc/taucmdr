@@ -562,11 +562,6 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_CC],
                                    self.compilers[SHMEM_CXX],
                                    self.compilers[SHMEM_FC])
-            # FIXME: A hack to for OpenSHMEM? 
-            if self.tau_magic.name == 'x86_64':
-                cc_command = self.compilers[SHMEM_CC].command
-                cxx_command = self.compilers[SHMEM_CXX].command
-                fortran_magic = 'oshfort'
 
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
