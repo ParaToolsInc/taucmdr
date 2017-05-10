@@ -131,8 +131,11 @@ class Model(StorageRecord):
 
         Raises:
             If the attribute is not set and has no default value then a KeyError is raised.
-        """            
-        return self.element.get(key, self.attributes[key]['default'])
+        """
+        try:
+            return self.element[key]
+        except KeyError:
+            return self.attributes[key]['default']
 
     def on_create(self):
         """Callback to be invoked after a new data record is created.""" 
