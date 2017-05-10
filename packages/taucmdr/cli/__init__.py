@@ -78,7 +78,7 @@ def _command_as_list(module_name):
     """Converts a module name to a command name list.
     
     Maps command module names to their command line equivilants, e.g.
-    'taucmdr.cli.commands.target.create' => ['taucmdr', 'target', 'create']
+    'taucmdr.cli.commands.target.create' => ['tau', 'target', 'create']
 
     Args:
         module_name (str): Name of a module.
@@ -130,13 +130,12 @@ def _get_commands(package_name):
         if cdr:
             walking_import(module, cdr, dct[car])
         elif car not in dct:
-            dct[car] = {}
             __import__(module)
-            dct[car]['__module__'] = sys.modules[module]
+            dct.setdefault(car, {})['__module__'] = sys.modules[module]
 
     command_module = sys.modules[COMMANDS_PACKAGE_NAME]
     for _, module, _ in util.walk_packages(command_module.__path__, prefix=command_module.__name__+'.'):
-        if not module.endswith('__main__'):
+        if not (module.endswith('__main__') or '.tests' in module):
             try:
                 lookup(_command_as_list(module), _COMMANDS)
             except KeyError:
@@ -205,13 +204,10 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
         list: List of modules corresponding to all commands and subcommands.
     """
     all_commands = []
-    commands = sorted([i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'])
-    for cmd, topcmd in commands:
-        if cmd == 'tests':
-            continue
+    commands = sorted((i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'))
+    for _, topcmd in commands:
         for subcmd, mod in topcmd.iteritems():
-            if subcmd != '__module__' and subcmd != 'tests':
-                all_commands.append(mod['__module__'].__name__)
+            all_commands.append(mod['__module__'].__name__)
     return all_commands
 
 def find_command(cmd):
