@@ -147,7 +147,7 @@ def command_from_module_name(module_name):
     """Converts a module name to a command name string.
     
     Maps command module names to their command line equivilants, e.g.
-    'taucmdr.cli.commands.target.create' => 'taucmdr target create'
+    'taucmdr.cli.commands.target.create' => 'tau target create'
     
     Args:
         module_name (str): Name of a module.
@@ -257,7 +257,7 @@ def find_command(cmd):
 def execute_command(cmd, cmd_args=None, parent_module=None):
     """Import the command module and run its main routine.
     
-    Partial commands are allowed, e.g. cmd=['taucmdr', 'cli', 'commands', 'app', 'cre'] will resolve
+    Partial commands are allowed, e.g. cmd=['tau', 'cli', 'commands', 'app', 'cre'] will resolve
     to 'taucmdr.cli.commands.application.create'.  If the command can't be found then the parent 
     command (if any) will be invoked with the ``--help`` flag.
     
