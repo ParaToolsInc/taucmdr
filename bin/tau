@@ -34,9 +34,30 @@ Just patches through to tau.cli.commands.__main__
 if __name__ == '__main__':
     import os
     import sys
+    from contextlib import contextmanager
 
     if getattr(sys, 'frozen', False):
         __file__ = sys.executable
+
+    @contextmanager
+    def profiler():
+        profile_taucmdr = os.environ.get('__TAUCMDR_PROFILE_TAUCMDR__')
+        if not profile_taucmdr:
+            yield
+        else:
+            from cProfile import Profile
+            prof = Profile()
+            prof.enable()
+            try:
+                yield
+            finally:
+                prof.disable()
+                if profile_taucmdr == "stdout":
+                    prof.print_stats(sort="tottime")
+                else:
+                    prof.dump_stats(profile_taucmdr)
+                    print "Profile written to '%s'" % profile_taucmdr
+                    print "Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr
 
     here = os.path.realpath(os.path.dirname(__file__))
     os.environ['__TAUCMDR_HOME__'] = os.path.join(here, '..')
@@ -44,6 +65,7 @@ if __name__ == '__main__':
     packages = os.path.join(here, '..', 'packages')
     sys.path.insert(0, packages)
 
-    from taucmdr.cli.commands.__main__ import COMMAND as cli_main_cmd
-    sys.exit(cli_main_cmd.main(sys.argv[1:]))
+    with profiler():
+        from taucmdr.cli.commands.__main__ import COMMAND as cli_main_cmd
+        sys.exit(cli_main_cmd.main(sys.argv[1:]))
 
