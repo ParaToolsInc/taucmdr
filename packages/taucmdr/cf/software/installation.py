@@ -32,6 +32,7 @@ import sys
 import multiprocessing
 from taucmdr import logger, util, configuration
 from taucmdr.error import ConfigurationError
+from taucmdr.progress import ProgressIndicator, progress_spinner
 from taucmdr.cf.storage.levels import ORDERED_LEVELS
 from taucmdr.cf.storage.levels import highest_writable_storage 
 from taucmdr.cf.software import SoftwarePackageError
@@ -254,10 +255,19 @@ class Installation(object):
         if gid is None:
             parent_stat = os.stat(os.path.dirname(self.install_prefix))
             gid = parent_stat.st_gid
-        os.chown(self.install_prefix, -1, gid)
-        for root, dirs, files in os.walk(self.install_prefix):
-            for path in (os.path.join(root, x) for x in files + dirs):
-                os.chown(path, -1, gid)
+        paths = [self.install_prefix]
+        LOGGER.info("Checking installed files...")
+        with progress_spinner():
+            for root, dirs, files in os.walk(self.install_prefix):
+                paths.extend((os.path.join(root, x) for x in dirs))
+        LOGGER.info("Setting file permissions...")
+        with ProgressIndicator(len(paths)) as progress_bar:
+            for i, path in enumerate(paths):
+                try:
+                    os.chown(path, -1, gid)
+                except OSError as err:
+                    LOGGER.debug("Cannot set group on '%s': %s", path, err)
+                progress_bar.update(i)
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
