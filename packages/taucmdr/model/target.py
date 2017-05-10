@@ -480,7 +480,10 @@ class Target(Model):
         for attr in self.attributes:
             if attr.endswith('_source'):
                 key = attr.replace('_source', '')
-                sources[key] = self.get(attr)
+                try:
+                    sources[key] = self[attr]
+                except KeyError:
+                    pass
         return sources
 
     def compilers(self):
