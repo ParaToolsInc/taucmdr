@@ -477,13 +477,9 @@ class Target(Model):
             dict: Software package paths indexed by package name.
         """ 
         sources = {}
-        for attr in self.attributes:
-            if attr.endswith('_source'):
-                key = attr.replace('_source', '')
-                try:
-                    sources[key] = self[attr]
-                except KeyError:
-                    pass
+        for attr, val in self.iteritems():
+            if val and attr.endswith('_source'):
+                sources[attr.replace('_source', '')] = val
         return sources
 
     def compilers(self):
