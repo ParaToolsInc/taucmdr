@@ -676,7 +676,9 @@ class TauInstallation(Installation):
                 shutil.move(self._prepare_src(), self.install_prefix)
             self._src_prefix = self.install_prefix
             self.configure()
-            self.make_install()
+            with util.umask(002):
+                self.make_install()
+            self.set_group()
         except Exception as err:
             LOGGER.info("%s installation failed: %s ", self.title, err)
             raise

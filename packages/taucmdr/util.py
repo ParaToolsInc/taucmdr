@@ -142,8 +142,17 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     shutil.rmtree(path, ignore_errors, onerror)
 
 
-def _is_exec(fpath):
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+@contextmanager
+def umask(new_mask):
+    """Context manager to temporarily set the process umask.
+    
+    Args:
+        new_mask: The argument to :any:`os.umask`.
+    """ 
+    old_mask = os.umask(new_mask)
+    yield
+    os.umask(old_mask)
+
 
 _WHICH_CACHE = {}
 def which(program, use_cached=True):
@@ -168,6 +177,7 @@ def which(program, use_cached=True):
             return _WHICH_CACHE[program]
         except KeyError:
             pass
+    _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
     fpath, _ = os.path.split(program)
     if fpath:
         abs_program = os.path.abspath(program)

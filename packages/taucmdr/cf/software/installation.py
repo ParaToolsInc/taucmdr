@@ -233,7 +233,7 @@ class Installation(object):
     @install_prefix.setter
     def install_prefix(self, value):
         self._set_install_prefix(value)
-
+    
     def _lookup_target_os_list(self, dct):
         if not dct:
             return []
@@ -245,6 +245,20 @@ class Installation(object):
         else:
             return arch_dct.get(self.target_os, arch_dct.get(None, default))
         
+    def set_group(self, gid=None):
+        """Sets the group for all files in the installation.
+        
+        Args:
+            gid (int): Group ID number.  If not given the use the group ID of the folder containing the installation.
+        """
+        if gid is None:
+            parent_stat = os.stat(os.path.dirname(self.install_prefix))
+            gid = parent_stat.st_gid
+        os.chown(self.install_prefix, -1, gid)
+        for root, dirs, files in os.walk(self.install_prefix):
+            for path in (os.path.join(root, x) for x in files + dirs):
+                os.chown(path, -1, gid)
+
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
         
@@ -488,7 +502,7 @@ class AutotoolsInstallation(Installation):
         # Some systems use lib64 instead of lib
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
             os.symlink(self.lib_path+'64', self.lib_path)
-
+            
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         
@@ -523,7 +537,9 @@ class AutotoolsInstallation(Installation):
             self._src_prefix = self._prepare_src()
             self.configure([], env)
             self.make([], env)
-            self.make_install([], env)
+            with util.umask(002):
+                self.make_install([], env)
+            self.set_group()
         except Exception as err:
             LOGGER.info("%s installation failed: %s ", self.title, err)
             raise
