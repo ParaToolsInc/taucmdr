@@ -477,8 +477,13 @@ class TauInstallation(Installation):
                     selected_inc = path
                     break
             else:
+                if self.tau_magic is TAU_CRAYCNL:
+                    hints = ("Check that the 'cray-shmem' module is loaded",)
+                else:
+                    hints = tuple()
                 raise ConfigurationError("%s not found on include path: %s" %
-                                         (header, os.pathsep.join(include_path)))
+                                         (header, os.pathsep.join(include_path)),
+                                         *hints)
         library_path = unique(user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
         if library_path:
             selected_lib = None
