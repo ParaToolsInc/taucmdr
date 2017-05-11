@@ -153,9 +153,7 @@
             <span class="n">launcher_cmd</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">launcher</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_launcher</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">)</span>
-        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
-        <span class="n">proj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
-        <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">managed_run</span><span class="p">(</span><span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span></div></div>
 
 

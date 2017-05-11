@@ -178,8 +178,11 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            If the attribute is not set and has no default value then a KeyError is raised.</span>
-<span class="sd">        &quot;&quot;&quot;</span>            
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">])</span></div>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Model.on_create"><a class="viewcode-back" href="../../../taucmdr.mvc.model.html#taucmdr.mvc.model.Model.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Callback to be invoked after a new data record is created.&quot;&quot;&quot;</span> </div>
@@ -345,14 +348,11 @@
 <div class="viewcode-block" id="Model.construct_condition"><a class="viewcode-back" href="../../../taucmdr.mvc.model.html#taucmdr.mvc.model.Model.construct_condition">[docs]</a>    <span class="k">def</span> <span class="nf">construct_condition</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">attr_defined</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attr_undefined</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attr_eq</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attr_ne</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs a compatibility condition, see :any:`check_compatibility`.</span>
 <span class="sd">        </span>
-<span class="sd">        The returned condition is a callable that accepts five or six arguments:</span>
+<span class="sd">        The returned condition is a callable that accepts four arguments:</span>
 <span class="sd">            * lhs (Model): The left-hand side of the `check_compatibility` operation.</span>
 <span class="sd">            * lhs_attr (str): Name of the attribute that defines the &#39;compat&#39; property.</span>
 <span class="sd">            * lhs_value: The value of the attribute that defines the &#39;compat&#39; property.</span>
 <span class="sd">            * rhs (Model): Controller of the data record we are checking against.</span>
-<span class="sd">            * rhs_attr (str): The attribute we are checking for compatibility.</span>
-<span class="sd">            * checked_value (str): The required or desired value of the attribute we are checking for compatibility.</span>
-<span class="sd">                                   Only used by `attr_eq` and `attr_ne`.</span>
 <span class="sd">        </span>
 <span class="sd">        The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes </span>
 <span class="sd">        are fatally incompatibile, i.e. the user&#39;s operation is guaranteed to fail with the chosen </span>
@@ -362,10 +362,8 @@
 <span class="sd">        See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.</span>
 <span class="sd">        </span>
 <span class="sd">        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare </span>
-<span class="sd">        the specified attribute against or a callback function as described below. To enable complex </span>
-<span class="sd">        conditions, args[1] may be a callback function.  In this case, args[1] must check attribute </span>
+<span class="sd">        the specified attribute against or a callback function.  If args[1] is callable, it must check attribute </span>
 <span class="sd">        existance and value correctness and throw the appropriate exception and/or emit log messages.</span>
-<span class="sd">        See :py:func:`taucmdr.model.measurement.intel_only` for an example of such a callback function.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].</span>

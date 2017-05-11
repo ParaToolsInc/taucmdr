@@ -169,18 +169,12 @@ the above expressions do nothing.</p>
 <em class="property">classmethod </em><code class="descname">construct_condition</code><span class="sig-paren">(</span><em>args</em>, <em>attr_defined=None</em>, <em>attr_undefined=None</em>, <em>attr_eq=None</em>, <em>attr_ne=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.construct_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.construct_condition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition, see <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a>.</p>
 <dl class="docutils">
-<dt>The returned condition is a callable that accepts five or six arguments:</dt>
+<dt>The returned condition is a callable that accepts four arguments:</dt>
 <dd><ul class="first last simple">
 <li>lhs (Model): The left-hand side of the <cite>check_compatibility</cite> operation.</li>
 <li>lhs_attr (str): Name of the attribute that defines the &#8216;compat&#8217; property.</li>
 <li>lhs_value: The value of the attribute that defines the &#8216;compat&#8217; property.</li>
 <li>rhs (Model): Controller of the data record we are checking against.</li>
-<li>rhs_attr (str): The attribute we are checking for compatibility.</li>
-<li><dl class="first docutils">
-<dt>checked_value (str): The required or desired value of the attribute we are checking for compatibility.</dt>
-<dd>Only used by <cite>attr_eq</cite> and <cite>attr_ne</cite>.</dd>
-</dl>
-</li>
 </ul>
 </dd>
 </dl>
@@ -190,10 +184,8 @@ records. It may emit log messages to indicate that the records are not perfectly
 but that the user&#8217;s operation is still likely to succeed with the chosen records.</p>
 <p>See <a class="reference internal" href="#taucmdr.mvc.model.Model.require" title="taucmdr.mvc.model.Model.require"><code class="xref any py py-meth docutils literal"><span class="pre">require</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.encourage" title="taucmdr.mvc.model.Model.encourage"><code class="xref any py py-meth docutils literal"><span class="pre">encourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.discourage" title="taucmdr.mvc.model.Model.discourage"><code class="xref any py py-meth docutils literal"><span class="pre">discourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.exclude" title="taucmdr.mvc.model.Model.exclude"><code class="xref any py py-meth docutils literal"><span class="pre">exclude</span></code></a> for common conditions.</p>
 <p>args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare
-the specified attribute against or a callback function as described below. To enable complex
-conditions, args[1] may be a callback function.  In this case, args[1] must check attribute
-existance and value correctness and throw the appropriate exception and/or emit log messages.
-See <code class="xref py py-func docutils literal"><span class="pre">taucmdr.model.measurement.intel_only()</span></code> for an example of such a callback function.</p>
+the specified attribute against or a callback function.  If args[1] is callable, it must check attribute
+existance and value correctness and throw the appropriate exception and/or emit log messages.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

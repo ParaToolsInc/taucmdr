@@ -57,12 +57,6 @@
 configurations in a single container.  Selecting one of each forms a new <a class="reference internal" href="taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment" title="taucmdr.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a>.
 Each application of the <a class="reference internal" href="taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment" title="taucmdr.model.experiment.Experiment"><code class="xref any py py-class docutils literal"><span class="pre">Experiment</span></code></a> generates a new <a class="reference internal" href="taucmdr.model.trial.html#taucmdr.model.trial.Trial" title="taucmdr.model.trial.Trial"><code class="xref any py py-class docutils literal"><span class="pre">Trial</span></code></a> record along with
 some performance data (profiles, traces, etc.).</p>
-<dl class="exception">
-<dt id="taucmdr.model.project.ExperimentSelectionError">
-<em class="property">exception </em><code class="descclassname">taucmdr.model.project.</code><code class="descname">ExperimentSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/project.html#ExperimentSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.project.ExperimentSelectionError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="taucmdr.error.html#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
-</dd></dl>
-
 <dl class="class">
 <dt id="taucmdr.model.project.Project">
 <em class="property">class </em><code class="descclassname">taucmdr.model.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.project.Project" title="Permalink to this definition">¶</a></dt>
@@ -75,7 +69,7 @@ some performance data (profiles, traces, etc.).</p>
 
 <dl class="attribute">
 <dt id="taucmdr.model.project.Project.attributes">
-<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'project name'}, 'experiment': {'model': &lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'description': 'the current experiment'}, 'measurements': {'via': 'projects', 'description': 'measurements used by this project', 'collection': &lt;class 'taucmdr.model.measurement.Measurement'&gt;}, 'force_tau_options': {'compat': {True: &lt;function condition at 0x7f84dea095f0&gt;}, 'argparse': {'flags': ('--force-tau-options',), 'metavar': '&lt;option&gt;'}, 'rebuild_on_change': True, 'type': 'array', 'description': 'forcibly add options to TAU_OPTIONS environment variable (not recommended)'}, 'applications': {'via': 'projects', 'description': 'applications used by this project', 'collection': &lt;class 'taucmdr.model.application.Application'&gt;}, 'experiments': {'via': 'project', 'description': 'experiments formed from this project', 'collection': &lt;class 'taucmdr.model.experiment.Experiment'&gt;}, 'targets': {'via': 'projects', 'description': 'targets used by this project', 'collection': &lt;class 'taucmdr.model.target.Target'&gt;}}</em><a class="headerlink" href="#taucmdr.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'project name'}, 'experiment': {'model': &lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'description': 'the current experiment'}, 'measurements': {'via': 'projects', 'description': 'measurements used by this project', 'collection': &lt;class 'taucmdr.model.measurement.Measurement'&gt;}, 'force_tau_options': {'compat': {True: &lt;function condition at 0x7f21f3df6500&gt;}, 'argparse': {'flags': ('--force-tau-options',), 'metavar': '&lt;option&gt;'}, 'rebuild_on_change': True, 'type': 'array', 'description': 'forcibly add options to TAU_OPTIONS environment variable (not recommended)'}, 'applications': {'via': 'projects', 'description': 'applications used by this project', 'collection': &lt;class 'taucmdr.model.application.Application'&gt;}, 'experiments': {'via': 'project', 'description': 'experiments formed from this project', 'collection': &lt;class 'taucmdr.model.experiment.Experiment'&gt;}, 'targets': {'via': 'projects', 'description': 'targets used by this project', 'collection': &lt;class 'taucmdr.model.target.Target'&gt;}}</em><a class="headerlink" href="#taucmdr.model.project.Project.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -95,7 +89,7 @@ some performance data (profiles, traces, etc.).</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment" title="taucmdr.model.experiment.Experiment">Experiment</a></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#taucmdr.model.project.ExperimentSelectionError" title="taucmdr.model.project.ExperimentSelectionError"><code class="xref py py-exc docutils literal"><span class="pre">ExperimentSelectionError</span></code></a> &#8211;
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ExperimentSelectionError</span></code> &#8211;
 No experiment currently selected.</td>
 </tr>
 </tbody>
@@ -125,6 +119,11 @@ No experiment currently selected.</td>
 <dl class="attribute">
 <dt id="taucmdr.model.project.Project.references">
 <code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'project')])</em><a class="headerlink" href="#taucmdr.model.project.Project.references" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="taucmdr.model.project.Project.selected">
+<em class="property">classmethod </em><code class="descname">selected</code><span class="sig-paren">(</span><em>storage=&lt;taucmdr.cf.storage.project.ProjectStorage object&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/project.html#Project.selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.project.Project.selected" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -159,12 +158,6 @@ No experiment currently selected.</td>
 <code class="descname">unselect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/project.html#ProjectController.unselect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.project.ProjectController.unselect" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</dd></dl>
-
-<dl class="exception">
-<dt id="taucmdr.model.project.ProjectSelectionError">
-<em class="property">exception </em><code class="descclassname">taucmdr.model.project.</code><code class="descname">ProjectSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/project.html#ProjectSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.project.ProjectSelectionError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="taucmdr.error.html#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
 </dd></dl>
 
 <dl class="function">

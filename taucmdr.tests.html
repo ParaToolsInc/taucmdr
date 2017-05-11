@@ -79,6 +79,16 @@
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="taucmdr.tests.TestCase.assertCompiler">
+<code class="descname">assertCompiler</code><span class="sig-paren">(</span><em>role</em>, <em>target_name='targ1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.assertCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.assertCompiler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.tests.TestCase.assertManagedBuild">
+<code class="descname">assertManagedBuild</code><span class="sig-paren">(</span><em>return_value</em>, <em>compiler_role</em>, <em>compiler_args</em>, <em>src</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.assertManagedBuild"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.assertManagedBuild" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="taucmdr.tests.TestCase.assertNotCommandReturnValue">
 <code class="descname">assertNotCommandReturnValue</code><span class="sig-paren">(</span><em>return_value</em>, <em>cmd</em>, <em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.assertNotCommandReturnValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.assertNotCommandReturnValue" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -118,30 +128,19 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.tests.TestCase.get_compiler">
-<code class="descname">get_compiler</code><span class="sig-paren">(</span><em>role</em>, <em>target_name='targ1'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.get_compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.get_compiler" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="taucmdr.tests.TestCase.reset_project_storage">
-<code class="descname">reset_project_storage</code><span class="sig-paren">(</span><em>project_name='proj1'</em>, <em>target_name='targ1'</em>, <em>app_name='app1'</em>, <em>bare=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.reset_project_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.reset_project_storage" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reset_project_storage</code><span class="sig-paren">(</span><em>init_args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.reset_project_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.reset_project_storage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete and recreate project storage.</p>
 <p>Effectively the same as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span>&gt; rm -rf .tau
-&gt; tau init --project-name=proj1 --target-name=targ1
+&gt; tau initialize [init_args]
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>project_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; New project&#8217;s name.</li>
-<li><strong>target_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; New target&#8217;s name.</li>
-<li><strong>app_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; New application&#8217;s name.</li>
-<li><strong>bare</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If true, initialize project storage but don&#8217;t create default objects.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>init_args</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line arguments to <cite>tau initialize</cite>.</td>
 </tr>
 </tbody>
 </table>
@@ -209,6 +208,21 @@
 <p>Sets the current working directory and <a class="reference external" href="https://docs.python.org/library/tempfile.html#tempfile.tempdir" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">tempfile.tempdir</span></code></a> to the newly created test directory.</p>
 <p>Directories created via this method are tracked.  If any of them exist when the program exits then
 an error message is shown for each.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.tests.skipUnlessHaveCompiler">
+<code class="descclassname">taucmdr.tests.</code><code class="descname">skipUnlessHaveCompiler</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#skipUnlessHaveCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.skipUnlessHaveCompiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to skip test functions when no compiler fills the given role.</p>
+<p>If no installed compiler can fill this role then skip the test and report &#8220;&lt;role&gt; compiler not found&#8221;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>role</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerRole" title="taucmdr.cf.compiler._CompilerRole"><em>_CompilerRole</em></a>) &#8211; A compiler role.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>

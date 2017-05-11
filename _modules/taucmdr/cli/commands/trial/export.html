@@ -75,26 +75,23 @@
 <span class="sd">&quot;&quot;&quot;``trial export`` subcommand.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
-<span class="kn">from</span> <span class="nn">taucmdr.model.experiment</span> <span class="kn">import</span> <span class="n">PROFILE_EXPORT_FORMATS</span>
+
 
 <div class="viewcode-block" id="TrialExportCommand"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.trial.export.html#taucmdr.cli.commands.trial.export.TrialExportCommand">[docs]</a><span class="k">class</span> <span class="nc">TrialExportCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``trial export`` subcommand.&quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [trial_number] [trial_number] ... [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [trial_number...] [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--export-location&#39;</span><span class="p">,</span> 
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--destination&#39;</span><span class="p">,</span> 
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;location to store exported trial data&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--profile-format&#39;</span><span class="p">,</span> 
-                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;specify format of profiles&quot;</span><span class="p">,</span>
-                            <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;format&gt;&#39;</span><span class="p">,</span>
-                            <span class="n">choices</span><span class="o">=</span><span class="n">PROFILE_EXPORT_FORMATS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;numbers&#39;</span><span class="p">,</span> 
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;trial_numbers&#39;</span><span class="p">,</span> 
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show details for specified trials&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;trial_number&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
@@ -103,18 +100,17 @@
 
 <div class="viewcode-block" id="TrialExportCommand.main"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.trial.export.html#taucmdr.cli.commands.trial.export.TrialExportCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
-        <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
-        <span class="n">proj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
-        <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
-        <span class="n">numbers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;numbers&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">trial_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;trial_numbers&#39;</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
+                <span class="n">trial_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid trial number: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num</span><span class="p">)</span>
-        <span class="n">export_location</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">export_location</span>
-        <span class="n">profile_format</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">profile_format</span>
-        <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">trial_numbers</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span> <span class="n">export_location</span><span class="o">=</span><span class="n">export_location</span><span class="p">,</span> <span class="n">profile_format</span><span class="o">=</span><span class="n">profile_format</span><span class="p">)</span></div></div>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">expr</span><span class="o">.</span><span class="n">trials</span><span class="p">(</span><span class="n">trial_numbers</span><span class="p">):</span>
+            <span class="n">trial</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">destination</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div></div>
+
 
 <span class="n">COMMAND</span> <span class="o">=</span> <span class="n">TrialExportCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Export trial data.&quot;</span><span class="p">)</span>
 </pre></div>

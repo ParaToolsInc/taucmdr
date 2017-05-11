@@ -77,34 +77,32 @@
 <span class="sd">Functions used for unit tests of build.py.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">tests</span><span class="p">,</span> <span class="n">TAU_HOME</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.build</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">build_command</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">tests</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.build</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">build_command</span>
+
 
 <div class="viewcode-block" id="BuildTest"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.tests.test_build.html#taucmdr.cli.commands.tests.test_build.BuildTest">[docs]</a><span class="k">class</span> <span class="nc">BuildTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Unit tests for `taucmdr build`&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BuildTest.test_build"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.tests.test_build.html#taucmdr.cli.commands.tests.test_build.BuildTest.test_build">[docs]</a>    <span class="k">def</span> <span class="nf">test_build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="o">+</span><span class="s1">&#39;/.testfiles/hello.c&#39;</span><span class="p">,</span> <span class="n">tests</span><span class="o">.</span><span class="n">get_test_workdir</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/hello.c&#39;</span><span class="p">)</span>
-        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
-        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc_cmd</span><span class="p">,</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">build_command</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertManagedBuild</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">CC</span><span class="p">,</span> <span class="p">[],</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BuildTest.test_abspath_compat"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.tests.test_build.html#taucmdr.cli.commands.tests.test_build.BuildTest.test_abspath_compat">[docs]</a>    <span class="k">def</span> <span class="nf">test_abspath_compat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
-        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
+        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCompiler</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">cc_cmd</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">build_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cc_cmd</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="BuildTest.test_h_arg"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.tests.test_build.html#taucmdr.cli.commands.tests.test_build.BuildTest.test_h_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_h_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">build_command</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;-h&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BuildTest.test_help_arg"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.tests.test_build.html#taucmdr.cli.commands.tests.test_build.BuildTest.test_help_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_help_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">(</span><span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">build_command</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;--help&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
 </pre></div>

@@ -113,7 +113,7 @@ settings that are incompatible with the application.</p>
 
 <dl class="attribute">
 <dt>
-<code class="descname">message_fmt</code><em class="property"> = &quot;An unexpected %(typename)s exception was raised:\n\n%(value)s\n\n%(backtrace)sThis is a bug in TAU Commander.\nPlease use --log to enable debug logging and send '%(logfile)s' to %(contact)s for assistance.&quot;</em></dt>
+<code class="descname">message_fmt</code><em class="property"> = &quot;An unexpected %(typename)s exception was raised:\n\n%(value)s\n\n%(backtrace)s\nThis is a bug in TAU Commander.\nPlease send '%(logfile)s' to %(contact)s for assistance.&quot;</em></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -121,6 +121,13 @@ settings that are incompatible with the application.</p>
 <code class="descname">show_backtrace</code><em class="property"> = False</em></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="exception">
+<dt id="taucmdr.error.ExperimentSelectionError">
+<em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ExperimentSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ExperimentSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ExperimentSelectionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
+<p>Indicates an error while selecting an experiment.</p>
 </dd></dl>
 
 <dl class="exception">
@@ -155,6 +162,13 @@ settings that are incompatible with the application.</p>
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ModelError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#taucmdr.error.InternalError" title="taucmdr.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.InternalError</span></code></a></p>
 <p>Indicates an error in model data or the model itself.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="taucmdr.error.ProjectSelectionError">
+<em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ProjectSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ProjectSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ProjectSelectionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
+<p>Indicates an error while selecting a project.</p>
 </dd></dl>
 
 <dl class="exception">

@@ -76,20 +76,28 @@
 
 <span class="sd">TAU is the core software package of TAU Commander.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Settle down pylint.  This is a big, ugly file and there&#39;s not much we can do about it.</span>
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<span class="c1"># pylint: disable=too-many-arguments</span>
+<span class="c1"># pylint: disable=too-many-locals</span>
+<span class="c1"># pylint: disable=too-many-statements</span>
+<span class="c1"># pylint: disable=too-many-lines</span>
+
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">resource</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software</span> <span class="kn">import</span> <span class="n">SoftwarePackageError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software.installation</span> <span class="kn">import</span> <span class="n">Installation</span><span class="p">,</span> <span class="n">parallel_make_flags</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">host</span> <span class="k">as</span> <span class="n">host_compilers</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">host</span> <span class="k">as</span> <span class="n">host_compilers</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span><span class="p">,</span> <span class="n">GNU</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">TauMagic</span><span class="p">,</span> <span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">TAU_CRAYCNL</span>
-
+<span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">TauMagic</span><span class="p">,</span> <span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">TAU_CRAYCNL</span><span class="p">,</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">HOST_OS</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -166,6 +174,10 @@
 
 <span class="n">TAU_MINIMAL_COMPILERS</span> <span class="o">=</span> <span class="p">[</span><span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">]</span>
 
+<span class="n">PROFILE_ANALYSIS_TOOLS</span> <span class="o">=</span> <span class="s1">&#39;paraprof&#39;</span><span class="p">,</span> <span class="s1">&#39;pprof&#39;</span>
+
+<span class="n">TRACE_ANALYSIS_TOOLS</span> <span class="o">=</span> <span class="s1">&#39;jumpshot&#39;</span><span class="p">,</span> <span class="s1">&#39;vampir&#39;</span>
+
 
 <div class="viewcode-block" id="TauInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation">[docs]</a><span class="k">class</span> <span class="nc">TauInstallation</span><span class="p">(</span><span class="n">Installation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Encapsulates a TAU installation.</span>
@@ -174,54 +186,56 @@
 <span class="sd">    unusually complex to consider all the corner cases.  This is where most</span>
 <span class="sd">    of the systemization of TAU is actually implemented so it can get ugly.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Settle down pylint.  This is a big, ugly class and there&#39;s not much we can do about it.</span>
-    <span class="c1"># pylint: disable=too-many-instance-attributes, too-many-arguments, too-many-locals, too-many-statements</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span>
-                 <span class="c1"># Application support features</span>
-                 <span class="n">application_linkage</span><span class="p">,</span>
-                 <span class="n">openmp_support</span><span class="p">,</span>
-                 <span class="n">pthreads_support</span><span class="p">,</span>
-                 <span class="n">tbb_support</span><span class="p">,</span>
-                 <span class="n">mpi_support</span><span class="p">,</span>
-                 <span class="n">mpi_include_path</span><span class="p">,</span>
-                 <span class="n">mpi_library_path</span><span class="p">,</span>
-                 <span class="n">mpi_libraries</span><span class="p">,</span>
-                 <span class="n">cuda_support</span><span class="p">,</span>
-                 <span class="n">cuda_prefix</span><span class="p">,</span>
-                 <span class="n">opencl_support</span><span class="p">,</span>
-                 <span class="n">opencl_prefix</span><span class="p">,</span>
-                 <span class="n">shmem_support</span><span class="p">,</span>
-                 <span class="n">shmem_include_path</span><span class="p">,</span>
-                 <span class="n">shmem_library_path</span><span class="p">,</span>
-                 <span class="n">shmem_libraries</span><span class="p">,</span>
-                 <span class="n">mpc_support</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">sources</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">target_arch</span><span class="o">=</span><span class="n">HOST_ARCH</span><span class="p">,</span>
+                 <span class="n">target_os</span><span class="o">=</span><span class="n">HOST_OS</span><span class="p">,</span>
+                 <span class="n">compilers</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="c1"># TAU feature suppport</span>
+                 <span class="n">application_linkage</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span>
+                 <span class="n">openmp_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">pthreads_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">tbb_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">mpi_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">mpi_include_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">mpi_library_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">mpi_libraries</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">cuda_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">cuda_prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">opencl_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">opencl_prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">shmem_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">shmem_include_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">shmem_library_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">shmem_libraries</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">mpc_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="c1"># Instrumentation methods and options</span>
-                 <span class="n">source_inst</span><span class="p">,</span>
-                 <span class="n">compiler_inst</span><span class="p">,</span>
-                 <span class="n">link_only</span><span class="p">,</span>
-                 <span class="n">io_inst</span><span class="p">,</span>
-                 <span class="n">keep_inst_files</span><span class="p">,</span>
-                 <span class="n">reuse_inst_files</span><span class="p">,</span>
-                 <span class="n">select_file</span><span class="p">,</span>
+                 <span class="n">source_inst</span><span class="o">=</span><span class="s2">&quot;never&quot;</span><span class="p">,</span>
+                 <span class="n">compiler_inst</span><span class="o">=</span><span class="s2">&quot;never&quot;</span><span class="p">,</span>
+                 <span class="n">link_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">io_inst</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">keep_inst_files</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">reuse_inst_files</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">select_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="c1"># Measurement methods and options</span>
-                 <span class="n">profile</span><span class="p">,</span>
-                 <span class="n">trace</span><span class="p">,</span>
-                 <span class="n">sample</span><span class="p">,</span>
-                 <span class="n">metrics</span><span class="p">,</span>
-                 <span class="n">measure_mpi</span><span class="p">,</span>
-                 <span class="n">measure_openmp</span><span class="p">,</span>
-                 <span class="n">measure_opencl</span><span class="p">,</span>
-                 <span class="n">measure_cuda</span><span class="p">,</span>
-                 <span class="n">measure_shmem</span><span class="p">,</span>
-                 <span class="n">measure_heap_usage</span><span class="p">,</span>
-                 <span class="n">measure_memory_alloc</span><span class="p">,</span>
-                 <span class="n">measure_comm_matrix</span><span class="p">,</span>
-                 <span class="n">callpath_depth</span><span class="p">,</span>
-                 <span class="n">throttle</span><span class="p">,</span>
-                 <span class="n">throttle_per_call</span><span class="p">,</span>
-                 <span class="n">throttle_num_calls</span><span class="p">,</span>
-                 <span class="n">forced_makefile</span><span class="p">):</span>
+                 <span class="n">profile</span><span class="o">=</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span>
+                 <span class="n">trace</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                 <span class="n">sample</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">metrics</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">measure_mpi</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">measure_openmp</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span>
+                 <span class="n">measure_opencl</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">measure_cuda</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">measure_shmem</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">measure_heap_usage</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">measure_memory_alloc</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">measure_comm_matrix</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">callpath_depth</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">throttle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">throttle_per_call</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">throttle_num_calls</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                 <span class="n">forced_makefile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the TAU installation wrapper class.</span>
 
 <span class="sd">        Args:</span>
@@ -246,19 +260,19 @@
 <span class="sd">            shmem_library_path (list): Paths to search for SHMEM library files.</span>
 <span class="sd">            shmem_libraries (list): SHMEM libraries to include when linking with TAU.</span>
 <span class="sd">            mpc_support (bool): Enable or disable MPC support in TAU.</span>
-<span class="sd">            source_inst (bool): Enable or disable source-based instrumentation in TAU.</span>
-<span class="sd">            compiler_inst (bool): Enable or disable compiler-based instrumentation in TAU.</span>
+<span class="sd">            source_inst (str): Policy for source-based instrumentation, one of &quot;automatic&quot;, &quot;manual&quot;, or &quot;never&quot;.</span>
+<span class="sd">            compiler_inst (str): Policy for compiler-based instrumentation, one of &quot;always&quot;, &quot;fallback&quot;, or &quot;never&quot;.</span>
 <span class="sd">            link_only (bool): True to disable instrumentation and link TAU libraries.</span>
 <span class="sd">            io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.</span>
 <span class="sd">            keep_inst_files (bool): If True then do not remove instrumented source files after compilation.</span>
 <span class="sd">            reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.</span>
 <span class="sd">            select_file (str): Path to selective instrumentation file.</span>
-<span class="sd">            profile (str): Enable or disable profiling.</span>
-<span class="sd">            trace (str): Enable or disable tracing.</span>
+<span class="sd">            profile (str): Format for profile files, one of &quot;tau&quot;, &quot;merged&quot;, &quot;cubex&quot;, or &quot;none&quot;.</span>
+<span class="sd">            trace (str): Format for trace files, one of &quot;slog2&quot;, &quot;otf2&quot;, or &quot;none&quot;.</span>
 <span class="sd">            sample (bool): Enable or disable event-based sampling.</span>
 <span class="sd">            metrics (list): Metrics to measure, e.g. [&#39;TIME&#39;, &#39;PAPI_FP_INS&#39;]</span>
 <span class="sd">            measure_mpi (bool): If True then measure time spent in MPI calls.</span>
-<span class="sd">            measure_openmp (str): String specifying OpenMP measurement method, e.g. &#39;opari&#39; or &#39;ompt&#39;</span>
+<span class="sd">            measure_openmp (str): String specifying OpenMP measurement method, one of &quot;ignore&quot;, &quot;ompt&quot;, or &quot;opari&quot;.</span>
 <span class="sd">            measure_cuda (bool): If True then measure time spent in CUDA calls.</span>
 <span class="sd">            measure_shmem (bool): If True then measure time spent in SHMEM calls.</span>
 <span class="sd">            measure_heap_usage (bool): If True then measure memory usage.</span>
@@ -270,6 +284,58 @@
 <span class="sd">            throttle_num_calls (int): Minimum number of calls for a lightweight event.</span>
 <span class="sd">            forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">application_linkage</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">openmp_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">pthreads_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">tbb_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">mpi_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mpi_include_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mpi_include_path</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mpi_library_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mpi_library_path</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mpi_libraries</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mpi_libraries</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="n">cuda_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cuda_prefix</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">cuda_prefix</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="n">opencl_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">opencl_prefix</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">opencl_prefix</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="n">shmem_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shmem_include_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">shmem_include_path</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shmem_library_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">shmem_library_path</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shmem_libraries</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">shmem_libraries</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="n">mpc_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">source_inst</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="s2">&quot;never&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">compiler_inst</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">,</span> <span class="s2">&quot;fallback&quot;</span><span class="p">,</span> <span class="s2">&quot;never&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">link_only</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">io_inst</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">keep_inst_files</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">reuse_inst_files</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">select_file</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">select_file</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="n">profile</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="s2">&quot;merged&quot;</span><span class="p">,</span> <span class="s2">&quot;cubex&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">trace</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;slog2&quot;</span><span class="p">,</span> <span class="s2">&quot;otf2&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">profile</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span> <span class="ow">or</span> <span class="n">trace</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">assert</span> <span class="n">sample</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">metrics</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="k">assert</span> <span class="n">measure_mpi</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_openmp</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;ompt&quot;</span><span class="p">,</span> <span class="s2">&quot;opari&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_opencl</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_cuda</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_shmem</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_heap_usage</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_memory_alloc</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">measure_comm_matrix</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">callpath_depth</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">throttle</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_per_call</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_num_calls</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">forced_makefile</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">forced_makefile</span> <span class="ow">is</span> <span class="bp">None</span>
+        
+        <span class="k">if</span> <span class="n">compilers</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">gnu_compilers</span> <span class="o">=</span> <span class="n">GNU</span><span class="o">.</span><span class="n">installation</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;GNU compilers (required to build TAU) could not be found.&quot;</span><span class="p">)</span>
+            <span class="n">compilers</span> <span class="o">=</span> <span class="n">InstalledCompilerSet</span><span class="p">(</span><span class="s1">&#39;FIXME&#39;</span><span class="p">,</span> <span class="n">Host_CC</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">],</span> <span class="n">Host_CXX</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">sources</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">sources</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;tau&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">}</span>
+
         <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;TAU Performance System&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span>
                                               <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="n">COMMANDS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="bp">None</span>
@@ -284,15 +350,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span> <span class="o">=</span> <span class="n">pthreads_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbb_support</span> <span class="o">=</span> <span class="n">tbb_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span> <span class="o">=</span> <span class="n">mpi_support</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_include_path</span> <span class="o">=</span> <span class="n">mpi_include_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_library_path</span> <span class="o">=</span> <span class="n">mpi_library_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libraries</span> <span class="o">=</span> <span class="n">mpi_libraries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_include_path</span> <span class="o">=</span> <span class="n">mpi_include_path</span> <span class="k">if</span> <span class="n">mpi_include_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_library_path</span> <span class="o">=</span> <span class="n">mpi_library_path</span> <span class="k">if</span> <span class="n">mpi_library_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libraries</span> <span class="o">=</span> <span class="n">mpi_libraries</span> <span class="k">if</span> <span class="n">mpi_libraries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cuda_support</span> <span class="o">=</span> <span class="n">cuda_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cuda_prefix</span> <span class="o">=</span> <span class="n">cuda_prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span> <span class="o">=</span> <span class="n">shmem_support</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_include_path</span> <span class="o">=</span> <span class="n">shmem_include_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_library_path</span> <span class="o">=</span> <span class="n">shmem_library_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_libraries</span> <span class="o">=</span> <span class="n">shmem_libraries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_include_path</span> <span class="o">=</span> <span class="n">shmem_include_path</span> <span class="k">if</span> <span class="n">shmem_include_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_library_path</span> <span class="o">=</span> <span class="n">shmem_library_path</span> <span class="k">if</span> <span class="n">shmem_library_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_libraries</span> <span class="o">=</span> <span class="n">shmem_libraries</span> <span class="k">if</span> <span class="n">shmem_libraries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mpc_support</span> <span class="o">=</span> <span class="n">mpc_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">=</span> <span class="n">source_inst</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">=</span> <span class="n">compiler_inst</span>
@@ -304,7 +370,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span> <span class="k">if</span> <span class="n">metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_mpi</span> <span class="o">=</span> <span class="n">measure_mpi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">=</span> <span class="n">measure_openmp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure_opencl</span> <span class="o">=</span> <span class="n">measure_opencl</span>
@@ -333,7 +399,7 @@
             <span class="k">if</span> <span class="n">sources</span><span class="p">[</span><span class="s1">&#39;scorep&#39;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">mpi_support</span><span class="p">,</span> <span class="n">shmem_support</span><span class="p">,</span>
                                     <span class="n">sources</span><span class="p">[</span><span class="s1">&#39;binutils&#39;</span><span class="p">],</span> <span class="n">sources</span><span class="p">[</span><span class="s1">&#39;libunwind&#39;</span><span class="p">],</span> <span class="n">sources</span><span class="p">[</span><span class="s1">&#39;papi&#39;</span><span class="p">],</span> <span class="n">sources</span><span class="p">[</span><span class="s1">&#39;pdt&#39;</span><span class="p">])</span>
-
+    
 <div class="viewcode-block" id="TauInstallation.uid_items"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.uid_items">[docs]</a>    <span class="k">def</span> <span class="nf">uid_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">uid_parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
         <span class="c1"># TAU changes if any compiler changes.</span>
@@ -381,6 +447,10 @@
 
 <div class="viewcode-block" id="TauInstallation.verify"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.verify">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+        
+        <span class="c1"># Check PAPI metrics for compatibility</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;papi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">check_metrics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span>
 
         <span class="c1"># Check for TAU libraries</span>
         <span class="n">tau_makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
@@ -433,7 +503,7 @@
                 <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU I/O wrapper libraries not found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">shared_dir</span><span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found iowrap shared libraries: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iowrap_libs</span><span class="p">)</span>
             <span class="n">io_wrapper_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;wrappers&#39;</span><span class="p">,</span> <span class="s1">&#39;io_wrapper&#39;</span><span class="p">)</span>
-            <span class="n">iowrap_link_options</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">io_wrapper_dir</span><span class="p">,</span> <span class="s1">&#39;link_options.taucmdr&#39;</span><span class="p">)</span>
+            <span class="n">iowrap_link_options</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">io_wrapper_dir</span><span class="p">,</span> <span class="s1">&#39;link_options.tau&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">iowrap_link_options</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU I/O wrapper link options not found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">io_wrapper_dir</span><span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found iowrap link options: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iowrap_link_options</span><span class="p">)</span>
@@ -454,8 +524,13 @@
                     <span class="n">selected_inc</span> <span class="o">=</span> <span class="n">path</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span> <span class="ow">is</span> <span class="n">TAU_CRAYCNL</span><span class="p">:</span>
+                    <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Check that the &#39;cray-shmem&#39; module is loaded&quot;</span><span class="p">,)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">hints</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> not found on include path: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                                         <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">include_path</span><span class="p">)))</span>
+                                         <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">include_path</span><span class="p">)),</span>
+                                         <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
         <span class="n">library_path</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">user_lib</span> <span class="o">+</span> <span class="n">wrap_cc</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">library_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">library_path</span><span class="p">:</span>
             <span class="n">selected_lib</span> <span class="o">=</span> <span class="bp">None</span>
@@ -539,11 +614,6 @@
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_CC</span><span class="p">],</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_CXX</span><span class="p">],</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_FC</span><span class="p">])</span>
-            <span class="c1"># FIXME: A hack to for OpenSHMEM? </span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;x86_64&#39;</span><span class="p">:</span>
-                <span class="n">cc_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_CC</span><span class="p">]</span><span class="o">.</span><span class="n">command</span>
-                <span class="n">cxx_command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_CXX</span><span class="p">]</span><span class="o">.</span><span class="n">command</span>
-                <span class="n">fortran_magic</span> <span class="o">=</span> <span class="s1">&#39;oshfort&#39;</span>
 
         <span class="n">binutils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;binutils&#39;</span><span class="p">)</span>
         <span class="n">libunwind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;libunwind&#39;</span><span class="p">)</span>
@@ -583,10 +653,7 @@
                 <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-pthread&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-openmp&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;gomp&#39;</span><span class="p">:</span>
-                    <span class="c1"># If you configure with -openmp only you get the GOMP API wrapper.</span>
-                    <span class="k">pass</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;ompt&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;ompt&#39;</span><span class="p">:</span>
                     <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-ompt=download&#39;</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;opari&#39;</span><span class="p">:</span>
                     <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-opari&#39;</span><span class="p">)</span>
@@ -599,8 +666,6 @@
         <span class="n">useropts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span> <span class="ow">is</span> <span class="n">INTEL_KNL</span><span class="p">:</span>
             <span class="n">useropts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-DTAU_MAX_THREADS=512&#39;</span><span class="p">)</span>
-        <span class="c1"># FIXME: Workaround for TAU&#39;s broken Fortran wrapper for Intel MPI 17.0.1 20161005</span>
-        <span class="n">useropts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-DTAU_MPI_F_STATUSES_IGNORE_ABSENT=1&#39;</span><span class="p">)</span> 
         <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-useropt=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="s1">&#39;#&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">useropts</span><span class="p">))</span>
         
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;./configure&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
@@ -658,7 +723,9 @@
                 <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">002</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_group</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> installation failed: </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
             <span class="k">raise</span>
@@ -697,10 +764,7 @@
                 <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;pthread&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;gomp&#39;</span><span class="p">:</span>
-                    <span class="c1"># If you configure with -openmp only you get the GOMP API wrapper.</span>
-                    <span class="k">pass</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;ompt&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;ompt&#39;</span><span class="p">:</span>
                     <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;ompt&#39;</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;opari&#39;</span><span class="p">:</span>
                     <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;opari&#39;</span><span class="p">)</span>
@@ -858,6 +922,8 @@
             <span class="n">tau_opts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;-optMemDbg&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">openmp_support</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span><span class="p">:</span>
             <span class="n">tau_opts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;-optContinueBeforeOMP&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span> <span class="o">!=</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">:</span>
+            <span class="n">tau_opts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;-optQuiet&#39;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">tau_opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_tau_options</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
@@ -896,13 +962,16 @@
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_ENABLE_PROFILING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_PROFILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_ENABLE_PROFILING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;false&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">==</span> <span class="s1">&#39;slog2&#39;</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_ENABLE_TRACING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_TOTAL_MEMORY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1024M&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;SCOREP_ENABLE_TRACING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;false&#39;</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_SAMPLING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACK_HEAP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_heap_usage</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_COMM_MATRIX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_comm_matrix</span><span class="p">))</span>
@@ -941,7 +1010,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">use_wrapper</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span> <span class="ow">or</span>
                        <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span> <span class="ow">or</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span><span class="p">)</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;opari&#39;</span> <span class="ow">or</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span> <span class="ow">or</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">link_only</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">use_wrapper</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">TAU_COMPILER_WRAPPERS</span><span class="p">[</span><span class="n">compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -964,6 +1035,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Compiler return value (always 0 if no exception raised).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
         <span class="n">opts</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiletime_config</span><span class="p">()</span>
         <span class="n">compiler_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compiler_command</span><span class="p">(</span><span class="n">compiler</span><span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">compiler_cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">opts</span> <span class="o">+</span> <span class="n">compiler_args</span>
@@ -991,6 +1063,7 @@
 <span class="sd">            tuple: (cmd, env) where `cmd` is the new command line and `env` is a dictionary of environment</span>
 <span class="sd">                   variables to set before running the application command.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
         <span class="n">opts</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span><span class="p">:</span>
             <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="bp">False</span>
@@ -998,9 +1071,7 @@
             <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_opencl</span> <span class="ow">or</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">tbb_support</span> <span class="ow">or</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span> <span class="ow">or</span>
-                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span>
-                             <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span>
-                             <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">link_only</span><span class="p">))</span>
+                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">use_tau_exec</span><span class="p">:</span>
             <span class="n">tau_exec_opts</span> <span class="o">=</span> <span class="n">opts</span>
             <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
@@ -1013,138 +1084,241 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="n">launcher_cmd</span> <span class="o">+</span> <span class="n">application_cmd</span>
         <span class="k">return</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span></div>
-
-<div class="viewcode-block" id="TauInstallation.show_profile"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.show_profile">[docs]</a>    <span class="k">def</span> <span class="nf">show_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tool_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Shows profile data in the specified file or folder.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            path (str): Path to the directory containing profile files or MULTI__ directories.</span>
-<span class="sd">            tool_name (str): Name of the profile visualization tool to use, e.g. &#39;pprof&#39;.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            int: Return code of the visualization tool.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Showing profile files at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_check_java</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">abspath</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;java&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">abspath</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;&#39;java&#39; not found in PATH&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stdout</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_command_output</span><span class="p">([</span><span class="n">abspath</span><span class="p">,</span> <span class="s1">&#39;-version&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">CalledProcessError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Failed to get Java version: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;Java(TM)&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stdout</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; does not appear to be Oracle Java.  Visual performance may be poor.&quot;</span><span class="p">,</span> <span class="n">abspath</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_check_X11</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pylint: disable=invalid-name</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
-        <span class="n">tools</span> <span class="o">=</span> <span class="p">(</span><span class="n">tool_name</span><span class="p">,)</span> <span class="k">if</span> <span class="n">tool_name</span> <span class="k">else</span> <span class="p">(</span><span class="s1">&#39;paraprof&#39;</span><span class="p">,</span> <span class="s1">&#39;pprof&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="p">,</span> <span class="n">path</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">profiles</span> <span class="o">=</span> <span class="s1">&#39;tauprofile.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;profile.cubex&#39;</span>
-                <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">profiles</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">profile</span><span class="p">):</span>
-                        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="p">,</span> <span class="n">profile</span><span class="p">]</span>
-                        <span class="k">break</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">break</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed&quot;</span><span class="p">,</span> <span class="n">tool</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;All visualization or reporting tools failed to open &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span>
-                                     <span class="s2">&quot;Check Java installation, X11 installation,&quot;</span>
-                                     <span class="s2">&quot; network connectivity, and file permissions&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="TauInstallation.show_trace"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.show_trace">[docs]</a>    <span class="k">def</span> <span class="nf">show_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">tool_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Shows trace data in the specified file or folder.</span>
-
-<span class="sd">        Merges the traces and converts them if needed.</span>
-
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">display</span> <span class="o">=</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;DISPLAY&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;X11 display not configured.&quot;</span><span class="p">,</span>
+                                     <span class="s2">&quot;Try setting the DISPLAY environment variable.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">host</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot parse DISPLAY environment variable.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;X11 appears to be forwarded to a remote display. Visual performance may be poor.&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="TauInstallation.get_data_format"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.get_data_format">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Guess the data format of a file path.</span>
+<span class="sd">        </span>
+<span class="sd">        Look at a file&#39;s extension and guess what kind of performance data it might be.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            path (str): Path to the directory containing trace files.</span>
-<span class="sd">            tool_name (str): Name of the profile visualization tool to use, e.g. &#39;vampir&#39;.</span>
-
+<span class="sd">            path (str): File path.</span>
+<span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            int: Return code of the visualization tool.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Showing trace files at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span> <span class="ow">and</span> <span class="n">tool_name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">tool_name</span> <span class="o">=</span> <span class="s1">&#39;vampir&#39;</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;otf2 requires vampir&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">tool_name</span> <span class="o">=</span> <span class="s1">&#39;jumpshot&#39;</span>
-        <span class="k">if</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s1">&#39;jumpshot&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Individual trace files not yet supported.&quot;</span><span class="p">)</span>
-            <span class="n">tau_slog2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;taucmdr.slog2&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tau_slog2</span><span class="p">):</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;taucmdr.trc&#39;</span><span class="p">)):</span>
-                    <span class="n">trc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;*.trc&#39;</span><span class="p">))</span>
-                    <span class="n">edf_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;*.edf&#39;</span><span class="p">))</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">trc_files</span> <span class="ow">and</span> <span class="n">edf_files</span><span class="p">):</span>
-                        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No *.trc or *.edf files!&quot;</span><span class="p">)</span>
-                    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau_treemerge.pl&#39;</span><span class="p">]</span>
-                    <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Nonzero return code from tau_treemerge.pl&quot;</span><span class="p">)</span>
-                <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau2slog2&#39;</span><span class="p">,</span> <span class="s1">&#39;taucmdr.trc&#39;</span><span class="p">,</span> <span class="s1">&#39;taucmdr.edf&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;taucmdr.slog2&#39;</span><span class="p">]</span>
-                <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Nonzero return code from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tau_slog2</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">)</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">tau_slog2</span><span class="p">]</span>
-            <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s1">&#39;vampir&#39;</span> <span class="ow">or</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s1">&#39;vampirserver&#39;</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">resource</span>
-            <span class="n">tau_otf2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;traces.otf2&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tau_otf2</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;otf2 trace files not found.&quot;</span><span class="p">)</span>
-            <span class="n">evt_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;traces/*.evt&#39;</span><span class="p">))</span>
-            <span class="n">def_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;traces/*.def&#39;</span><span class="p">))</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">evt_files</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">def_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrlimit</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">RLIMIT_NOFILE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Too many trace files, use Vampir server to view.&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;vampir&#39;</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Vampir not found in PATH. Contact ParaTools for more information on Vampir.&quot;</span><span class="p">)</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tau_otf2</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">)</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">tau_otf2</span><span class="p">]</span>
-            <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Only vampir and jumpshot supported at this time&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">retval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trace visualizer failed to open &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">,</span>
-                                     <span class="s2">&quot;Check Java installation, X11 installation,&quot;</span>
-                                     <span class="s2">&quot; network connectivity, and file permissions&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="TauInstallation.pack_profiles"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.pack_profiles">[docs]</a>    <span class="k">def</span> <span class="nf">pack_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">ppk_file</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create a PPK file from profile.* files.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            prefix (str): Path to the directory containing profile.* files.</span>
-<span class="sd">            ppk_file (str): Absolute path to the PPK file that will be created.</span>
-
+<span class="sd">            str: String indicating the data format.</span>
+<span class="sd">        </span>
 <span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: paraprof failed to pack the profiles.</span>
+<span class="sd">            ConfigurationError: Cannot determine the file&#39;s data format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">root</span> <span class="o">==</span> <span class="s1">&#39;profile&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;tau&#39;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.ppk&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;ppk&#39;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.xml&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;merged&#39;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.cubex&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;cubex&#39;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.slog2&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;slog2&#39;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.otf2&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;otf2&#39;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
+            <span class="n">root</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.xml&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;merged&#39;</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot determine data format of &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TauInstallation.is_profile_format"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.is_profile_format">[docs]</a>    <span class="k">def</span> <span class="nf">is_profile_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if ``fmt`` is a string indicating a profile data format.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;ppk&#39;</span><span class="p">,</span> <span class="s1">&#39;merged&#39;</span><span class="p">,</span> <span class="s1">&#39;cubex&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TauInstallation.is_trace_format"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.is_trace_format">[docs]</a>    <span class="k">def</span> <span class="nf">is_trace_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return True if ``fmt`` is a string indicating a trace data format.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;slog2&#39;</span><span class="p">,</span> <span class="s1">&#39;otf2&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_show_unknown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">launcher</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="p">]</span> <span class="o">+</span> <span class="n">paths</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; not supported. Trying command &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tool</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">CalledProcessError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; failed: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="n">err</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">launcher</span>
+
+    <span class="k">def</span> <span class="nf">_show_paraprof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_java</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_X11</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Profile file &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="n">retval</span> <span class="o">+=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;paraprof&#39;</span><span class="p">)],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">retval</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;paraprof&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_show_pprof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">!=</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;pprof cannot open profiles in &#39;</span><span class="si">%s</span><span class="s2">&#39; format&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Profile file &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">retval</span> <span class="o">+=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;pprof&#39;</span><span class="p">),</span> <span class="s1">&#39;-a&#39;</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span>
+    
+    <span class="k">def</span> <span class="nf">_show_jumpshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">!=</span> <span class="s1">&#39;slog2&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;jumpshot cannot open traces in &#39;</span><span class="si">%s</span><span class="s2">&#39; format&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_java</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_X11</span><span class="p">()</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trace file &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">retval</span> <span class="o">+=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;jumpshot&#39;</span><span class="p">),</span> <span class="n">path</span><span class="p">],</span> 
+                                             <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span>
+    
+    <span class="k">def</span> <span class="nf">_show_vampir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">!=</span> <span class="s1">&#39;otf2&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Vampir cannot open traces in &#39;</span><span class="si">%s</span><span class="s2">&#39; format&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;vampir&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Vampir not found in PATH.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_java</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_X11</span><span class="p">()</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trace file &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">evt_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="s1">&#39;traces/*.evt&#39;</span><span class="p">))</span>
+            <span class="n">def_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="s1">&#39;traces/*.def&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">evt_files</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">def_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrlimit</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">RLIMIT_NOFILE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Too many trace files, use vampirserver to view.&quot;</span><span class="p">)</span>
+            <span class="n">retval</span> <span class="o">+=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="s1">&#39;vampir&#39;</span><span class="p">,</span> <span class="n">path</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span>
+
+<div class="viewcode-block" id="TauInstallation.show_data_files"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.show_data_files">[docs]</a>    <span class="k">def</span> <span class="nf">show_data_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">profile_tools</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trace_tools</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Displays profile and trace data.</span>
+<span class="sd">        </span>
+<span class="sd">        Opens one more more data analysis tools to display the specified data files. </span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            dataset (dict): Lists of paths to data files indexed by data format.  See :any:`get_data_format`.</span>
+<span class="sd">            profile_tools (list): Visualization or data processing tools for profiles.</span>
+<span class="sd">            trace_tools (list): Visualization or data processing tools for traces.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigurationError: An error occurred while displaying a data file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;paraprof&#39;</span><span class="p">,</span> <span class="s1">&#39;--pack&#39;</span><span class="p">,</span> <span class="n">ppk_file</span><span class="p">]</span>
-        <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">retval</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;ParaProf command &#39;</span><span class="si">%s</span><span class="s2">&#39; failed in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">),</span> <span class="n">prefix</span><span class="p">),</span>
+        <span class="k">for</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_profile_format</span><span class="p">(</span><span class="n">fmt</span><span class="p">):</span>
+                <span class="n">tools</span> <span class="o">=</span> <span class="n">profile_tools</span> <span class="k">if</span> <span class="n">profile_tools</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">PROFILE_ANALYSIS_TOOLS</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_trace_format</span><span class="p">(</span><span class="n">fmt</span><span class="p">):</span>
+                <span class="n">tools</span> <span class="o">=</span> <span class="n">trace_tools</span> <span class="k">if</span> <span class="n">trace_tools</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">TRACE_ANALYSIS_TOOLS</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Unhandled data format &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">launcher</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_show_&#39;</span><span class="o">+</span><span class="n">tool</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="n">launcher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_show_unknown</span><span class="p">(</span><span class="n">tool</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">retval</span> <span class="o">=</span> <span class="n">launcher</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tool</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">retval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%d</span><span class="s2">, trying another tool&quot;</span><span class="p">,</span> <span class="n">tool</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;All analysis tools failed&quot;</span><span class="p">,</span>
+                                         <span class="s2">&quot;Check Java installation, X11 installation,&quot;</span>
+                                         <span class="s2">&quot; network connectivity, and file permissions&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TauInstallation.create_ppk_file"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.create_ppk_file">[docs]</a>    <span class="k">def</span> <span class="nf">create_ppk_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">remove_existing</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write a PPK file at ``dest`` from the data at ``src``.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            dest (str): Path to the PPK file to create.</span>
+<span class="sd">            src (str): Directory containing TAU profiles to convert to PPK format.</span>
+<span class="sd">            remove_existing (bool): If True, delete ``dest`` before writing it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_java</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">remove_existing</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;paraprof&#39;</span><span class="p">,</span> <span class="s1">&#39;--pack&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="p">]</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing &#39;</span><span class="si">%s</span><span class="s2">&#39;...&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; failed in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">),</span> <span class="n">src</span><span class="p">),</span>
                                      <span class="s2">&quot;Make sure Java is installed and working&quot;</span><span class="p">,</span>
                                      <span class="s2">&quot;Install the most recent Java from http://java.com&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TauInstallation.check_metrics"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.check_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">check_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Checks metrics for compatibility.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError if there are incompatible metrics.</span>
+<div class="viewcode-block" id="TauInstallation.merge_tau_trace_files"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.merge_tau_trace_files">[docs]</a>    <span class="k">def</span> <span class="nf">merge_tau_trace_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Use tau_treemerge.pl to merge multiple TAU trace files into a single edf and a single trc file.</span>
+<span class="sd">        </span>
+<span class="sd">        The new edf file and trc file are written to ``prefix``.</span>
+<span class="sd">        </span>
+<span class="sd">        Args: </span>
+<span class="sd">            prefix (str): Path to the directory containing *.trc and *.edf files.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">():</span>
-            <span class="k">return</span>
-        <span class="n">papi_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;PAPI_NATIVE:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="k">if</span> <span class="n">metric</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;PAPI&quot;</span><span class="p">)]</span>
-        <span class="k">if</span> <span class="n">papi_metrics</span><span class="p">:</span>
-            <span class="n">event_chooser_cmd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;papi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;papi_event_chooser&#39;</span><span class="p">)</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">event_chooser_cmd</span><span class="p">,</span> <span class="s1">&#39;PRESET&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">papi_metrics</span>
-            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;PAPI metrics [</span><span class="si">%s</span><span class="s2">] are not compatible on this target.&quot;</span> <span class="o">%</span>
-                                         <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">papi_metrics</span><span class="p">),</span>
-                                         <span class="s2">&quot;Use papi_avail to check metric availability.&quot;</span><span class="p">,</span>
-                                         <span class="s2">&quot;Spread the desired metrics over multiple measurements.&quot;</span><span class="p">,</span>
-                                         <span class="s2">&quot;Choose fewer metrics.&quot;</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="n">trc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.trc&#39;</span><span class="p">))</span>
+        <span class="n">edf_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.edf&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trc_files</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No *.trc files at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">edf_files</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No *.edf files at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">prefix</span><span class="p">)</span>
+        <span class="n">merged_trc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.trc&#39;</span><span class="p">)</span>
+        <span class="n">merged_edf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.edf&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">merged_trc</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Remove &#39;</span><span class="si">%s</span><span class="s2">&#39; before merging *.trc files&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">merged_edf</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Remove &#39;</span><span class="si">%s</span><span class="s2">&#39; before merging *.edf files&quot;</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;tau_treemerge.pl&#39;</span><span class="p">)]</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Merging </span><span class="si">%d</span><span class="s2"> TAU trace files...&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trc_files</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">edf_files</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Nonzero return code from tau_treemerge.pl&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TauInstallation.tau_trace_to_slog2"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.tau_trace_to_slog2">[docs]</a>    <span class="k">def</span> <span class="nf">tau_trace_to_slog2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trc</span><span class="p">,</span> <span class="n">edf</span><span class="p">,</span> <span class="n">slog2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a TAU trace file to SLOG2 format.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            trc (str): Path to the trc file.</span>
+<span class="sd">            edf (str): Path to the edf file.</span>
+<span class="sd">            slog2 (str): Path to the slog2 file to create.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Converting TAU trace files to SLOG2 format...&quot;</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;tau2slog2&#39;</span><span class="p">),</span> <span class="n">trc</span><span class="p">,</span> <span class="n">edf</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">slog2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Nonzero return code from tau2slog2&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">slog2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Failed to convert TAU trace data: no slog2 files exist after calling &#39;tau2slog2&#39;&quot;</span><span class="p">)</span>                </div></div>
 </pre></div>
 
       </div>

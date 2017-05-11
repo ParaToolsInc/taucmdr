@@ -80,6 +80,8 @@
 
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">tests</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">SELECT_COMMAND</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.measurement.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">measurement_create_cmd</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_create_cmd</span>
 
 
 <div class="viewcode-block" id="SelectTest"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.experiment.tests.test_select.html#taucmdr.cli.commands.experiment.tests.test_select.SelectTest">[docs]</a><span class="k">class</span> <span class="nc">SelectTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -88,8 +90,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertNotCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SELECT_COMMAND</span><span class="p">,</span> <span class="p">[])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;too few arguments&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="SelectTest.test_invalid_metric"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.experiment.tests.test_select.html#taucmdr.cli.commands.experiment.tests.test_select.SelectTest.test_invalid_metric">[docs]</a>    <span class="k">def</span> <span class="nf">test_invalid_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">measurement_create_cmd</span><span class="p">,</span> 
+                                      <span class="p">[</span><span class="s1">&#39;meas1&#39;</span><span class="p">,</span> <span class="s1">&#39;--metrics&#39;</span><span class="p">,</span> <span class="s1">&#39;PAPI_TAUCMDR_INVALID_METRIC&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">experiment_create_cmd</span><span class="p">,</span> 
+                                      <span class="p">[</span><span class="s1">&#39;exp2&#39;</span><span class="p">,</span> <span class="s1">&#39;--application&#39;</span><span class="p">,</span> <span class="s1">&#39;app1&#39;</span><span class="p">,</span> <span class="s1">&#39;--measurement&#39;</span><span class="p">,</span> <span class="s1">&#39;meas1&#39;</span><span class="p">,</span> <span class="s1">&#39;--target&#39;</span><span class="p">,</span> <span class="s1">&#39;targ1&#39;</span><span class="p">])</span>
+        <span class="n">stdout</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SELECT_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;exp2&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;WARNING&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

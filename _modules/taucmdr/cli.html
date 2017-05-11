@@ -125,7 +125,7 @@
     <span class="sd">&quot;&quot;&quot;Converts a module name to a command name list.</span>
 <span class="sd">    </span>
 <span class="sd">    Maps command module names to their command line equivilants, e.g.</span>
-<span class="sd">    &#39;taucmdr.cli.commands.target.create&#39; =&gt; [&#39;taucmdr&#39;, &#39;target&#39;, &#39;create&#39;]</span>
+<span class="sd">    &#39;taucmdr.cli.commands.target.create&#39; =&gt; [&#39;tau&#39;, &#39;target&#39;, &#39;create&#39;]</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        module_name (str): Name of a module.</span>
@@ -177,13 +177,12 @@
         <span class="k">if</span> <span class="n">cdr</span><span class="p">:</span>
             <span class="n">walking_import</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">cdr</span><span class="p">,</span> <span class="n">dct</span><span class="p">[</span><span class="n">car</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">car</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
-            <span class="n">dct</span><span class="p">[</span><span class="n">car</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="nb">__import__</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-            <span class="n">dct</span><span class="p">[</span><span class="n">car</span><span class="p">][</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module</span><span class="p">]</span>
+            <span class="n">dct</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">car</span><span class="p">,</span> <span class="p">{})[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module</span><span class="p">]</span>
 
     <span class="n">command_module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">COMMANDS_PACKAGE_NAME</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">util</span><span class="o">.</span><span class="n">walk_packages</span><span class="p">(</span><span class="n">command_module</span><span class="o">.</span><span class="n">__path__</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">command_module</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;__main__&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;__main__&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;.tests&#39;</span> <span class="ow">in</span> <span class="n">module</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">lookup</span><span class="p">(</span><span class="n">_command_as_list</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="n">_COMMANDS</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -195,7 +194,7 @@
     <span class="sd">&quot;&quot;&quot;Converts a module name to a command name string.</span>
 <span class="sd">    </span>
 <span class="sd">    Maps command module names to their command line equivilants, e.g.</span>
-<span class="sd">    &#39;taucmdr.cli.commands.target.create&#39; =&gt; &#39;taucmdr target create&#39;</span>
+<span class="sd">    &#39;taucmdr.cli.commands.target.create&#39; =&gt; &#39;tau target create&#39;</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
 <span class="sd">        module_name (str): Name of a module.</span>
@@ -252,13 +251,10 @@
 <span class="sd">        list: List of modules corresponding to all commands and subcommands.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">all_commands</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">commands</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_get_commands</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;__module__&#39;</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">topcmd</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s1">&#39;tests&#39;</span><span class="p">:</span>
-            <span class="k">continue</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">_get_commands</span><span class="p">(</span><span class="n">package_name</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;__module__&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">topcmd</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">subcmd</span><span class="p">,</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">topcmd</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">subcmd</span> <span class="o">!=</span> <span class="s1">&#39;__module__&#39;</span> <span class="ow">and</span> <span class="n">subcmd</span> <span class="o">!=</span> <span class="s1">&#39;tests&#39;</span><span class="p">:</span>
-                <span class="n">all_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">all_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;__module__&#39;</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">all_commands</span></div>
 
 <div class="viewcode-block" id="find_command"><a class="viewcode-back" href="../../taucmdr.cli.html#taucmdr.cli.find_command">[docs]</a><span class="k">def</span> <span class="nf">find_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
@@ -308,7 +304,7 @@
 <div class="viewcode-block" id="execute_command"><a class="viewcode-back" href="../../taucmdr.cli.html#taucmdr.cli.execute_command">[docs]</a><span class="k">def</span> <span class="nf">execute_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cmd_args</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">parent_module</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Import the command module and run its main routine.</span>
 <span class="sd">    </span>
-<span class="sd">    Partial commands are allowed, e.g. cmd=[&#39;taucmdr&#39;, &#39;cli&#39;, &#39;commands&#39;, &#39;app&#39;, &#39;cre&#39;] will resolve</span>
+<span class="sd">    Partial commands are allowed, e.g. cmd=[&#39;tau&#39;, &#39;cli&#39;, &#39;commands&#39;, &#39;app&#39;, &#39;cre&#39;] will resolve</span>
 <span class="sd">    to &#39;taucmdr.cli.commands.application.create&#39;.  If the command can&#39;t be found then the parent </span>
 <span class="sd">    command (if any) will be invoked with the ``--help`` flag.</span>
 <span class="sd">    </span>

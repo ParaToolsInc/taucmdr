@@ -87,6 +87,7 @@
 <span class="kn">import</span> <span class="nn">urllib</span>
 <span class="kn">import</span> <span class="nn">pkgutil</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">urlparse</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
@@ -100,6 +101,7 @@
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
 
 <span class="n">_PY_SUFFEXES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span> <span class="s1">&#39;.pyo&#39;</span><span class="p">,</span> <span class="s1">&#39;.pyc&#39;</span><span class="p">)</span>
 
@@ -134,6 +136,13 @@
     <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">_DTEMP_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">path</span></div>
+
+
+<div class="viewcode-block" id="copy_file"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.copy_file">[docs]</a><span class="k">def</span> <span class="nf">copy_file</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Works just like :any:`shutil.copy` except with progress bars.&quot;&quot;&quot;</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">progress_spinner</span> <span class="k">if</span> <span class="n">show_progress</span> <span class="k">else</span> <span class="n">_null_context</span>
+    <span class="k">with</span> <span class="n">context</span><span class="p">():</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="mkdirp"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.mkdirp">[docs]</a><span class="k">def</span> <span class="nf">mkdirp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -180,8 +189,17 @@
     <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="p">,</span> <span class="n">onerror</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_is_exec</span><span class="p">(</span><span class="n">fpath</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)</span>
+<span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="umask"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.umask">[docs]</a><span class="k">def</span> <span class="nf">umask</span><span class="p">(</span><span class="n">new_mask</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Context manager to temporarily set the process umask.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        new_mask: The argument to :any:`os.umask`.</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="n">old_mask</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">new_mask</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="n">old_mask</span><span class="p">)</span></div>
+
 
 <span class="n">_WHICH_CACHE</span> <span class="o">=</span> <span class="p">{}</span>
 <div class="viewcode-block" id="which"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.which">[docs]</a><span class="k">def</span> <span class="nf">which</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">use_cached</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -206,6 +224,7 @@
             <span class="k">return</span> <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">program</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">pass</span>
+    <span class="n">_is_exec</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">fpath</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)</span>
     <span class="n">fpath</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fpath</span><span class="p">:</span>
         <span class="n">abs_program</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
@@ -384,24 +403,43 @@
     <span class="k">return</span> <span class="n">full_dest</span></div>
 
 
-<div class="viewcode-block" id="create_archive"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.create_archive">[docs]</a><span class="k">def</span> <span class="nf">create_archive</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">items</span><span class="p">):</span>
+<div class="viewcode-block" id="create_archive"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.create_archive">[docs]</a><span class="k">def</span> <span class="nf">create_archive</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates a new archive file in the specified format.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
 <span class="sd">        fmt (str): Archive fmt, e.g. &#39;zip&#39; or &#39;tgz&#39;.</span>
 <span class="sd">        dest (str): Path to the archive file that will be created.</span>
-<span class="sd">        items (list): Items (i.e. files or folders) to add to the archive. </span>
+<span class="sd">        items (list): Items (i.e. files or folders) to add to the archive.</span>
+<span class="sd">        cwd (str): Current working directory while creating the archive. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;zip&#39;</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
-            <span class="n">archive</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;Created by TAU Commander&quot;</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-                <span class="n">archive</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;tar&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">):</span>
-        <span class="n">mode_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;tar&#39;</span><span class="p">:</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">:</span> <span class="s1">&#39;w:gz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">:</span> <span class="s1">&#39;w:bz2&#39;</span><span class="p">}</span>
-        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">mode_map</span><span class="p">[</span><span class="n">fmt</span><span class="p">])</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-                <span class="n">archive</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">cwd</span><span class="p">:</span>
+        <span class="n">oldcwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing &#39;</span><span class="si">%s</span><span class="s2">&#39;...&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">progress_spinner</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">_null_context</span>
+    <span class="k">with</span> <span class="n">context</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;zip&#39;</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
+                    <span class="n">archive</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;Created by TAU Commander&quot;</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                        <span class="n">archive</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;tar&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">):</span>
+                <span class="n">mode_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;tar&#39;</span><span class="p">:</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">:</span> <span class="s1">&#39;w:gz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">:</span> <span class="s1">&#39;w:bz2&#39;</span><span class="p">}</span>
+                <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">mode_map</span><span class="p">[</span><span class="n">fmt</span><span class="p">])</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                        <span class="n">archive</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;gz&#39;</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">,</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">fin</span><span class="p">,</span> <span class="n">fout</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Invalid archive format: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cwd</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">oldcwd</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="file_accessible"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.file_accessible">[docs]</a><span class="k">def</span> <span class="nf">file_accessible</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>

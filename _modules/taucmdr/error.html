@@ -103,9 +103,9 @@
                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-                   <span class="s2">&quot;</span><span class="si">%(backtrace)s</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(backtrace)s</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;This is a bug in TAU Commander.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                   <span class="s2">&quot;Please use --log to enable debug logging and send &#39;</span><span class="si">%(logfile)s</span><span class="s2">&#39; to </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
+                   <span class="s2">&quot;Please send &#39;</span><span class="si">%(logfile)s</span><span class="s2">&#39; to </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the Error instance.</span>
@@ -206,6 +206,37 @@
 
 <div class="viewcode-block" id="IncompatibleRecordError"><a class="viewcode-back" href="../../taucmdr.error.html#taucmdr.error.IncompatibleRecordError">[docs]</a><span class="k">class</span> <span class="nc">IncompatibleRecordError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Indicates that a pair of data records are incompatible.&quot;&quot;&quot;</span> </div>
+
+
+<div class="viewcode-block" id="ProjectSelectionError"><a class="viewcode-back" href="../../taucmdr.error.html#taucmdr.error.ProjectSelectionError">[docs]</a><span class="k">class</span> <span class="nc">ProjectSelectionError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates an error while selecting a project.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.project.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_create_cmd</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.project.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_select_cmd</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.project.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_list_cmd</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to create a new project configuration.&quot;</span> <span class="o">%</span> <span class="n">project_create_cmd</span><span class="p">,</span>
+                     <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2"> &lt;project_name&gt;` to select a project configuration.&quot;</span> <span class="o">%</span> <span class="n">project_select_cmd</span><span class="p">,</span>
+                     <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see available project configurations.&quot;</span> <span class="o">%</span> <span class="n">project_list_cmd</span><span class="p">)</span>    
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ExperimentSelectionError"><a class="viewcode-back" href="../../taucmdr.error.html#taucmdr.error.ExperimentSelectionError">[docs]</a><span class="k">class</span> <span class="nc">ExperimentSelectionError</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates an error while selecting an experiment.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_create_cmd</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.dashboard</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">dashboard_cmd</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.project.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">project_list_cmd</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` or `</span><span class="si">%s</span><span class="s2">` to create a new experiment.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">select_cmd</span><span class="p">,</span> <span class="n">experiment_create_cmd</span><span class="p">),</span>
+                     <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see current project configuration.&quot;</span> <span class="o">%</span> <span class="n">dashboard_cmd</span><span class="p">,</span>
+                     <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see available project configurations.&quot;</span> <span class="o">%</span> <span class="n">project_list_cmd</span><span class="p">)</span>    
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentSelectionError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span></div>
+
+
 
 
 <div class="viewcode-block" id="excepthook"><a class="viewcode-back" href="../../taucmdr.error.html#taucmdr.error.excepthook">[docs]</a><span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>

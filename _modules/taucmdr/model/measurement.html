@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="taucmdr.model" href="../model.html" /> 
+    <link rel="up" title="taucmdr" href="../../taucmdr.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -80,9 +80,11 @@
 <span class="sd">measurements allow us to take different views of the application&#39;s performance.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span><span class="p">,</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
@@ -97,14 +99,27 @@
     <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
     <span class="kn">from</span> <span class="nn">taucmdr.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
     <span class="kn">from</span> <span class="nn">taucmdr.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
-    <span class="kn">from</span> <span class="nn">taucmdr.model</span> <span class="kn">import</span> <span class="n">require_compiler_family</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">IBM_CNK</span>
-    <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">INTEL</span><span class="p">,</span> <span class="n">GNU</span><span class="p">,</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
+    
+    <span class="k">def</span> <span class="nf">_merged_profile_compat</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Application</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;mpi&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;shmem&#39;</span><span class="p">]):</span>
+                <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires either mpi = True or shmem = True in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
+                                              <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
 
-    <span class="n">ompt_intel_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">INTEL</span><span class="p">,</span> <span class="s2">&quot;OMPT for OpenMP measurement only works with Intel compilers&quot;</span><span class="p">)</span>
-    <span class="n">gomp_gnu_only</span> <span class="o">=</span> <span class="n">require_compiler_family</span><span class="p">(</span><span class="n">GNU</span><span class="p">,</span> <span class="s2">&quot;GOMP for OpenMP measurement only works with GNU compilers&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_discourage_callpath</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Measurement</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">rhs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;callpath&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> recommends against callpath &gt; 0 in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                               <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">)</span>
+
 
     <span class="k">return</span> <span class="p">{</span>
         <span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -128,7 +143,10 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;merged&#39;</span><span class="p">,</span> <span class="s1">&#39;cubex&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;tau&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cubex&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;scorep_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cubex&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;scorep_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                 <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+                                 <span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)),</span>
+                       <span class="s1">&#39;merged&#39;</span><span class="p">:</span> <span class="n">_merged_profile_compat</span><span class="p">},</span>
         <span class="p">},</span>
         <span class="s1">&#39;trace&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -140,7 +158,8 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:(</span><span class="s1">&#39;slog2&#39;</span><span class="p">,</span> <span class="s1">&#39;otf2&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;slog2&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;otf2&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;scorep_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;otf2&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;scorep_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                       <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span> <span class="n">_discourage_callpath</span><span class="p">}</span>
         <span class="p">},</span>
         <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -210,19 +229,11 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;use specified library to measure time spent in OpenMP directives&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--openmp&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="s1">&#39;opari&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">,</span> <span class="s1">&#39;gomp&#39;</span><span class="p">)},</span>
+                         <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="s1">&#39;opari&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">)},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;opari&#39;</span><span class="p">:</span>
-                       <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                       <span class="s1">&#39;ompt&#39;</span><span class="p">:</span>
                        <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">ompt_intel_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">ompt_intel_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">ompt_intel_only</span><span class="p">)),</span>
-                       <span class="s1">&#39;gomp&#39;</span><span class="p">:</span>
-                       <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">gomp_gnu_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">gomp_gnu_only</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="n">gomp_gnu_only</span><span class="p">))},</span>
+                        <span class="n">Measurement</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">)),</span>
+                       <span class="s1">&#39;ompt&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -261,7 +272,7 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;depth&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
+                         <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">}</span>
         <span class="p">},</span>
         <span class="s1">&#39;io&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -399,9 +410,9 @@
 
 <div class="viewcode-block" id="Measurement.is_selected"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.Measurement.is_selected">[docs]</a>    <span class="k">def</span> <span class="nf">is_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns True if this target configuration is part of the selected experiment, False otherwise.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">selected</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+            <span class="n">selected</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">False</span>
         <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;measurement&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div></div>

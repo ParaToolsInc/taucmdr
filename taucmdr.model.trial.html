@@ -61,6 +61,25 @@ the performance data.</p>
 <em class="property">class </em><code class="descclassname">taucmdr.model.trial.</code><code class="descname">Trial</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.model.Model</span></code></a></p>
 <p>Trial data model.</p>
+<dl class="method">
+<dt id="taucmdr.model.trial.Trial._tau_minimal">
+<code class="descname">_tau_minimal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial._tau_minimal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial._tau_minimal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a minimal TAU configuration for working with legacy data analysis tools.</p>
+<p>If the trial and its data are copied to a new host system, we need a new TAU configuration
+that doesn&#8217;t have the same capabilities as the system on which the data was generated.
+The safest way to do this is to use a minimal TAU configuration for all analysis tasks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Object handle for the TAU installation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation" title="taucmdr.cf.software.tau_installation.TauInstallation">TauInstallation</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="taucmdr.model.trial.Trial.associations">
 <code class="descname">associations</code><em class="property"> = {'experiment': (&lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'trials')}</em><a class="headerlink" href="#taucmdr.model.trial.Trial.associations" title="Permalink to this definition">¶</a></dt>
@@ -99,6 +118,43 @@ when the subprocess exits.</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="taucmdr.model.trial.Trial.export">
+<code class="descname">export</code><span class="sig-paren">(</span><em>dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export experiment trial data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to directory to contain exported data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+This trial has no data.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.trial.Trial.get_data_files">
+<code class="descname">get_data_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.get_data_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.get_data_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return paths to the trial&#8217;s data files or directories maped by data type.</p>
+<p>Post-process trial data if necessary and return a dictionary mapping the types of data produced
+by this trial to paths to related data files or directories.  The paths should be suitable for
+passing on a command line to one of the known data analysis tools. For example, a trial producing
+SLOG2 traces and TAU profiles would return <code class="docutils literal"><span class="pre">{&quot;slog2&quot;:</span> <span class="pre">&quot;/path/to/tau.slog2&quot;,</span> <span class="pre">&quot;tau&quot;:</span> <span class="pre">&quot;/path/to/directory/&quot;}</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Keys are strings indicating the data type; values are filesystem paths.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="taucmdr.model.trial.Trial.key_attribute">
 <code class="descname">key_attribute</code><em class="property"> = 'number'</em><a class="headerlink" href="#taucmdr.model.trial.Trial.key_attribute" title="Permalink to this definition">¶</a></dt>
@@ -124,47 +180,10 @@ when the subprocess exits.</p>
 <code class="descname">prefix</code><a class="headerlink" href="#taucmdr.model.trial.Trial.prefix" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="taucmdr.model.trial.Trial.profile_files">
-<code class="descname">profile_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.profile_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.profile_files" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get this trial&#8217;s profile files.</p>
-<p>Returns paths to profile files (profile.X.Y.Z).  If the trial produced
-<a href="#id5"><span class="problematic" id="id6">MULTI__</span></a> directories then paths to every profile below every <a href="#id5"><span class="problematic" id="id7">MULTI__</span></a>
-directory are returned. If the trial produced a merged file retun the
-<a href="#id1"><span class="problematic" id="id2">*</span></a>.xml file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Paths to profile files.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="attribute">
 <dt id="taucmdr.model.trial.Trial.references">
 <code class="descname">references</code><em class="property"> = set([])</em><a class="headerlink" href="#taucmdr.model.trial.Trial.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="method">
-<dt id="taucmdr.model.trial.Trial.trace_files">
-<code class="descname">trace_files</code><span class="sig-paren">(</span><em>env</em>, <em>post_process=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.trace_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.trace_files" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get this trial&#8217;s trace files.</p>
-<p>Returns paths to trace files: <a href="#id3"><span class="problematic" id="id4">*</span></a>.[trc,edf,slog2,def,evt,otf2].</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Paths to trace files.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
 
 </dd></dl>
 

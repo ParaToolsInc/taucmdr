@@ -56,7 +56,7 @@
 <p>TAU is the core software package of TAU Commander.</p>
 <dl class="class">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation">
-<em class="property">class </em><code class="descclassname">taucmdr.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>application_linkage</em>, <em>openmp_support</em>, <em>pthreads_support</em>, <em>tbb_support</em>, <em>mpi_support</em>, <em>mpi_include_path</em>, <em>mpi_library_path</em>, <em>mpi_libraries</em>, <em>cuda_support</em>, <em>cuda_prefix</em>, <em>opencl_support</em>, <em>opencl_prefix</em>, <em>shmem_support</em>, <em>shmem_include_path</em>, <em>shmem_library_path</em>, <em>shmem_libraries</em>, <em>mpc_support</em>, <em>source_inst</em>, <em>compiler_inst</em>, <em>link_only</em>, <em>io_inst</em>, <em>keep_inst_files</em>, <em>reuse_inst_files</em>, <em>select_file</em>, <em>profile</em>, <em>trace</em>, <em>sample</em>, <em>metrics</em>, <em>measure_mpi</em>, <em>measure_openmp</em>, <em>measure_opencl</em>, <em>measure_cuda</em>, <em>measure_shmem</em>, <em>measure_heap_usage</em>, <em>measure_memory_alloc</em>, <em>measure_comm_matrix</em>, <em>callpath_depth</em>, <em>throttle</em>, <em>throttle_per_call</em>, <em>throttle_num_calls</em>, <em>forced_makefile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">taucmdr.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>sources=None</em>, <em>target_arch=&lt;taucmdr.cf.platforms.Architecture object&gt;</em>, <em>target_os=&lt;taucmdr.cf.platforms.OperatingSystem object&gt;</em>, <em>compilers=None</em>, <em>application_linkage='dynamic'</em>, <em>openmp_support=False</em>, <em>pthreads_support=False</em>, <em>tbb_support=False</em>, <em>mpi_support=False</em>, <em>mpi_include_path=None</em>, <em>mpi_library_path=None</em>, <em>mpi_libraries=None</em>, <em>cuda_support=False</em>, <em>cuda_prefix=None</em>, <em>opencl_support=False</em>, <em>opencl_prefix=None</em>, <em>shmem_support=False</em>, <em>shmem_include_path=None</em>, <em>shmem_library_path=None</em>, <em>shmem_libraries=None</em>, <em>mpc_support=False</em>, <em>source_inst='never'</em>, <em>compiler_inst='never'</em>, <em>link_only=False</em>, <em>io_inst=False</em>, <em>keep_inst_files=False</em>, <em>reuse_inst_files=False</em>, <em>select_file=None</em>, <em>profile='tau'</em>, <em>trace='none'</em>, <em>sample=False</em>, <em>metrics=None</em>, <em>measure_mpi=False</em>, <em>measure_openmp='ignore'</em>, <em>measure_opencl=False</em>, <em>measure_cuda=False</em>, <em>measure_shmem=False</em>, <em>measure_heap_usage=False</em>, <em>measure_memory_alloc=False</em>, <em>measure_comm_matrix=False</em>, <em>callpath_depth=100</em>, <em>throttle=True</em>, <em>throttle_per_call=10</em>, <em>throttle_num_calls=100000</em>, <em>forced_makefile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation" title="taucmdr.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.software.installation.Installation</span></code></a></p>
 <p>Encapsulates a TAU installation.</p>
 <p>TAU is an enormous, organic, complex piece of software so this class is
@@ -66,20 +66,6 @@ of the systemization of TAU is actually implemented so it can get ugly.</p>
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation._incompatible_tags">
 <code class="descname">_incompatible_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation._incompatible_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation._incompatible_tags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a set of makefile tags incompatible with the specified config.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="taucmdr.cf.software.tau_installation.TauInstallation.check_metrics">
-<code class="descname">check_metrics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.check_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.check_metrics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks metrics for compatibility.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">ConfigurationError if there are incompatible metrics.</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
@@ -156,6 +142,25 @@ TAU&#8217;s configure script failed.</td>
 </dd></dl>
 
 <dl class="method">
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.create_ppk_file">
+<code class="descname">create_ppk_file</code><span class="sig-paren">(</span><em>dest</em>, <em>src</em>, <em>remove_existing=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.create_ppk_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.create_ppk_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a PPK file at <code class="docutils literal"><span class="pre">dest</span></code> from the data at <code class="docutils literal"><span class="pre">src</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the PPK file to create.</li>
+<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Directory containing TAU profiles to convert to PPK format.</li>
+<li><strong>remove_existing</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, delete <code class="docutils literal"><span class="pre">dest</span></code> before writing it.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.get_application_command">
 <code class="descname">get_application_command</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.get_application_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_application_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a command line to launch an application under TAU.</p>
@@ -192,6 +197,28 @@ variables to set before running the application command.</td>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Command for TAU compiler wrapper without path or arguments.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.get_data_format">
+<code class="descname">get_data_format</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.get_data_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_data_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Guess the data format of a file path.</p>
+<p>Look at a file&#8217;s extension and guess what kind of performance data it might be.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File path.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">String indicating the data format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Cannot determine the file&#8217;s data format.</td>
 </tr>
 </tbody>
 </table>
@@ -254,6 +281,18 @@ TAU failed installation or did not pass verification after it was installed.</td
 </dd></dl>
 
 <dl class="method">
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.is_profile_format">
+<code class="descname">is_profile_format</code><span class="sig-paren">(</span><em>fmt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.is_profile_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.is_profile_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if <code class="docutils literal"><span class="pre">fmt</span></code> is a string indicating a profile data format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.is_trace_format">
+<code class="descname">is_trace_format</code><span class="sig-paren">(</span><em>fmt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.is_trace_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.is_trace_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if <code class="docutils literal"><span class="pre">fmt</span></code> is a string indicating a trace data format.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.make_install">
 <code class="descname">make_install</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.make_install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.make_install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Installs TAU to <code class="docutils literal"><span class="pre">self.install_prefix</span></code>.</p>
@@ -270,22 +309,15 @@ TAU failed installation or did not pass verification after it was installed.</td
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.software.tau_installation.TauInstallation.pack_profiles">
-<code class="descname">pack_profiles</code><span class="sig-paren">(</span><em>prefix</em>, <em>ppk_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.pack_profiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.pack_profiles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a PPK file from profile.* files.</p>
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.merge_tau_trace_files">
+<code class="descname">merge_tau_trace_files</code><span class="sig-paren">(</span><em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.merge_tau_trace_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.merge_tau_trace_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use tau_treemerge.pl to merge multiple TAU trace files into a single edf and a single trc file.</p>
+<p>The new edf file and trc file are written to <code class="docutils literal"><span class="pre">prefix</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the directory containing profile.* files.</li>
-<li><strong>ppk_file</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Absolute path to the PPK file that will be created.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-paraprof failed to pack the profiles.</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the directory containing <a href="#id1"><span class="problematic" id="id2">*</span></a>.trc and <a href="#id3"><span class="problematic" id="id4">*</span></a>.edf files.</td>
 </tr>
 </tbody>
 </table>
@@ -318,23 +350,23 @@ for the TAU library and tau_exec script.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.software.tau_installation.TauInstallation.show_profile">
-<code class="descname">show_profile</code><span class="sig-paren">(</span><em>path</em>, <em>tool_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.show_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.show_profile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows profile data in the specified file or folder.</p>
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.show_data_files">
+<code class="descname">show_data_files</code><span class="sig-paren">(</span><em>dataset</em>, <em>profile_tools=None</em>, <em>trace_tools=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.show_data_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.show_data_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays profile and trace data.</p>
+<p>Opens one more more data analysis tools to display the specified data files.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>path</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the directory containing profile files or <a href="#id1"><span class="problematic" id="id2">MULTI__</span></a> directories.</li>
-<li><strong>tool_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the profile visualization tool to use, e.g. &#8216;pprof&#8217;.</li>
+<li><strong>dataset</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Lists of paths to data files indexed by data format.  See <a class="reference internal" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_data_format" title="taucmdr.cf.software.tau_installation.TauInstallation.get_data_format"><code class="xref any py py-meth docutils literal"><span class="pre">get_data_format</span></code></a>.</li>
+<li><strong>profile_tools</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Visualization or data processing tools for profiles.</li>
+<li><strong>trace_tools</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Visualization or data processing tools for traces.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Return code of the visualization tool.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+An error occurred while displaying a data file.</p>
 </td>
 </tr>
 </tbody>
@@ -342,24 +374,18 @@ for the TAU library and tau_exec script.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.software.tau_installation.TauInstallation.show_trace">
-<code class="descname">show_trace</code><span class="sig-paren">(</span><em>path</em>, <em>tool_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.show_trace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.show_trace" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shows trace data in the specified file or folder.</p>
-<p>Merges the traces and converts them if needed.</p>
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation.tau_trace_to_slog2">
+<code class="descname">tau_trace_to_slog2</code><span class="sig-paren">(</span><em>trc</em>, <em>edf</em>, <em>slog2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.tau_trace_to_slog2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.tau_trace_to_slog2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a TAU trace file to SLOG2 format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>path</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the directory containing trace files.</li>
-<li><strong>tool_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the profile visualization tool to use, e.g. &#8216;vampir&#8217;.</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>trc</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the trc file.</li>
+<li><strong>edf</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the edf file.</li>
+<li><strong>slog2</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the slog2 file to create.</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Return code of the visualization tool.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
 </td>
 </tr>
 </tbody>

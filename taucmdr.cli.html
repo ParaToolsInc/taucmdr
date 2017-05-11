@@ -154,6 +154,7 @@
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="taucmdr.cli.commands.project.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.project.copy.html">taucmdr.cli.commands.project.copy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.project.create.html">taucmdr.cli.commands.project.create module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.project.delete.html">taucmdr.cli.commands.project.delete module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.project.edit.html">taucmdr.cli.commands.project.edit module</a></li>
@@ -210,6 +211,7 @@
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.trial.tests.test_create.html">taucmdr.cli.commands.trial.tests.test_create module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.trial.tests.test_delete.html">taucmdr.cli.commands.trial.tests.test_delete module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.trial.tests.test_edit.html">taucmdr.cli.commands.trial.tests.test_edit module</a></li>
+<li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.trial.tests.test_export.html">taucmdr.cli.commands.trial.tests.test_export module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.trial.tests.test_list.html">taucmdr.cli.commands.trial.tests.test_list module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.trial.tests.test_show.html">taucmdr.cli.commands.trial.tests.test_show module</a></li>
 </ul>
@@ -309,7 +311,7 @@ a subclass of <a class="reference internal" href="taucmdr.cli.command.html#taucm
 <code class="descclassname">taucmdr.cli.</code><code class="descname">_command_as_list</code><span class="sig-paren">(</span><em>module_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli.html#_command_as_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli._command_as_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a module name to a command name list.</p>
 <p>Maps command module names to their command line equivilants, e.g.
-&#8216;taucmdr.cli.commands.target.create&#8217; =&gt; [&#8216;taucmdr&#8217;, &#8216;target&#8217;, &#8216;create&#8217;]</p>
+&#8216;taucmdr.cli.commands.target.create&#8217; =&gt; [&#8216;tau&#8217;, &#8216;target&#8217;, &#8216;create&#8217;]</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -359,7 +361,7 @@ command module.  Other strings map to subcommands of the command.</p>
 <code class="descclassname">taucmdr.cli.</code><code class="descname">command_from_module_name</code><span class="sig-paren">(</span><em>module_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli.html#command_from_module_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.command_from_module_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a module name to a command name string.</p>
 <p>Maps command module names to their command line equivilants, e.g.
-&#8216;taucmdr.cli.commands.target.create&#8217; =&gt; &#8216;taucmdr target create&#8217;</p>
+&#8216;taucmdr.cli.commands.target.create&#8217; =&gt; &#8216;tau target create&#8217;</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -396,7 +398,7 @@ command module.  Other strings map to subcommands of the command.</p>
 <dt id="taucmdr.cli.execute_command">
 <code class="descclassname">taucmdr.cli.</code><code class="descname">execute_command</code><span class="sig-paren">(</span><em>cmd</em>, <em>cmd_args=None</em>, <em>parent_module=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli.html#execute_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.execute_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Import the command module and run its main routine.</p>
-<p>Partial commands are allowed, e.g. cmd=[&#8216;taucmdr&#8217;, &#8216;cli&#8217;, &#8216;commands&#8217;, &#8216;app&#8217;, &#8216;cre&#8217;] will resolve
+<p>Partial commands are allowed, e.g. cmd=[&#8216;tau&#8217;, &#8216;cli&#8217;, &#8216;commands&#8217;, &#8216;app&#8217;, &#8216;cre&#8217;] will resolve
 to &#8216;taucmdr.cli.commands.application.create&#8217;.  If the command can&#8217;t be found then the parent
 command (if any) will be invoked with the <code class="docutils literal"><span class="pre">--help</span></code> flag.</p>
 <table class="docutils field-list" frame="void" rules="none">

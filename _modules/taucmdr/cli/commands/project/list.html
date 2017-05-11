@@ -75,6 +75,7 @@
 <span class="sd">&quot;&quot;&quot;``measurement list`` subcommand.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.cli_view</span> <span class="kn">import</span> <span class="n">ListCommand</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
@@ -82,7 +83,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.application.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">application_list_cmd</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.measurement.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">measurement_list_cmd</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.list</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_list_cmd</span>
-<span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
 
 <div class="viewcode-block" id="ProjectListCommand"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.project.list.html#taucmdr.cli.commands.project.list.ProjectListCommand">[docs]</a><span class="k">class</span> <span class="nc">ProjectListCommand</span><span class="p">(</span><span class="n">ListCommand</span><span class="p">):</span>

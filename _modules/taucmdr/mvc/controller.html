@@ -340,8 +340,8 @@
                         <span class="n">old_foreign_keys</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">old_foreign_keys</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">old_foreign_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
-            <span class="n">unset_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">unset_records</span><span class="p">:</span>
+            <span class="n">updated_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">updated_records</span><span class="p">:</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="n">changes</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">])</span></div>
 

@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="taucmdr.model" href="../model.html" /> 
+    <link rel="up" title="taucmdr" href="../../taucmdr.html" /> 
   </head>
   <body role="document">
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
@@ -82,7 +82,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">fasteners</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
@@ -90,8 +90,6 @@
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-<span class="n">PROFILE_EXPORT_FORMATS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ppk&#39;</span><span class="p">,</span> <span class="s1">&#39;zip&#39;</span><span class="p">,</span> <span class="s1">&#39;tar&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
@@ -114,16 +112,22 @@
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;The experiment&#39;s hardware/software configuration&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--target&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">}</span>
         <span class="p">},</span>
         <span class="s1">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Application</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;Application this experiment uses&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--application&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">}</span>
         <span class="p">},</span>
         <span class="s1">&#39;measurement&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Measurement</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;Measurement parameters for this experiment&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--measurement&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">}</span>
         <span class="p">},</span>
         <span class="s1">&#39;trials&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="n">Trial</span><span class="p">,</span>
@@ -151,7 +155,7 @@
         <span class="sd">&quot;&quot;&quot;Changes the selected experiment in the current project.</span>
 <span class="sd">        </span>
 <span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: No experiment with the given name in the currently selected project.</span>
+<span class="sd">            ExperimentSelectionError: No experiment with the given name in the currently selected project.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): Name of the experiment to select.</span>
@@ -162,7 +166,7 @@
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">proj</span><span class="o">.</span><span class="n">eid</span><span class="p">}</span>
         <span class="n">matching</span> <span class="o">=</span> <span class="n">expr_ctrl</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">matching</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;There is no experiment named &#39;</span><span class="si">%s</span><span class="s2">&#39; in project &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="k">raise</span> <span class="n">ExperimentSelectionError</span><span class="p">(</span><span class="s2">&quot;There is no experiment named &#39;</span><span class="si">%s</span><span class="s2">&#39; in project &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;More than one experiment with data </span><span class="si">%r</span><span class="s2"> exists!&quot;</span> <span class="o">%</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -377,110 +381,39 @@
         <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">tau</span><span class="o">.</span><span class="n">get_application_command</span><span class="p">(</span><span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Trial</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">env</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Experiment._get_trials"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment._get_trials">[docs]</a>    <span class="k">def</span> <span class="nf">_get_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns trial data for the given trial numbers.</span>
+<div class="viewcode-block" id="Experiment.trials"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment.trials">[docs]</a>    <span class="k">def</span> <span class="nf">trials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of modeled trial records.</span>
 
-<span class="sd">        If no trial numbers are given, return the most recent trial.</span>
+<span class="sd">        If `bool(trial_numbers)` is False, return the most recent trial.</span>
+<span class="sd">        Otherwise return a list of Trial objects for the given trial numbers.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            trial_numbers (list): List of numbers of trials to retrieve or None.</span>
+<span class="sd">            trial_numbers (list): List of numbers of trials to retrieve.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list: Trial data.</span>
+<span class="sd">            list: Modeled trial records.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: Invalid trial number or no trials in this experiment.</span>
+<span class="sd">            ConfigurationError: Invalid trial number or no trials in selected experiment.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">trial_numbers</span><span class="p">:</span>
-            <span class="n">trials</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">trial_numbers</span><span class="p">:</span>
+                <span class="n">trials</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">found</span> <span class="o">=</span> <span class="n">Trial</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="n">num</span><span class="p">})</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No trial number </span><span class="si">%d</span><span class="s2"> in experiment </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Experiment &#39;</span><span class="si">%s</span><span class="s2">&#39; has no trial with number </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">num</span><span class="p">))</span>
                 <span class="n">trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">trials</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">trials</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;trials&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">trials</span><span class="p">:</span>
-                <span class="n">found</span> <span class="o">=</span> <span class="n">trials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-                    <span class="k">if</span> <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;begin_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">found</span><span class="p">[</span><span class="s1">&#39;begin_time&#39;</span><span class="p">]:</span>
-                        <span class="n">found</span> <span class="o">=</span> <span class="n">trial</span>
-                <span class="n">trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">found</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">trials</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No trials in experiment </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">:</span>
-            <span class="n">trial_size</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">trial_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> is empty.&quot;</span> <span class="o">%</span><span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">trials</span></div>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">trials</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No trials in experiment </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">trials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="k">if</span> <span class="n">trial</span><span class="p">[</span><span class="s1">&#39;begin_time&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">found</span><span class="p">[</span><span class="s1">&#39;begin_time&#39;</span><span class="p">]:</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="n">trial</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">found</span><span class="p">]</span></div></div>
 
-<div class="viewcode-block" id="Experiment.show"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_tool</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trace_tool</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Show experiment trial data.</span>
-
-<span class="sd">        Shows the most recent trial or all trials with given numbers.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            profile_tool (str): Name of the visualization or data processing tool for profiles, e.g. `pprof`.</span>
-<span class="sd">            trace_tool (str): Name of the visualization or data processing tool for traces, e.g. `vampir`.</span>
-<span class="sd">            trial_numbers (list): Numbers of trials to show.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: Invalid trial numbers or no trial data for this experiment.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
-        <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trials</span><span class="p">(</span><span class="n">trial_numbers</span><span class="p">):</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">prefix</span>
-            <span class="k">if</span> <span class="n">meas</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
-                <span class="n">tau</span><span class="o">.</span><span class="n">show_profile</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">profile_tool</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">meas</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
-                <span class="n">tau</span><span class="o">.</span><span class="n">show_trace</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">trace_tool</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="Experiment.export"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trial_numbers</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">export_location</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Export experiment trial data.</span>
-
-<span class="sd">        Exports the most recent trial or all trials with given numbers.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            profile_format (str): File format for exported profiles, see :any:`PROFILE_EXPORT_FORMATS`</span>
-<span class="sd">            export_location (str): Directory to contain exported profiles.</span>
-<span class="sd">            trial_numbers (list): Numbers of trials to show.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            ConfigurationError: Invalid trial numbers or no trial data for this experiment.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">profile_format</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">meas</span><span class="p">[</span><span class="s1">&#39;trace&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
-                <span class="n">profile_format</span> <span class="o">=</span> <span class="n">PROFILE_EXPORT_FORMATS</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">profile_format</span> <span class="o">=</span> <span class="n">PROFILE_EXPORT_FORMATS</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">assert</span> <span class="n">profile_format</span> <span class="ow">in</span> <span class="n">PROFILE_EXPORT_FORMATS</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">export_location</span><span class="p">:</span>
-            <span class="n">export_location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">profile_format</span> <span class="o">==</span> <span class="s1">&#39;ppk&#39;</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trials</span><span class="p">(</span><span class="n">trial_numbers</span><span class="p">):</span>
-                <span class="n">ppk_file</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.trial&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;.ppk&#39;</span>
-                <span class="n">tau</span><span class="o">.</span><span class="n">pack_profiles</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">export_location</span><span class="p">,</span> <span class="n">ppk_file</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">profile_format</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;zip&#39;</span><span class="p">,</span> <span class="s1">&#39;tar&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trials</span><span class="p">(</span><span class="n">trial_numbers</span><span class="p">):</span>
-                <span class="n">trial_number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
-                <span class="n">archive_file</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.trial&#39;</span> <span class="o">+</span> <span class="n">trial_number</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">profile_format</span>
-                <span class="n">profile_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">trial_number</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-                                 <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">trial</span><span class="o">.</span><span class="n">profile_files</span><span class="p">()]</span>
-                <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">tau</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
-                <span class="n">trace_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">trial_number</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span>
-                               <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">trial</span><span class="o">.</span><span class="n">trace_files</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="bp">True</span><span class="p">)]</span>
-                <span class="n">exportable_files</span> <span class="o">=</span> <span class="n">profile_files</span> <span class="o">+</span> <span class="n">trace_files</span>
-                <span class="n">old_cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">prefix</span><span class="p">))</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">util</span><span class="o">.</span><span class="n">create_archive</span><span class="p">(</span><span class="n">profile_format</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">export_location</span><span class="p">,</span> <span class="n">archive_file</span><span class="p">),</span> <span class="n">exportable_files</span><span class="p">)</span>
-                <span class="k">finally</span><span class="p">:</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">old_cwd</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Invalid profile format: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">profile_format</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

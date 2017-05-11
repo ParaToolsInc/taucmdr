@@ -91,21 +91,28 @@ messages appropriately so they don&#8217;t wrap in strange ways.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser">
-<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">MutableGroupArgumentParser</code><span class="sig-paren">(</span><em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em>, <em>version=None</em>, <em>parents=[]</em>, <em>formatter_class=&lt;class 'argparse.HelpFormatter'&gt;</em>, <em>prefix_chars='-'</em>, <em>fromfile_prefix_chars=None</em>, <em>argument_default=None</em>, <em>conflict_handler='error'</em>, <em>add_help=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cli.arguments.MutableArgumentGroup">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">MutableArgumentGroup</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">argparse._ArgumentGroup</span></code></p>
+<p>Argument group that allows its actions to be modified after creation.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cli.arguments.MutableArgumentGroupParser">
+<em class="property">class </em><code class="descclassname">taucmdr.cli.arguments.</code><code class="descname">MutableArgumentGroupParser</code><span class="sig-paren">(</span><em>prog=None</em>, <em>usage=None</em>, <em>description=None</em>, <em>epilog=None</em>, <em>version=None</em>, <em>parents=[]</em>, <em>formatter_class=&lt;class 'argparse.HelpFormatter'&gt;</em>, <em>prefix_chars='-'</em>, <em>fromfile_prefix_chars=None</em>, <em>argument_default=None</em>, <em>conflict_handler='error'</em>, <em>add_help=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.ArgumentParser</span></code></a></p>
 <p>Argument parser with mutable groups and better help formatting.</p>
 <p><a class="reference external" href="https://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">argparse.ArgumentParser</span></code></a> doesn&#8217;t allow groups to change once set
 and generates &#8220;scruffy&#8221; looking help, so we fix this problems in this subclass.</p>
 <dl class="method">
-<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser._sorted_groups">
-<code class="descname">_sorted_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser._sorted_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser._sorted_groups" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cli.arguments.MutableArgumentGroupParser._sorted_groups">
+<code class="descname">_sorted_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser._sorted_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser._sorted_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over action groups.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser.add_argument_group">
-<code class="descname">add_argument_group</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser.add_argument_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser.add_argument_group" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cli.arguments.MutableArgumentGroupParser.add_argument_group">
+<code class="descname">add_argument_group</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser.add_argument_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser.add_argument_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an argument group.</p>
 <p>If the group doesn&#8217;t exist it will be created.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -126,14 +133,14 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser.format_help">
-<code class="descname">format_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser.format_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser.format_help" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cli.arguments.MutableArgumentGroupParser.format_help">
+<code class="descname">format_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser.format_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser.format_help" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format command line help string.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cli.arguments.MutableGroupArgumentParser.merge">
-<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=True</em>, <em>include_optional=True</em>, <em>include_storage=False</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableGroupArgumentParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableGroupArgumentParser.merge" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cli.arguments.MutableArgumentGroupParser.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=False</em>, <em>include_optional=True</em>, <em>include_storage=False</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge arguments from a parser into this parser.</p>
 <p>Modify this parser by adding additional arguments taken from the supplied parser.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -247,7 +254,7 @@ Otherwise the attribute value is the value of <cite>value</cite>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>parser</strong> (<a class="reference internal" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="taucmdr.cli.arguments.MutableGroupArgumentParser"><em>MutableGroupArgumentParser</em></a>) &#8211; The parser to modify.</li>
+<li><strong>parser</strong> (<a class="reference internal" href="#taucmdr.cli.arguments.MutableArgumentGroupParser" title="taucmdr.cli.arguments.MutableArgumentGroupParser"><em>MutableArgumentGroupParser</em></a>) &#8211; The parser to modify.</li>
 <li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The action that will be taken by the command, e.g. &#8220;delete&#8221; or &#8220;list&#8221;</li>
 <li><strong>object_name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The type of object that will be manipulated, e.g. &#8220;application&#8221; or &#8220;measurement&#8221;</li>
 <li><strong>plural</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Pluralize help message if True.</li>
@@ -280,7 +287,7 @@ Use <a class="reference external" href="https://docs.python.org/library/argparse
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The customized argument parser object.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="taucmdr.cli.arguments.MutableGroupArgumentParser">MutableGroupArgumentParser</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cli.arguments.MutableArgumentGroupParser" title="taucmdr.cli.arguments.MutableArgumentGroupParser">MutableArgumentGroupParser</a></p>
 </td>
 </tr>
 </tbody>
@@ -333,7 +340,7 @@ as the argument&#8217;s value if argument is not specified.</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The customized argument parser object.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cli.arguments.MutableGroupArgumentParser" title="taucmdr.cli.arguments.MutableGroupArgumentParser">MutableGroupArgumentParser</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cli.arguments.MutableArgumentGroupParser" title="taucmdr.cli.arguments.MutableArgumentGroupParser">MutableArgumentGroupParser</a></p>
 </td>
 </tr>
 </tbody>

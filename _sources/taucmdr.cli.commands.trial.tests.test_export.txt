@@ -1,0 +1,7 @@
+taucmdr.cli.commands.trial.tests.test_export module
+===================================================
+
+.. automodule:: taucmdr.cli.commands.trial.tests.test_export
+    :members:
+    :undoc-members:
+    :show-inheritance:

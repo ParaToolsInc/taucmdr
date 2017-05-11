@@ -61,28 +61,6 @@ The selected experiment will be used for application compilation and trial visua
 <em class="property">class </em><code class="descclassname">taucmdr.model.experiment.</code><code class="descname">Experiment</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.model.Model</span></code></a></p>
 <p>Experiment data model.</p>
-<dl class="method">
-<dt id="taucmdr.model.experiment.Experiment._get_trials">
-<code class="descname">_get_trials</code><span class="sig-paren">(</span><em>trial_numbers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment._get_trials"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment._get_trials" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns trial data for the given trial numbers.</p>
-<p>If no trial numbers are given, return the most recent trial.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trial_numbers</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; List of numbers of trials to retrieve or None.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Trial data.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Invalid trial number or no trials in this experiment.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.associations">
 <code class="descname">associations</code><em class="property"> = {'project': (&lt;class 'taucmdr.model.project.Project'&gt;, 'experiments'), 'trials': (&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment')}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.associations" title="Permalink to this definition">¶</a></dt>
@@ -90,7 +68,7 @@ Invalid trial number or no trials in this experiment.</td>
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.attributes">
-<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'taucmdr.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'taucmdr.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'model': &lt;class 'taucmdr.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'model': &lt;class 'taucmdr.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'target': {'model': &lt;class 'taucmdr.model.target.Target'&gt;, 'required': True, 'description': &quot;The experiment's hardware/software configuration&quot;}}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'taucmdr.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'taucmdr.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'argparse': {'flags': ('--application',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'argparse': {'flags': ('--measurement',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'target': {'argparse': {'flags': ('--target',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.target.Target'&gt;, 'required': True, 'description': &quot;The experiment's hardware/software configuration&quot;}}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -120,30 +98,6 @@ function, the experiment is ready to operate on the user&#8217;s application.</p
 <dt id="taucmdr.model.experiment.Experiment.data_size">
 <code class="descname">data_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.data_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.data_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="method">
-<dt id="taucmdr.model.experiment.Experiment.export">
-<code class="descname">export</code><span class="sig-paren">(</span><em>profile_format=None</em>, <em>trial_numbers=None</em>, <em>export_location=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.export" title="Permalink to this definition">¶</a></dt>
-<dd><p>Export experiment trial data.</p>
-<p>Exports the most recent trial or all trials with given numbers.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>profile_format</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; File format for exported profiles, see <code class="xref any docutils literal"><span class="pre">PROFILE_EXPORT_FORMATS</span></code></li>
-<li><strong>export_location</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Directory to contain exported profiles.</li>
-<li><strong>trial_numbers</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Invalid trial numbers or no trial data for this experiment.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.key_attribute">
@@ -266,7 +220,7 @@ The experiment is not configured to perform the desired run.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ExperimentSelectionError</span></code> &#8211;
 No experiment with the given name in the currently selected project.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the experiment to select.</td>
@@ -276,24 +230,23 @@ No experiment with the given name in the currently selected project.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.model.experiment.Experiment.show">
-<code class="descname">show</code><span class="sig-paren">(</span><em>profile_tool=None</em>, <em>trace_tool=None</em>, <em>trial_numbers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.show" title="Permalink to this definition">¶</a></dt>
-<dd><p>Show experiment trial data.</p>
-<p>Shows the most recent trial or all trials with given numbers.</p>
+<dt id="taucmdr.model.experiment.Experiment.trials">
+<code class="descname">trials</code><span class="sig-paren">(</span><em>trial_numbers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.trials"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.trials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of modeled trial records.</p>
+<p>If <cite>bool(trial_numbers)</cite> is False, return the most recent trial.
+Otherwise return a list of Trial objects for the given trial numbers.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>profile_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for profiles, e.g. <cite>pprof</cite>.</li>
-<li><strong>trace_tool</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the visualization or data processing tool for traces, e.g. <cite>vampir</cite>.</li>
-<li><strong>trial_numbers</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Numbers of trials to show.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>trial_numbers</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; List of numbers of trials to retrieve.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Invalid trial numbers or no trial data for this experiment.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Modeled trial records.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+Invalid trial number or no trials in selected experiment.</td>
 </tr>
 </tbody>
 </table>

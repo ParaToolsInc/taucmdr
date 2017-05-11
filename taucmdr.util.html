@@ -151,8 +151,14 @@ This routine will return stupid results for archives with multiple top-level ele
 </dd></dl>
 
 <dl class="function">
+<dt id="taucmdr.util.copy_file">
+<code class="descclassname">taucmdr.util.</code><code class="descname">copy_file</code><span class="sig-paren">(</span><em>src</em>, <em>dest</em>, <em>show_progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#copy_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.copy_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works just like <a class="reference external" href="https://docs.python.org/library/shutil.html#shutil.copy" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">shutil.copy</span></code></a> except with progress bars.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="taucmdr.util.create_archive">
-<code class="descclassname">taucmdr.util.</code><code class="descname">create_archive</code><span class="sig-paren">(</span><em>fmt</em>, <em>dest</em>, <em>items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#create_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.create_archive" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">taucmdr.util.</code><code class="descname">create_archive</code><span class="sig-paren">(</span><em>fmt</em>, <em>dest</em>, <em>items</em>, <em>cwd=None</em>, <em>show_progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#create_archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.create_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new archive file in the specified format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -162,6 +168,7 @@ This routine will return stupid results for archives with multiple top-level ele
 <li><strong>fmt</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Archive fmt, e.g. &#8216;zip&#8217; or &#8216;tgz&#8217;.</li>
 <li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to the archive file that will be created.</li>
 <li><strong>items</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Items (i.e. files or folders) to add to the archive.</li>
+<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Current working directory while creating the archive.</li>
 </ul>
 </td>
 </tr>
@@ -446,6 +453,20 @@ specified by <cite>onerror</cite> or, if that is omitted, they raise an exceptio
 <li><strong>attempts</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Number of times to repeat shutil.rmtree before giving up.</li>
 </ul>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.util.umask">
+<code class="descclassname">taucmdr.util.</code><code class="descname">umask</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#umask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.umask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager to temporarily set the process umask.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_mask</strong> &#8211; The argument to <a class="reference external" href="https://docs.python.org/library/os.html#os.umask" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">os.umask</span></code></a>.</td>
 </tr>
 </tbody>
 </table>

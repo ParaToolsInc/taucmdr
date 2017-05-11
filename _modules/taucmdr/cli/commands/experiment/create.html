@@ -81,32 +81,19 @@
 <span class="kn">from</span> <span class="nn">taucmdr.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.measurement</span> <span class="kn">import</span> <span class="n">Measurement</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.cli_view</span> <span class="kn">import</span> <span class="n">CreateCommand</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
 
 
 <div class="viewcode-block" id="ExperimentCreateCommand"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.experiment.create.html#taucmdr.cli.commands.experiment.create.ExperimentCreateCommand">[docs]</a><span class="k">class</span> <span class="nc">ExperimentCreateCommand</span><span class="p">(</span><span class="n">CreateCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;``experiment create`` subcommand.&quot;&quot;&quot;</span>
     
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">usage</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> &lt;experiment_name&gt; [arguments]&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser_from_model</span><span class="p">(</span><span class="n">Experiment</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
-        <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Experiment Arguments&#39;</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--target&#39;</span><span class="p">,</span>
-                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Target configuration name&quot;</span><span class="p">,</span>
-                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
-                           <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--application&#39;</span><span class="p">,</span>
-                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Application configuration name&quot;</span><span class="p">,</span>
-                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
-                           <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--measurement&#39;</span><span class="p">,</span>
-                           <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Measurement configuration name&quot;</span><span class="p">,</span>
-                           <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
-                           <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                           <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentCreateCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_construct_parser</span><span class="p">()</span>
+        <span class="c1"># All three options must be given to create the experiments</span>
+        <span class="n">parser</span><span class="p">[</span><span class="s1">&#39;--target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">parser</span><span class="p">[</span><span class="s1">&#39;--application&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">parser</span><span class="p">[</span><span class="s1">&#39;--measurement&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="n">parser</span>
     
     <span class="k">def</span> <span class="nf">_create_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
@@ -125,8 +112,14 @@
         <span class="n">proj_ctrl</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span>
         <span class="n">proj</span> <span class="o">=</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
         <span class="n">targ</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">target</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">targ</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A target with name </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span> <span class="o">%</span><span class="n">args</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">application</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">app</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;An application with name </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span> <span class="o">%</span><span class="n">args</span><span class="o">.</span><span class="n">application</span><span class="p">)</span>
         <span class="n">meas</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">measurement</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">meas</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A measurement with name </span><span class="si">%s</span><span class="s2"> does not exist.&quot;</span> <span class="o">%</span><span class="n">args</span><span class="o">.</span><span class="n">measurement</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="n">proj</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span>
                 <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">targ</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span>
@@ -135,7 +128,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_record</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
     
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ExperimentCreateCommand</span><span class="p">(</span><span class="n">Experiment</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Create a new experiment from project components.&quot;</span><span class="p">)</span>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ExperimentCreateCommand</span><span class="p">(</span><span class="n">Experiment</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Create a new experiment from project components.&quot;</span><span class="p">,</span>
+                                  <span class="n">include_storage_flag</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 
       </div>

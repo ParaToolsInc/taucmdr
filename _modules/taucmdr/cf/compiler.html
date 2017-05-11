@@ -357,7 +357,6 @@
         
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=too-many-return-statements</span>
         <span class="k">if</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">command</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span><span class="p">:</span>
@@ -651,6 +650,18 @@
                      <span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">language</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="k">if</span> <span class="n">role</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
                      <span class="s2">&quot;compiler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">absolute_path</span><span class="p">]</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg_parts</span><span class="p">))</span></div>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="InstalledCompiler.find_any"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.find_any">[docs]</a>    <span class="k">def</span> <span class="nf">find_any</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">role</span><span class="o">.</span><span class="n">kbase</span><span class="o">.</span><span class="n">iterfamilies</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">role</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">comp</span> <span class="o">=</span> <span class="n">InstalledCompiler</span><span class="o">.</span><span class="n">probe</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">comp</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot find any installed compiler to fill the </span><span class="si">%s</span><span class="s2"> role&quot;</span> <span class="o">%</span> <span class="n">role</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="InstalledCompiler.unwrap"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.unwrap">[docs]</a>    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -678,8 +689,10 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_version_string</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_command_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Invalid version flags </span><span class="si">%s</span><span class="s2"> for compiler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
-                                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">version_flags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler command &#39;</span><span class="si">%s</span><span class="s2">&#39; failed.&quot;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">),</span>
+                                         <span class="s2">&quot;Check that this command works outside of TAU.&quot;</span><span class="p">,</span>
+                                         <span class="s2">&quot;Check loaded modules and environment variables.&quot;</span><span class="p">,</span>
+                                         <span class="s2">&quot;Verify that the compiler&#39;s license is valid.&quot;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; no longer exists or is not executable&quot;</span> <span class="o">%</span> 
                                          <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>

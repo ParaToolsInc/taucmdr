@@ -85,9 +85,11 @@
     <span class="kn">from</span> <span class="nn">cStringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">skipIf</span><span class="p">,</span> <span class="n">skipUnless</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">TAU_HOME</span><span class="p">,</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">USER_STORAGE</span><span class="p">,</span> <span class="n">SYSTEM_STORAGE</span>
-
 
 <span class="n">_DIR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">_CWD_STACK</span> <span class="o">=</span> <span class="p">[]</span>
@@ -134,8 +136,6 @@
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_DIR_STACK</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">WARNING: Test directory &#39;</span><span class="si">%s</span><span class="s2">&#39; still exists, attempting to clean now...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
             <span class="n">_destroy_test_workdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
-                       
-
 <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">cleanup</span><span class="p">)</span>
 
 
@@ -144,6 +144,24 @@
     <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: tests have not been implemented&quot;</span> <span class="o">%</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
     <span class="n">_NOT_IMPLEMENTED</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">unittest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="n">msg</span><span class="p">)(</span><span class="bp">cls</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_null_decorator</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_</span>
+
+<div class="viewcode-block" id="skipUnlessHaveCompiler"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.skipUnlessHaveCompiler">[docs]</a><span class="k">def</span> <span class="nf">skipUnlessHaveCompiler</span><span class="p">(</span><span class="n">role</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator to skip test functions when no compiler fills the given role.</span>
+<span class="sd">    </span>
+<span class="sd">    If no installed compiler can fill this role then skip the test and report &quot;&lt;role&gt; compiler not found&quot;.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        role (_CompilerRole): A compiler role.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">InstalledCompiler</span><span class="o">.</span><span class="n">find_any</span><span class="p">(</span><span class="n">role</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">unittest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> compiler not found&quot;</span> <span class="o">%</span> <span class="n">role</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_null_decorator</span></div>
 
 
 <div class="viewcode-block" id="TestCase"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase">[docs]</a><span class="k">class</span> <span class="nc">TestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -169,7 +187,7 @@
         <span class="c1"># pylint: disable=protected-access</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_orig_stream</span>
         <span class="n">pop_test_workdir</span><span class="p">()</span></div>
-        
+
 <div class="viewcode-block" id="TestCase.run"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="c1"># Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True</span>
         <span class="c1"># pylint: disable=attribute-defined-outside-init</span>
@@ -177,27 +195,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_result_stream</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stream</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TestCase.reset_project_storage"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.reset_project_storage">[docs]</a>    <span class="k">def</span> <span class="nf">reset_project_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_name</span><span class="o">=</span><span class="s1">&#39;proj1&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="s1">&#39;app1&#39;</span><span class="p">,</span> <span class="n">bare</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="TestCase.reset_project_storage"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.reset_project_storage">[docs]</a>    <span class="k">def</span> <span class="nf">reset_project_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_args</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete and recreate project storage.</span>
 <span class="sd">        </span>
 <span class="sd">        Effectively the same as::</span>
 <span class="sd">        </span>
 <span class="sd">            &gt; rm -rf .tau</span>
-<span class="sd">            &gt; tau init --project-name=proj1 --target-name=targ1</span>
+<span class="sd">            &gt; tau initialize [init_args]</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            project_name (str): New project&#39;s name.</span>
-<span class="sd">            target_name (str): New target&#39;s name.</span>
-<span class="sd">            app_name (str): New application&#39;s name.</span>
-<span class="sd">            bare (bool): If true, initialize project storage but don&#39;t create default objects.</span>
+<span class="sd">            init_args (list): Command line arguments to `tau initialize`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.initialize</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">initialize_cmd</span>
         <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--project-name&#39;</span><span class="p">,</span> <span class="n">project_name</span><span class="p">,</span> <span class="s1">&#39;--target-name&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">,</span> <span class="s1">&#39;--application-name&#39;</span><span class="p">,</span> <span class="n">app_name</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">bare</span><span class="p">:</span>
-            <span class="n">argv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--bare&#39;</span><span class="p">)</span>
-    
-        <span class="k">if</span> <span class="n">bare</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SYSTEM_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">)):</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--project-name&#39;</span><span class="p">,</span> <span class="s1">&#39;proj1&#39;</span><span class="p">,</span> <span class="s1">&#39;--target-name&#39;</span><span class="p">,</span> <span class="s1">&#39;targ1&#39;</span><span class="p">,</span> <span class="s1">&#39;--application-name&#39;</span><span class="p">,</span> <span class="s1">&#39;app1&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">init_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">argv</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">init_args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;--bare&#39;</span> <span class="ow">in</span> <span class="n">argv</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SYSTEM_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">)):</span>
             <span class="n">initialize_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># If this is the first time setting up TAU and dependencies then we need to emit output so</span>
@@ -260,11 +274,14 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">orig_stderr</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">_STDOUT_HANDLER</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">orig_stdout</span></div>
 
-<div class="viewcode-block" id="TestCase.get_compiler"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.get_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">get_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="TestCase.assertCompiler"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertCompiler">[docs]</a>    <span class="k">def</span> <span class="nf">assertCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">taucmdr.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
         <span class="n">targ_ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
         <span class="n">targ</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">target_name</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;No </span><span class="si">%s</span><span class="s2"> compiler in target &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="TestCase.assertCommandReturnValue"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertCommandReturnValue">[docs]</a>    <span class="k">def</span> <span class="nf">assertCommandReturnValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
@@ -274,7 +291,16 @@
 <div class="viewcode-block" id="TestCase.assertNotCommandReturnValue"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertNotCommandReturnValue">[docs]</a>    <span class="k">def</span> <span class="nf">assertNotCommandReturnValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">retval</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">retval</span><span class="p">,</span> <span class="n">return_value</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span></div></div>
+        <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span></div>
+    
+<div class="viewcode-block" id="TestCase.assertManagedBuild"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertManagedBuild">[docs]</a>    <span class="k">def</span> <span class="nf">assertManagedBuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">compiler_role</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.build</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">build_command</span>
+        <span class="n">test_src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="p">,</span> <span class="s1">&#39;.testfiles&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+        <span class="n">test_dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_workdir</span><span class="p">(),</span> <span class="n">src</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">test_src</span><span class="p">,</span> <span class="n">test_dst</span><span class="p">)</span>
+        <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCompiler</span><span class="p">(</span><span class="n">compiler_role</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">cc_cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">compiler_args</span> <span class="o">+</span> <span class="p">[</span><span class="n">src</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="n">return_value</span><span class="p">,</span> <span class="n">build_command</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span></div></div>
     
 
 <div class="viewcode-block" id="TestRunner"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestRunner">[docs]</a><span class="k">class</span> <span class="nc">TestRunner</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">):</span>
