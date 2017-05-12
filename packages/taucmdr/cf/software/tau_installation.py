@@ -700,6 +700,10 @@ class TauInstallation(Installation):
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
 
+    def _compiler_tags(self):
+        return {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
+                host_compilers.PGI: 'pgi'}
+
     def get_tags(self):
         """Get tags for this TAU installation.
 
@@ -712,10 +716,8 @@ class TauInstallation(Installation):
         """
         tags = set()
         cxx_compiler = self.compilers[CXX].unwrap()
-        compiler_tags = {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
-                         host_compilers.PGI: 'pgi'}
         try:
-            tags.add(compiler_tags[cxx_compiler.info.family])
+            tags.add(self._compiler_tags()[cxx_compiler.info.family])
         except KeyError:
             pass
         if self._uses_pdt():
@@ -754,8 +756,11 @@ class TauInstallation(Installation):
         """Returns a set of makefile tags incompatible with the specified config."""
         tags = set()
         cxx_compiler = self.compilers[CXX].unwrap()
-        compiler_tags = {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
-                         host_compilers.PGI: 'pgi'}
+        # On Cray, TAU ignores compiler command line arguments and tags makefiles 
+        # according to what is specified in $PE_ENV, so the minimal configuration
+        # could have any compiler tag and still be compatible.
+        # On non-Cray systems, exclude tags from incompatible compilers.
+        compiler_tags = self._compiler_tags() if self.tau_magic is not TAU_CRAYCNL else {}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
         tags.update(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
