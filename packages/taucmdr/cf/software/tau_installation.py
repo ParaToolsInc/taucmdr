@@ -527,7 +527,8 @@ class TauInstallation(Installation):
         """
         if self._minimal:
             LOGGER.info("Configuring minimal TAU...")
-            if util.create_subprocess(['./configure'], cwd=self._src_prefix, stdout=False, show_progress=True):
+            cmd = ['./configure', '-arch=%s' % self.tau_magic.name]
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
             return
 
