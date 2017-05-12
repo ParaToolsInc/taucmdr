@@ -140,11 +140,7 @@ class TauInstallation(Installation):
     of the systemization of TAU is actually implemented so it can get ugly.
     """
 
-    def __init__(self, 
-                 sources=None,
-                 target_arch=HOST_ARCH,
-                 target_os=HOST_OS,
-                 compilers=None,
+    def __init__(self, sources, target_arch, target_os, compilers,
                  # TAU feature suppport
                  application_linkage='dynamic',
                  openmp_support=False,
@@ -279,18 +275,10 @@ class TauInstallation(Installation):
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
-        
-        if compilers is None:
-            try:
-                gnu_compilers = GNU.installation()
-            except ConfigurationError:
-                raise SoftwarePackageError("GNU compilers (required to build TAU) could not be found.")
-            compilers = InstalledCompilerSet('FIXME', Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        if sources is None:
-            sources = {'tau': 'download'}
-
-        super(TauInstallation, self).__init__('tau', 'TAU Performance System', sources, target_arch, target_os,
-                                              compilers, REPOS, COMMANDS, None, None)
+        super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
+                                              sources, target_arch, target_os, compilers, 
+                                              REPOS, COMMANDS, None, None)
+        self._minimal = False
         self._tau_makefile = None
         if self.src == 'nightly':
             self.src = NIGHTLY
@@ -353,6 +341,25 @@ class TauInstallation(Installation):
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
     
+    @classmethod
+    def minimal(cls):
+        """Creates a minimal TAU configuration for working with legacy data analysis tools.
+
+        Returns:
+            TauInstallation: Object handle for the TAU installation.
+        """
+        sources = {'tau': 'download'}
+        target_arch = HOST_ARCH
+        target_os = HOST_OS
+        try:
+            gnu_compilers = GNU.installation()
+        except ConfigurationError:
+            raise SoftwarePackageError("GNU compilers (required to build TAU) could not be found.")
+        compilers = InstalledCompilerSet('minimal', Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
+        inst = cls(sources, target_arch, target_os, compilers)
+        inst._minimal = True
+        return inst
+
     def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
@@ -363,7 +370,7 @@ class TauInstallation(Installation):
             if uses_pkg():
                 uid_parts.append(self.dependencies[pkg].uid)
         return uid_parts
-
+    
     def _set_install_prefix(self, value):
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
         super(TauInstallation, self)._set_install_prefix(value)
@@ -518,6 +525,12 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
+        if self._minimal:
+            LOGGER.info("Configuring minimal TAU...")
+            if util.create_subprocess(['./configure'], cwd=self._src_prefix, stdout=False, show_progress=True):
+                raise SoftwarePackageError('TAU configure failed')
+            return
+
         # TAU's configure script can't cope with compiler absolute paths or compiler names that
         # don't exactly match what it expects.  Use `info.command` instead of `command` to work
         # around these problems e.g. 'gcc-4.9' becomes 'gcc'.
