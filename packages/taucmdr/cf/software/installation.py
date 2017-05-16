@@ -563,3 +563,175 @@ class AutotoolsInstallation(Installation):
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
+
+
+class CMakeInstallation(Installation):
+    """Base class for installations that follow the CMake installation process.
+    
+    The CMake installation process is::
+        cmake [options]
+        ./configure [options]
+        make [flags] all [options] 
+        make [flags] install [options]
+    """
+
+    def cmake(self, flags, env):
+	"""Invoke `cmake`.
+        
+        Changes to `env` are propagated to subsequent steps, i.e. `make`.
+        Changes to `flags` are not propogated to subsequent steps.
+        
+        Args:
+            flags (list): Command line flags to pass to `cmake`.
+            env (dict): Environment variables to set before invoking `cmake`.
+            
+        Raises:
+            SoftwarePackageError: Configuration failed.
+	"""
+	assert self._src_prefix
+        cmake_path = util.which('cmake')
+        if not cmake_path:
+            raise ConfigurationError("'cmake' not found in PATH. CMake required to build OMPT support.")
+        try:
+            stdout = util.get_command_output([cmake_path, '-version'])
+        except (CalledProcessError, OSError) as err:
+            raise ConfigurationError("Failed to get CMake version: %s" % err)
+	verstr = stdout.split(' ')
+	ver = verstr[2].split('.')
+	ver = [int(i) for i in ver]
+	if ((ver[0] < 2) or ((ver[0] == 2) and ver[1] < 8)):
+            raise ConfigurationError("CMake version 2.8 or higher required to build OMPT support.")
+	LOGGER.debug("Executing CMake for %s at '%s'", self.name, self._src_prefix)
+	flags = list(flags)
+	flags += ['-DCMAKE_INSTALL_PREFIX=%s' %self.install_prefix]
+	cmd = [cmake_path] + flags
+        LOGGER.info("Executing CMake for %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+            raise SoftwarePackageError('CMake failed for %s' %self.title)
+    
+    def configure(self, flags, env):
+        """Invoke `configure`.
+        
+        Changes to `env` are propagated to subsequent steps, i.e. `make`.
+        Changes to `flags` are not propogated to subsequent steps.
+        
+        Args:
+            flags (list): Command line flags to pass to `configure`.
+            env (dict): Environment variables to set before invoking `configure`.
+            
+        Raises:
+            SoftwarePackageError: Configuration failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
+        flags = list(flags)
+        # Prepare configuration flags
+        flags += ['--prefix=%s' % self.install_prefix]
+        cmd = ['./configure'] + flags
+        LOGGER.info("Configuring %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+            raise SoftwarePackageError('%s configure failed' % self.title)   
+    
+    def make(self, flags, env, parallel=True):
+        """Invoke `make`.
+        
+        Changes to `env` are propagated to subsequent steps, i.e. `make install`.
+        Changes to `flags` are not propogated to subsequent steps.
+        
+        Args:
+            flags (list): Command line flags to pass to `make`.
+            env (dict): Environment variables to set before invoking `make`.
+            parallel (bool): If True, pass parallelization flags to `make`.
+            
+        Raises:
+            SoftwarePackageError: Compilation failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Making %s at '%s'", self.name, self._src_prefix)
+        flags = list(flags)
+        par_flags = parallel_make_flags() if parallel else []
+        cmd = ['make'] + par_flags + flags
+        LOGGER.info("Compiling %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+            cmd = ['make'] + flags
+            if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+                raise SoftwarePackageError('%s compilation failed' % self.title)
+
+    def make_install(self, flags, env, parallel=False):
+        """Invoke `make install`.
+        
+        Changes to `env` are propagated to subsequent steps.  Normally there 
+        wouldn't be anything after `make install`, but a subclass could change that.
+        Changes to `flags` are not propogated to subsequent steps.
+        
+        Args:
+            flags (list): Command line flags to pass to `make`.
+            env (dict): Environment variables to set before invoking `make`.
+            parallel (bool): If True, pass parallelization flags to `make`.
+            
+        Raises:
+            SoftwarePackageError: Configuration failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Installing %s to '%s'", self.name, self.install_prefix)
+        flags = list(flags)
+        if parallel:
+            flags += parallel_make_flags()
+        cmd = ['make', 'install'] + flags
+        LOGGER.info("Installing %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+            raise SoftwarePackageError('%s installation failed' % self.title)
+        # Some systems use lib64 instead of lib
+        if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
+            os.symlink(self.lib_path+'64', self.lib_path)
+            
+    def install(self, force_reinstall=False):
+        """Execute the typical GNU Autotools installation sequence.
+        
+        Modifies the system by building and installing software.
+        
+        Args:
+            force_reinstall (bool): If True, reinstall even if the software package passes verification.
+            
+        Raises:
+            SoftwarePackageError: Installation failed.
+        """
+        for pkg in self.dependencies.itervalues():
+            pkg.install(force_reinstall)
+        if os.path.isdir(self.src) or not force_reinstall:
+            try:
+                return self.verify()
+            except SoftwarePackageError as err:
+                if os.path.isdir(self.src):
+                    raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
+                                               "is invalid: %s" % (self.title, self.install_prefix, err),
+                                               "Specify source code path or URL to enable package reinstallation.")
+                elif not force_reinstall:
+                    LOGGER.debug(err)
+        LOGGER.info("Installing %s to '%s'", self.title, self.install_prefix)
+        if os.path.isdir(self.install_prefix):
+            LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
+            util.rmtree(self.install_prefix, ignore_errors=True)
+        # Environment variables are shared between the subprocesses
+        # created for `configure` ; `make` ; `make install`
+        env = {}
+        try:
+            self._src_prefix = self._prepare_src()
+            self.cmake([], env)
+            self.make([], env)
+            with util.umask(002):
+                self.make_install([], env)
+            self.set_group()
+        except Exception as err:
+            LOGGER.info("%s installation failed: %s ", self.title, err)
+            raise
+        else:
+            # Delete the decompressed source code to save space and clean up in preperation for
+            # future reconfigurations.  The compressed source archive is retained.
+            LOGGER.debug("Deleting '%s'", self._src_prefix)
+            util.rmtree(self._src_prefix, ignore_errors=True)
+            self._src_prefix = None
+
+        # Verify the new installation
+        LOGGER.info("Verifying %s installation...", self.title)
+        return self.verify()

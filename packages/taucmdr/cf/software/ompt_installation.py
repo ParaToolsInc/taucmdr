@@ -1,0 +1,73 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2015, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+"""OMPT software installation management.
+
+OMPT is used for performance analysis of OpenMP codes.
+"""
+
+import os
+import sys
+import fileinput
+from taucmdr import logger
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.platforms import IBM_BGQ, ARM64, PPC64LE, PPC64, CRAY_CNL, LINUX
+from taucmdr.cf.software import SoftwarePackageError
+from taucmdr.cf.software.installation import CMakeInstallation
+from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
+
+
+
+LOGGER = logger.get_logger(__name__)
+
+REPOS = {None: 'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz'}
+
+LIBRARIES = {None: ['libomp.so']}
+
+HEADERS = {None: ['omp.h', 'ompt.h']}
+
+
+class OmptInstallation(CMakeInstallation):
+    """Encapsulates an OMPT installation."""
+
+    def __init__(self, sources, target_arch, target_os, compilers):
+        super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os, 
+                                                    compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def cmake(self, flags, env):
+	flags.append('-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path)
+	flags.append('-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path)
+	flags.append('-DCMAKE_C_FLAGS=-fPIC')
+	flags.append('-DCMAKE_CXX_FLAGS=-fPIC')
+	flags.append('-DCMAKE_BUILD_TYPE=Release')
+        return super(OmptInstallation, self).cmake(flags, env)
+
+    def make(self, flags, env):
+        header_flags = flags
+	header_flags.append('libomp-needed-headers')
+	super(OmptInstallation, self).make(header_flags, env)
+	return super(OmptInstallation, self).make(flags, env)

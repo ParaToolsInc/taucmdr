@@ -408,6 +408,16 @@ def attributes():
                                                    Target.require(FC.keyword))},
             'rebuild_required': True
         },
+	'ompt_source': {
+            'type': 'string',
+	    'description': 'path or URL to OMPT installation or archive file',
+	    'default': 'download',
+	    'argparse': {'flags': ('--ompt',),
+		         'group': 'software package',
+			 'metavar': '(<path>|<url>|download|None)',
+			 'action': ParsePackagePathAction},
+	    'rebuild_required': True
+	},
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
