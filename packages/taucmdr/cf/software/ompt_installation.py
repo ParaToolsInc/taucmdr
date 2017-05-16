@@ -67,7 +67,7 @@ class OmptInstallation(CMakeInstallation):
         return super(OmptInstallation, self).cmake(flags, env)
 
     def make(self, flags, env):
-        header_flags = flags
+        header_flags = [i for i in flags]
 	header_flags.append('libomp-needed-headers')
 	super(OmptInstallation, self).make(header_flags, env)
 	return super(OmptInstallation, self).make(flags, env)
