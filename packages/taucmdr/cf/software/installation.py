@@ -428,39 +428,12 @@ class Installation(object):
                 env[library_path] = self.lib_path
         return list(set(opts)), env
 
-
-class AutotoolsInstallation(Installation):
-    """Base class for installations that follow the GNU Autotools installation process.
-    
-    The GNU Autotools installation process is::
-        ./configure [options]
-        make [flags] all [options] 
-        make [flags] install [options]
+class MakeInstallation(Installation):
+    """Base class for installations that follows the process:
+          make [flags] all [options]
+          make [flags] install [options]
     """
-    
-    def configure(self, flags, env):
-        """Invoke `configure`.
-        
-        Changes to `env` are propagated to subsequent steps, i.e. `make`.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `configure`.
-            env (dict): Environment variables to set before invoking `configure`.
-            
-        Raises:
-            SoftwarePackageError: Configuration failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
-        flags = list(flags)
-        # Prepare configuration flags
-        flags += ['--prefix=%s' % self.install_prefix]
-        cmd = ['./configure'] + flags
-        LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            raise SoftwarePackageError('%s configure failed' % self.title)   
-    
+
     def make(self, flags, env, parallel=True):
         """Invoke `make`.
         
@@ -514,6 +487,47 @@ class AutotoolsInstallation(Installation):
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
             os.symlink(self.lib_path+'64', self.lib_path)
             
+
+    def install(self, force_reinstall):
+        """Installs the software package.
+        
+        Raises:
+            NotImplementedError: This method must be overridden by a subclass.
+        """
+        raise NotImplementedError
+
+class AutotoolsInstallation(Installation):
+    """Base class for installations that follow the GNU Autotools installation process.
+    
+    The GNU Autotools installation process is::
+        ./configure [options]
+        make [flags] all [options] 
+        make [flags] install [options]
+    """
+    
+    def configure(self, flags, env):
+        """Invoke `configure`.
+        
+        Changes to `env` are propagated to subsequent steps, i.e. `make`.
+        Changes to `flags` are not propogated to subsequent steps.
+        
+        Args:
+            flags (list): Command line flags to pass to `configure`.
+            env (dict): Environment variables to set before invoking `configure`.
+            
+        Raises:
+            SoftwarePackageError: Configuration failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
+        flags = list(flags)
+        # Prepare configuration flags
+        flags += ['--prefix=%s' % self.install_prefix]
+        cmd = ['./configure'] + flags
+        LOGGER.info("Configuring %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+            raise SoftwarePackageError('%s configure failed' % self.title)   
+    
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         
@@ -571,7 +585,6 @@ class CMakeInstallation(Installation):
     
     The CMake installation process is::
         cmake [options]
-        ./configure [options]
         make [flags] all [options] 
         make [flags] install [options]
     """
@@ -633,59 +646,6 @@ class CMakeInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s configure failed' % self.title)   
     
-    def make(self, flags, env, parallel=True):
-        """Invoke `make`.
-        
-        Changes to `env` are propagated to subsequent steps, i.e. `make install`.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `make`.
-            env (dict): Environment variables to set before invoking `make`.
-            parallel (bool): If True, pass parallelization flags to `make`.
-            
-        Raises:
-            SoftwarePackageError: Compilation failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Making %s at '%s'", self.name, self._src_prefix)
-        flags = list(flags)
-        par_flags = parallel_make_flags() if parallel else []
-        cmd = ['make'] + par_flags + flags
-        LOGGER.info("Compiling %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            cmd = ['make'] + flags
-            if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-                raise SoftwarePackageError('%s compilation failed' % self.title)
-
-    def make_install(self, flags, env, parallel=False):
-        """Invoke `make install`.
-        
-        Changes to `env` are propagated to subsequent steps.  Normally there 
-        wouldn't be anything after `make install`, but a subclass could change that.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `make`.
-            env (dict): Environment variables to set before invoking `make`.
-            parallel (bool): If True, pass parallelization flags to `make`.
-            
-        Raises:
-            SoftwarePackageError: Configuration failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Installing %s to '%s'", self.name, self.install_prefix)
-        flags = list(flags)
-        if parallel:
-            flags += parallel_make_flags()
-        cmd = ['make', 'install'] + flags
-        LOGGER.info("Installing %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            raise SoftwarePackageError('%s installation failed' % self.title)
-        # Some systems use lib64 instead of lib
-        if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
-            os.symlink(self.lib_path+'64', self.lib_path)
-            
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         
