@@ -79,7 +79,7 @@ class TrialShowCommand(AbstractCommand):
                 except ValueError:
                     self.parser.error("Invalid trial number: %s" % num)
 
-        tau = TauInstallation()
+        tau = TauInstallation.minimal()
         dataset = {}
         if not (data_files or trial_numbers):
             expr = Project.selected().experiment()

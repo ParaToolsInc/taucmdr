@@ -41,6 +41,7 @@ from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
+from taucmdr.cf.software.tau_installation import TauInstallation
 
 
 LOGGER = logger.get_logger(__name__)
@@ -239,7 +240,7 @@ class Trial(Model):
         slog2 = os.path.join(self.prefix, 'tau.slog2')
         if os.path.exists(slog2):
             return
-        tau = self._tau_minimal()
+        tau = TauInstallation.minimal()
         merged_trc = os.path.join(self.prefix, 'tau.trc')
         merged_edf = os.path.join(self.prefix, 'tau.edf')
         if not os.path.exists(merged_trc) or not os.path.exists(merged_edf):
@@ -381,7 +382,7 @@ class Trial(Model):
         for fmt, path in data.iteritems(): 
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
-                tau = self._tau_minimal()
+                tau = TauInstallation.minimal()
                 tau.create_ppk_file(export_file, path)
             elif fmt == 'merged':
                 export_file = os.path.join(dest, stem+'.xml.gz')
@@ -402,20 +403,3 @@ class Trial(Model):
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)
 
-    def _tau_minimal(self):
-        """Creates a minimal TAU configuration for working with legacy data analysis tools.
-        
-        If the trial and its data are copied to a new host system, we need a new TAU configuration  
-        that doesn't have the same capabilities as the system on which the data was generated.  
-        The safest way to do this is to use a minimal TAU configuration for all analysis tasks.
-
-        Returns:
-            TauInstallation: Object handle for the TAU installation.
-        """
-        from taucmdr.cf.software.tau_installation import TauInstallation
-        # Reuse sources specified in this trial's target or download new copies, e.g. project copied to new system.
-        sources = self.populate('experiment').populate('target').sources()
-        for key, val in sources.iteritems():
-            if val != 'download' and not os.path.exists(val):
-                sources[key] = 'download'
-        return TauInstallation(sources)

@@ -370,7 +370,7 @@ setuptools.setup(
 
     # Testing
     test_suite='taucmdr',
-    tests_require=['pylint'],
+    tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
 
     # Metadata for upload to PyPI
     author=AUTHOR,
