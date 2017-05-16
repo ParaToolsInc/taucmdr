@@ -30,15 +30,9 @@
 OMPT is used for performance analysis of OpenMP codes.
 """
 
-import os
-import sys
-import fileinput
 from taucmdr import logger
-from taucmdr.error import ConfigurationError
-from taucmdr.cf.platforms import IBM_BGQ, ARM64, PPC64LE, PPC64, CRAY_CNL, LINUX
-from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import CMakeInstallation
-from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
+from taucmdr.cf.compiler.host import CC, CXX
 
 
 
@@ -56,18 +50,18 @@ class OmptInstallation(CMakeInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os, 
-                                                    compilers, REPOS, None, LIBRARIES, HEADERS)
+                                               compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def cmake(self, flags, env):
-	flags.append('-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path)
-	flags.append('-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path)
-	flags.append('-DCMAKE_C_FLAGS=-fPIC')
-	flags.append('-DCMAKE_CXX_FLAGS=-fPIC')
-	flags.append('-DCMAKE_BUILD_TYPE=Release')
+        flags.append('-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path)
+        flags.append('-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path)
+        flags.append('-DCMAKE_C_FLAGS=-fPIC')
+        flags.append('-DCMAKE_CXX_FLAGS=-fPIC')
+        flags.append('-DCMAKE_BUILD_TYPE=Release')
         return super(OmptInstallation, self).cmake(flags, env)
 
-    def make(self, flags, env):
+    def make(self, flags, env, parallel=True):
         header_flags = [i for i in flags]
-	header_flags.append('libomp-needed-headers')
-	super(OmptInstallation, self).make(header_flags, env)
-	return super(OmptInstallation, self).make(flags, env)
+        header_flags.append('libomp-needed-headers')
+        super(OmptInstallation, self).make(header_flags, env)
+        return super(OmptInstallation, self).make(flags, env)

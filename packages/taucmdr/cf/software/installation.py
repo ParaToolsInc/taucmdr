@@ -30,6 +30,7 @@
 import os
 import sys
 import multiprocessing
+from subprocess import CalledProcessError
 from taucmdr import logger, util, configuration
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator, progress_spinner
@@ -258,7 +259,7 @@ class Installation(object):
         paths = [self.install_prefix]
         LOGGER.info("Checking installed files...")
         with progress_spinner():
-            for root, dirs, files in os.walk(self.install_prefix):
+            for root, dirs, _ in os.walk(self.install_prefix):
                 paths.extend((os.path.join(root, x) for x in dirs))
         LOGGER.info("Setting file permissions...")
         with ProgressIndicator(len(paths)) as progress_bar:
@@ -576,7 +577,7 @@ class CMakeInstallation(Installation):
     """
 
     def cmake(self, flags, env):
-	"""Invoke `cmake`.
+        """Invoke `cmake`.
         
         Changes to `env` are propagated to subsequent steps, i.e. `make`.
         Changes to `flags` are not propogated to subsequent steps.
@@ -588,7 +589,7 @@ class CMakeInstallation(Installation):
         Raises:
             SoftwarePackageError: Configuration failed.
 	"""
-	assert self._src_prefix
+        assert self._src_prefix
         cmake_path = util.which('cmake')
         if not cmake_path:
             raise ConfigurationError("'cmake' not found in PATH. CMake required to build OMPT support.")
@@ -596,15 +597,15 @@ class CMakeInstallation(Installation):
             stdout = util.get_command_output([cmake_path, '-version'])
         except (CalledProcessError, OSError) as err:
             raise ConfigurationError("Failed to get CMake version: %s" % err)
-	verstr = stdout.split(' ')
-	ver = verstr[2].split('.')
-	ver = [int(i) for i in ver]
-	if ((ver[0] < 2) or ((ver[0] == 2) and ver[1] < 8)):
+        verstr = stdout.split(' ')
+        ver = verstr[2].split('.')
+        ver = [int(i) for i in ver]
+        if (ver[0] < 2) or ((ver[0] == 2) and ver[1] < 8):
             raise ConfigurationError("CMake version 2.8 or higher required to build OMPT support.")
-	LOGGER.debug("Executing CMake for %s at '%s'", self.name, self._src_prefix)
-	flags = list(flags)
-	flags += ['-DCMAKE_INSTALL_PREFIX=%s' %self.install_prefix]
-	cmd = [cmake_path] + flags
+        LOGGER.debug("Executing CMake for %s at '%s'", self.name, self._src_prefix)
+        flags = list(flags)
+        flags += ['-DCMAKE_INSTALL_PREFIX=%s' %self.install_prefix]
+        cmd = [cmake_path] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('CMake failed for %s' %self.title)

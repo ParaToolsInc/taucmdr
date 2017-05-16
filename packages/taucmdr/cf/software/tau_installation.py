@@ -590,10 +590,7 @@ class TauInstallation(Installation):
         papi = self.dependencies.get('papi')
         pdt = self.dependencies.get('pdt')
         scorep = self.dependencies.get('scorep')
-	ompt = self.dependencies.get('ompt')
-#	from taucmdr.cf.software.papi_installation import OMPTInstallation
-#	if ompt:
-#            ompt = OMPTInstallation(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+        ompt = self.dependencies.get('ompt')
 
         flags = [flag for flag in
                  ['-arch=%s' % self.tau_magic.name,
@@ -1088,20 +1085,6 @@ class TauInstallation(Installation):
             LOGGER.warning("Cannot parse DISPLAY environment variable.")
         if host:
             LOGGER.warning("X11 appears to be forwarded to a remote display. Visual performance may be poor.")
-#    def _check_cmake(self):
-#        abspath = util.which('cmake')
-#        if not abspath:
-#            raise ConfigurationError("'cmake' not found in PATH. CMake required to build OMPT support.")
-#        try:
-#            stdout = util.get_command_output([abspath, '-version'])
-#        except (CalledProcessError, OSError) as err:
-#            raise ConfigurationError("Failed to get CMake version: %s" % err)
-#	verstr = stdout.split(' ')
-#	ver = verstr[2].split('.')
-#	ver = [int(i) for i in ver]
-#	if ((ver[0] < 2) or ((ver[0] == 2) and ver[1] < 8)):
-#            raise ConfigurationError("CMake version 2.8 or higher required to build OMPT support.")
-#
     
     def get_data_format(self, path):
         """Guess the data format of a file path.

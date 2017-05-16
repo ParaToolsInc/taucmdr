@@ -206,7 +206,7 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
     all_commands = []
     commands = sorted((i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'))
     for _, topcmd in commands:
-        for subcmd, mod in topcmd.iteritems():
+        for _, mod in topcmd.iteritems():
             all_commands.append(mod['__module__'].__name__)
     return all_commands
 
