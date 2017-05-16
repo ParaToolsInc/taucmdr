@@ -496,7 +496,7 @@ class MakeInstallation(Installation):
         """
         raise NotImplementedError
 
-class AutotoolsInstallation(Installation):
+class AutotoolsInstallation(MakeInstallation):
     """Base class for installations that follow the GNU Autotools installation process.
     
     The GNU Autotools installation process is::
@@ -580,7 +580,7 @@ class AutotoolsInstallation(Installation):
         return self.verify()
 
 
-class CMakeInstallation(Installation):
+class CMakeInstallation(MakeInstallation):
     """Base class for installations that follow the CMake installation process.
     
     The CMake installation process is::
