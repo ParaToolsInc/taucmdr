@@ -35,6 +35,7 @@ from taucmdr import tests, util
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
+from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
 
 class CreateTest(tests.TestCase):
     
@@ -81,3 +82,15 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
+
+    def test_ompt(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, application_create_cmd, ['test_app', '--openmp', 'T'])
+        self.assertIn("Added application 'test_app' to project configuration", stdout)
+	self.assertFalse(stderr)
+	stdout, sterr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_ompt', '--openmp', 'ompt'])
+	self.assertIn("Added measurement 'meas_ompt' to project configuration", stdout)
+	self.assertFalse(stderr)
+	argv = ['exp2', '--target', 'targ1', '--application', 'test_app', '--measurement', 'meas_ompt']
+	_, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+	self.assertFalse(stderr)
