@@ -560,9 +560,9 @@ class AutotoolsInstallation(MakeInstallation):
         env = {}
         try:
             self._src_prefix = self._prepare_src()
-            self.configure([], env)
-            self.make([], env)
             with util.umask(002):
+                self.configure([], env)
+                self.make([], env)
                 self.make_install([], env)
             self.set_group()
         except Exception as err:
@@ -678,9 +678,9 @@ class CMakeInstallation(MakeInstallation):
         env = {}
         try:
             self._src_prefix = self._prepare_src()
-            self.cmake([], env)
-            self.make([], env)
             with util.umask(002):
+                self.cmake([], env)
+                self.make([], env)
                 self.make_install([], env)
             self.set_group()
         except Exception as err:
