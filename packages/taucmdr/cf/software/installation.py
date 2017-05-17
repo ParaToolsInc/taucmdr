@@ -610,6 +610,7 @@ class CMakeInstallation(MakeInstallation):
             stdout = util.get_command_output([cmake_path, '-version'])
         except (CalledProcessError, OSError) as err:
             raise ConfigurationError("Failed to get CMake version: %s" % err)
+        stdout = stdout.replace('\n', ' ')
         verstr = stdout.split(' ')
         ver = verstr[2].split('.')
         ver = [int(i) for i in ver]
