@@ -615,8 +615,7 @@ class TauInstallation(Installation):
                  ] if flag]
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
-            flags.append('-pdt_c++=%s' % (pdt.compilers[CXX].info.command if pdt.compilers[CXX].info.family is not
-                                          host_compilers.CRAY else pdt.compilers[CXX].unwrap().info.command))
+            flags.append('-pdt_c++=%s' % pdt.compilers[CXX].unwrap().info.command)
         if self.pthreads_support:
             flags.append('-pthread')
         elif self.openmp_support:
