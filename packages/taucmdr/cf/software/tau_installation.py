@@ -689,12 +689,13 @@ class TauInstallation(Installation):
                     LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         try:
-            # Keep reconfiguring the same source because that's how TAU works
-            if not (self.include_path and os.path.isdir(self.include_path)):
-                shutil.move(self._prepare_src(), self.install_prefix)
-            self._src_prefix = self.install_prefix
-            self.configure()
+            # TAU's configure scripts create/touch/edit files so need to open the umask waaaaaay early.
             with util.umask(002):
+                # Keep reconfiguring the same source because that's how TAU works
+                if not (self.include_path and os.path.isdir(self.include_path)):
+                    shutil.move(self._prepare_src(), self.install_prefix)
+                self._src_prefix = self.install_prefix
+                self.configure()
                 self.make_install()
             self.set_group()
         except Exception as err:
