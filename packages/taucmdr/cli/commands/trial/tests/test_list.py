@@ -60,6 +60,7 @@ class ListTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('./a.out', stdout)
         self.assertIn('  0  ', stdout)
+        self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
         
     @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
@@ -70,6 +71,7 @@ class ListTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['0'])
         self.assertIn('./a.out', stdout)
         self.assertIn('  0  ', stdout)
+        self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
     
     @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
@@ -83,6 +85,7 @@ class ListTest(tests.TestCase):
         self.assertIn('  0  ', stdout)
         self.assertIn('  1  ', stdout)
         self.assertIn('  2  ', stdout)
+        self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
 
     @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
@@ -97,6 +100,7 @@ class ListTest(tests.TestCase):
         self.assertIn('  3  ', stdout)
         self.assertNotIn('  0  ', stdout)
         self.assertNotIn('  2  ', stdout)
+        self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
 
     @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
