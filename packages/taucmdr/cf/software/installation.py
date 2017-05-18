@@ -34,6 +34,7 @@ from subprocess import CalledProcessError
 from taucmdr import logger, util, configuration
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator, progress_spinner
+from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.levels import ORDERED_LEVELS
 from taucmdr.cf.storage.levels import highest_writable_storage 
 from taucmdr.cf.software import SoftwarePackageError
@@ -207,10 +208,10 @@ class Installation(object):
             else:
                 # Search the storage hierarchy for an existing installation
                 for storage in reversed(ORDERED_LEVELS):
-                    self._set_install_prefix(os.path.join(storage.prefix, self.name, self.uid))
                     try:
+                        self._set_install_prefix(os.path.join(storage.prefix, self.name, self.uid))
                         self.verify()
-                    except SoftwarePackageError as err:
+                    except (StorageError, SoftwarePackageError) as err:
                         LOGGER.debug(err)
                         continue
                     else:
@@ -301,7 +302,11 @@ class Installation(object):
                 raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
         # Locate archive file
         for storage in ORDERED_LEVELS:
-            archive_prefix = os.path.join(storage.prefix, "src")
+            try:
+                archive_prefix = os.path.join(storage.prefix, "src")
+            except StorageError as err:
+                LOGGER.debug(err)
+                continue
             archive = os.path.join(archive_prefix, archive_name)
             if os.path.exists(archive):
                 LOGGER.info("Using %s source archive '%s'", self.title, archive)

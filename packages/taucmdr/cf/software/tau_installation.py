@@ -1084,7 +1084,7 @@ class TauInstallation(Installation):
             host, _ = display.split(':')
         except ValueError:
             LOGGER.warning("Cannot parse DISPLAY environment variable.")
-        if host:
+        if host and not host.startswith('/'):
             LOGGER.warning("X11 appears to be forwarded to a remote display. Visual performance may be poor.")
     
     def get_data_format(self, path):
