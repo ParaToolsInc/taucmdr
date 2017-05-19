@@ -47,7 +47,7 @@ from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags
 from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
-from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU
+from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, TAU_CRAYCNL, HOST_ARCH, HOST_OS
@@ -351,11 +351,12 @@ class TauInstallation(Installation):
         sources = {'tau': 'download'}
         target_arch = HOST_ARCH
         target_os = HOST_OS
+        target_family = APPLE_LLVM if HOST_OS is DARWIN else GNU
         try:
-            gnu_compilers = GNU.installation()
+            target_compilers = target_family.installation()
         except ConfigurationError:
-            raise SoftwarePackageError("GNU compilers (required to build TAU) could not be found.")
-        compilers = InstalledCompilerSet('minimal', Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
+            raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
+        compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
         inst = cls(sources, target_arch, target_os, compilers)
         inst._minimal = True
         return inst
