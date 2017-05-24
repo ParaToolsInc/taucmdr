@@ -34,6 +34,9 @@ from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cli.commands.trial.create import COMMAND as create_cmd
+from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
@@ -70,3 +73,14 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
+
+    def test_no_time_metric(self):
+        self.reset_project_storage()
+        argv = ['meas_no_time', '--metrics', 'PAPI_FP_INS', '--source-inst', 'never']
+        self.assertCommandReturnValue(0, measurement_create_cmd, argv)
+        argv = ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_no_time']
+        self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
+        self.assertIn("TAU_METRICS=TIME,", stdout)
