@@ -311,7 +311,11 @@ class TauInstallation(Installation):
         self.profile = profile
         self.trace = trace
         self.sample = sample
-        self.metrics = metrics if metrics is not None else []
+        if metrics is not None:
+            self.metrics = [x for x in metrics if x != 'TIME']
+            self.metrics.insert(0, 'TIME')
+        else:
+            self.metrics = []
         self.measure_mpi = measure_mpi
         self.measure_openmp = measure_openmp
         self.measure_opencl = measure_opencl
