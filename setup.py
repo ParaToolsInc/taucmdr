@@ -291,6 +291,7 @@ class Install(InstallCommand):
         import taucmdr
         from taucmdr import logger, util, configuration
         from taucmdr.cli.commands.configure import COMMAND as configure_command
+        from taucmdr.cf.storage.levels import highest_writable_storage
 
         # Clean up the build directory
         os.chdir(self.build_base)
@@ -304,6 +305,37 @@ class Install(InstallCommand):
         target_cfg = defaults_cfg['Target']
         have_mpi = (target_cfg['MPI_CC'] and target_cfg['MPI_CXX'] and target_cfg['MPI_FC'])
         have_shmem = (target_cfg['SHMEM_CC'] and target_cfg['SHMEM_CXX'] and target_cfg['SHMEM_FC'])
+        host_os = target_cfg['host_os']
+        host_arch = target_cfg['host_arch']
+
+        # Download all packages
+        for key, value in defaults_cfg['Target'].iteritems():
+            if '_source' in key:
+                if value == 'download':
+                    module_name = key.replace('_source', '') + '_installation'
+                    cls_name = util.camelcase(module_name)
+                    pkg = __import__('taucmdr.cf.software.' + module_name, globals(), locals(), [cls_name], -1)
+                    repos = getattr(pkg, 'REPOS')
+                    source_arch = repos[None]
+                    for arch, arch_dct in repos.iteritems():
+                        if arch is not None:
+                            if arch.name == host_arch:
+                                source_arch = arch_dct
+                    try:
+                        source = source_arch[None]
+                    except TypeError:
+                        source = source_arch
+                    else:
+                        for target_os, src in source_arch.iteritems():
+                            if target_os is not None:
+                                if target_os.name == host_os:
+                                    source = src
+                else:
+                    source = value
+                archive_name = os.path.basename(source)
+                archive_path = os.path.join(highest_writable_storage().prefix, "src", archive_name)
+                if not os.path.exists(archive_path):
+                    util.download(source, archive_path)
 
         # Configure TAU and all dependencies in various combinations
         self._configure_project([])
