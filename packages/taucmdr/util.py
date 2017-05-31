@@ -300,18 +300,21 @@ def archive_toplevel(archive):
     except tarfile.ReadError:
         raise IOError
     else:
-        dirs = [d.name for d in fin.getmembers() if d.isdir()]
-        if dirs:
-            topdir = min(dirs, key=len)
+        if fin.firstmember.isdir():
+            topdir = fin.firstmember.name
         else:
-            dirs = set()
-            names = [d.name for d in fin.getmembers() if d.isfile()]
-            for name in names:
-                dirname, basename = os.path.split(name)
-                while dirname:
-                    dirname, basename = os.path.split(dirname)
-                dirs.add(basename)
-            topdir = min(dirs, key=len)
+            dirs = [d.name for d in fin.getmembers() if d.isdir()]
+            if dirs:
+                topdir = min(dirs, key=len)
+            else:
+                dirs = set()
+                names = [d.name for d in fin.getmembers() if d.isfile()]
+                for name in names:
+                    dirname, basename = os.path.split(name)
+                    while dirname:
+                        dirname, basename = os.path.split(dirname)
+                    dirs.add(basename)
+                topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
         return topdir
 
