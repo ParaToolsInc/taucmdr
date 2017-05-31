@@ -82,7 +82,7 @@ def calculate_uid(parts):
         uid.update(part)
     digest = uid.hexdigest()
     LOGGER.debug("UID: (%s): %s", digest, parts)
-    return digest
+    return digest[:8]
 
 def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
