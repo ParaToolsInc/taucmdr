@@ -52,6 +52,7 @@ from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, TAU_CRAYCNL, HOST_ARCH, HOST_OS
 
+
 LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://tau.uoregon.edu/tau.tgz'}
@@ -366,7 +367,7 @@ class TauInstallation(Installation):
         return inst
 
     def uid_items(self):
-        uid_parts = [self.src, self.target_arch.name, self.target_os.name]
+        uid_parts = [self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
@@ -375,6 +376,16 @@ class TauInstallation(Installation):
             if uses_pkg():
                 uid_parts.append(self.dependencies[pkg].uid)
         return uid_parts
+    
+    def _get_install_tag(self):
+        # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
+        # so multiple TAU installations share the large common files.
+        try:
+            return self._install_tag
+        except AttributeError:
+            # pylint: disable=attribute-defined-outside-init
+            self._install_tag = util.archive_toplevel(self.acquire_source())
+            return self._install_tag
     
     def _set_install_prefix(self, value):
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -530,7 +541,9 @@ class TauInstallation(Installation):
         """
         if self._minimal:
             LOGGER.info("Configuring minimal TAU...")
-            cmd = ['./configure', '-arch=%s' % self.tau_magic.name]
+            cmd = ['./configure', 
+                   '-tag=%s' % self.uid,
+                   '-arch=%s' % self.tau_magic.name]
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
             return
@@ -593,7 +606,8 @@ class TauInstallation(Installation):
         ompt = self.dependencies.get('ompt')
 
         flags = [flag for flag in
-                 ['-arch=%s' % self.tau_magic.name,
+                 ['-tag=%s' % self.uid,
+                  '-arch=%s' % self.tau_magic.name,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
@@ -720,6 +734,7 @@ class TauInstallation(Installation):
             set: Makefile tags, e.g. set('papi', 'pdt', 'icpc')
         """
         tags = set()
+        tags.add(self.uid)
         cxx_compiler = self.compilers[CXX].unwrap()
         try:
             tags.add(self._compiler_tags()[cxx_compiler.info.family])

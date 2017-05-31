@@ -201,15 +201,19 @@ class Installation(object):
             self._uid = util.calculate_uid(self.uid_items())
         return self._uid
 
+    def _get_install_tag(self):
+        return self.uid
+    
     def _get_install_prefix(self):
         if not self._install_prefix:
             if os.path.isdir(self.src):
                 self._set_install_prefix(self.src)
             else:
+                tag = self._get_install_tag()
                 # Search the storage hierarchy for an existing installation
                 for storage in reversed(ORDERED_LEVELS):
                     try:
-                        self._set_install_prefix(os.path.join(storage.prefix, self.name, self.uid))
+                        self._set_install_prefix(os.path.join(storage.prefix, self.name, tag))
                         self.verify()
                     except (StorageError, SoftwarePackageError) as err:
                         LOGGER.debug(err)
@@ -218,7 +222,7 @@ class Installation(object):
                         break
                 else:
                     # No existing installation found, install at highest writable storage level
-                    self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, self.uid))
+                    self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, tag))
                 LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
         return self._install_prefix
     
@@ -277,6 +281,9 @@ class Installation(object):
         Args:
             reuse_archive (bool): If True don't download, just confirm that the archive exists.
             
+        Returns:
+            str: Path to the acquired source archive.
+            
         Raises:
             ConfigurationError: Package source code not provided or couldn't be acquired.
         """
@@ -292,6 +299,7 @@ class Installation(object):
                          "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
                          "Check that the file or directory is accessible")
                 raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+        return archive
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
