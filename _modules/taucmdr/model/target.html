@@ -455,6 +455,16 @@
                                                    <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">))},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
+        <span class="s1">&#39;ompt_source&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to OMPT installation or archive file&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ompt&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">},</span>
         <span class="s1">&#39;forced_makefile&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)&#39;</span><span class="p">,</span>
@@ -528,6 +538,20 @@
             <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">attr</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">):</span>
                 <span class="n">sources</span><span class="p">[</span><span class="n">attr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="n">sources</span></div>
+    
+<div class="viewcode-block" id="Target.acquire_sources"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.Target.acquire_sources">[docs]</a>    <span class="k">def</span> <span class="nf">acquire_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Acquire all source code packages known to this target.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.cf</span> <span class="kn">import</span> <span class="n">software</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">attr</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">):</span>
+                <span class="bp">cls</span> <span class="o">=</span> <span class="n">software</span><span class="o">.</span><span class="n">get_installation</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                <span class="n">inst</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">())</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">inst</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="c1"># Not a warning since using an existing installation is OK and in that case</span>
+                    <span class="c1"># there is no source code package to acquire. </span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">err</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Target.compilers"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.Target.compilers">[docs]</a>    <span class="k">def</span> <span class="nf">compilers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get information about the compilers used by this target configuration.</span>

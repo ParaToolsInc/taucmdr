@@ -16,6 +16,7 @@ Submodules
    taucmdr.cf.software.binutils_installation
    taucmdr.cf.software.installation
    taucmdr.cf.software.libunwind_installation
+   taucmdr.cf.software.ompt_installation
    taucmdr.cf.software.papi_installation
    taucmdr.cf.software.pdt_installation
    taucmdr.cf.software.scorep_installation

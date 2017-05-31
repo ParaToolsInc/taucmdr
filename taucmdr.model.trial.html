@@ -61,25 +61,6 @@ the performance data.</p>
 <em class="property">class </em><code class="descclassname">taucmdr.model.trial.</code><code class="descname">Trial</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.model.html#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.model.Model</span></code></a></p>
 <p>Trial data model.</p>
-<dl class="method">
-<dt id="taucmdr.model.trial.Trial._tau_minimal">
-<code class="descname">_tau_minimal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial._tau_minimal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial._tau_minimal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a minimal TAU configuration for working with legacy data analysis tools.</p>
-<p>If the trial and its data are copied to a new host system, we need a new TAU configuration
-that doesn&#8217;t have the same capabilities as the system on which the data was generated.
-The safest way to do this is to use a minimal TAU configuration for all analysis tasks.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Object handle for the TAU installation.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation" title="taucmdr.cf.software.tau_installation.TauInstallation">TauInstallation</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <dl class="attribute">
 <dt id="taucmdr.model.trial.Trial.associations">
 <code class="descname">associations</code><em class="property"> = {'experiment': (&lt;class 'taucmdr.model.experiment.Experiment'&gt;, 'trials')}</em><a class="headerlink" href="#taucmdr.model.trial.Trial.associations" title="Permalink to this definition">¶</a></dt>

@@ -107,6 +107,7 @@
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;./a.out&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;  0  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Selected experiment:&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
         
     <span class="nd">@tests.skipIf</span><span class="p">(</span><span class="n">HOST_ARCH</span><span class="o">.</span><span class="n">is_bluegene</span><span class="p">(),</span> <span class="s2">&quot;Test skipped on BlueGene&quot;</span><span class="p">)</span>
@@ -117,6 +118,7 @@
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">LIST_COMMAND</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;./a.out&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;  0  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Selected experiment:&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
     
     <span class="nd">@tests.skipIf</span><span class="p">(</span><span class="n">HOST_ARCH</span><span class="o">.</span><span class="n">is_bluegene</span><span class="p">(),</span> <span class="s2">&quot;Test skipped on BlueGene&quot;</span><span class="p">)</span>
@@ -130,6 +132,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;  0  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;  1  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;  2  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Selected experiment:&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
 
     <span class="nd">@tests.skipIf</span><span class="p">(</span><span class="n">HOST_ARCH</span><span class="o">.</span><span class="n">is_bluegene</span><span class="p">(),</span> <span class="s2">&quot;Test skipped on BlueGene&quot;</span><span class="p">)</span>
@@ -144,6 +147,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;  3  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s1">&#39;  0  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s1">&#39;  2  &#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Selected experiment:&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
 
     <span class="nd">@tests.skipIf</span><span class="p">(</span><span class="n">HOST_ARCH</span><span class="o">.</span><span class="n">is_bluegene</span><span class="p">(),</span> <span class="s2">&quot;Test skipped on BlueGene&quot;</span><span class="p">)</span>

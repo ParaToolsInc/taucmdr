@@ -88,6 +88,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.progress</span> <span class="kn">import</span> <span class="n">ProgressIndicator</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TauInstallation</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -220,6 +221,10 @@
                                  <span class="s2">&quot;Does the selected application configuration correctly describe this program?&quot;</span><span class="p">,</span>
                                  <span class="s2">&quot;Does the selected measurement configuration specifiy the right measurement methods?&quot;</span><span class="p">,</span>
                                  <span class="s2">&quot;Does the selected target configuration match the runtime environment?&quot;</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Experiment: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Current working directory: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="n">cwd</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Data size: </span><span class="si">%s</span><span class="s1"> bytes&#39;</span> <span class="o">%</span><span class="n">data_size</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Command: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">retval</span>
 
 <div class="viewcode-block" id="TrialController.perform"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.TrialController.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
@@ -286,7 +291,7 @@
         <span class="n">slog2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.slog2&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">slog2</span><span class="p">):</span>
             <span class="k">return</span>
-        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tau_minimal</span><span class="p">()</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">TauInstallation</span><span class="o">.</span><span class="n">minimal</span><span class="p">()</span>
         <span class="n">merged_trc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.trc&#39;</span><span class="p">)</span>
         <span class="n">merged_edf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;tau.edf&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">merged_trc</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">merged_edf</span><span class="p">):</span>
@@ -428,7 +433,7 @@
         <span class="k">for</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span> 
             <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span>
                 <span class="n">export_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.ppk&#39;</span><span class="p">)</span>
-                <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tau_minimal</span><span class="p">()</span>
+                <span class="n">tau</span> <span class="o">=</span> <span class="n">TauInstallation</span><span class="o">.</span><span class="n">minimal</span><span class="p">()</span>
                 <span class="n">tau</span><span class="o">.</span><span class="n">create_ppk_file</span><span class="p">(</span><span class="n">export_file</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;merged&#39;</span><span class="p">:</span>
                 <span class="n">export_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.xml.gz&#39;</span><span class="p">)</span>
@@ -447,25 +452,8 @@
                 <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">trial_dir</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="s1">&#39;traces&#39;</span><span class="p">,</span> <span class="s1">&#39;traces.def&#39;</span><span class="p">,</span> <span class="s1">&#39;traces.otf2&#39;</span><span class="p">]</span>
                 <span class="n">util</span><span class="o">.</span><span class="n">create_archive</span><span class="p">(</span><span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="n">export_file</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">expr_dir</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">fmt</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Unhandled data file format &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span></div>
+                <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Unhandled data file format &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span></div></div>
 
-<div class="viewcode-block" id="Trial._tau_minimal"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial._tau_minimal">[docs]</a>    <span class="k">def</span> <span class="nf">_tau_minimal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Creates a minimal TAU configuration for working with legacy data analysis tools.</span>
-<span class="sd">        </span>
-<span class="sd">        If the trial and its data are copied to a new host system, we need a new TAU configuration  </span>
-<span class="sd">        that doesn&#39;t have the same capabilities as the system on which the data was generated.  </span>
-<span class="sd">        The safest way to do this is to use a minimal TAU configuration for all analysis tasks.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            TauInstallation: Object handle for the TAU installation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">taucmdr.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TauInstallation</span>
-        <span class="c1"># Reuse sources specified in this trial&#39;s target or download new copies, e.g. project copied to new system.</span>
-        <span class="n">sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sources</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">sources</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="s1">&#39;download&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-                <span class="n">sources</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;download&#39;</span>
-        <span class="k">return</span> <span class="n">TauInstallation</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>

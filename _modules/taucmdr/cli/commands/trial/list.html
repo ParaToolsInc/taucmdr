@@ -74,7 +74,9 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;``trial list`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">texttable</span> <span class="kn">import</span> <span class="n">Texttable</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.cli_view</span> <span class="kn">import</span> <span class="n">ListCommand</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
@@ -95,7 +97,45 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid trial number &#39;</span><span class="si">%s</span><span class="s2">&#39;.  Trial numbers are positive integers starting from 0.&quot;</span><span class="p">)</span>
         <span class="n">expr</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
         <span class="n">records</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TrialListCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_retrieve_records</span><span class="p">(</span><span class="n">ctrl</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">rec</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">records</span> <span class="k">if</span> <span class="n">rec</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">rec</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">records</span> <span class="k">if</span> <span class="n">rec</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">]</span>
+
+<div class="viewcode-block" id="TrialListCommand.dashboard_format"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.trial.list.html#taucmdr.cli.commands.trial.list.TrialListCommand.dashboard_format">[docs]</a>    <span class="k">def</span> <span class="nf">dashboard_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format modeled records in dashboard format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            records: Modeled records to format.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Record data in dashboard format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Dashboard format&quot;</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title_fmt</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;model_name&#39;</span><span class="p">:</span> <span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">(),</span>
+                                             <span class="s1">&#39;storage_path&#39;</span><span class="p">:</span> <span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">storage</span><span class="p">},</span> <span class="s1">&#39;cyan&#39;</span><span class="p">)</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+        <span class="n">subtitle</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s2">&quot;Selected experiment: &quot;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">header_row</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dashboard_columns</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">header_row</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+            <span class="n">populated</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">populate</span><span class="p">()</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dashboard_columns</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;value&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">cell</span> <span class="o">=</span> <span class="n">populated</span><span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]]</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;N/A&#39;</span>
+                <span class="k">elif</span> <span class="s1">&#39;yesno&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+                    <span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;Yes&#39;</span> <span class="k">if</span> <span class="n">populated</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="s1">&#39;yesno&#39;</span><span class="p">],</span> <span class="bp">False</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;No&#39;</span>
+                <span class="k">elif</span> <span class="s1">&#39;function&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+                    <span class="n">cell</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">](</span><span class="n">populated</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Invalid column definition: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">col</span><span class="p">)</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Texttable</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">set_cols_align</span><span class="p">([</span><span class="n">col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;align&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dashboard_columns</span><span class="p">])</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_rows</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">title</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">draw</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">subtitle</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span></div></div>
 
 <span class="n">COMMAND</span> <span class="o">=</span> <span class="n">TrialListCommand</span><span class="p">(</span><span class="n">Trial</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">dashboard_columns</span><span class="o">=</span><span class="n">DASHBOARD_COLUMNS</span><span class="p">,</span>
                            <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Show trial data.&quot;</span><span class="p">)</span>

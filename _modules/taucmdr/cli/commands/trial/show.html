@@ -126,7 +126,7 @@
                 <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid trial number: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num</span><span class="p">)</span>
 
-        <span class="n">tau</span> <span class="o">=</span> <span class="n">TauInstallation</span><span class="p">()</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">TauInstallation</span><span class="o">.</span><span class="n">minimal</span><span class="p">()</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">data_files</span> <span class="ow">or</span> <span class="n">trial_numbers</span><span class="p">):</span>
             <span class="n">expr</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
