@@ -180,8 +180,7 @@ def main():
                 
     # OpenMP support is badly broken in TAU (high overhead, runtime overlaps, etc.).  
     # Ignore by default to avoid angry customers.  Maybe one day this will be fixed...
-    defaults_cfg['Measurement']['openmp'] = 'ignore'
-    
+    defaults_cfg['Measurement']['openmp'] = 'ignore'   
 
     # Check and expand prefix
     if args.prefix.startswith("="):

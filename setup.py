@@ -268,30 +268,13 @@ class Install(InstallCommand):
         # Clean up
         PROJECT_STORAGE.destroy()
 
-    def _configure_minimal_installation(self):
-        from taucmdr import EXIT_SUCCESS
-        from taucmdr.cf.software import SoftwarePackageError
-        from taucmdr.cf.storage.levels import PROJECT_STORAGE
-        from taucmdr.cf.software.tau_installation import TauInstallation
-        from taucmdr.cli.commands.initialize import COMMAND as init_command
-
-        # Call `tau initialize` to configure system-level packages supporting default experiments
-        if init_command.main([]) != EXIT_SUCCESS:
-            raise SoftwarePackageError("`tau initialize` failed with arguments %s." % init_args,
-                                       "Check that the values specified in 'defaults.cfg' are valid.")
-        # Minimal tau installation
-        tau = TauInstallation.minimal()
-        tau.install()
-
-        # Clean up
-        PROJECT_STORAGE.destroy()
-
     def _configure_new_installation(self):
         sys.path.insert(0, os.path.join(self.prefix, 'packages'))
         import taucmdr
         from taucmdr import logger, util, configuration
         from taucmdr.cli.commands.configure import COMMAND as configure_command
         from taucmdr.cf.storage.levels import highest_writable_storage
+        from taucmdr.cf.software.tau_installation import TauInstallation
 
         # Clean up the build directory
         os.chdir(self.build_base)
@@ -337,9 +320,12 @@ class Install(InstallCommand):
                 if not os.path.exists(archive_path):
                     util.download(source, archive_path)
 
+        # Minimal tau installation
+        tau = TauInstallation.minimal()
+        tau.install()
+
         # Configure TAU and all dependencies in various combinations
         self._configure_project([])
-        self._configure_minimal_installation()
         if have_mpi:
             self._configure_project(['--mpi=True'])
         if have_shmem:
