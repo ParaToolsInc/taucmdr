@@ -270,6 +270,28 @@ class Installation(object):
                 except OSError as err:
                     LOGGER.debug("Cannot set group on '%s': %s", path, err)
                 progress_bar.update(i)
+                
+    def acquire_source(self, reuse_archive=True):
+        """Acquires package source code archive file via download or file copy.
+        
+        Args:
+            reuse_archive (bool): If True don't download, just confirm that the archive exists.
+            
+        Raises:
+            ConfigurationError: Package source code not provided or couldn't be acquired.
+        """
+        if not self.src:
+            raise ConfigurationError("No source code provided for %s" % self.title)
+        archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
+        archive = os.path.join(archive_prefix, os.path.basename(self.src))
+        if not reuse_archive or (reuse_archive and not os.path.exists(archive)):
+            try:
+                util.download(self.src, archive)
+            except IOError:
+                hints = ("If a firewall is blocking access to this server, use another method to download "
+                         "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+                         "Check that the file or directory is accessible")
+                raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
@@ -286,20 +308,8 @@ class Installation(object):
         Raises:
             ConfigurationError: The source code couldn't be acquired or unpacked.
         """
-        if not self.src:
-            raise ConfigurationError("No source code provided for %s" % self.title)
-        archive_name = os.path.basename(self.src)
         # Acquire a new copy of the source archive, if needed.
-        if not reuse_archive:
-            archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
-            archive = os.path.join(archive_prefix, archive_name)
-            try:
-                util.download(self.src, archive)
-            except IOError:
-                hints = ("If a firewall is blocking access to this server, use another method to download "
-                         "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
-                         "Check that the file or directory is accessable")
-                raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+        self.acquire_source(reuse_archive)
         # Locate archive file
         for storage in ORDERED_LEVELS:
             try:
@@ -307,7 +317,7 @@ class Installation(object):
             except StorageError as err:
                 LOGGER.debug(err)
                 continue
-            archive = os.path.join(archive_prefix, archive_name)
+            archive = os.path.join(archive_prefix, os.path.basename(self.src))
             if os.path.exists(archive):
                 LOGGER.info("Using %s source archive '%s'", self.title, archive)
                 break
@@ -318,7 +328,7 @@ class Installation(object):
                 # Try again with a fresh copy of the source archive
                 return self._prepare_src(reuse_archive=False)
             raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
-                                     "Check that the file or directory is accessable")
+                                     "Check that the file or directory is accessible")
 
     def verify(self):
         """Check if the installation at :any:`installation_prefix` is valid.
@@ -361,10 +371,8 @@ class Installation(object):
                             path to a directory where the software has already been installed, or a path to a source
                             archive file, or the special keyword 'download'.
         """
-        module_name = name + '_installation'
-        cls_name = util.camelcase(module_name)
-        pkg = __import__('taucmdr.cf.software.' + module_name, globals(), locals(), [cls_name], -1)
-        cls = getattr(pkg, cls_name)
+        from taucmdr.cf import software
+        cls = software.get_installation(name)
         self.dependencies[name] = cls(sources, self.target_arch, self.target_os, self.compilers, *args, **kwargs)
 
     def install(self, force_reinstall):

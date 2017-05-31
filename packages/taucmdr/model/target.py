@@ -491,6 +491,20 @@ class Target(Model):
             if val and attr.endswith('_source'):
                 sources[attr.replace('_source', '')] = val
         return sources
+    
+    def acquire_sources(self):
+        """Acquire all source code packages known to this target."""
+        from taucmdr.cf import software
+        for attr, val in self.iteritems():
+            if val and attr.endswith('_source'):
+                cls = software.get_installation(attr.replace('_source', ''))
+                inst = cls(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+                try:
+                    inst.acquire_source()
+                except ConfigurationError as err:
+                    # Not a warning since using an existing installation is OK and in that case
+                    # there is no source code package to acquire. 
+                    LOGGER.info(err)
 
     def compilers(self):
         """Get information about the compilers used by this target configuration.

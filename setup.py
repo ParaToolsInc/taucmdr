@@ -253,6 +253,9 @@ class Install(InstallCommand):
                                        "Check that the values specified in 'defaults.cfg' are valid.")
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected().populate()
+        # Acquire source packages
+        for targ in proj['targets']:
+            targ.acquire_sources()        
         # Add papi configurations
         for meas in proj['measurements']:
             measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
@@ -290,35 +293,6 @@ class Install(InstallCommand):
         have_shmem = (target_cfg['SHMEM_CC'] and target_cfg['SHMEM_CXX'] and target_cfg['SHMEM_FC'])
         host_os = target_cfg['host_os']
         host_arch = target_cfg['host_arch']
-
-        # Download all packages
-        for key, value in defaults_cfg['Target'].iteritems():
-            if '_source' in key:
-                if value == 'download':
-                    module_name = key.replace('_source', '') + '_installation'
-                    cls_name = util.camelcase(module_name)
-                    pkg = __import__('taucmdr.cf.software.' + module_name, globals(), locals(), [cls_name], -1)
-                    repos = getattr(pkg, 'REPOS')
-                    source_arch = repos[None]
-                    for arch, arch_dct in repos.iteritems():
-                        if arch is not None:
-                            if arch.name == host_arch:
-                                source_arch = arch_dct
-                    try:
-                        source = source_arch[None]
-                    except TypeError:
-                        source = source_arch
-                    else:
-                        for target_os, src in source_arch.iteritems():
-                            if target_os is not None:
-                                if target_os.name == host_os:
-                                    source = src
-                else:
-                    source = value
-                archive_name = os.path.basename(source)
-                archive_path = os.path.join(highest_writable_storage().prefix, "src", archive_name)
-                if not os.path.exists(archive_path):
-                    util.download(source, archive_path)
 
         # Minimal tau installation
         tau = TauInstallation.minimal()
