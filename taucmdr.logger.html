@@ -94,7 +94,7 @@ width cannot be determined, the default is 80.</p>
 
 <dl class="class">
 <dt id="taucmdr.logger.LogFormatter">
-<em class="property">class </em><code class="descclassname">taucmdr.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>line_marker</em>, <em>printable_only=False</em>, <em>allow_colors=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">taucmdr.logger.</code><code class="descname">LogFormatter</code><span class="sig-paren">(</span><em>line_width</em>, <em>printable_only=False</em>, <em>allow_colors=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/logger.html#LogFormatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.logger.LogFormatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/logging.html#logging.Formatter" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></code></a>, <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Custom log message formatter.</p>
 <p>Controls message formatting for all levels.</p>
@@ -104,7 +104,6 @@ width cannot be determined, the default is 80.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>line_width</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; Maximum length of a message line before line is wrapped.</li>
-<li><strong>line_marker</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Prefix for every line of the message.</li>
 <li><strong>printable_only</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, never send unprintable characters to <a class="reference external" href="https://docs.python.org/library/sys.html#sys.stdout" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">sys.stdout</span></code></a>.</li>
 </ul>
 </td>
@@ -129,11 +128,6 @@ width cannot be determined, the default is 80.</p>
 <dl class="method">
 <dt id="taucmdr.logger.LogFormatter.INFO">
 <code class="descname">INFO</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/logger.html#LogFormatter.INFO"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.logger.LogFormatter.INFO" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="taucmdr.logger.LogFormatter.PRINTABLE_CHARS">
-<code class="descname">PRINTABLE_CHARS</code><em class="property"> = set(['\x0c', ' ', '$', '(', ',', '0', '4', '8', '&lt;', '&#64;', 'D', 'H', 'L', 'P', 'T', 'X', '\\', '`', 'd', 'h', 'l', 'p', 't', 'x', '|', '\x0b', '#', &quot;'&quot;, '+', '/', '3', '7', ';', '?', 'C', 'G', 'K', 'O', 'S', 'W', '[', '_', 'c', 'g', 'k', 'o', 's', 'w', '{', '\n', '&quot;', '&amp;', '*', '.', '2', '6', ':', '&gt;', 'B', 'F', 'J', 'N', 'R', 'V', 'Z', '^', 'b', 'f', 'j', 'n', 'r', 'v', 'z', '~', '\t', '\r', '!', '%', ')', '-', '1', '5', '9', '=', 'A', 'E', 'I', 'M', 'Q', 'U', 'Y', ']', 'a', 'e', 'i', 'm', 'q', 'u', 'y', '}'])</em><a class="headerlink" href="#taucmdr.logger.LogFormatter.PRINTABLE_CHARS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
