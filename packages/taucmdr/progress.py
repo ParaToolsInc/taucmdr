@@ -37,7 +37,6 @@ import logging
 import itertools
 from contextlib import contextmanager
 from datetime import datetime
-from termcolor import termcolor
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
 
@@ -48,7 +47,7 @@ LOGGER = logger.get_logger(__name__)
 def _read_proc_stat_cpu():
     with open('/proc/stat') as fin:
         cpu_line = fin.readline()
-    values = [float(x) for x in cpu_line.split()[1:]]
+    values = (float(x) for x in cpu_line.split()[1:])
     fields = 'user', 'nice', 'sys', 'idle', 'iowait', 'irq', 'sirq'
     return dict(zip(fields, values))
 
@@ -105,7 +104,9 @@ def progress_spinner(show_cpu=True):
 
 class ProgressIndicator(object):
     """Display a progress bar or spinner on a stream."""
-
+    
+    _spinner = itertools.cycle(['-', '/', '|', '\\'])
+    
     def __init__(self, total_size=0, block_size=1, show_cpu=True, mode=None):
         """ Initialize the ProgressBar object.
 
@@ -131,11 +132,9 @@ class ProgressIndicator(object):
         self.block_size = block_size
         self.show_cpu = show_cpu
         self.mode = mode
-        self._spinner = itertools.cycle(['-', '/', '|', '\\'])
-        self._line_marker = logger.LINE_MARKER
-        self._color_line_marker = termcolor.colored(logger.LINE_MARKER, 'red')
         self._last_time = datetime.now()
         self._start_time = None
+        self._line_remaining = 0
         
     def __enter__(self):
         self.update(0)
@@ -145,10 +144,31 @@ class ProgressIndicator(object):
         self.complete()
         return False
     
+    def _line_reset(self):
+        sys.stdout.write('\r')
+        sys.stdout.write(logger.COLORED_LINE_MARKER)
+        self._line_remaining = logger.LINE_WIDTH
+        
+    def _line_append(self, text):
+        from taucmdr import util
+        sys.stdout.write(text)
+        self._line_remaining -= len(util.uncolor_text(text))
+        
+    def _line_flush(self):
+        sys.stdout.flush()
+        assert self._line_remaining >= 0
+        
+    def _draw_bar(self, percent, width, char, *args, **kwargs):
+        from taucmdr import util          
+        bar_on = max(int(percent*width), 1)
+        bar_off = width - bar_on
+        self._line_append(util.color_text(char*bar_on, *args, **kwargs))
+        self._line_append(' '*bar_off)
+        
     def _update_minimal(self):
         if self._start_time is None:
             self._start_time = datetime.now()
-            sys.stdout.write(self._color_line_marker)
+            sys.stdout.write(logger.COLORED_LINE_MARKER)
         tdelta = datetime.now() - self._last_time
         if tdelta.total_seconds() >= 5:
             self._last_time = datetime.now()
@@ -166,35 +186,27 @@ class ProgressIndicator(object):
             self._start_time = datetime.now()
         show_bar = self.total_size > 0
         tdelta = datetime.now() - self._start_time
-        elapsed = "% 6.1f seconds " % tdelta.total_seconds()
-        line_width = logger.LINE_WIDTH - len(self._line_marker) - len(elapsed) - 5
-        if self.show_cpu:
-            cpu_load = min(load_average(), 1.0)
-            cpu_width = 10 if show_bar else line_width - 5
-            cpu_fill = '|'*min(max(int(cpu_load*cpu_width), 1), cpu_width)
-            colored_cpu_fill = termcolor.colored(cpu_fill, 'white', 'on_white')
-            hidden_chars = len(colored_cpu_fill) - len(cpu_fill)
-            width = cpu_width + (hidden_chars if show_bar else 0)
-            cpu_avg = "[CPU: {: 6.1%} {:<{width}}] ".format(cpu_load, colored_cpu_fill, width=width)
-            line_width -= len(cpu_avg) - hidden_chars
+        self._line_reset()
+        self._line_append("%0.1f seconds " % tdelta.total_seconds())        
+        if (not self.show_cpu and not show_bar) or (self._line_remaining < 40):
+            self._line_append('[%s]' % self._spinner.next())
+            self._line_flush()
         else:
-            cpu_avg = ''
-        if show_bar:
-            percent = min(float(self.count*self.block_size) / self.total_size, 1.0)
-            bar_width = line_width - 5
-            bar_fill = '>'*min(max(int(percent*bar_width), 1), bar_width)
-            colored_bar_fill = termcolor.colored(bar_fill, 'green', 'on_green')
-            hidden_chars = len(colored_bar_fill) - len(bar_fill)
-            width = bar_width + hidden_chars
-            progress = "[{:-<{width}}] {: 6.1%}".format(colored_bar_fill, percent, width=width)
-        else:
-            progress = '[%s]' % self._spinner.next()
-        sys.stdout.write('\r')
-        sys.stdout.write(self._color_line_marker)
-        sys.stdout.write(elapsed)
-        sys.stdout.write(cpu_avg)
-        sys.stdout.write(progress)
-        sys.stdout.flush()
+            if self.show_cpu:
+                cpu_load = min(load_average(), 1.0)
+                self._line_append("[CPU: %0.1f " % (100*cpu_load))
+                width = (self._line_remaining/4) if show_bar else (self._line_remaining-2)
+                self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
+                self._line_append("]")
+            if show_bar:
+                if self.show_cpu:
+                    self._line_append(" ")
+                percent = max(min(float(self.count*self.block_size) / self.total_size, 1.0), 0.0)
+                self._line_append("[%0.1f%% " % (100*percent))
+                width = self._line_remaining - 3
+                self._draw_bar(percent, width, '>', 'green', 'on_green')
+                self._line_append("]")
+            self._line_flush()
 
     def update(self, count=None, block_size=None, total_size=None):
         """Show progress.
@@ -216,10 +228,13 @@ class ProgressIndicator(object):
     def complete(self):
         if self.mode != 'disabled':
             tdelta = datetime.now() - self._start_time
-            elapsed = "Completed in %s seconds" % tdelta.total_seconds()
+            elapsed = "Completed in %0.3f seconds" % tdelta.total_seconds()
             if self.mode == 'minimal':
                 sys.stdout.write(' %s\n' % elapsed)
+                sys.stdout.flush()
             elif self.mode == 'full':
-                sys.stdout.write("\r{}{:{width}}\n".format(self._color_line_marker, elapsed, width=logger.LINE_WIDTH))
-            sys.stdout.flush()
+                self._line_reset()
+                self._line_append(elapsed)
+                self._line_append(' '*self._line_remaining)
+                self._line_flush()
             self._start_time = None
