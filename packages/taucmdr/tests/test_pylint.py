@@ -32,7 +32,7 @@ Functions used for unit tests of error.py.
 
 import os
 import sys
-from pylint import epylint
+import subprocess
 from taucmdr import TAU_HOME
 from taucmdr import tests
 
@@ -41,27 +41,27 @@ class PylintTest(tests.TestCase):
     """Runs Pylint to make sure the code scores at least 9.0"""
        
     def run_pylint(self, *args):
-        pylint_args = '--rcfile=' + os.path.join(TAU_HOME, "pylintrc") + ' ' + ' '.join(args) 
-        fstdout, fstderr = epylint.py_run(pylint_args, return_std=True, script='pylint')
-        stdout = ''.join(line for line in fstdout)
-        stderr = ''.join(line for line in fstderr)
-        return stdout, stderr
+        cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAU_HOME, "pylintrc")]
+        cmd.extend(args)
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   shell=False, env=env, universal_newlines=True)
+        return process.communicate()
     
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
         self.assertFalse(stderr)
-        version_parts = stdout.split(',')[0].split('pylint ')[1].split('.')
+        try:
+            version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
+        except IndexError:
+            self.fail("Unable to parse pylint version string:\n%s" % stdout)           
         version = tuple(int(x) for x in version_parts)
         self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % str(version))
     
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAU_HOME, "packages", "taucmdr"))
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
         self.assertFalse(stderr)
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
-        self.assertGreaterEqual(score, 9.0, "Pylint score %s/10 is too low!" % score)
+        self.assertGreaterEqual(score, 9.0, "%s\nPylint score %s/10 is too low!" % (stdout, score))
 

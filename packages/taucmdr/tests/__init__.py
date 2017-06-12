@@ -38,9 +38,11 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-from taucmdr import logger, EXIT_SUCCESS, EXIT_FAILURE
+from unittest import skipIf, skipUnless
+from taucmdr import logger, TAU_HOME, EXIT_SUCCESS, EXIT_FAILURE
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
-
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -87,8 +89,6 @@ def cleanup():
         for path in _DIR_STACK:
             sys.stderr.write("\nWARNING: Test directory '%s' still exists, attempting to clean now...\n" % path)
             _destroy_test_workdir(path)
-                       
-
 atexit.register(cleanup)
 
 
@@ -97,6 +97,24 @@ def not_implemented(cls):
     msg = "%s: tests have not been implemented" % cls.__name__
     _NOT_IMPLEMENTED.append(msg)
     return unittest.skip(msg)(cls)
+
+def _null_decorator(_):
+    return _
+
+def skipUnlessHaveCompiler(role):
+    """Decorator to skip test functions when no compiler fills the given role.
+    
+    If no installed compiler can fill this role then skip the test and report "<role> compiler not found".
+    
+    Args:
+        role (_CompilerRole): A compiler role.
+    """
+    # pylint: disable=invalid-name
+    try:
+        InstalledCompiler.find_any(role)
+    except ConfigurationError:
+        return unittest.skip("%s compiler not found" % role)
+    return _null_decorator
 
 
 class TestCase(unittest.TestCase):
@@ -122,7 +140,7 @@ class TestCase(unittest.TestCase):
         # pylint: disable=protected-access
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
-        
+
     def run(self, result=None):
         # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
         # pylint: disable=attribute-defined-outside-init
@@ -130,27 +148,23 @@ class TestCase(unittest.TestCase):
         self._result_stream = result.stream
         return super(TestCase, self).run(result)
 
-    def reset_project_storage(self, project_name='proj1', target_name='targ1', app_name='app1', bare=False):
+    def reset_project_storage(self, init_args=None):
         """Delete and recreate project storage.
         
         Effectively the same as::
         
             > rm -rf .tau
-            > tau init --project-name=proj1 --target-name=targ1
+            > tau initialize [init_args]
         
         Args:
-            project_name (str): New project's name.
-            target_name (str): New target's name.
-            app_name (str): New application's name.
-            bare (bool): If true, initialize project storage but don't create default objects.
+            init_args (list): Command line arguments to `tau initialize`.
         """
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
         PROJECT_STORAGE.destroy(ignore_errors=True)
-        argv = ['--project-name', project_name, '--target-name', target_name, '--application-name', app_name]
-        if bare:
-            argv.append('--bare')
-    
-        if bare or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
+        argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1']
+        if init_args is not None:
+            argv.extend(init_args)
+        if '--bare' in argv or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
             initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
@@ -213,11 +227,14 @@ class TestCase(unittest.TestCase):
             sys.stderr = orig_stderr
             logger._STDOUT_HANDLER.stream = orig_stdout
 
-    def get_compiler(self, role, target_name='targ1'):
+    def assertCompiler(self, role, target_name='targ1'):
         from taucmdr.model.target import Target
         targ_ctrl = Target.controller(PROJECT_STORAGE)
         targ = targ_ctrl.one({'name': target_name})
-        return targ.populate(role.keyword)['path']
+        try:
+            return targ.populate(role.keyword)['path']
+        except KeyError:
+            self.fail("No %s compiler in target '%s'" % (role, target_name))
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
@@ -228,6 +245,15 @@ class TestCase(unittest.TestCase):
         retval, stdout, stderr = self.exec_command(cmd, argv)
         self.assertNotEqual(retval, return_value)
         return stdout, stderr
+    
+    def assertManagedBuild(self, return_value, compiler_role, compiler_args, src):
+        from taucmdr.cli.commands.build import COMMAND as build_command
+        test_src = os.path.join(TAU_HOME, '.testfiles', src)
+        test_dst = os.path.join(get_test_workdir(), src)
+        shutil.copyfile(test_src, test_dst)
+        cc_cmd = self.assertCompiler(compiler_role)
+        args = [cc_cmd] + compiler_args + [src]
+        self.assertCommandReturnValue(return_value, build_command, args)
     
 
 class TestRunner(unittest.TextTestRunner):

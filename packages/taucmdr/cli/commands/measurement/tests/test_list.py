@@ -39,7 +39,7 @@ class ListTest(tests.TestCase):
     """Tests for :any:`measurement.list`."""
 
     def test_list(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         name = 'm01'
         self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])

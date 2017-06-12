@@ -177,10 +177,19 @@ def main():
             val = getattr(args, key, None)
             if val is not None:
                 defaults_cfg[section][key] = val
+                
+    # OpenMP support is badly broken in TAU (high overhead, runtime overlaps, etc.).  
+    # Ignore by default to avoid angry customers.  Maybe one day this will be fixed...
+    defaults_cfg['Measurement']['openmp'] = 'ignore'   
+
+    # Check and expand prefix
+    if args.prefix.startswith("="):
+        print("\nWARNING: Installation prefix starts with '='.  Is that what you intended?")
+    prefix = os.path.abspath(os.path.expanduser(args.prefix))
 
     # Configure installation parameters
     install = setup_cfg['install']
-    install['prefix'] = args.prefix
+    install['prefix'] = prefix
     install['compile'] = args.compile
     install['optimize'] = args.optimize
     

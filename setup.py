@@ -245,14 +245,22 @@ class Install(InstallCommand):
         from taucmdr.cli.commands.initialize import COMMAND as init_command
         from taucmdr.cli.commands.select import COMMAND as select_command
         from taucmdr.model.project import Project
+        from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
 
         # Call `tau initialize` to configure system-level packages supporting default experiments
         if init_command.main(init_args) != EXIT_SUCCESS:
             raise SoftwarePackageError("`tau initialize` failed with arguments %s." % init_args,
                                        "Check that the values specified in 'defaults.cfg' are valid.")
-        # Iterate through default configurations and configure system-level packages for each
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected().populate()
+        # Acquire source packages
+        for targ in proj['targets']:
+            targ.acquire_sources()        
+        # Add papi configurations
+        for meas in proj['measurements']:
+            measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
+        proj = proj_ctrl.selected().populate()
+        # Iterate through default configurations and configure system-level packages for each
         for targ in proj['targets']:
             for app in proj['applications']:
                 for meas in proj['measurements']:
@@ -268,6 +276,8 @@ class Install(InstallCommand):
         import taucmdr
         from taucmdr import logger, util, configuration
         from taucmdr.cli.commands.configure import COMMAND as configure_command
+        from taucmdr.cf.storage.levels import highest_writable_storage
+        from taucmdr.cf.software.tau_installation import TauInstallation
 
         # Clean up the build directory
         os.chdir(self.build_base)
@@ -281,6 +291,12 @@ class Install(InstallCommand):
         target_cfg = defaults_cfg['Target']
         have_mpi = (target_cfg['MPI_CC'] and target_cfg['MPI_CXX'] and target_cfg['MPI_FC'])
         have_shmem = (target_cfg['SHMEM_CC'] and target_cfg['SHMEM_CXX'] and target_cfg['SHMEM_FC'])
+        host_os = target_cfg['host_os']
+        host_arch = target_cfg['host_arch']
+
+        # Minimal tau installation
+        tau = TauInstallation.minimal()
+        tau.install()
 
         # Configure TAU and all dependencies in various combinations
         self._configure_project([])
@@ -370,7 +386,7 @@ setuptools.setup(
 
     # Testing
     test_suite='taucmdr',
-    tests_require=['pylint'],
+    tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
 
     # Metadata for upload to PyPI
     author=AUTHOR,

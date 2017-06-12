@@ -67,6 +67,7 @@ tauprofile.xml
 *.zip
 *.tar.*
 *.tgz
+*.cubex
 
 # Misc
 *~
@@ -104,5 +105,5 @@ id_rsa_Travis2GH
 id_rsa_Travis2GH.pub
 
 # Jupyter files
-.ipynb_checkpoints
-*.ipynb
+*.ipynb*
+

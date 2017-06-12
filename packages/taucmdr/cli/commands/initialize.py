@@ -46,8 +46,6 @@ from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
-from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
-from taucmdr.cf.compiler.host import FC
 
 
 class InitializeCommand(AbstractCommand):
@@ -90,14 +88,14 @@ class InitializeCommand(AbstractCommand):
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>', default=arguments.SUPPRESS)
 
-        parser.merge(target_create_cmd.parser, group_title='target arguments', include_positional=False)
+        parser.merge(target_create_cmd.parser, group_title='target arguments')
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
                                   help="Name of the new target configuration",
                                   metavar='<name>',
                                   default=_default_target_name())
 
-        parser.merge(application_create_cmd.parser, group_title='application arguments', include_positional=False)
+        parser.merge(application_create_cmd.parser, group_title='application arguments')
         default_application_name = os.path.basename(os.getcwd()) or 'default_application'
         application_group = parser.add_argument_group('application arguments')
         application_group.add_argument('--application-name',
@@ -105,27 +103,13 @@ class InitializeCommand(AbstractCommand):
                                        metavar='<name>',
                                        default=default_application_name)
 
+        parser.merge(measurement_create_cmd.parser, group_title='measurement arguments')
         measurement_group = parser.add_argument_group('measurement arguments')
-        measurement_group.add_argument('--profile',
-                                       help="Create measurement configurations for profiling",
-                                       metavar='format',
-                                       nargs='?',
-                                       const=True,
-                                       choices=('tau', 'merged', 'cubex', 'none'),
-                                       default='tau')
-        measurement_group.add_argument('--trace',
-                                       help="Create measurement configurations for tracing",
-                                       metavar='<format>',
-                                       nargs='?',
-                                       const=True,
-                                       default='slog2')
-        measurement_group.add_argument('--sample',
-                                       help="Create measurement configurations for event-based sampling",
-                                       metavar='T/F',
-                                       nargs='?',
-                                       const=True,
-                                       default=True,
-                                       action=ParseBooleanAction)
+        # Override model defaults so measurements are created unless explicitly disabled
+        measurement_group['--source-inst'].default = 'automatic'
+        measurement_group['--profile'].default = 'tau'
+        measurement_group['--trace'].default = 'slog2'
+        measurement_group['--sample'].default = True
         return parser
 
     def _create_project(self, args):
@@ -148,69 +132,45 @@ class InitializeCommand(AbstractCommand):
             retval = cmd.main(argv)
             if retval != EXIT_SUCCESS:
                 raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
-        papi = True
-        binutils = True
-        sample = True
-        scorep = True
-        comp_inst = 'fallback'
-        if HOST_OS is DARWIN:
-            self.logger.info("Darwin OS detected: disabling PAPI, binutils, "
-                             "compiler-based instrumentation, sampling, and Score-P.")
-            papi = False
-            binutils = False
-            sample = False
-            scorep = False
-            comp_inst = 'never'
-        elif HOST_OS is IBM_CNK: 
-            self.logger.info("IBM CNK OS detected: disabling sampling")
-            sample = False
-        if not getattr(args, FC.keyword, None):
-            scorep = False
-        target_name = args.target_name
-        application_name = args.application_name
 
-        # Parse and strip application arguments first to avoid ambiguous arguments in `target create`
-        application_argv = [application_name] + argv
-        application_args, unknown = application_create_cmd.parser.parse_known_args(args=application_argv)
+        # Parse and strip application arguments to avoid ambiguous arguments like '--mpi' in `measurement create`
+        application_name = args.application_name
+        application_args, unknown = application_create_cmd.parser.parse_known_args([application_name] + argv)
         application_argv = [application_name] + [arg for arg in argv if arg not in unknown]
         _safe_execute(application_create_cmd, application_argv)
         argv = [arg for arg in argv if arg in unknown]
         
-        target_argv = [target_name] + argv
-        _, unknown = target_create_cmd.parser.parse_known_args(args=target_argv)
+        target_name = args.target_name
+        _, unknown = target_create_cmd.parser.parse_known_args([target_name] + argv)
         target_argv = [target_name] + [arg for arg in argv if arg not in unknown]
-        if not binutils:
-            target_argv.append('--binutils=None')
-        if not papi:
-            target_argv.append('--papi=None')
-        if not scorep:
-            target_argv.append('--scorep=None')
         _safe_execute(target_create_cmd, target_argv)
         
         targ = Target.controller(PROJECT_STORAGE).one({'name': target_name})
         if not targ['binutils_source']:
-            sample = False
-            comp_inst = 'never'
+            self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
+            args.sample = False
+            args.compiler_inst = 'never'
 
         measurement_names = []
-        measurement_args = ['--%s=True' % attr 
-                            for attr in 'cuda', 'mpi', 'opencl', 'shmem' if getattr(application_args, attr, False)]
-        if args.sample and sample:
+        measurement_args = ['--%s=True' % attr for attr in 'cuda', 'mpi', 'opencl', 'shmem' 
+                            if getattr(application_args, attr, False)]
+        if args.sample:
+            trace = args.trace if args.profile == 'none' else 'none'
             _safe_execute(measurement_create_cmd, 
-                          ['sample', '--profile=tau', '--trace=none', '--sample=True',
+                          ['sample', '--profile', args.profile, '--trace', trace, '--sample=True',
                            '--source-inst=never', '--compiler-inst=never',
                            '--link-only=False'] + measurement_args)
-            measurement_names.extend(['sample'])
-        if args.profile:
+            measurement_names.append('sample')
+        if args.profile != 'none':
             _safe_execute(measurement_create_cmd, 
-                          ['profile', '--profile=tau', '--trace=none', '--sample=False',
-                           '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
+                          ['profile', '--profile', args.profile, '--trace=none', '--sample=False',
+                           '--source-inst', args.source_inst, '--compiler-inst', args.compiler_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('profile')
-        if args.trace:
+        if args.trace != 'none':
             _safe_execute(measurement_create_cmd, 
-                          ['trace', '--profile=none', '--trace=slog2',
-                           '--sample=False', '--source-inst=automatic', '--compiler-inst=%s' % comp_inst, 
+                          ['trace', '--profile=none', '--trace', args.trace, '--sample=False', '--callpath=0', 
+                           '--source-inst', args.source_inst, '--compiler-inst', args.compiler_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')
 

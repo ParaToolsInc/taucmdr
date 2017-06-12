@@ -46,8 +46,8 @@ class DeleteTest(tests.TestCase):
         self.assertFalse(stderr)
 
     def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
-        _, _, stderr = self.exec_command(delete.COMMAND, ['invalid_name'])
+        self.reset_project_storage()
+        _, stderr = self.assertNotCommandReturnValue(0, delete.COMMAND, ['invalid_name'])
         self.assertIn('measurement delete <measurement_name> [arguments]', stderr)
         self.assertIn('measurement delete: error: No project-level measurement with name', stderr)
 

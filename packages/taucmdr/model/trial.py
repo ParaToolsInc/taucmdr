@@ -38,11 +38,14 @@ import errno
 from datetime import datetime
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
+from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
+from taucmdr.cf.software.tau_installation import TauInstallation
 
 
 LOGGER = logger.get_logger(__name__)
+
 
 def attributes():
     from taucmdr.model.experiment import Experiment
@@ -156,10 +159,10 @@ class TrialController(Controller):
             end_time = str(datetime.utcnow())
             banner('END', expr.name, end_time)
 
-	data_size = 0
-	for dir_path, _, file_names in os.walk(trial.prefix):
-	    for f in file_names:
-	        data_size += os.path.getsize(os.path.join(dir_path, f))
+        data_size = 0
+        for dir_path, _, file_names in os.walk(trial.prefix):
+            for name in file_names:
+                data_size += os.path.getsize(os.path.join(dir_path, name))
         self.update({'data_size': data_size}, trial.eid)
         if retval != 0:
             if data_size != 0:
@@ -171,35 +174,10 @@ class TrialController(Controller):
                                  "Does the selected application configuration correctly describe this program?",
                                  "Does the selected measurement configuration specifiy the right measurement methods?",
                                  "Does the selected target configuration match the runtime environment?")
-
-        measurement = expr.populate('measurement')
-        profiles = trial.profile_files()
-        if profiles:
-            LOGGER.info("Trial %s produced %s profile files.", trial['number'], len(profiles))
-            negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
-            if negative_profiles:
-                LOGGER.warning("Trial %s produced a profile with negative node number!"
-                               " This usually indicates that process-level parallelism was not initialized,"
-                               " (e.g. MPI_Init() was not called) or there was a problem in instrumentation."
-                               " Check the compilation output and verify that MPI_Init (or similar) was called.",
-                               trial['number'])
-                for fname in negative_profiles:
-                    new_name = fname.replace(".-1.", ".0.") 
-                    if not os.path.exists(new_name):
-                        LOGGER.info("Renaming %s to %s", fname, new_name)
-                        os.rename(fname, new_name)
-                    else:
-                        raise ConfigurationError("The profile numbers for trial %d are wrong.",
-                                                 "Check that the application configuration is correct.",
-                                                 "Check that the measurement configuration is correct.",
-                                                 "Check for instrumentation failure in the compilation log.")
-        elif measurement['profile'] != 'none':
-            raise TrialError("Trial did not produce any profiles.")
-        traces = trial.trace_files(env)
-        if traces:
-            LOGGER.info("Trial %s produced %s trace files.", trial['number'], len(traces))
-        elif measurement['trace'] != 'none':
-            raise TrialError("Application completed successfuly but did not produce any traces.")            
+        LOGGER.info('Experiment: %s' %expr['name'])
+        LOGGER.info('Current working directory: %s' %cwd)
+        LOGGER.info('Data size: %s bytes' %data_size)
+        LOGGER.info('Command: %s' %' '.join(cmd))
         return retval
 
     def perform(self, expr, cmd, cwd, env, description):
@@ -229,7 +207,6 @@ class TrialController(Controller):
         measurement = expr.populate('measurement')
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
-        
         targ = expr.populate('target')
         if targ.architecture().is_bluegene():
             return self._perform_bluegene(expr, trial, cmd, cwd, env)
@@ -243,7 +220,7 @@ class Trial(Model):
     __attributes__ = attributes
 
     __controller__ = TrialController
-
+    
     @property
     def prefix(self):
         experiment = self.populate('experiment')
@@ -254,7 +231,7 @@ class Trial(Model):
             util.mkdirp(self.prefix)
         except Exception as err:
             raise ConfigurationError('Cannot create directory %r: %s' % (self.prefix, err),
-                                     'Check that you have `write` access')
+                                     'Check that you have write access')
 
     def on_delete(self):
         try:
@@ -262,55 +239,64 @@ class Trial(Model):
         except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
-
-    def profile_files(self):
-        """Get this trial's profile files.
-
-        Returns paths to profile files (profile.X.Y.Z).  If the trial produced 
-        MULTI__ directories then paths to every profile below every MULTI__ 
-        directory are returned. If the trial produced a merged file retun the
-        *.xml file.
-
-        Returns:
-            list: Paths to profile files.
-        """
-        list_profiles = lambda path: glob.glob(os.path.join(path, 'profile.*.*.*'))
-        profiles = []
-        for multi_dir in glob.iglob(os.path.join(self.prefix, 'MULTI__*')):
-            profiles.extend(list_profiles(multi_dir))
-        profiles.extend(list_profiles(self.prefix))
-        profiles.extend(glob.glob(os.path.join(self.prefix, 'tauprofile.xml')))
-        profiles.extend(glob.glob(os.path.join(self.prefix, '*.cubex')))
-        profiles.extend(glob.glob(os.path.join(self.prefix, '*.cfg')))
-        return profiles
-
-    def trace_files(self, env, post_process=False):
-        """Get this trial's trace files.
-
-        Returns paths to trace files: *.[trc,edf,slog2,def,evt,otf2].
-
-        Returns:
-            list: Paths to trace files.
-        """
+                
+    def _postprocess_slog2(self):
+        slog2 = os.path.join(self.prefix, 'tau.slog2')
+        if os.path.exists(slog2):
+            return
+        tau = TauInstallation.minimal()
+        merged_trc = os.path.join(self.prefix, 'tau.trc')
+        merged_edf = os.path.join(self.prefix, 'tau.edf')
+        if not os.path.exists(merged_trc) or not os.path.exists(merged_edf):
+            tau.merge_tau_trace_files(self.prefix)
+        tau.tau_trace_to_slog2(merged_trc, merged_edf, slog2)
         trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
         edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
-        def_files = glob.glob(os.path.join(self.prefix, 'traces/*.def'))
-        evt_files = glob.glob(os.path.join(self.prefix, 'traces/*.evt'))
-        slog2_file = glob.glob(os.path.join(self.prefix, 'tau.slog2'))
-        otf2_files = glob.glob(os.path.join(self.prefix, 'traces.otf2'))
-        if post_process and trc_files and edf_files and not slog2_file:
-            if not os.path.isfile(os.path.join(self.prefix, 'tau.trc')):
-                cmd = ['tau_treemerge.pl']
-                retval = util.create_subprocess(cmd, cwd=self.prefix, env=env, log=False)
-                if retval != 0:
-                    raise InternalError("Nonzero return code from tau_treemerge.pl")
-            cmd = ['tau2slog2', 'tau.trc', 'tau.edf', '-o', 'tau.slog2']
-            util.create_subprocess(cmd, cwd=self.prefix, env=env, log=False)
-            slog2_file = glob.glob(os.path.join(self.prefix, 'tau.slog2'))
-        if post_process:
-            return def_files + evt_files + slog2_file + otf2_files
-        else:
-            return trc_files + edf_files + def_files + evt_files + otf2_files
+        count_trc_edf = len(trc_files) + len(edf_files)
+        LOGGER.info('Cleaning up TAU trace files...')
+        with ProgressIndicator(count_trc_edf) as progress_bar:
+            count = 0
+            for path in trc_files + edf_files:
+                os.remove(path)
+                count += 1
+                progress_bar.update(count)
+
+    def get_data_files(self):
+        """Return paths to the trial's data files or directories maped by data type. 
+        
+        Post-process trial data if necessary and return a dictionary mapping the types of data produced 
+        by this trial to paths to related data files or directories.  The paths should be suitable for 
+        passing on a command line to one of the known data analysis tools. For example, a trial producing 
+        SLOG2 traces and TAU profiles would return ``{"slog2": "/path/to/tau.slog2", "tau": "/path/to/directory/"}``.
+        
+        Returns:
+            dict: Keys are strings indicating the data type; values are filesystem paths.
+        """
+        expr = self.populate('experiment')
+        if self.get('data_size', 0) <= 0:
+            raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+        meas = self.populate('experiment').populate('measurement')
+        profile_fmt = meas.get('profile', 'none')
+        trace_fmt = meas.get('trace', 'none')
+        if trace_fmt == 'slog2':
+            self._postprocess_slog2()
+        data = {}
+        if profile_fmt == 'tau':
+            data[profile_fmt] = self.prefix
+        elif profile_fmt == 'merged':
+            data[profile_fmt] = os.path.join(self.prefix, 'tauprofile.xml')
+        elif profile_fmt == 'cubex':
+            data[profile_fmt] = os.path.join(self.prefix, 'profile.cubex')
+        elif profile_fmt != 'none':
+            raise InternalError("Unhandled profile format '%s'" % profile_fmt)
+        trace_fmt = meas.get('trace', 'none')
+        if trace_fmt == 'slog2':
+            data[trace_fmt] = os.path.join(self.prefix, 'tau.slog2')
+        elif trace_fmt == 'otf2':
+            data[trace_fmt] = os.path.join(self.prefix, 'traces.otf2')
+        elif trace_fmt != 'none':
+            raise InternalError("Unhandled trace format '%s'" % trace_fmt)
+        return data
 
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
@@ -328,7 +314,10 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
+                              if (key.startswith('TAU_') or 
+                                  key.startswith('SCOREP_') or 
+                                  key in ('PROFILEDIR', 'TRACEDIR')))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
         try:
@@ -339,7 +328,82 @@ class Trial(Model):
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+        
+        measurement = expr.populate('measurement')
+        profiles = []
+        for pat in 'profile.*.*.*', 'MULTI__*/profile.*.*.*', 'tauprofile.xml', '*.cubex':
+            profiles.extend(glob.glob(os.path.join(self.prefix, pat)))
+        
+        if profiles:
+            LOGGER.info("Trial %s produced %s profile files.", self['number'], len(profiles))
+            negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
+            if negative_profiles:
+                LOGGER.warning("Trial %s produced a profile with negative node number!"
+                               " This usually indicates that process-level parallelism was not initialized,"
+                               " (e.g. MPI_Init() was not called) or there was a problem in instrumentation."
+                               " Check the compilation output and verify that MPI_Init (or similar) was called.",
+                               self['number'])
+                for fname in negative_profiles:
+                    new_name = fname.replace(".-1.", ".0.") 
+                    if not os.path.exists(new_name):
+                        LOGGER.info("Renaming %s to %s", fname, new_name)
+                        os.rename(fname, new_name)
+                    else:
+                        raise ConfigurationError("The profile numbers for trial %d cannot be corrected.",
+                                                 "Check that the application configuration is correct.",
+                                                 "Check that the measurement configuration is correct.",
+                                                 "Check for instrumentation failure in the compilation log.")
+        elif measurement['profile'] != 'none':
+            raise TrialError("Trial did not produce any profiles.")
+
+        traces = []
+        for pat in '*.slog2', '*.trc', '*.edf', 'traces/*.def', 'traces/*.evt', 'traces.otf2':
+            traces.extend(glob.glob(os.path.join(self.prefix, pat)))
+        
+        if traces:
+            LOGGER.info("Trial %s produced %s trace files.", self['number'], len(traces))
+        elif measurement['trace'] != 'none':
+            raise TrialError("Application completed successfuly but did not produce any traces.")            
+
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
+    
+    def export(self, dest):
+        """Export experiment trial data.
+ 
+        Args:
+            dest (str): Path to directory to contain exported data.
+ 
+        Raises:
+            ConfigurationError: This trial has no data.
+        """
+        expr = self.populate('experiment')
+        if self.get('data_size', 0) <= 0:
+            raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+        data = self.get_data_files()
+        stem = '%s.trial%d' % (expr['name'], self['number'])
+        for fmt, path in data.iteritems(): 
+            if fmt == 'tau':
+                export_file = os.path.join(dest, stem+'.ppk')
+                tau = TauInstallation.minimal()
+                tau.create_ppk_file(export_file, path)
+            elif fmt == 'merged':
+                export_file = os.path.join(dest, stem+'.xml.gz')
+                util.create_archive('gz', export_file, [path])
+            elif fmt == 'cubex':
+                export_file = os.path.join(dest, stem+'.cubex')
+                LOGGER.info("Writing '%s'...", export_file)
+                util.copy_file(path, export_file)
+            elif fmt == 'slog2':
+                export_file = os.path.join(dest, stem+'.slog2')
+                LOGGER.info("Writing '%s'...", export_file)
+                util.copy_file(path, export_file)
+            elif fmt == 'otf2':
+                export_file = os.path.join(dest, stem+'.tgz')
+                expr_dir, trial_dir = os.path.split(os.path.dirname(path))
+                items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
+                util.create_archive('tgz', export_file, items, expr_dir)
+            elif fmt != 'none':
+                raise InternalError("Unhandled data file format '%s'" % fmt)
 

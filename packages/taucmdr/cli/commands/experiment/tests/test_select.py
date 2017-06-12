@@ -45,9 +45,27 @@ class SelectTest(tests.TestCase):
         self.assertIn('too few arguments', stderr)
         self.assertFalse(stdout)
 
-    def test_incomatiblemetrics(self):
+    def test_invalid_metric(self):
         self.reset_project_storage()
-        self.assertCommandReturnValue(0, measurement_create_cmd, ['meas1', '--metrics', 'PAPI_TEST'])
-        self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'meas1', '--target', 'targ1'])
+        self.assertCommandReturnValue(0, measurement_create_cmd, 
+                                      ['meas1', '--metrics', 'PAPI_TAUCMDR_INVALID_METRIC'])
+        self.assertCommandReturnValue(0, experiment_create_cmd, 
+                                      ['exp2', '--application', 'app1', '--measurement', 'meas1', '--target', 'targ1'])
         stdout,_ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
         self.assertIn('WARNING', stdout)
+
+    def test_check_rebuild_required(self):
+        self.reset_project_storage()
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['meas1', '--metrics', 'TIME', 'PAPI_TOT_CYC'])
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['meas2', '--metrics', 'TIME', 'PAPI_TOT_INS'])
+        self.assertCommandReturnValue(0, experiment_create_cmd,
+                                      ['exp2', '--application', 'app1', '--measurement', 'meas1', '--target', 'targ1'])
+        self.assertCommandReturnValue(0, experiment_create_cmd,
+                                      ['exp3', '--application', 'app1', '--measurement', 'meas2', '--target', 'targ1'])
+        stdout,_ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
+        self.assertIn('rebuild required', stdout)
+        stdout,_ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp3'])
+        if "not compatible" not in stdout:
+            self.assertNotIn('rebuild required', stdout)

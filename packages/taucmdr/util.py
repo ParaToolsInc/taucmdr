@@ -40,6 +40,7 @@ import shutil
 import urllib
 import pkgutil
 import tarfile
+import gzip
 import tempfile
 import urlparse
 import hashlib
@@ -53,6 +54,7 @@ from taucmdr.progress import ProgressIndicator, progress_spinner
 
 
 LOGGER = logger.get_logger(__name__)
+
 
 _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
@@ -80,13 +82,20 @@ def calculate_uid(parts):
         uid.update(part)
     digest = uid.hexdigest()
     LOGGER.debug("UID: (%s): %s", digest, parts)
-    return digest
+    return digest[:8]
 
 def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
     path = tempfile.mkdtemp(*args, **kwargs)
     _DTEMP_STACK.append(path)
     return path
+
+
+def copy_file(src, dest, show_progress=True):
+    """Works just like :any:`shutil.copy` except with progress bars."""
+    context = progress_spinner if show_progress else _null_context
+    with context():
+        shutil.copy(src, dest)
 
 
 def mkdirp(*args):
@@ -133,8 +142,17 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     shutil.rmtree(path, ignore_errors, onerror)
 
 
-def _is_exec(fpath):
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+@contextmanager
+def umask(new_mask):
+    """Context manager to temporarily set the process umask.
+    
+    Args:
+        new_mask: The argument to :any:`os.umask`.
+    """ 
+    old_mask = os.umask(new_mask)
+    yield
+    os.umask(old_mask)
+
 
 _WHICH_CACHE = {}
 def which(program, use_cached=True):
@@ -159,6 +177,7 @@ def which(program, use_cached=True):
             return _WHICH_CACHE[program]
         except KeyError:
             pass
+    _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
     fpath, _ = os.path.split(program)
     if fpath:
         abs_program = os.path.abspath(program)
@@ -281,18 +300,21 @@ def archive_toplevel(archive):
     except tarfile.ReadError:
         raise IOError
     else:
-        dirs = [d.name for d in fin.getmembers() if d.isdir()]
-        if dirs:
-            topdir = min(dirs, key=len)
+        if fin.firstmember.isdir():
+            topdir = fin.firstmember.name
         else:
-            dirs = set()
-            names = [d.name for d in fin.getmembers() if d.isfile()]
-            for name in names:
-                dirname, basename = os.path.split(name)
-                while dirname:
-                    dirname, basename = os.path.split(dirname)
-                dirs.add(basename)
-            topdir = min(dirs, key=len)
+            dirs = [d.name for d in fin.getmembers() if d.isdir()]
+            if dirs:
+                topdir = min(dirs, key=len)
+            else:
+                dirs = set()
+                names = [d.name for d in fin.getmembers() if d.isfile()]
+                for name in names:
+                    dirname, basename = os.path.split(name)
+                    while dirname:
+                        dirname, basename = os.path.split(dirname)
+                    dirs.add(basename)
+                topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
         return topdir
 
@@ -337,24 +359,43 @@ def extract_archive(archive, dest, show_progress=True):
     return full_dest
 
 
-def create_archive(fmt, dest, items):
+def create_archive(fmt, dest, items, cwd=None, show_progress=True):
     """Creates a new archive file in the specified format.
     
     Args:
         fmt (str): Archive fmt, e.g. 'zip' or 'tgz'.
         dest (str): Path to the archive file that will be created.
-        items (list): Items (i.e. files or folders) to add to the archive. 
+        items (list): Items (i.e. files or folders) to add to the archive.
+        cwd (str): Current working directory while creating the archive. 
     """
-    if fmt == 'zip':
-        with ZipFile(dest, 'w') as archive:
-            archive.comment = "Created by TAU Commander"
-            for item in items:
-                archive.write(item)
-    elif fmt in ('tar', 'tgz', 'tar.bz2'):
-        mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
-        with tarfile.open(dest, mode_map[fmt]) as archive:
-            for item in items:
-                archive.add(item)
+    if cwd:
+        oldcwd = os.getcwd()
+        os.chdir(cwd)
+    if show_progress:
+        LOGGER.info("Writing '%s'...", dest)
+        context = progress_spinner
+    else:
+        context = _null_context
+    with context():
+        try:
+            if fmt == 'zip':
+                with ZipFile(dest, 'w') as archive:
+                    archive.comment = "Created by TAU Commander"
+                    for item in items:
+                        archive.write(item)
+            elif fmt in ('tar', 'tgz', 'tar.bz2'):
+                mode_map = {'tar': 'w', 'tgz': 'w:gz', 'tar.bz2': 'w:bz2'}
+                with tarfile.open(dest, mode_map[fmt]) as archive:
+                    for item in items:
+                        archive.add(item)
+            elif fmt == 'gz':
+                with open(items[0], 'rb') as fin, gzip.open(dest, 'wb') as fout:
+                    shutil.copyfileobj(fin, fout)
+            else:
+                raise InternalError("Invalid archive format: %s" % fmt)
+        finally:
+            if cwd:
+                os.chdir(oldcwd)
 
 
 def file_accessible(filepath, mode='r'):

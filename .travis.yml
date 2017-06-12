@@ -18,6 +18,7 @@ env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
     - __TAUCMDR_PROGRESS_BARS__="minimal"
+    - __TAUCMDR_PROFILE_TAUCMDR__="stdout"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 

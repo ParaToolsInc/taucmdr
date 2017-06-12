@@ -31,23 +31,17 @@ Functions used for unit tests of show.py.
 """
 
 
-import shutil
-import unittest
-from taucmdr import tests, TAU_HOME
+from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
-from taucmdr.cli.commands import build
 from taucmdr.cli.commands.trial import show, create
 from taucmdr.cf.compiler.host import CC
 
 class ShowTest(tests.TestCase):
     
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_show(self):
-        self.reset_project_storage(project_name='proj1')
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        argv = [cc_cmd, 'hello.c']
-        self.exec_command(build.COMMAND, argv)
-        self.exec_command(create.COMMAND, ['./a.out'])
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
         argv = ['0', '--profile-tool', 'pprof']
         self.assertCommandReturnValue(None, show.COMMAND, argv)

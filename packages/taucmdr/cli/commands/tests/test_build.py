@@ -30,33 +30,31 @@
 Functions used for unit tests of build.py.
 """
 
-
-import shutil
-from taucmdr import tests, TAU_HOME
-from taucmdr.cli.commands.build import COMMAND as build_command
+import os
+from taucmdr import tests
 from taucmdr.cf.compiler.host import CC
+from taucmdr.cli.commands.build import COMMAND as build_command
+
 
 class BuildTest(tests.TestCase):
     """Unit tests for `taucmdr build`"""
 
     def test_build(self):
         self.reset_project_storage()
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        argv = [cc_cmd, 'hello.c']
-        self.assertCommandReturnValue(0, build_command, argv)
+        self.assertManagedBuild(0, CC, [], 'hello.c')
 
     def test_abspath_compat(self):
         self.reset_project_storage()
-        cc_cmd = self.get_compiler(CC)
+        cc_cmd = self.assertCompiler(CC)
+        self.assertTrue(os.path.isabs(cc_cmd))
         self.assertTrue(build_command.is_compatible(cc_cmd))
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, build_command, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, build_command, ['--help'])
         self.assertIn('Show this help message and exit', stdout)

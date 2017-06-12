@@ -47,8 +47,47 @@ from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
+
 LOGGER = logger.get_logger(__name__)
 
+
+def _require_compiler_family(family, *hints):
+    """Creates a compatibility callback to check a compiler family.
+    
+    Args:
+        family: The required compiler family.
+        *hints: String hints to show the user when the check fails.
+        
+    Returns:
+        callable: a compatibility checking callback for use with data models.
+    """
+    def callback(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
+        """Compatibility checking callback for use with data models.
+
+        Requires ``rhs[rhs_attr]`` to be a compiler in a certain compiler family.
+        
+        Args:
+            lhs (Model): The model invoking `check_compatibility`.
+            lhs_attr (str): Name of the attribute that defines the 'compat' property.
+            lhs_value: Value of the attribute that defines the 'compat' property.
+            rhs (Model): Model we are checking against (argument to `check_compatibility`).
+            rhs_attr (str): The right-hand side attribute we are checking for compatibility.
+            
+        Raises:
+            ConfigurationError: Invalid compiler family specified in target configuration.
+        """
+        lhs_name = lhs.name.lower()
+        rhs_name = rhs.name.lower()
+        msg = ("%s = %s in %s requires %s in %s to be a %s compiler" % 
+               (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name, family))
+        try:
+            compiler_record = rhs.populate(rhs_attr)
+        except KeyError:
+            raise ConfigurationError("%s but it is undefined" % msg)
+        given_family_name = compiler_record['family']
+        if given_family_name != family.name:
+            raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family_name), *hints)
+    return callback
 
 def knc_require_k1om(*_):
     """Compatibility checking callback for use with data models.
@@ -95,14 +134,13 @@ def attributes():
     from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-    from taucmdr.model import require_compiler_family
     
-    knc_intel_only = require_compiler_family(INTEL, 
-                                             "You must use Intel compilers to target the Xeon Phi",
-                                             "Try adding `--compilers=Intel` to the command line")
-    knc_intel_mpi_only = require_compiler_family(INTEL_MPI,
-                                                 "You must use Intel MPI compilers to target the Xeon Phi",
-                                                 "Try adding `--mpi-compilers=Intel` to the command line")
+    knc_intel_only = _require_compiler_family(INTEL, 
+                                              "You must use Intel compilers to target the Xeon Phi",
+                                              "Try adding `--compilers=Intel` to the command line")
+    knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
+                                                  "You must use Intel MPI compilers to target the Xeon Phi",
+                                                  "Try adding `--mpi-compilers=Intel` to the command line")
     
     return {
         'projects': {
@@ -337,11 +375,12 @@ def attributes():
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
-            'default': 'download',
+            'default': 'download' if HOST_OS is not DARWIN else None,
             'argparse': {'flags': ('--libunwind',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
         'papi_source': {
@@ -367,6 +406,16 @@ def attributes():
                                                    Target.require(CC.keyword),
                                                    Target.require(CXX.keyword),
                                                    Target.require(FC.keyword))},
+            'rebuild_required': True
+        },
+        'ompt_source': {
+            'type': 'string',
+            'description': 'path or URL to OMPT installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--ompt',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
             'rebuild_required': True
         },
         'forced_makefile': {
@@ -438,11 +487,24 @@ class Target(Model):
             dict: Software package paths indexed by package name.
         """ 
         sources = {}
-        for attr in self.attributes:
-            if attr.endswith('_source'):
-                key = attr.replace('_source', '')
-                sources[key] = self.get(attr)
+        for attr, val in self.iteritems():
+            if val and attr.endswith('_source'):
+                sources[attr.replace('_source', '')] = val
         return sources
+    
+    def acquire_sources(self):
+        """Acquire all source code packages known to this target."""
+        from taucmdr.cf import software
+        for attr, val in self.iteritems():
+            if val and attr.endswith('_source'):
+                cls = software.get_installation(attr.replace('_source', ''))
+                inst = cls(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+                try:
+                    inst.acquire_source()
+                except ConfigurationError as err:
+                    # Not a warning since using an existing installation is OK and in that case
+                    # there is no source code package to acquire. 
+                    LOGGER.info(err)
 
     def compilers(self):
         """Get information about the compilers used by this target configuration.

@@ -31,51 +31,66 @@ Functions used for unit tests of create.py.
 """
 #pylint: disable=missing-docstring 
 
-import unittest
 from taucmdr import tests, util
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
+from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
 
 class CreateTest(tests.TestCase):
     
-    @unittest.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
+    @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_pgi(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'PGI'])
-        self.assertIn('Added target \'test_targ\' to project configuration', stdout)
+        self.assertIn("Added target 'test_targ' to project configuration", stdout)
         self.assertFalse(stderr)
         stdout, stderr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_PGI'])
-        self.assertIn('Added measurement \'meas_PGI\' to project configuration', stdout)
+        self.assertIn("Added measurement 'meas_PGI' to project configuration", stdout)
         self.assertFalse(stderr)
-        argv = ['test_targ', 'meas_PGI']
+        argv = ['exp2', '--target', 'test_targ', '--application', 'app1', '--measurement', 'meas_PGI']
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
         
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_invalid_targ_name(self):
-        self.reset_project_storage(project_name='proj1')
-        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ_err', '--application', 'app1', '--measurement', 'sample'])
+        self.reset_project_storage()
+        argv = ['exp2', '--target', 'targ_err', '--application', 'app1', '--measurement', 'sample']
+        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
 
     def test_invalid_app_name(self):
-        self.reset_project_storage(project_name='proj1')
-        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ1', '--application', 'app_err', '--measurement', 'sample'])
+        self.reset_project_storage()
+        argv = ['exp2', '--target', 'targ1', '--application', 'app_err', '--measurement', 'sample']
+        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
 
     def test_invalid_meas_name(self):
-        self.reset_project_storage(project_name='proj1')
-        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_err'])
+        self.reset_project_storage()
+        argv = ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_err']
+        stdout, stderr = self.assertNotCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertNotIn('CRITICAL', stdout)
         self.assertIn('error', stderr)
+
+    def test_ompt(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, application_create_cmd, ['test_app', '--openmp', 'T'])
+        self.assertIn("Added application 'test_app' to project configuration", stdout)
+	self.assertFalse(stderr)
+	stdout, sterr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_ompt', '--openmp', 'ompt'])
+	self.assertIn("Added measurement 'meas_ompt' to project configuration", stdout)
+	self.assertFalse(stderr)
+	argv = ['exp2', '--target', 'targ1', '--application', 'test_app', '--measurement', 'meas_ompt']
+	_, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+	self.assertFalse(stderr)

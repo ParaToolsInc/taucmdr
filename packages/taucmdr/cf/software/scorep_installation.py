@@ -41,7 +41,7 @@ from taucmdr.cf.platforms import X86_64, IBM64, PPC64, PPC64LE
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/taucmdr/scorep.tgz'}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
 
 COMMANDS = {None:
             ['cube3to4',
@@ -101,13 +101,20 @@ class ScorepInstallation(AutotoolsInstallation):
     # pylint: disable=too-many-arguments
 
     def __init__(self, sources, target_arch, target_os, compilers, 
-                 use_mpi, use_shmem, use_binutils, use_libunwind, use_papi, use_pdt):
+                 use_mpi=False, 
+                 use_shmem=False, 
+                 use_binutils=False, 
+                 use_libunwind=False, 
+                 use_papi=False, 
+                 use_pdt=False):
         super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os, 
                                                  compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
-        for pkg, used in (('binutils', use_binutils), ('libunwind', use_libunwind), 
-                          ('papi', use_papi), ('pdt', use_pdt)):
+        for pkg, used in (('binutils', use_binutils), 
+                          ('libunwind', use_libunwind), 
+                          ('papi', use_papi), 
+                          ('pdt', use_pdt)):
             if used:
                 self.add_dependency(pkg, sources)
 

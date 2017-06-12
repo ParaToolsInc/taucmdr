@@ -38,15 +38,15 @@ class DashboardTest(tests.TestCase):
     """Unit tests for `taucmdr dashboard`"""
     
     def test_dashboard(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         self.assertCommandReturnValue(0, dashboard_cmd, [])
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, dashboard_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, dashboard_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)

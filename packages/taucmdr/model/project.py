@@ -116,8 +116,7 @@ class ProjectController(Controller):
                 if experiment[attr] not in project[attr+'s']:
                     raise InternalError("Experiment contains %s not in project" % attr)
             self.update({'experiment': experiment.eid}, project.eid)
-            tau = experiment.configure()
-            tau.check_metrics()
+            experiment.configure()
     
     def unselect(self):
         del self.storage['selected_project']
@@ -166,9 +165,16 @@ class Project(Model):
                                     new_path = new_comp['path'] if new_comp else None
                                     old_path = old_comp['path'] if old_comp else None
                                     message = {attr: (old_path, new_path)}
+                                    self.controller(self.storage).push_to_topic('rebuild_required', message)
+                                elif props.get('argparse').get('metavar') == '<metric>':
+                                    old_papi = [metric for metric in old_value if 'PAPI' in metric]
+                                    new_papi = [metric for metric in new_value if 'PAPI' in metric]
+                                    if bool(old_papi) != bool(new_papi):
+                                        message = {attr: (old_value, new_value)}
+                                        self.controller(self.storage).push_to_topic('rebuild_required', message)
                                 else:
                                     message = {attr: (old_value, new_value)}
-                                self.controller(self.storage).push_to_topic('rebuild_required', message)
+                                    self.controller(self.storage).push_to_topic('rebuild_required', message)
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):

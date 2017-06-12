@@ -40,7 +40,7 @@ class ConfigureTest(tests.TestCase):
     """Unit tests for `taucmdr configure`"""
 
     def test_no_args(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         stdout, stderr = self.assertCommandReturnValue(0, configure_cmd, [])
         self.assertFalse(stderr)
         self.assertIn("selected_project", stdout)
@@ -50,17 +50,17 @@ class ConfigureTest(tests.TestCase):
         self.assertRaises(ProjectStorageError, self.exec_command, cmd=configure_cmd, argv=['some_key'])
 
     def test_invalid_key(self):
-        self.reset_project_storage(bare=True)
+        self.reset_project_storage(['--bare'])
         stdout, stderr = self.assertNotCommandReturnValue(0, configure_cmd, ['invalid_key'])
         self.assertFalse(stdout)
         self.assertIn("Invalid key: invalid_key", stderr)
 
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, configure_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, configure_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)

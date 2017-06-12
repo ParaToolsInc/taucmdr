@@ -27,34 +27,79 @@
 #
 """Test functions.
 
-Functions used for unit tests of select.py.
+Functions used for unit tests of export.py.
 """
 
-
-import shutil
-import unittest
 import os
-from taucmdr import tests, TAU_HOME
-from taucmdr.cf.platforms import HOST_ARCH
+from taucmdr import tests, EXIT_SUCCESS
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands import build
-from taucmdr.cli.commands.trial import create, export
-from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_command
-from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+from taucmdr.cf.compiler.mpi import MPI_CC
+from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
+from taucmdr.cli.commands.trial.export import COMMAND as trial_export_cmd
+from taucmdr.model.project import Project
 
 
-class SelectTest(tests.TestCase):
+class ExportTest(tests.TestCase):
     
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
-    def test_export_format(self):
-        self.reset_project_storage(project_name='proj1')
-        self.assertCommandReturnValue(0, experiment_create_cmd, ['exp2', '--application', 'app1', '--measurement', 'trace', '--target', 'targ1'])
-	self.exec_command(experiment_select_command, ['exp2'])
-	shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-	cc_cmd = self.get_compiler(CC)
-	argv = [cc_cmd, 'hello.c']
-	self.exec_command(build.COMMAND, argv)
-	self.exec_command(create.COMMAND, ['./a.out'])
-	self.exec_command(export.COMMAND, ['0'])
-	files = ','.join(os.listdir('.'))
-	self.assertIn('trial0.tgz', files)
+    def test_export_tau_profile(self):
+        self.reset_project_storage(['--profile', 'tau', '--trace', 'none'])
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['profile'], 'tau')
+        self.assertEqual(meas['trace'], 'none')
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['./a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.ppk'
+        self.assertTrue(os.path.exists(export_file))
+
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_export_merged_profile(self):
+        self.reset_project_storage(['--mpi', '--profile', 'merged', '--trace', 'none'])
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['profile'], 'merged')
+        self.assertEqual(meas['trace'], 'none')
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.xml.gz'
+        self.assertTrue(os.path.exists(export_file))
+
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_export_cubex(self):
+        self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['profile'], 'cubex')
+        self.assertEqual(meas['trace'], 'none')
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.cubex'
+        self.assertTrue(os.path.exists(export_file))
+
+    def test_export_slog2(self):
+        self.reset_project_storage(['--trace', 'slog2', '--profile', 'none'])
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['trace'], 'slog2')
+        self.assertEqual(meas['profile'], 'none')
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['./a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.slog2'
+        self.assertTrue(os.path.exists(export_file))
+
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_export_otf2(self):
+        self.reset_project_storage(['--mpi', '--trace', 'otf2', '--profile', 'none'])
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['trace'], 'otf2')
+        self.assertEqual(meas['profile'], 'none')
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.tgz'
+        self.assertTrue(os.path.exists(export_file))

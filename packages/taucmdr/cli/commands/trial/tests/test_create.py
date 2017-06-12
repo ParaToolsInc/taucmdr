@@ -29,25 +29,22 @@
 
 Functions used for unit tests of create.py.
 """
-#pylint: disable=missing-docstring
 
-import shutil
-import unittest
-from taucmdr import tests, TAU_HOME
+from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands.build import COMMAND as build_cmd
 from taucmdr.cli.commands.trial.create import COMMAND as create_cmd
+from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
+from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
 
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_create(self):
         self.reset_project_storage()
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
         self.assertIn('BEGIN', stdout)
         self.assertIn('END Experiment', stdout)
@@ -55,12 +52,10 @@ class CreateTest(tests.TestCase):
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
         
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_create_with_description(self):
         self.reset_project_storage()
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        self.assertCommandReturnValue(0, build_cmd, [cc_cmd, 'hello.c'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
         args = ['--description', 'Created by test_create_with_description', '--', './a.out']
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, args)
         self.assertIn('BEGIN', stdout)
@@ -70,11 +65,22 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         
     def test_h_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
 
     def test_help_arg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
+
+    def test_no_time_metric(self):
+        self.reset_project_storage()
+        argv = ['meas_no_time', '--metrics', 'PAPI_FP_INS', '--source-inst', 'never']
+        self.assertCommandReturnValue(0, measurement_create_cmd, argv)
+        argv = ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_no_time']
+        self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
+        self.assertIn("TAU_METRICS=TIME,", stdout)

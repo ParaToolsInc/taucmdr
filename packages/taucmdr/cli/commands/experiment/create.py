@@ -28,7 +28,7 @@
 """``experiment create`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
-from taucmdr.error import UniqueAttributeError, ConfigurationError
+from taucmdr.error import UniqueAttributeError
 from taucmdr.model.experiment import Experiment
 from taucmdr.model.project import Project
 from taucmdr.model.target import Target
@@ -39,14 +39,14 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
 class ExperimentCreateCommand(CreateCommand):
+    """``experiment create`` subcommand."""
     
     def _construct_parser(self):
         parser = super(ExperimentCreateCommand, self)._construct_parser()
         # All three options must be given to create the experiments
-        # pylint: disable=protected-access
-        parser._option_string_actions['--target'].required = True
-        parser._option_string_actions['--application'].required = True
-        parser._option_string_actions['--measurement'].required = True
+        parser['--target'].required = True
+        parser['--application'].required = True
+        parser['--measurement'].required = True
         return parser
     
     def _create_record(self, store, data):

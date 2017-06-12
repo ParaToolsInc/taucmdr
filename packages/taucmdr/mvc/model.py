@@ -131,8 +131,11 @@ class Model(StorageRecord):
 
         Raises:
             If the attribute is not set and has no default value then a KeyError is raised.
-        """            
-        return self.element.get(key, self.attributes[key]['default'])
+        """
+        try:
+            return self.element[key]
+        except KeyError:
+            return self.attributes[key]['default']
 
     def on_create(self):
         """Callback to be invoked after a new data record is created.""" 
@@ -298,14 +301,11 @@ class Model(StorageRecord):
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
         """Constructs a compatibility condition, see :any:`check_compatibility`.
         
-        The returned condition is a callable that accepts five or six arguments:
+        The returned condition is a callable that accepts four arguments:
             * lhs (Model): The left-hand side of the `check_compatibility` operation.
             * lhs_attr (str): Name of the attribute that defines the 'compat' property.
             * lhs_value: The value of the attribute that defines the 'compat' property.
             * rhs (Model): Controller of the data record we are checking against.
-            * rhs_attr (str): The attribute we are checking for compatibility.
-            * checked_value (str): The required or desired value of the attribute we are checking for compatibility.
-                                   Only used by `attr_eq` and `attr_ne`.
         
         The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes 
         are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
@@ -315,10 +315,8 @@ class Model(StorageRecord):
         See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
         
         args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare 
-        the specified attribute against or a callback function as described below. To enable complex 
-        conditions, args[1] may be a callback function.  In this case, args[1] must check attribute 
+        the specified attribute against or a callback function.  If args[1] is callable, it must check attribute 
         existance and value correctness and throw the appropriate exception and/or emit log messages.
-        See :py:func:`taucmdr.model.measurement.intel_only` for an example of such a callback function.
         
         Args:
             args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].

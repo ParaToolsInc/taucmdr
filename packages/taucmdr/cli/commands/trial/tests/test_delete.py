@@ -31,32 +31,27 @@ Functions used for unit tests of delete.py.
 """
 
 
-import shutil
-import unittest
-from taucmdr import tests, TAU_HOME
+from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
-from taucmdr.cli.commands import build
-from taucmdr.cli.commands.trial import delete, create
+from taucmdr.cli.commands.trial.create import COMMAND as create_command
+from taucmdr.cli.commands.trial.delete import COMMAND as delete_command
 
 
 class DeleteTest(tests.TestCase):
     """Tests for :any:`trial.delete`."""
 
-    @unittest.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_delete(self):
-        self.reset_project_storage(project_name='proj1')
-        shutil.copyfile(TAU_HOME+'/.testfiles/hello.c', tests.get_test_workdir()+'/hello.c')
-        cc_cmd = self.get_compiler(CC)
-        argv = [cc_cmd, 'hello.c']
-        self.exec_command(build.COMMAND, argv)
-        self.exec_command(create.COMMAND, ['./a.out'])
-        stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['0'])
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, create_command, ['./a.out'])
+        stdout, stderr = self.assertCommandReturnValue(0, delete_command, ['0'])
         self.assertIn('Deleted trial 0', stdout)
         self.assertFalse(stderr)
         
     def test_wrongnumber(self):
-        self.reset_project_storage(project_name='proj1')
-        _, _, stderr = self.exec_command(delete.COMMAND, ['-1'])
+        self.reset_project_storage()
+        _, stderr = self.assertNotCommandReturnValue(0, delete_command, ['-1'])
         self.assertIn('trial delete <trial_number> [arguments]', stderr)
         self.assertIn('trial delete: error: No trial number -1 in the current experiment.', stderr)

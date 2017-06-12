@@ -310,7 +310,6 @@ class _CompilerInfo(TrackedInstance):
         
     @classmethod
     def _find(cls, command, family, role):
-        # pylint: disable=too-many-return-statements
         if command and family and role:
             return [info for info in family.members.get(role, []) if info.command == command]
         elif command and family:
@@ -604,6 +603,18 @@ class InstalledCompiler(object):
                      (role.language + " " if role else ""),
                      "compiler '%s'" % absolute_path]
         raise ConfigurationError(''.join(msg_parts))
+    
+    @classmethod
+    def find_any(cls, role):
+        for family in role.kbase.iterfamilies():
+            for info in family.members[role]:
+                try:
+                    comp = InstalledCompiler.probe(info.command, family=family, role=role)
+                except ConfigurationError:
+                    continue
+                else:
+                    return comp
+        raise ConfigurationError("Cannot find any installed compiler to fill the %s role" % role)
 
 
     def unwrap(self):

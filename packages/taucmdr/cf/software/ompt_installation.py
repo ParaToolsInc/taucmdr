@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,26 +25,43 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
+"""OMPT software installation management.
 
-Functions used for unit tests of list.py.
+OMPT is used for performance analysis of OpenMP codes.
 """
 
+from taucmdr import logger
+from taucmdr.cf.software.installation import CMakeInstallation
+from taucmdr.cf.compiler.host import CC, CXX
 
-from taucmdr import tests
-from taucmdr.cli.commands.target.list import COMMAND as LIST_COMMAND
 
-class ListTest(tests.TestCase):
-    """Tests for :any:`target.list`."""
 
-    def test_list(self):
-        self.reset_project_storage()
-        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
-        self.assertIn('targ1', stdout)
-        self.assertFalse(stderr)
+LOGGER = logger.get_logger(__name__)
 
-    def test_wrongname(self):
-        self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['INVALID_NAME'])
-        self.assertIn("No target with name='INVALID_NAME'", stderr)
-        self.assertFalse(stdout)
+REPOS = {None: 'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz'}
+
+LIBRARIES = {None: ['libomp.so']}
+
+HEADERS = {None: ['omp.h', 'ompt.h']}
+
+
+class OmptInstallation(CMakeInstallation):
+    """Encapsulates an OMPT installation."""
+
+    def __init__(self, sources, target_arch, target_os, compilers):
+        super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os, 
+                                               compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def cmake(self, flags, env):
+        flags.append('-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path)
+        flags.append('-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path)
+        flags.append('-DCMAKE_C_FLAGS=-fPIC')
+        flags.append('-DCMAKE_CXX_FLAGS=-fPIC')
+        flags.append('-DCMAKE_BUILD_TYPE=Release')
+        return super(OmptInstallation, self).cmake(flags, env)
+
+    def make(self, flags, env, parallel=True):
+        header_flags = [i for i in flags]
+        header_flags.append('libomp-needed-headers')
+        super(OmptInstallation, self).make(header_flags, env)
+        return super(OmptInstallation, self).make(flags, env)

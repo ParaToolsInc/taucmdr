@@ -45,40 +45,41 @@ class EditTest(tests.TestCase):
         self.assertFalse(stdout)
 
     def test_rename(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['proj1', '--new-name', 'proj2']
         self.assertCommandReturnValue(0, edit.COMMAND, argv)
         proj_ctrl = Project.controller()
         self.assertIsNone(proj_ctrl.one({'name': 'proj1'}))
         self.assertIsNotNone(proj_ctrl.one({'name': 'proj2'}))
-        self.exec_command(edit.COMMAND, ['proj2', '--new-name', 'proj1'])
+        self.assertCommandReturnValue(0, edit.COMMAND, ['proj2', '--new-name', 'proj1'])
     
     def test_set_tau_force_options(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         proj_ctrl = Project.controller()
-        # Check that 'force-taucmdr-options' is unset in the new project configuration
+        # Check that 'force-tau-options' is unset in the new project configuration
         proj1 = proj_ctrl.one({'name': 'proj1'})
-        self.assertFalse('force-taucmdr-options' in proj1)
-        # Test --force-taucmdr-options
-        #tau_options = ['-optVerbose', '-optNoCompInst']
-        #argv = ['proj1', '--force-taucmdr-options'] + tau_options
-        #self.assertCommandReturnValue(0, edit.COMMAND, argv)
-        # Check that 'force-taucmdr-options' is now a list containing the expected options in the project record
-        #proj1 = proj_ctrl.one({'name': 'proj1'})
-        #self.assertIsNotNone(proj1)
-        #self.assertListEqual(proj1['force-taucmdr-options'], tau_options)
+        self.assertFalse('force-tau-options' in proj1)
+        # Test --force-tau-options
+        tau_options = "-optVerbose -optNoCompInst"
+        argv = ['proj1', '--force-tau-options=%s' % tau_options]
+        self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        # Check that 'force-tau-options' is now a list containing the expected options in the project record
+        proj1 = proj_ctrl.one({'name': 'proj1'})
+        self.assertIsNotNone(proj1)
+        print proj1
+        self.assertListEqual(proj1['force_tau_options'], [tau_options])
         
     def test_wrongname(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['proj2', '--new-name', 'proj3']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('project edit <project_name> [arguments]', stderr)
         self.assertIn('project edit: error', stderr)
         self.assertIn('is not a project name.', stderr)
         
     def test_wrongarg(self):
-        self.reset_project_storage(project_name='proj1')
+        self.reset_project_storage()
         argv = ['app1', '--arg', 'arg1']
-        _, _, stderr = self.exec_command(edit.COMMAND, argv)
+        _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('project edit <project_name> [arguments]', stderr)
         self.assertIn('project edit: error: unrecognized arguments: --arg arg1', stderr)

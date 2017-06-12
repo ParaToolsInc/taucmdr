@@ -27,7 +27,9 @@
 #
 """``trial list`` subcommand."""
 
-from taucmdr import util
+from texttable import Texttable
+from taucmdr import util, logger
+from taucmdr.error import InternalError
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
@@ -49,6 +51,44 @@ class TrialListCommand(ListCommand):
         expr = Project.selected().experiment()
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
         return [rec for rec in records if rec['experiment'] == expr.eid]
+
+    def dashboard_format(self, records):
+        """Format modeled records in dashboard format.
+
+        Args:
+            records: Modeled records to format.
+
+        Returns:
+            str: Record data in dashboard format.
+        """
+        self.logger.debug("Dashboard format")
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(),
+                                             'storage_path': records[0].storage}, 'cyan')
+        expr = Project.selected().experiment()
+        subtitle = util.color_text("Selected experiment: ", 'cyan') + expr['name']
+        header_row = [col['header'] for col in self.dashboard_columns]
+        rows = [header_row]
+        for record in records:
+            populated = record.populate()
+            row = []
+            for col in self.dashboard_columns:
+                if 'value' in col:
+                    try:
+                        cell = populated[col['value']]
+                    except KeyError:
+                        cell = 'N/A'
+                elif 'yesno' in col:
+                    cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
+                elif 'function' in col:
+                    cell = col['function'](populated)
+                else:
+                    raise InternalError("Invalid column definition: %s" % col)
+                row.append(cell)
+            rows.append(row)
+        table = Texttable(logger.LINE_WIDTH)
+        table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
+        table.add_rows(rows)
+        return [title, table.draw(), '', subtitle, '']
 
 COMMAND = TrialListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS,
                            summary_fmt="Show trial data.")
