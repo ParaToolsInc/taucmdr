@@ -140,7 +140,7 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """
     if not os.path.exists(path):
         return
-    for i in xrange(attempts-1):
+    for i in six.moves.xrange(attempts-1):
         try:
             return shutil.rmtree(path)
         except Exception as err:        # pylint: disable=broad-except

@@ -30,6 +30,7 @@
 Functions used for unit tests of list.py.
 """
 
+import six.moves.xrange
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
@@ -78,7 +79,7 @@ class ListTest(tests.TestCase):
     def test_list_multiple(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        for _ in xrange(3):
+        for _ in six.moves.xrange(3):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['0', '1', '2'])
         self.assertIn('./a.out', stdout)
@@ -92,7 +93,7 @@ class ListTest(tests.TestCase):
     def test_list_multiple_subset(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        for _ in xrange(4):
+        for _ in six.moves.xrange(4):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['1', '3'])
         self.assertIn('./a.out', stdout)
