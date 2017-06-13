@@ -28,6 +28,7 @@
 """Software installation management."""
 
 import os
+import six
 import sys
 import multiprocessing
 from subprocess import CalledProcessError
@@ -151,8 +152,8 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(name, basestring)
-        assert isinstance(title, basestring)
+        assert isinstance(name, six.string_types)
+        assert isinstance(title, six.string_types)
         assert isinstance(sources, dict)
         assert isinstance(target_arch, Architecture)
         assert isinstance(target_os, OperatingSystem)

@@ -31,6 +31,7 @@ Functions used for unit tests of configuration.py.
 """
 #pylint: disable=missing-docstring
 
+import six
 from taucmdr import tests, configuration
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, ORDERED_LEVELS
 from taucmdr.cf.storage.project import ProjectStorageError
@@ -107,8 +108,8 @@ class ConfigurationTest(tests.TestCase):
         check_value_type("false", False, bool)
         check_value_type("15", 15, int)
         check_value_type("2.5", 2.5, float)
-        check_value_type("Hello", "Hello", basestring)
-        check_value_type("T", "T", basestring)
-        check_value_type("F", "F", basestring)
-        check_value_type("yes", "yes", basestring)
-        check_value_type("no", "no", basestring)
+        check_value_type("Hello", "Hello", six.string_types)
+        check_value_type("T", "T", six.string_types)
+        check_value_type("F", "F", six.string_types)
+        check_value_type("yes", "yes", six.string_types)
+        check_value_type("no", "no", six.string_types)

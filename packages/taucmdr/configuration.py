@@ -31,6 +31,7 @@ TODO: Docs
 """
 
 import os
+import six
 import textwrap
 from configobj import ConfigObj
 from taucmdr import util
@@ -50,7 +51,7 @@ def parse_config_string(val):
     Returns:
         Parsed value.
     """
-    if isinstance(val, basestring):
+    if isinstance(val, six.string_types):
         if val.lower() == "true":
             return True
         elif val.lower() == "false":

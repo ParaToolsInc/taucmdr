@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """Utility functions.
 
 Handles system manipulation and status tasks, e.g. subprocess management or file creation.
@@ -42,6 +44,7 @@ import urllib
 import pkgutil
 import tarfile
 import gzip
+import six
 import tempfile
 import urlparse
 import hashlib
@@ -175,7 +178,7 @@ def which(program, use_cached=True):
     """
     if not program:
         return None
-    assert isinstance(program, basestring)
+    assert isinstance(program, six.string_types)
     if use_cached:
         try:
             return _WHICH_CACHE[program]
@@ -470,7 +473,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
                 if log:
                     LOGGER.debug(line[:-1])
                 if stdout:
-                    print line,
+                    print(line, end="")
         proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
@@ -555,7 +558,7 @@ def parse_bool(value, additional_true=None, additional_false=None):
         true_values.extend(additional_true)
     if additional_false:
         false_values.extend(additional_false)
-    if isinstance(value, basestring):
+    if isinstance(value, six.string_types):
         value = value.lower()
         if value in true_values:
             return True

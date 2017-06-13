@@ -34,6 +34,7 @@ The selected experiment will be used for application compilation and trial visua
 
 import os
 import fasteners
+import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -138,7 +139,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, basestring):
+            elif isinstance(val, six.string_types):
                 return "'%s'" % val
             else:
                 return str(val)

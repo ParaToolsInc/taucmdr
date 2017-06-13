@@ -27,6 +27,7 @@
 #
 """TODO: FIXME: Docs"""
 
+import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
 from taucmdr.cf.storage import StorageRecord
@@ -196,7 +197,7 @@ class Model(StorageRecord):
                 raise ModelError(cls, "%s: defines 'via' property but not 'model' or 'collection'" % model_attr_name)
             if not isinstance(props.get('unique', False), bool):
                 raise ModelError(cls, "%s: invalid value for 'unique'" % model_attr_name)
-            if not isinstance(props.get('description', ''), basestring):
+            if not isinstance(props.get('description', ''), six.string_types):
                 raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
             if props.get('primary_key', False):
                 if primary_key is not None:

@@ -41,6 +41,7 @@ import os
 import glob
 import shutil
 import resource
+import six
 from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
@@ -243,9 +244,9 @@ class TauInstallation(Installation):
         assert isinstance(mpi_library_path, list) or mpi_library_path is None
         assert isinstance(mpi_libraries, list) or mpi_libraries is None
         assert cuda_support in (True, False)
-        assert isinstance(cuda_prefix, basestring) or cuda_prefix is None
+        assert isinstance(cuda_prefix, six.string_types) or cuda_prefix is None
         assert opencl_support in (True, False)
-        assert isinstance(opencl_prefix, basestring) or opencl_prefix is None
+        assert isinstance(opencl_prefix, six.string_types) or opencl_prefix is None
         assert shmem_support in (True, False)
         assert isinstance(shmem_include_path, list) or shmem_include_path is None
         assert isinstance(shmem_library_path, list) or shmem_library_path is None
@@ -257,7 +258,7 @@ class TauInstallation(Installation):
         assert io_inst in (True, False)
         assert keep_inst_files in (True, False)
         assert reuse_inst_files in (True, False)
-        assert isinstance(select_file, basestring) or select_file is None
+        assert isinstance(select_file, six.string_types) or select_file is None
         assert profile in ("tau", "merged", "cubex", "none")
         assert trace in ("slog2", "otf2", "none")
         assert profile != "none" or trace != "none"
@@ -275,7 +276,7 @@ class TauInstallation(Installation):
         assert throttle in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
-        assert isinstance(forced_makefile, basestring) or forced_makefile is None
+        assert isinstance(forced_makefile, six.string_types) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
                                               REPOS, COMMANDS, None, None)

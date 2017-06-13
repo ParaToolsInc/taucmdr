@@ -65,6 +65,7 @@ change from system to system.
 
 import os
 import re
+import six
 from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
@@ -84,7 +85,7 @@ class Knowledgebase(object):
         self._roles = {}
         for key, val in kwargs.iteritems():
             language, envars = val
-            if isinstance(envars, basestring):
+            if isinstance(envars, six.string_types):
                 envars = (envars,) 
             self._roles[key] = _CompilerRole(keyword+'_'+key, language, envars, self)
 
@@ -150,7 +151,7 @@ class Knowledgebase(object):
                 member_arg = kwargs.pop(key)
             except KeyError:
                 continue
-            members[role] = (member_arg,) if isinstance(member_arg, basestring) else member_arg
+            members[role] = (member_arg,) if isinstance(member_arg, six.string_types) else member_arg
         kwargs['members'] = members
         family = _CompilerFamily(self, name, *args, **kwargs)
         self._families[name] = family
@@ -298,7 +299,7 @@ class _CompilerInfo(TrackedInstance):
 
     def __init__(self, family, command, role):
         assert isinstance(family, _CompilerFamily)
-        assert isinstance(command, basestring)
+        assert isinstance(command, six.string_types)
         assert isinstance(role, _CompilerRole)
         self.family = family
         self.command = command
@@ -339,7 +340,7 @@ class _CompilerInfo(TrackedInstance):
         Returns:
             list: _CompilerInfo instances matching given compiler information.
         """
-        assert command is None or isinstance(command, basestring)
+        assert command is None or isinstance(command, six.string_types)
         assert family is None or isinstance(family, _CompilerFamily)
         assert role is None or isinstance(role, _CompilerRole)
         found = cls._find(command, family, role)
@@ -372,7 +373,7 @@ class InstalledCompilerCreator(type):
     and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
     def __call__(cls, absolute_path, info, **kwargs):
-        assert isinstance(absolute_path, basestring) and os.path.isabs(absolute_path)
+        assert isinstance(absolute_path, six.string_types) and os.path.isabs(absolute_path)
         assert isinstance(info, _CompilerInfo)
         # Don't allow unchecked values into the instance cache
         if kwargs:
@@ -580,7 +581,7 @@ class InstalledCompiler(object):
         Returns:
             InstalledCompiler: A new InstalledCompiler instance describing the compiler.
         """
-        assert isinstance(command, basestring)
+        assert isinstance(command, six.string_types)
         assert isinstance(family, _CompilerFamily) or family is None
         assert isinstance(role, _CompilerRole) or role is None
         absolute_path = util.which(command)
