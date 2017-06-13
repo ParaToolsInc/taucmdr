@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """``configure`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
@@ -85,10 +87,10 @@ class ConfigureCommand(AbstractCommand):
         
         if not hasattr(args, 'key'):
             for key, val in sorted(configuration.get(storage=storage).iteritems()):
-                print '%s : %r' % (key, val)       
+                print('%s : %r' % (key, val))
         elif not (hasattr(args, 'value') or hasattr(args, 'unset')):
             try:
-                print configuration.get(args.key, storage)
+                print(configuration.get(args.key, storage))
             except KeyError:
                 self.parser.error('Invalid key: %s' % args.key)
         elif hasattr(args, 'unset'):

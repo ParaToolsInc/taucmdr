@@ -582,7 +582,7 @@ class AutotoolsInstallation(MakeInstallation):
         env = {}
         try:
             self._src_prefix = self._prepare_src()
-            with util.umask(002):
+            with util.umask(0o02):
                 self.configure([], env)
                 self.make([], env)
                 self.make_install([], env)
@@ -701,7 +701,7 @@ class CMakeInstallation(MakeInstallation):
         env = {}
         try:
             self._src_prefix = self._prepare_src()
-            with util.umask(002):
+            with util.umask(0o02):
                 self.cmake([], env)
                 self.make([], env)
                 self.make_install([], env)

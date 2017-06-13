@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """``project copy`` subcommand."""
 
 from taucmdr.cli import arguments
@@ -96,8 +98,8 @@ class ProjectCopyCommand(CopyCommand):
             data['applications'] = [model.eid for model in applications]
         if measurements: 
             data['measurements'] = [model.eid for model in measurements]
-        
-        print data
+
+        print(data)
         
         return self._copy_record(PROJECT_STORAGE, data, key)
 

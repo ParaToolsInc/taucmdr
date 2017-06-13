@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """``measurement list`` subcommand."""
 
 from taucmdr import util
@@ -101,7 +103,7 @@ class ProjectListCommand(ListCommand):
                 print (util.color_text('No selected experiment: ', 'red') + 
                        'Use `%s` to create or select an experiment.' % select_cmd)
             else:
-                print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
+                print(util.color_text("Selected Experiment: ", 'cyan') + expr['name'])
 
         return retval
 

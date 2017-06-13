@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """``target metrics`` subcommand."""
 
 
@@ -104,7 +106,7 @@ class TargetMetricsCommand(AbstractCommand):
             parts.extend(self._format_papi_metrics(targ, 'NATIVE', args.modifiers))
         if 'TAU' in args.systems:
             parts.extend(self._format_tau_metrics(targ))
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
    
 

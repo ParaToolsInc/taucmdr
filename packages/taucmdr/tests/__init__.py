@@ -27,6 +27,7 @@
 #
 """Unit test initializations and utility functions."""
 
+from __future__ import print_function
 import os
 import sys
 import shutil
@@ -266,7 +267,7 @@ class TestRunner(unittest.TextTestRunner):
     def run(self, test):
         result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
-            print "WARNING: %s" % item
+            print("WARNING: %s" % item)
         if result.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE

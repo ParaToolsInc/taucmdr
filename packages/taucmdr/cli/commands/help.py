@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """``help`` subcommand."""
 
 import os
@@ -103,7 +105,7 @@ class HelpCommand(AbstractCommand):
                  cmd_obj.usage,
                  "", util.hline("Help: " + command),
                  cmd_obj.help_page]
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
 
     @staticmethod
@@ -119,7 +121,7 @@ class HelpCommand(AbstractCommand):
                      cmd_obj.usage,
                      "", util.hline("Help: " + command),
                      cmd_obj.help_page]
-            print '\n'.join(parts)
+            print('\n'.join(parts))
         return EXIT_SUCCESS
 
     def _construct_parser(self):

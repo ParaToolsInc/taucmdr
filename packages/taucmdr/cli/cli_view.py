@@ -416,7 +416,7 @@ class ListCommand(AbstractCliView):
                 parts.extend(self._count_records(user_ctl))
             if not project:
                 parts.extend(self._count_records(project_ctl))
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
         
     def main(self, argv):

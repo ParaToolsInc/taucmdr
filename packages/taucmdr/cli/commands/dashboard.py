@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """``dashboard`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
@@ -57,7 +59,7 @@ class DashboardCommand(AbstractCommand):
         args = self._parse_args(argv)
         subargs = ['--' + args.style]
         proj_ctrl = Project.controller()
-        print
+        print()
         try:
             proj = proj_ctrl.selected()
         except ProjectSelectionError as err:

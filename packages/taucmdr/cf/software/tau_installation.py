@@ -705,7 +705,7 @@ class TauInstallation(Installation):
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         try:
             # TAU's configure scripts create/touch/edit files so need to open the umask waaaaaay early.
-            with util.umask(002):
+            with util.umask(0o02):
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
                     shutil.move(self._prepare_src(), self.install_prefix)
