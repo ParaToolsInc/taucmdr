@@ -152,7 +152,7 @@ class InitializeCommand(AbstractCommand):
             args.compiler_inst = 'never'
 
         measurement_names = []
-        measurement_args = ['--%s=True' % attr for attr in 'cuda', 'mpi', 'opencl', 'shmem' 
+        measurement_args = ['--%s=True' % attr for attr in ('cuda', 'mpi', 'opencl', 'shmem')
                             if getattr(application_args, attr, False)]
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'

@@ -402,7 +402,7 @@ class Trial(Model):
             elif fmt == 'otf2':
                 export_file = os.path.join(dest, stem+'.tgz')
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
-                items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
+                items = [os.path.join(trial_dir, item) for item in ('traces', 'traces.def', 'traces.otf2')]
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)
