@@ -243,7 +243,7 @@ def attributes():
         'memory_alloc': {
             'type': 'boolean',
             'default': False,
-            'description': 'record memory allocation and deallocation events',
+            'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
         },
