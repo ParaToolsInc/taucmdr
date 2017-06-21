@@ -112,12 +112,10 @@ def papi_source_default():
     if HOST_OS is DARWIN:
         return None
     elif HOST_OS is CRAY_CNL:
-        if os.path.exists('/opt/cray/papi/default'):
-            return '/opt/cray/papi/default'
-        else:
-            return 'download'
-    else:
-        return 'download'
+        for path in ('/opt/cray/papi/default', '/opt/cray/pe/papi/default'):
+            if os.path.isdir(path):
+                return path
+    return 'download'
 
 
 def attributes():
