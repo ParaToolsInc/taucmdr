@@ -276,7 +276,7 @@ TAU_KNL = TauMagic((INTEL_KNL, LINUX), 'x86_64',
                     MPI_COMPILERS: mpi.INTEL, 
                     SHMEM_COMPILERS: shmem.OPENSHMEM})
  
-TAU_CRAY_KNL = TauMagic((INTEL_KNL, CRAY_CNL), 'x86_64', 
+TAU_CRAY_KNL = TauMagic((INTEL_KNL, CRAY_CNL), 'craycnl', 
                         {HOST_COMPILERS: host.CRAY, 
                          MPI_COMPILERS: mpi.CRAY, 
                          SHMEM_COMPILERS: shmem.CRAY_SHMEM})
