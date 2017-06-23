@@ -31,8 +31,38 @@ Functions used for unit tests of papi_installation.py.
 """
 
 
-from taucmdr.tests import TestCase, not_implemented
+from taucmdr.tests import TestCase
+from taucmdr.model.project import Project
 
-@not_implemented
+
 class PapiInstallationTest(TestCase):
-    pass
+    """Unit tests for PapiInstallation."""
+    
+    def _get_papi_installation(self):
+        expr = Project.selected().experiment()
+        return expr.populate('target').get_installation('papi')
+    
+    def test_parse_metrics_none(self):
+        self.reset_project_storage()
+        papi = self._get_papi_installation()
+        parsed = papi.parse_metrics(['TIME'])
+        self.assertEqual([], parsed)
+        
+    def test_parse_metrics_preset(self):
+        self.reset_project_storage()
+        papi = self._get_papi_installation()
+        parsed = papi.parse_metrics(['TIME', 'PAPI_TOT_CYC'])
+        self.assertEqual(['PAPI_TOT_CYC'], parsed)
+        
+    def test_parse_metrics_colon(self):
+        self.reset_project_storage()
+        papi = self._get_papi_installation()
+        parsed = papi.parse_metrics(['TIME', 'PAPI_NATIVE:CPU_CLK_UNHALTED'])
+        self.assertEqual(['CPU_CLK_UNHALTED'], parsed)
+        
+    def test_parse_metrics_underscore(self):
+        self.reset_project_storage()
+        papi = self._get_papi_installation()
+        parsed = papi.parse_metrics(['TIME', 'PAPI_NATIVE_CPU_CLK_UNHALTED'])
+        self.assertEqual(['CPU_CLK_UNHALTED'], parsed)
+

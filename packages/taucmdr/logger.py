@@ -183,20 +183,19 @@ class LogFormatter(logging.Formatter, object):
     
     Args:
         line_width (int): Maximum length of a message line before line is wrapped.
-        line_marker (str): Prefix for every line of the message.
         printable_only (bool): If True, never send unprintable characters to :any:`sys.stdout`.
     """
     # Allow invalid function names to define member functions named after logging levels.
     # pylint: disable=invalid-name
     
-    PRINTABLE_CHARS = set(string.printable)
+    _printable_chars = set(string.printable)
     
-    def __init__(self, line_width, line_marker, printable_only=False, allow_colors=True):
+    def __init__(self, line_width, printable_only=False, allow_colors=True):
         super(LogFormatter, self).__init__()
         self.printable_only = printable_only
         self.allow_colors = allow_colors
         self.line_width = line_width
-        self.line_marker = self._colored(line_marker, 'red')
+        self.line_marker = COLORED_LINE_MARKER if allow_colors else LINE_MARKER
         self._text_wrapper = textwrap.TextWrapper(width=self.line_width+len(self.line_marker),
                                                   initial_indent=self.line_marker,
                                                   subsequent_indent=self.line_marker + '    ',
@@ -217,7 +216,7 @@ class LogFormatter(logging.Formatter, object):
     
     def DEBUG(self, record):
         message = record.getMessage()
-        if self.printable_only and (not set(message).issubset(self.PRINTABLE_CHARS)):
+        if self.printable_only and (not set(message).issubset(self._printable_chars)):
             message = "<<UNPRINTABLE>>"
         marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
         return '%s %s' % (marker, message)
@@ -289,7 +288,7 @@ class LogFormatter(logging.Formatter, object):
 
     def _textwrap_message(self, record):
         for line in record.getMessage().split('\n'):
-            if line and (not self.printable_only or set(line).issubset(self.PRINTABLE_CHARS)):
+            if line and (not self.printable_only or set(line).issubset(self._printable_chars)):
                 yield self._text_wrapper.fill(line)
             else:
                 yield self.line_marker
@@ -342,6 +341,8 @@ LOG_FILE = os.path.join(USER_PREFIX, 'debug_log')
 LINE_MARKER = os.environ.get('TAU_LINE_MARKER', '[TAU] ')
 """str: Marker for each line of output."""
 
+COLORED_LINE_MARKER = termcolor.colored(LINE_MARKER, 'red')
+
 TERM_SIZE = get_terminal_size()
 """tuple: (width, height) tuple of detected terminal dimensions in characters."""
 
@@ -362,11 +363,11 @@ if not len(_ROOT_LOGGER.handlers):
         if not (exc.errno == errno.EEXIST and os.path.isdir(_LOG_FILE_PREFIX)):
             raise
     _STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
-    _STDOUT_HANDLER.setFormatter(LogFormatter(line_width=LINE_WIDTH, line_marker=LINE_MARKER, printable_only=True))
+    _STDOUT_HANDLER.setFormatter(LogFormatter(line_width=LINE_WIDTH, printable_only=True))
     _STDOUT_HANDLER.setLevel(LOG_LEVEL)
     _ROOT_LOGGER.addHandler(_STDOUT_HANDLER)
     _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
-    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, line_marker=LINE_MARKER, allow_colors=False))
+    _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, allow_colors=False))
     _FILE_HANDLER.setLevel(logging.DEBUG)
     _ROOT_LOGGER.addHandler(_FILE_HANDLER)
     # pylint: disable=logging-not-lazy

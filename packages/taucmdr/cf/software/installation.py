@@ -277,6 +277,9 @@ class Installation(object):
                 
     def acquire_source(self, reuse_archive=True):
         """Acquires package source code archive file via download or file copy.
+
+        If the package is configured to use an existing installation as the source then
+        this routine does nothing.
         
         Args:
             reuse_archive (bool): If True don't download, just confirm that the archive exists.
@@ -289,6 +292,8 @@ class Installation(object):
         """
         if not self.src:
             raise ConfigurationError("No source code provided for %s" % self.title)
+        if os.path.isdir(self.src):
+            return self.src
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
         if not reuse_archive or (reuse_archive and not os.path.exists(archive)):

@@ -30,6 +30,7 @@
 Handles system manipulation and status tasks, e.g. subprocess management or file creation.
 """
 
+import re
 import os
 import sys
 import time
@@ -59,6 +60,9 @@ LOGGER = logger.get_logger(__name__)
 _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
 _DTEMP_STACK = []
+
+# Don't make this a raw string!  \033 is unicode for '\x1b'.
+_COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 
 
 def _cleanup_dtemp():
@@ -620,11 +624,15 @@ def color_text(text, *args, **kwargs):
 
 
 def uncolor_text(text):
-    nocolor = text.replace(termcolor.RESET, '')
-    for codes in termcolor.ATTRIBUTES, termcolor.HIGHLIGHTS, termcolor.COLORS:
-        for code in codes.itervalues():
-            nocolor = nocolor.replace('\033[%dm' % code, '')
-    return nocolor
+    """Remove color control chars from a string.
+    
+    Args:
+        text (str): Text to colorize.
+        
+    Returns:
+        str: The text without control chars.
+    """
+    return re.sub(_COLOR_CONTROL_RE, '', text)
 
 
 def walk_packages(path, prefix):

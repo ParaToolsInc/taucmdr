@@ -195,7 +195,6 @@ def attributes():
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
             'compat': {True: Target.require('cuda')},
-            'rebuild_required': False
         },
         'shmem': {
             'type': 'boolean',
@@ -215,7 +214,6 @@ def attributes():
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
                               Application.require('opencl'))},
-            'rebuild_required': False
         },
         'callpath': {
             'type': 'integer',
@@ -243,7 +241,7 @@ def attributes():
         'memory_alloc': {
             'type': 'boolean',
             'default': False,
-            'description': 'record memory allocation and deallocation events',
+            'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
         },
@@ -304,7 +302,18 @@ def attributes():
                          'metavar': 'count',
                          'nargs': '?',
                          'const': 100000},
-        }
+        },
+        'callsite': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'record event callsites',
+            'argparse': {'flags': ('--callsite',)},
+            'compat': {True: (Target.require('binutils_source'),
+                              Target.exclude('binutils_source', None),
+                              Target.encourage('libunwind_source'),
+                              Target.discourage('libunwind_source', None),
+                              Target.exclude('host_os', DARWIN))}
+        },
     }
 
 
