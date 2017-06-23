@@ -41,6 +41,7 @@ DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
                      {'header': 'Description', 'value': 'description'}]
 
 class TrialListCommand(ListCommand):
+    """``trial list`` subcommand."""
     
     def _retrieve_records(self, ctrl, keys):
         if keys:

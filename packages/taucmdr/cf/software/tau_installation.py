@@ -51,7 +51,7 @@ from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
 from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, TAU_CRAYCNL, HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -143,6 +143,8 @@ class TauInstallation(Installation):
     """
 
     def __init__(self, sources, target_arch, target_os, compilers,
+                 # Minimal configuration support
+                 minimal_configuration=False,
                  # TAU feature suppport
                  application_linkage='dynamic',
                  openmp_support=False,
@@ -182,6 +184,7 @@ class TauInstallation(Installation):
                  measure_heap_usage=False,
                  measure_memory_alloc=False,
                  measure_comm_matrix=False,
+                 measure_callsite=False,
                  callpath_depth=100,
                  throttle=True,
                  throttle_per_call=10,
@@ -196,6 +199,7 @@ class TauInstallation(Installation):
             target_arch (Architecture): Target architecture description.
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
+            minimal_configuration (bool): If True then ignore all other arguments and configure with minimal features.
             application_linkage (str): Either "static" or "dynamic". 
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
@@ -229,12 +233,14 @@ class TauInstallation(Installation):
             measure_heap_usage (bool): If True then measure memory usage.
             measure_memory_alloc (bool): If True then record memory allocation and deallocation events.
             measure_comm_matrix (bool): If True then record the point-to-point communication matrix.
+            measure_callsite (bool): If True then record event callsites.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
             throttle (bool): If True then throttle lightweight events.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
+        assert minimal_configuration in (True, False)
         assert application_linkage in ('static', 'dynamic')
         assert openmp_support in (True, False)
         assert pthreads_support in (True, False)
@@ -272,6 +278,7 @@ class TauInstallation(Installation):
         assert measure_heap_usage in (True, False)
         assert measure_memory_alloc in (True, False)
         assert measure_comm_matrix in (True, False)
+        assert measure_callsite in (True, False)
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
         assert isinstance(throttle_per_call, int)
@@ -280,12 +287,12 @@ class TauInstallation(Installation):
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
                                               REPOS, COMMANDS, None, None)
-        self._minimal = False
         self._tau_makefile = None
         if self.src == 'nightly':
             self.src = NIGHTLY
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
+        self.minimal_configuration = minimal_configuration
         self.application_linkage = application_linkage
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
@@ -326,6 +333,7 @@ class TauInstallation(Installation):
         self.measure_heap_usage = measure_heap_usage
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_comm_matrix = measure_comm_matrix
+        self.measure_callsite = measure_callsite
         self.callpath_depth = callpath_depth
         self.throttle = throttle
         self.throttle_per_call = throttle_per_call
@@ -363,8 +371,7 @@ class TauInstallation(Installation):
         except ConfigurationError:
             raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
         compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
-        inst = cls(sources, target_arch, target_os, compilers)
-        inst._minimal = True
+        inst = cls(sources, target_arch, target_os, compilers, minimal_configuration=True)
         return inst
 
     def uid_items(self):
@@ -403,13 +410,15 @@ class TauInstallation(Installation):
         return (self.target_os is not DARWIN and
                 (self.sample or 
                  self.compiler_inst != 'never' or 
-                 self.measure_openmp != 'ignore'))
+                 self.measure_openmp != 'ignore' or
+                 self.measure_callsite))
 
     def _uses_libunwind(self):
         return (self.target_os is not DARWIN and
                 (self.sample or 
                  self.compiler_inst != 'never' or 
-                 self.measure_openmp != 'ignore'))
+                 self.measure_openmp != 'ignore' or
+                 self.measure_callsite))
 
     def _uses_papi(self):
         return bool(len([met for met in self.metrics if 'PAPI' in met]))
@@ -499,7 +508,7 @@ class TauInstallation(Installation):
                     selected_inc = path
                     break
             else:
-                if self.tau_magic is TAU_CRAYCNL:
+                if self.tau_magic.operating_system is CRAY_CNL:
                     hints = ("Check that the 'cray-shmem' module is loaded",)
                 else:
                     hints = tuple()
@@ -540,7 +549,7 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        if self._minimal:
+        if self.minimal_configuration:
             LOGGER.info("Configuring minimal TAU...")
             cmd = ['./configure', 
                    '-tag=%s' % self.uid,
@@ -721,7 +730,7 @@ class TauInstallation(Installation):
         return self.verify()
 
     def _compiler_tags(self):
-        return {host_compilers.INTEL: 'intel' if self.tau_magic is TAU_CRAYCNL else 'icpc',
+        return {host_compilers.INTEL: 'intel' if self.tau_magic.operating_system is CRAY_CNL else 'icpc',
                 host_compilers.PGI: 'pgi'}
 
     def get_tags(self):
@@ -781,7 +790,7 @@ class TauInstallation(Installation):
         # according to what is specified in $PE_ENV, so the minimal configuration
         # could have any compiler tag and still be compatible.
         # On non-Cray systems, exclude tags from incompatible compilers.
-        compiler_tags = self._compiler_tags() if self.tau_magic is not TAU_CRAYCNL else {}
+        compiler_tags = self._compiler_tags() if self.tau_magic.operating_system is not CRAY_CNL else {}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
         tags.update(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
         if not self.mpi_support:
@@ -968,6 +977,7 @@ class TauInstallation(Installation):
         env['TAU_SAMPLING'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
+        env['TAU_CALLSITE'] = str(int(self.measure_callsite))
         env['TAU_METRICS'] = ",".join(self.metrics) + ","
         env['TAU_THROTTLE'] = str(int(self.throttle))
         if self.throttle:

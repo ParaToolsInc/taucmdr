@@ -174,10 +174,10 @@ class TrialController(Controller):
                                  "Does the selected application configuration correctly describe this program?",
                                  "Does the selected measurement configuration specifiy the right measurement methods?",
                                  "Does the selected target configuration match the runtime environment?")
-        LOGGER.info('Experiment: %s' %expr['name'])
-        LOGGER.info('Current working directory: %s' %cwd)
-        LOGGER.info('Data size: %s bytes' %data_size)
-        LOGGER.info('Command: %s' %' '.join(cmd))
+        LOGGER.info('Experiment: %s', expr['name'])
+        LOGGER.info('Command: %s', ' '.join(cmd))
+        LOGGER.info('Current working directory: %s', cwd)
+        LOGGER.info('Data size: %s bytes', util.human_size(data_size))
         return retval
 
     def perform(self, expr, cmd, cwd, env, description):

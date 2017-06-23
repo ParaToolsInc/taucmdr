@@ -31,6 +31,7 @@ PAPI is used to measure hardware performance counters.
 """
 
 import os
+import re
 import sys
 import fileinput
 from subprocess import CalledProcessError
@@ -75,8 +76,22 @@ class PapiInstallation(AutotoolsInstallation):
             self._xml_event_info = ElementTree.fromstring(xml_event_info)
         return self._xml_event_info
     
+    def parse_metrics(self, metrics):
+        """Extracts PAPI metrics from a list of metrics and strips TAU's metric prefixes."""
+        return [re.sub('PAPI_NATIVE[:_]', '', metric) for metric in metrics if metric.startswith("PAPI")]
+    
     def check_metrics(self, metrics):
-        papi_metrics = [metric.replace('PAPI_NATIVE:', '') for metric in metrics if metric.startswith("PAPI")]
+        """Checks compatibility of PAPI metrics.
+        
+        Extracts all PAPI metrics from `metrics` and executes papi_event_chooser to check compatibility.
+        
+        Args:
+            metrics (list): List of metrics.
+            
+        Raises:
+            ConfigurationError: PAPI metrics are not compatible on the current host.
+        """
+        papi_metrics = self.parse_metrics(metrics)
         if not papi_metrics:
             return
         event_chooser_cmd = os.path.join(self.bin_path, 'papi_event_chooser')
