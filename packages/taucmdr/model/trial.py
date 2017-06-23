@@ -42,6 +42,7 @@ from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.data.tauprofile import TauProfile
 
 
 LOGGER = logger.get_logger(__name__)
@@ -220,7 +221,7 @@ class Trial(Model):
     __attributes__ = attributes
 
     __controller__ = TrialController
-    
+        
     @property
     def prefix(self):
         experiment = self.populate('experiment')
@@ -260,6 +261,20 @@ class Trial(Model):
                 os.remove(path)
                 count += 1
                 progress_bar.update(count)
+
+    def get_data(self):
+        data_files = self.get_data_files()
+        tau_profile_prefix = data_files.get('tau')
+        if not tau_profile_prefix:
+            raise InternalError('Sorry, this only works with tau profiles at the moment...')
+        data = {}
+        for path, _, files in os.walk(tau_profile_prefix):
+            for profile_file in files:
+                profile = TauProfile.parse(os.path.join(path, profile_file))
+                node_data = data.setdefault(profile.node, {})
+                context_data = node_data.setdefault(profile.context, {})
+                context_data[profile.thread] = profile
+        return data
 
     def get_data_files(self):
         """Return paths to the trial's data files or directories maped by data type. 
