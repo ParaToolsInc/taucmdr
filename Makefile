@@ -182,7 +182,7 @@ jupyterlab-build:
 	true
 	
 jupyterlab-install: $(CONDA)
-	$(CONDA) install -y -c conda-forge jupyterlab
+	$(ECHO)$(CONDA) list -f jupyterlab | grep -q jupyterlab 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab
 	
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
