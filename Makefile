@@ -106,7 +106,7 @@ else
     USE_CONDA = false
   endif
 endif
-CONDA_VERSION = 4.3.1
+CONDA_VERSION = 4.4.0
 CONDA_REPO = https://repo.continuum.io/archive
 CONDA_PKG = Anaconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
