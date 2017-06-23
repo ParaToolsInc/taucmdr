@@ -171,8 +171,8 @@ def _get_term_size_env():
                or None if the size could not be determined.
     """
     try:
-        return (os.environ['LINES'], os.environ['COLUMNS'])
-    except KeyError:
+        return (int(os.environ['COLUMNS']), int(os.environ['LINES']))
+    except (KeyError, ValueError):
         return None
 
 
