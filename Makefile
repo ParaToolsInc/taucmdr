@@ -31,6 +31,9 @@
 # Otherwise only the command's output will be shown.
 VERBOSE = true
 
+# Packages to install
+PACKAGES = jupyterlab taucmdr
+
 # Shell utilities
 RM = rm -f
 MKDIR = mkdir -p
@@ -81,44 +84,45 @@ else
   endif
 endif
 
-# Conda configuration
-USE_CONDA = true
+# Anaconda configuration
+USE_ANACONDA = true
 ifeq ($(OS),Darwin)
 ifeq ($(ARCH),i386)
-  USE_CONDA = false
+  USE_ANACONDA = false
 endif
 endif
 ifeq ($(OS),Darwin)
-  CONDA_OS = MacOSX
+  ANACONDA_OS = MacOSX
 else 
   ifeq ($(OS),Linux)
-    CONDA_OS = Linux
+    ANACONDA_OS = Linux
   else
-    USE_CONDA = false
+    USE_ANACONDA = false
   endif
 endif
 ifeq ($(ARCH),x86_64)
-  CONDA_ARCH = x86_64
+  ANACONDA_ARCH = x86_64
 else 
   ifeq ($(ARCH),i386)
-    CONDA_ARCH = x86
+    ANACONDA_ARCH = x86
   else
-    USE_CONDA = false
+    USE_ANACONDA = false
   endif
 endif
-CONDA_VERSION = 4.4.0
-CONDA_REPO = https://repo.continuum.io/archive
-CONDA_PKG = Anaconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
-CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
-CONDA_SRC = packages/$(CONDA_PKG)
-CONDA_DEST = $(INSTALLDIR)/conda
-CONDA = $(CONDA_DEST)/bin/python
+ANACONDA_VERSION = 4.4.0
+ANACONDA_REPO = https://repo.continuum.io/archive
+ANACONDA_PKG = Anaconda2-$(ANACONDA_VERSION)-$(ANACONDA_OS)-$(ANACONDA_ARCH).sh
+ANACONDA_URL = $(ANACONDA_REPO)/$(ANACONDA_PKG)
+ANACONDA_SRC = packages/$(ANACONDA_PKG)
+ANACONDA_DEST = $(INSTALLDIR)/anaconda-$(ANACONDA_VERSION)
+ANACONDA_PYTHON = $(ANACONDA_DEST)/bin/python
+CONDA = $(ANACONDA_DEST)/bin/conda
 
-ifeq ($(USE_CONDA),true)
-  PYTHON_EXE = $(CONDA)
+ifeq ($(USE_ANACONDA),true)
+  PYTHON_EXE = $(ANACONDA_PYTHON)
   PYTHON_FLAGS = -E
 else
-  $(warning WARNING: There are no conda packages for this system: $(OS), $(ARCH).)
+  $(warning WARNING: There are no anaconda packages for this system: $(OS), $(ARCH).)
   PYTHON_EXE = $(shell which python)
   PYTHON_FLAGS =
   ifeq ($(PYTHON_EXE),)
@@ -133,11 +137,31 @@ PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
 .DEFAULT: build
 
-build: python_check
+build: $(foreach pkg,$(PACKAGES),$(pkg)-build)
+
+install: $(foreach pkg,$(PACKAGES),$(pkg)-install)
+	@echo
+	@echo "-------------------------------------------------------------------------------"
+	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""
+	@echo "Rememember to add \"$(INSTALLDIR)/bin\" to your PATH"
+	@echo "-------------------------------------------------------------------------------"
+	@echo
+
+python_check: $(PYTHON_EXE)
+	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
+
+$(ANACONDA_PYTHON): $(ANACONDA_SRC)
+	$(ECHO)bash $< -b -p $(ANACONDA_DEST)
+	$(ECHO)touch $(ANACONDA_DEST)/bin/*
+
+$(ANACONDA_SRC):
+	$(ECHO)$(MKDIR) $(BUILDDIR)
+	$(call download,$(ANACONDA_URL),$(ANACONDA_SRC))
+
+taucmdr-build: python_check
 	$(ECHO)$(PYTHON) setup.py build
 
-install: build
-# Build python files and set system-level defaults
+taucmdr-install: python_check
 	$(ECHO)$(PYTHON) setup.py install --force
 # Copy archive files to system-level src, if available
 	@mkdir -p $(INSTALLDIR)/system/src
@@ -151,24 +175,13 @@ install: build
 	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
 	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
 	@chmod -R a+rX,g+w $(INSTALLDIR)
-	@echo
-	@echo "-------------------------------------------------------------------------------"
-	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""
-	@echo "Rememember to add \"$(INSTALLDIR)/bin\" to your PATH"
-	@echo "-------------------------------------------------------------------------------"
-	@echo
 
-python_check: $(PYTHON_EXE)
-	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
-
-$(CONDA): $(CONDA_SRC)
-	$(ECHO)bash $< -b -p $(CONDA_DEST)
-	$(ECHO)touch $(CONDA_DEST)/bin/*
-
-$(CONDA_SRC):
-	$(ECHO)$(MKDIR) $(BUILDDIR)
-	$(call download,$(CONDA_URL),$(CONDA_SRC))
-
+jupyterlab-build:
+	true
+	
+jupyterlab-install: $(CONDA)
+	$(CONDA) install -y -c conda-forge jupyterlab
+	
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
 	$(ECHO)$(RM) defaults.cfg setup.cfg
