@@ -612,7 +612,7 @@ class Target(Model):
         
         metrics = []
         html_parser = HTMLParser()
-        papi = PapiInstallation(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+        papi = self.get_installation('papi')
         def _format(item):
             name = item.attrib['name']
             desc = html_parser.unescape(item.attrib['desc'])

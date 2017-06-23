@@ -142,6 +142,8 @@ class TauInstallation(Installation):
     """
 
     def __init__(self, sources, target_arch, target_os, compilers,
+                 # Minimal configuration support
+                 minimal_configuration=False,
                  # TAU feature suppport
                  application_linkage='dynamic',
                  openmp_support=False,
@@ -196,6 +198,7 @@ class TauInstallation(Installation):
             target_arch (Architecture): Target architecture description.
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
+            minimal_configuration (bool): If True then ignore all other arguments and configure with minimal features.
             application_linkage (str): Either "static" or "dynamic". 
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
@@ -236,6 +239,7 @@ class TauInstallation(Installation):
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
+        assert minimal_configuration in (True, False)
         assert application_linkage in ('static', 'dynamic')
         assert openmp_support in (True, False)
         assert pthreads_support in (True, False)
@@ -282,12 +286,12 @@ class TauInstallation(Installation):
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
                                               REPOS, COMMANDS, None, None)
-        self._minimal = False
         self._tau_makefile = None
         if self.src == 'nightly':
             self.src = NIGHTLY
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
+        self.minimal_configuration = minimal_configuration
         self.application_linkage = application_linkage
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
@@ -366,8 +370,7 @@ class TauInstallation(Installation):
         except ConfigurationError:
             raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
         compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
-        inst = cls(sources, target_arch, target_os, compilers)
-        inst._minimal = True
+        inst = cls(sources, target_arch, target_os, compilers, minimal_configuration=True)
         return inst
 
     def uid_items(self):
@@ -545,7 +548,7 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
-        if self._minimal:
+        if self.minimal_configuration:
             LOGGER.info("Configuring minimal TAU...")
             cmd = ['./configure', 
                    '-tag=%s' % self.uid,
