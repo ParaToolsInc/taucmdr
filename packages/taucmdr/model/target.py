@@ -42,6 +42,7 @@ from taucmdr.error import InternalError, ConfigurationError, IncompatibleRecordE
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
+from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
@@ -490,13 +491,15 @@ class Target(Model):
                 sources[attr.replace('_source', '')] = val
         return sources
     
+    def get_installation(self, name):
+        cls = software.get_installation(name)
+        return cls(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+    
     def acquire_sources(self):
         """Acquire all source code packages known to this target."""
-        from taucmdr.cf import software
         for attr, val in self.iteritems():
             if val and attr.endswith('_source'):
-                cls = software.get_installation(attr.replace('_source', ''))
-                inst = cls(self.sources(), self.architecture(), self.operating_system(), self.compilers())
+                inst = self.get_installation(attr.replace('_source', ''))
                 try:
                     inst.acquire_source()
                 except ConfigurationError as err:
@@ -587,7 +590,7 @@ class Target(Model):
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
         return found
-
+    
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         """List PAPI metrics available on this target.
         
@@ -606,7 +609,7 @@ class Target(Model):
         if not self.get('papi_source'):
             return []
         from HTMLParser import HTMLParser
-        from taucmdr.cf.software.papi_installation import PapiInstallation
+        
         metrics = []
         html_parser = HTMLParser()
         papi = PapiInstallation(self.sources(), self.architecture(), self.operating_system(), self.compilers())
