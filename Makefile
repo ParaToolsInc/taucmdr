@@ -149,6 +149,8 @@ install: $(foreach pkg,$(PACKAGES),$(pkg)-install)
 
 python_check: $(PYTHON_EXE)
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
+	
+$(CONDA): $(ANACONDA_PYTHON)
 
 $(ANACONDA_PYTHON): $(ANACONDA_SRC)
 	$(ECHO)bash $< -b -p $(ANACONDA_DEST)
