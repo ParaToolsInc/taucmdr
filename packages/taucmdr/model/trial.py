@@ -42,7 +42,6 @@ from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation
-from taucmdr.data.tauprofile import TauProfile
 
 
 LOGGER = logger.get_logger(__name__)
@@ -263,6 +262,7 @@ class Trial(Model):
                 progress_bar.update(count)
 
     def get_data(self):
+        from taucmdr.data.tauprofile import TauProfile
         data_files = self.get_data_files()
         tau_profile_prefix = data_files.get('tau')
         if not tau_profile_prefix:
