@@ -932,7 +932,7 @@ class TauInstallation(Installation):
             pass
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
-        if self.source_inst == 'manual':
+        if self.source_inst != 'never':
             opts.append('-DTAU_ENABLED=1')
         env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
