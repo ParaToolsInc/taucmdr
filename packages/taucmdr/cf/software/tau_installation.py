@@ -339,7 +339,7 @@ class TauInstallation(Installation):
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
         if forced_makefile is None:
-            for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt':
+            for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
                 uses_pkg = getattr(self, '_uses_'+pkg)
                 if uses_pkg():
                     self.add_dependency(pkg, sources)
@@ -347,7 +347,7 @@ class TauInstallation(Installation):
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
         else:
-            for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt':
+            for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
                 if sources[pkg]:
                     self.add_dependency(pkg, sources)
             if sources['scorep']:
@@ -378,7 +378,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt':
+        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
             uses_pkg = getattr(self, '_uses_'+pkg)
             if uses_pkg():
                 uid_parts.append(self.dependencies[pkg].uid)
@@ -423,10 +423,13 @@ class TauInstallation(Installation):
         return bool(len([met for met in self.metrics if 'PAPI' in met]))
 
     def _uses_scorep(self):
-        return self.profile == 'cubex' or self.trace == 'otf2'
+        return self.profile == 'cubex'
 
     def _uses_ompt(self):
         return self.measure_openmp == 'ompt'
+
+    def _uses_libotf2(self):
+        return self.trace == 'otf2'
 
     def verify(self):
         super(TauInstallation, self).verify()
@@ -473,6 +476,12 @@ class TauInstallation(Installation):
                     if scorep.install_prefix != scorep_dir:
                         LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
                         raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
+                if self._uses_libotf2() and 'OTFINC=' in line:
+                    libotf2 = self.dependencies['libotf2']
+                    libotf2_dir = line.split('=')[1].strip().strip("-I")
+                    if libotf2.include_path != libotf2_dir:
+                        LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
+                        raise SoftwarePackageError("OTFINC in '%s' is invalid" % tau_makefile)
 
         # Check for iowrapper libraries and link options
         if self.io_inst:
@@ -613,6 +622,7 @@ class TauInstallation(Installation):
         pdt = self.dependencies.get('pdt')
         scorep = self.dependencies.get('scorep')
         ompt = self.dependencies.get('ompt')
+        libotf2 = self.dependencies.get('libotf2')
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -635,6 +645,7 @@ class TauInstallation(Installation):
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
+                  '-otf=%s' % libotf2.install_prefix if libotf2 else None,
                  ] if flag]
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
@@ -968,8 +979,7 @@ class TauInstallation(Installation):
             env['TAU_TRACE'] = '1'
         elif self.trace == 'otf2':
             env['TAU_TRACE'] = '1'
-            env['SCOREP_ENABLE_TRACING'] = '1'
-            env['SCOREP_TOTAL_MEMORY'] = '1024M'
+            env['TAU_TRACE_FORMAT'] = 'otf2'
         else:
             env['TAU_TRACE'] = '0'
             env['SCOREP_ENABLE_TRACING'] = 'false'

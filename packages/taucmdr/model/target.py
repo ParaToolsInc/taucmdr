@@ -417,6 +417,16 @@ def attributes():
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
+        'libotf2_source': {
+            'type': 'string',
+            'description': 'path or URL to libotf2 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--otf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
