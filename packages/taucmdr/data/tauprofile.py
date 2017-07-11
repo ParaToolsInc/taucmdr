@@ -58,11 +58,15 @@ class TauProfile(object):
         
     def interval_data(self):
         index = ["Calls", "Subcalls", "Exclusive", "Inclusive", "ProfileCalls", "Group"]
-        return pandas.DataFrame(self.interval_events, index=index)
+        df = pandas.DataFrame.from_dict(self.interval_events, orient='index')
+        df.columns = index
+        return df
     
     def atomic_data(self):
         index = ["Count", "Maximum", "Minimum", "Mean", "SumSq"]
-        return pandas.DataFrame(self.atomic_events, index=index)
+        df = pandas.DataFrame.from_dict(self.atomic_events, orient='index')
+        df.columns = index
+        return df
         
     @classmethod
     def _parse_header(cls, fin):
