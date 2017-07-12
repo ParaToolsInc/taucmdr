@@ -362,10 +362,14 @@ class TauInstallation(Installation):
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
-        sources = {'tau': 'download'}
         target_arch = HOST_ARCH
         target_os = HOST_OS
-        target_family = APPLE_LLVM if HOST_OS is DARWIN else GNU
+        if HOST_OS is DARWIN:
+            target_family = APPLE_LLVM
+            sources = {'tau': 'download'}
+        else:
+            target_family = GNU
+            sources = {'tau': 'download', 'binutils': 'download', 'libunwind': 'download'}
         try:
             target_compilers = target_family.installation()
         except ConfigurationError:
@@ -550,11 +554,23 @@ class TauInstallation(Installation):
         Raises:
             SoftwareConfigurationError: TAU's configure script failed.
         """
+        binutils = self.dependencies.get('binutils')
+        libunwind = self.dependencies.get('libunwind')
+        papi = self.dependencies.get('papi')
+        pdt = self.dependencies.get('pdt')
+        scorep = self.dependencies.get('scorep')
+        ompt = self.dependencies.get('ompt')
+        libotf2 = self.dependencies.get('libotf2')
+
         if self.minimal_configuration:
             LOGGER.info("Configuring minimal TAU...")
-            cmd = ['./configure', 
-                   '-tag=%s' % self.uid,
-                   '-arch=%s' % self.tau_magic.name]
+            cmd = [flag for flag in 
+                   ['./configure', 
+                    '-tag=%s' % self.uid,
+                    '-arch=%s' % self.tau_magic.name,
+                    '-bfd=%s' % binutils.install_prefix if binutils else None,
+                    '-unwind=%s' % libunwind.install_prefix if libunwind else None,
+                   ] if flag]
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
             return
@@ -608,14 +624,6 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_CC],
                                    self.compilers[SHMEM_CXX],
                                    self.compilers[SHMEM_FC])
-
-        binutils = self.dependencies.get('binutils')
-        libunwind = self.dependencies.get('libunwind')
-        papi = self.dependencies.get('papi')
-        pdt = self.dependencies.get('pdt')
-        scorep = self.dependencies.get('scorep')
-        ompt = self.dependencies.get('ompt')
-        libotf2 = self.dependencies.get('libotf2')
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
