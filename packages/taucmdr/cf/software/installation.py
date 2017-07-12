@@ -648,29 +648,6 @@ class CMakeInstallation(MakeInstallation):
         if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('CMake failed for %s' %self.title)
     
-    def configure(self, flags, env):
-        """Invoke `configure`.
-        
-        Changes to `env` are propagated to subsequent steps, i.e. `make`.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `configure`.
-            env (dict): Environment variables to set before invoking `configure`.
-            
-        Raises:
-            SoftwarePackageError: Configuration failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
-        flags = list(flags)
-        # Prepare configuration flags
-        flags += ['--prefix=%s' % self.install_prefix]
-        cmd = ['./configure'] + flags
-        LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            raise SoftwarePackageError('%s configure failed' % self.title)   
-    
     def install(self, force_reinstall=False):
         """Execute the typical GNU Autotools installation sequence.
         
@@ -721,3 +698,4 @@ class CMakeInstallation(MakeInstallation):
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
+
