@@ -109,9 +109,12 @@ class TauProfile(object):
         if aggregates != '0':
             LOGGER.warning("aggregates != 0")
         match = cls._atomic_header_re.match(fin.readline())
-        count = int(match.group(1))
-        if fin.readline() != "# eventname numevents max min mean sumsqr\n":
-            raise InternalError('Invalid profile file: %s' % fin.name)
+        try:
+            count = int(match.group(1))
+            if fin.readline() != "# eventname numevents max min mean sumsqr\n":
+                raise InternalError('Invalid profile file: %s' % fin.name)
+        except AttributeError:
+            count = 0
         atomic_data = {}
         i = 0
         while i < count:
