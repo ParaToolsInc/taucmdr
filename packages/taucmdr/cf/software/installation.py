@@ -616,6 +616,25 @@ class CMakeInstallation(MakeInstallation):
         make [flags] install [options]
     """
 
+    def _get_cmake(self):
+        cmake = util.which('cmake')
+        if not cmake:
+            raise ConfigurationError("'cmake' not found in PATH.")
+        try:
+            stdout = util.get_command_output([cmake, '--version'])
+        except (CalledProcessError, OSError) as err:
+            raise ConfigurationError("Failed to get CMake version: %s" % err)
+        for line in stdout.split('\n'):
+            if 'cmake version' in line:
+                verstr = (line.split('cmake version ')[1]).split('-')[0]
+                version = tuple(int(x) for x in verstr.split('.'))
+                if version < (2, 8):
+                    raise ConfigurationError("CMake version 2.8 or higher required.")
+                break
+        else:
+            LOGGER.warning("Cannot determine CMake version.  CMake 2.8 or higher is required.")
+        return cmake
+
     def cmake(self, flags, env):
         """Invoke `cmake`.
         
@@ -630,21 +649,8 @@ class CMakeInstallation(MakeInstallation):
             SoftwarePackageError: Configuration failed.
 	"""
         assert self._src_prefix
-        cmake_path = util.which('cmake')
-        if not cmake_path:
-            raise ConfigurationError("'cmake' not found in PATH.")
-        try:
-            stdout = util.get_command_output([cmake_path, '--version'])
-        except (CalledProcessError, OSError) as err:
-            raise ConfigurationError("Failed to get CMake version: %s" % err)
-        verstr = (stdout.split('cmake version ')[1]).split('-')[0]
-        version = tuple(int(x) for x in verstr.split('.'))
-        if version < (2, 8):
-            raise ConfigurationError("CMake version 2.8 or higher required.")
-        LOGGER.debug("Executing CMake for %s at '%s'", self.name, self._src_prefix)
-        flags = list(flags)
-        flags.append('-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix)
-        cmd = [cmake_path] + flags
+        cmake = self._get_cmake()
+        cmd = [cmake, '-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
             raise SoftwarePackageError('CMake failed for %s' %self.title)
