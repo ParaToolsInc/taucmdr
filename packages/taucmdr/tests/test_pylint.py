@@ -27,7 +27,7 @@
 #
 """Test functions.
 
-Functions used for unit tests of error.py.
+Asserts that pylint score doesn't drop below minimum.
 """
 
 import os
