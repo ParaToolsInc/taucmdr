@@ -111,7 +111,7 @@ def attributes():
                          'nargs': '?',
                          'choices':('slog2', 'otf2', 'none'),
                          'const': 'slog2'},
-            'compat': {'otf2': Target.exclude('scorep_source', None),
+            'compat': {'otf2': Target.exclude('libotf2_source', None),
                        lambda x: x != 'none': _discourage_callpath}
         },
         'sample': {
