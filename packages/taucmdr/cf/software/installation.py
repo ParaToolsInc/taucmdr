@@ -631,20 +631,18 @@ class CMakeInstallation(MakeInstallation):
         assert self._src_prefix
         cmake_path = util.which('cmake')
         if not cmake_path:
-            raise ConfigurationError("'cmake' not found in PATH. CMake required to build OMPT support.")
+            raise ConfigurationError("'cmake' not found in PATH.")
         try:
-            stdout = util.get_command_output([cmake_path, '-version'])
+            stdout = util.get_command_output([cmake_path, '--version'])
         except (CalledProcessError, OSError) as err:
             raise ConfigurationError("Failed to get CMake version: %s" % err)
-        stdout = stdout.replace('\n', ' ')
-        verstr = stdout.split(' ')
-        ver = verstr[2].split('.')
-        ver = [int(i) for i in ver]
-        if (ver[0] < 2) or ((ver[0] == 2) and ver[1] < 8):
-            raise ConfigurationError("CMake version 2.8 or higher required to build OMPT support.")
+        verstr = (stdout.split('cmake version ')[1]).split('-')[0]
+        version = tuple(int(x) for x in verstr.split('.'))
+        if version < (2, 8):
+            raise ConfigurationError("CMake version 2.8 or higher required.")
         LOGGER.debug("Executing CMake for %s at '%s'", self.name, self._src_prefix)
         flags = list(flags)
-        flags += ['-DCMAKE_INSTALL_PREFIX=%s' %self.install_prefix]
+        flags.append('-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix)
         cmd = [cmake_path] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
