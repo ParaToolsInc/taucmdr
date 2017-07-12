@@ -406,18 +406,10 @@ class TauInstallation(Installation):
         return self.source_inst == 'automatic' or self.shmem_support
 
     def _uses_binutils(self):
-        return (self.target_os is not DARWIN and
-                (self.sample or 
-                 self.compiler_inst != 'never' or 
-                 self.measure_openmp != 'ignore' or
-                 self.measure_callsite))
+        return self.target_os is not DARWIN
 
     def _uses_libunwind(self):
-        return (self.target_os is not DARWIN and
-                (self.sample or 
-                 self.compiler_inst != 'never' or 
-                 self.measure_openmp != 'ignore' or
-                 self.measure_callsite))
+        return self.target_os is not DARWIN
 
     def _uses_papi(self):
         return bool(len([met for met in self.metrics if 'PAPI' in met]))
