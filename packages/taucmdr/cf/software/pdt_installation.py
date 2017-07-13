@@ -159,6 +159,7 @@ class PdtInstallation(AutotoolsInstallation):
         super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
+        self._retry_verify = True
         
     def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -166,6 +167,25 @@ class PdtInstallation(AutotoolsInstallation):
         arch_path = os.path.join(self.install_prefix, self.tau_magic.name)
         self.bin_path = os.path.join(arch_path, 'bin')
         self.lib_path = os.path.join(arch_path, 'lib')
+
+    def _configure_edg4x_rose(self):
+        LOGGER.info('edg4x-rose parser configuration failed.  Retrying...')
+        cwd = os.path.join(self.install_prefix, 'contrib', 'rose', 'edg44', self.tau_magic.name, 'roseparse')
+        if util.create_subprocess(['./configure'], cwd=cwd, stdout=False, show_progress=True):
+            raise SoftwarePackageError('Unable to configure edg4x-rose parsers')
+        LOGGER.info("'edg4x-rose parser configuration successful.  Continuing %s verification...", self.title)
+
+    def verify(self):
+        # Sometimes PDT doesn't build the edg44 rose parsers even though they could be built.
+        # If verification fails, try configuring those parsers and see if it helps.
+        try:
+            super(PdtInstallation, self).verify()
+        except SoftwarePackageError as err:
+            if not (os.path.exists(self.install_prefix) and self._retry_verify):
+                raise err
+            self._configure_edg4x_rose()
+            self._retry_verify = False
+            self.verify()
     
     def configure(self, flags, env):
         family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC'}
@@ -175,4 +195,5 @@ class PdtInstallation(AutotoolsInstallation):
         cmd = ['./configure', prefix_flag, compiler_flag]
         LOGGER.info("Configuring PDT...")
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
-            raise SoftwarePackageError('PDT configure failed')
+            raise SoftwarePackageError('%s configure failed' % self.title)
+
