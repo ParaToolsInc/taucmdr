@@ -41,11 +41,12 @@ class TauProfile(object):
     
     _interval_header_re = re.compile(r'(\d+) templated_functions_MULTI_(.+)')
     
-    _interval_re = re.compile(r'"(.*)" (\d+) (\d+) (\d+) (\d+) (\d+) GROUP="(.*)"')
+    _interval_re = re.compile(r'"(.*)" (\d+) (\d+) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) (\d+) GROUP="(.*)"')
     
     _atomic_header_re = re.compile(r'(\d+) userevents')
     
-    _atomic_re = re.compile(r'"(.*)" ([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+)')
+    #_atomic_re = re.compile(r'"(.*)" ([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+)')
+    _atomic_re = re.compile(r'"(.*)" ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?)')
     
     def __init__(self, node, context, thread, metric, metadata, interval_events, atomic_events):
         self.node = node
@@ -76,8 +77,9 @@ class TauProfile(object):
     
     @classmethod
     def _parse_metadata(cls, fin):
-        fields, xml_wanabe = fin.readline().split(' # ')
-        if fields != "# Name Calls Subrs Excl Incl ProfileCalls":
+        fields, xml_wanabe = fin.readline().split('<metadata>')
+        xml_wanabe = '<metadata>'+xml_wanabe
+        if fields != "# Name Calls Subrs Excl Incl ProfileCalls" and fields != '# Name Calls Subrs Excl Incl ProfileCalls # ':
             raise InternalError('Invalid profile file: %s' % fin.name)
         try:
             metadata_tree = ElementTree.fromstring(xml_wanabe)
@@ -97,7 +99,9 @@ class TauProfile(object):
         while i < count:
             line = fin.readline()
             match = cls._interval_re.match(line)
-            values = [int(x) for x in match.group(2, 3, 4, 5, 6)]
+            values = [int(x) for x in match.group(2, 3)]
+            values.extend([float(x) for x in match.group(4, 5)])
+            values.append(int(match.group(6)))
             values.append(match.group(7))
             interval_data[match.group(1)] = values 
             i += 1
@@ -120,8 +124,7 @@ class TauProfile(object):
         while i < count:
             line = fin.readline()
             match = cls._atomic_re.match(line)
-            values = [int(match.group(2))]
-            values.extend((float(x) for x in match.group(3, 4, 5, 6)))
+            values = [float(x) for x in match.group(2, 3, 4, 5, 6)]
             atomic_data[match.group(1)] = values
             i += 1
         return atomic_data
