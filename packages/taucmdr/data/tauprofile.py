@@ -45,10 +45,10 @@ class TauProfile(object):
     
     _atomic_header_re = re.compile(r'(\d+) userevents')
     
-    #_atomic_re = re.compile(r'"(.*)" ([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+) ([0-9.]+)')
     _atomic_re = re.compile(r'"(.*)" ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?) ((?:\d+)(?:\.\d+)?(?:E\d+)?)')
     
-    def __init__(self, node, context, thread, metric, metadata, interval_events, atomic_events):
+    def __init__(self, trial, node, context, thread, metric, metadata, interval_events, atomic_events):
+        self.trial = trial
         self.node = node
         self.context = context
         self.thread = thread
@@ -58,9 +58,7 @@ class TauProfile(object):
         self.atomic_events = atomic_events
         
     def interval_data(self):
-        index = ["Calls", "Subcalls", "Exclusive", "Inclusive", "ProfileCalls", "Group"]
-        df = pandas.DataFrame.from_dict(self.interval_events, orient='index')
-        df.columns = index
+        df = pandas.DataFrame.from_dict({(self.trial, self.node, self.context, self.thread, region): self.interval_events[region] for region in self.interval_events.keys()}, orient='index')
         return df
     
     def atomic_data(self):
@@ -99,10 +97,13 @@ class TauProfile(object):
         while i < count:
             line = fin.readline()
             match = cls._interval_re.match(line)
-            values = [int(x) for x in match.group(2, 3)]
-            values.extend([float(x) for x in match.group(4, 5)])
-            values.append(int(match.group(6)))
-            values.append(match.group(7))
+            values = {}
+            values['Call'] = int(match.group(2))
+            values['Subcalls'] = int(match.group(3))
+            values['Exclusive'] = float(match.group(4))
+            values['Inclusive'] = float(match.group(5))
+            values['ProfileCalls'] = int(match.group(6))
+            values['Group'] = match.group(7)
             interval_data[match.group(1)] = values 
             i += 1
         return interval_data
@@ -130,7 +131,7 @@ class TauProfile(object):
         return atomic_data
 
     @classmethod
-    def parse(cls, path):
+    def parse(cls, path, trial):
         location = os.path.basename(path).replace('profile.', '')
         node, context, thread = (int(x) for x in location.split('.'))
         with open(path) as fin:
@@ -138,6 +139,6 @@ class TauProfile(object):
             metadata = cls._parse_metadata(fin)
             interval_data = cls._parse_interval_data(fin, interval_count)
             atomic_data = cls._parse_atomic_data(fin)
-            return cls(node, context, thread, metric, metadata, interval_data, atomic_data)
+            return cls(trial, node, context, thread, metric, metadata, interval_data, atomic_data)
         
         

@@ -270,7 +270,7 @@ class Trial(Model):
         data = {}
         for path, _, files in os.walk(tau_profile_prefix):
             for profile_file in files:
-                profile = TauProfile.parse(os.path.join(path, profile_file))
+                profile = TauProfile.parse(os.path.join(path, profile_file), self['number'])
                 node_data = data.setdefault(profile.node, {})
                 context_data = node_data.setdefault(profile.context, {})
                 context_data[profile.thread] = profile
