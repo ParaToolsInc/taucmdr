@@ -82,7 +82,7 @@ def _get_prefix():
     return options.prefix if options.prefix else _default_prefix()
 
 
-def _bootstrap_conda():
+def _bootstrap_anaconda():
     # This routine must be Python 2.6 and Python3 compatible
     import subprocess
     print(FALLBACK_WARNING)
@@ -93,9 +93,9 @@ def _bootstrap_conda():
     except subprocess.CalledProcessError as err:
         sys.stderr.write("Command '%s' failed with return code '%s'\n" % (' '.join(cmd), err.returncode))
         sys.exit(-1)
-    os.environ['PATH'] = os.path.join(prefix, 'conda', 'bin') + ":" + os.environ['PATH']
+    os.environ['PATH'] = os.path.join(prefix, 'anaconda-4.4.0', 'bin') + ":" + os.environ['PATH']
     os.environ['__TAUCMDR_CONFIGURE_BOOTSTRAPPED__'] = '1'
-    # Run myself again now with Python 2.7 from conda
+    # Run myself again now with Python 2.7 from Anaconda
     os.execv(PROG, sys.argv)
 
 
@@ -217,14 +217,14 @@ if __name__ == '__main__':
     except (SystemExit, Exception) as err:
         # Prevent infinite recursion: only bootstrap once
         if not os.environ.get('__TAUCMDR_CONFIGURE_BOOTSTRAPPED__'):
-            _bootstrap_conda()
+            _bootstrap_anaconda()
         else:
             sys.stderr.write("ERROR: %s\n"
                              "\n"
                              "Python 2.7 with setuptools is required to install TAU Commander.\n"
                              "\n"
                              "Type `make INSTALLDIR=<install_prefix>` to install Python then\n"
-                             "add '<install_prefix>/conda/bin' to your PATH environment variable\n"
+                             "add '<install_prefix>/anaconda/bin' to your PATH environment variable\n"
                              "and try this command again.\n" % err)
             sys.exit(-1)
     sys.exit(main())
