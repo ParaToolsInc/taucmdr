@@ -45,7 +45,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class _TauEnterpriseJsonRecord(StorageRecord):
-    eid_type = str
+    eid_type = unicode
 
     def __init__(self, database, element, eid=None):
         super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element)
@@ -57,11 +57,12 @@ class _TauEnterpriseJsonRecord(StorageRecord):
         return json.dumps(self.element)
 
 
-class _TauEnterpriseDatabase:
+class _TauEnterpriseDatabase(object):
     """Represents a connection to the remote database
 
     Attributes:
         endpoint (str): The URL of the remote database
+        status (int): The HTTP status code returned when the connection was opened
 
     """
 
@@ -69,9 +70,54 @@ class _TauEnterpriseDatabase:
         request = requests.get(endpoint)
         request.raise_for_status()
         self.endpoint = endpoint
+        self.status = request.status_code
+
+    def tables(self):
+        """Get a list of all the tables in the database
+
+        Returns:
+            A list of the target names for the tables in the database.
+
+        Raises:
+            ConnectionError: Unable to establish a connection to the endpoint.
+            HTTPError: The server did not understand the request.
+        """
+
+        request = requests.get(self.endpoint)
+        request.raise_for_status()
+        response = request.json()
+        if '_links' in response and 'child' in response['_links']:
+            return [table['href'] for table in response['_links']['child']]
+        else:
+            return []
+
+    def table(self, table_name):
+        """Get a table object for a table in this database.
+
+        Args:
+            table_name (str): The name of the table requested
+
+        Returns:
+            A table object for the table `table_name`
+
+        Raises:
+            ConnectionError: Unable to establish a connection to the endpoint.
+            HTTPError: The server did not understand the request.
+        """
+        return _TauEnterpriseTable(self, table_name)
+
+    def purge(self):
+        """Delete every record in every table in the database.
+
+        Raises:
+            ConnectionError: Unable to establish a connection to the endpoint.
+            HTTPError: The server did not understand the request.
+        """
+        for table in self.tables():
+            _TauEnterpriseTable(self, table).purge()
 
 
-class _TauEnterpriseTable:
+class _TauEnterpriseTable(object):
     """Represents a table within the remote database.
      Operations on the table are made through this class.
 
@@ -106,8 +152,9 @@ class _TauEnterpriseTable:
         url = "{}/?where={}".format(self.endpoint, json.dumps(cond))
         request = requests.get(url)
         request.raise_for_status()
-        if request.json()['_meta']['total'] > 0:
-            return [self._to_record(result) for result in request.json()['_items'].iteritems()]
+        response = request.json()
+        if '_meta' in response and response['_meta']['total'] > 0:
+            return [self._to_record(result) for result in response['_items']]
         else:
             return []
 
@@ -124,9 +171,15 @@ class _TauEnterpriseTable:
             return None
         request = requests.get(url)
         request.raise_for_status()
-        if request.json()['_meta']['total'] > 0:
-            return self._to_record(request.json()['_items'][0])
+        response = request.json()
+        if '_id' in response:
+            # A single item was returned
+            return self._to_record(response)
+        elif '_meta' in response and response['_meta']['total'] > 0:
+            # More that one item was returned
+            return self._to_record(response['_items'][0])
         else:
+            # No items were returned
             return None
 
     def count(self, cond, match_any=False):
@@ -136,9 +189,9 @@ class _TauEnterpriseTable:
         return len(matches)
 
     def insert(self, element):
-        request = requests.put(self.endpoint, json.dumps(element), headers={'Content-Type': 'application/json'})
+        request = requests.post(self.endpoint, json.dumps(element), headers={'Content-Type': 'application/json'})
         request.raise_for_status()
-        return _TauEnterpriseJsonRecord(self.database, element, eid=request.json()['_items'][0]['_id'])
+        return _TauEnterpriseJsonRecord(self.database, element, eid=request.json()['_id'])
 
     def update(self, fields, keys=None, eids=None, match_any=False):
         update_ids = []
@@ -153,11 +206,9 @@ class _TauEnterpriseTable:
             request = requests.patch(url, json.dumps(fields), headers={'Content-Type': 'application/json'})
             request.raise_for_status()
 
-            # def contains(self, keys=None, eid=None, match_any=False):
-            #    if eid is not None:
-            #        record = self.get(eid=eid)
-            #        return record is not None
-            #    elif
+    def purge(self):
+        request = requests.delete(self.endpoint)
+        request.raise_for_status()
 
 
 class TauEnterpriseStorage(AbstractStorage):
