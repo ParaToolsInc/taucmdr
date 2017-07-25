@@ -53,3 +53,7 @@ class Libotf2Installation(AutotoolsInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def configure(self, flags, env):
+        env['PYTHON'] = sys.executable
+        return super(Libotf2Installation, self).configure(flags, env)

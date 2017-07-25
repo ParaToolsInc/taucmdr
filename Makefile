@@ -164,6 +164,7 @@ taucmdr-build: python_check
 	$(ECHO)$(PYTHON) setup.py build
 
 taucmdr-install: python_check
+	$(ECHO)$(CONDA) install -y future
 	$(ECHO)$(PYTHON) setup.py install --force
 # Copy archive files to system-level src, if available
 	@mkdir -p $(INSTALLDIR)/system/src
