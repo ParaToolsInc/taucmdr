@@ -135,7 +135,8 @@ class TauEnterpriseStorageTests(tests.TestCase):
         eid_3 = table.insert(element_3).eid
         table.update({'mpc': True}, eids=eid_1)
         updated_element_1 = table.get(eid=eid_1).element
-        self.assertDictEqual(updated_element_1, element_3, "Updated element has wrong value")
+        correct_element_1 = {'opencl': False, 'mpc': True, 'pthreads': False}
+        self.assertDictEqual(updated_element_1, correct_element_1, "Updated element has wrong value")
         table.update({'pthreads': True}, keys={'opencl': True})
         updated_element_2 = table.get(eid=eid_2).element
         updated_element_3 = table.get(eid=eid_3).element
@@ -156,3 +157,20 @@ class TauEnterpriseStorageTests(tests.TestCase):
         table.purge()
         after_purge_count = table.count({})
         self.assertEqual(after_purge_count, 0, "After purge, table should be empty")
+
+    def test_table_remove(self):
+        self.database.purge()
+        table = self.database.table('application')
+        element_1 = {'opencl': False, 'mpc': False, 'pthreads': False}
+        element_2 = {'opencl': True, 'mpc': False, 'pthreads': False}
+        element_3 = {'opencl': True, 'mpc': True, 'pthreads': False}
+        eid_1 = table.insert(element_1).eid
+        table.insert(element_2)
+        table.insert(element_3)
+        all_count = table.count({})
+        self.assertEqual(all_count, 3, "After purge and insert, only just-inserted records should be present")
+        table.remove(keys={'opencl': True})
+        all_count = table.count({})
+        self.assertEqual(all_count, 1, "After remove, only 1 record should be present")
+        remaining_element = table.get(eid=eid_1).element
+        self.assertDictEqual(element_1, remaining_element, "The remaining element should be the one not removed")

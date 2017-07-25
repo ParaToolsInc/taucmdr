@@ -158,7 +158,7 @@ class _TauEnterpriseTable(object):
         else:
             return []
 
-    def get(self, keys=None, eid=None, match_any=False):
+    def _get(self, keys=None, eid=None, match_any=False, delete=False):
         if match_any and keys is not None:
             keys = self._query_to_match_any(keys)
         if eid is not None:
@@ -169,7 +169,12 @@ class _TauEnterpriseTable(object):
             url = "{}/?where={}".format(self.endpoint, keys)
         else:
             return None
-        request = requests.get(url)
+        if delete:
+            request = requests.delete(url)
+            request.raise_for_status()
+            return
+        else:
+            request = requests.get(url)
         request.raise_for_status()
         response = request.json()
         if '_id' in response:
@@ -181,6 +186,12 @@ class _TauEnterpriseTable(object):
         else:
             # No items were returned
             return None
+
+    def get(self, keys=None, eid=None, match_any=False):
+        return self._get(keys=keys, eid=eid, match_any=False)
+
+    def remove(self, keys=None, eid=None, match_any=False):
+        return self._get(keys=keys, eid=eid, match_any=False, delete=True)
 
     def count(self, cond, match_any=False):
         if cond is None:
@@ -195,7 +206,7 @@ class _TauEnterpriseTable(object):
 
     def update(self, fields, keys=None, eids=None, match_any=False):
         update_ids = []
-        if isinstance(eids, list):
+        if isinstance(eids, (list, tuple)):
             update_ids = eids
         elif isinstance(eids, self.Record.eid_type):
             update_ids = [eids]
@@ -415,8 +426,8 @@ class TauEnterpriseStorage(AbstractStorage):
         Raises:
             ValueError: Invalid value for `keys`.
         """
-        # TODO need to enable regex on server side before this will work
         raise NotImplementedError
+
 
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.
@@ -439,8 +450,16 @@ class TauEnterpriseStorage(AbstractStorage):
         Raises:
             ValueError: Invalid value for `keys`.
         """
-        # TODO implement corresponding action in table class
-        raise NotImplementedError
+        if keys is None:
+            return False
+        elif isinstance(keys, dict):
+            return self.table(table_name).count(keys, match_any=match_any) > 0
+        elif isinstance(keys, (list, tuple)):
+            return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
+        elif isinstance(keys, self.Record.eid_type):
+            return self.get(keys, table_name=table_name, match_any=match_any) is not None
+        else:
+            raise ValueError(keys)
 
     def insert(self, data, table_name=None):
         """Create a new record.
@@ -507,8 +526,9 @@ class TauEnterpriseStorage(AbstractStorage):
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
-        # TODO implement action in table class
-        raise NotImplementedError
+        table = self.table(table_name)
+        update_fields = {field: None for field in fields}
+        table.update(update_fields, eids=[keys])
 
     def remove(self, keys, table_name=None, match_any=False):
         """Delete records.
@@ -527,7 +547,18 @@ class TauEnterpriseStorage(AbstractStorage):
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
-        # TODO implement action in table class
+        table = self.table(table_name)
+        if keys is None:
+            return None
+        elif isinstance(keys, self.Record.eid_type):
+            table.remove(eid=keys)
+        elif isinstance(keys, dict) and keys:
+            table.remove(keys=keys, match_any=match_any)
+        elif isinstance(keys, (list, tuple)):
+            for key in keys:
+                self.remove(key, table_name=table_name, match_any=match_any)
+        else:
+            raise ValueError(keys)
 
     def purge(self, table_name=None):
         """Delete all records.
@@ -535,4 +566,5 @@ class TauEnterpriseStorage(AbstractStorage):
         Args:
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
         """
-        # TODO implement action in table class
+        table = self.table(table_name)
+        table.purge()
