@@ -32,9 +32,11 @@ The OTF2 library  provides an interface to write and read trace data.
 
 import sys
 from taucmdr import logger
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.platforms import DARWIN, HOST_ARCH, HOST_OS
-from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
+from taucmdr.cf.compiler.host import CC, CXX, GNU, APPLE_LLVM
 from taucmdr.cf.compiler import InstalledCompilerSet
 
 
@@ -53,7 +55,7 @@ class Libotf2Installation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources, 
-                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags, env):
         env['PYTHON'] = sys.executable
