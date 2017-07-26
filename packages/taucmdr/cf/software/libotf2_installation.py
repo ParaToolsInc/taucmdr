@@ -30,11 +30,12 @@
 The OTF2 library  provides an interface to write and read trace data.
 """
 
-import os
 import sys
-import fileinput
 from taucmdr import logger
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.platforms import DARWIN, HOST_ARCH, HOST_OS
+from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
+from taucmdr.cf.compiler import InstalledCompilerSet
 
 
 
@@ -42,7 +43,7 @@ LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://www.vi-hps.org/upload/packages/otf2/otf2-2.1-rc2.tar.gz'}
 
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
+LIBRARIES = {None: ['libotf2.la', 'libotf2.a', 'python2.7/site-packages/_otf2/_otf2.la']}
 
 HEADERS = {None: ['otf2/otf2.h']}
 
@@ -57,3 +58,22 @@ class Libotf2Installation(AutotoolsInstallation):
     def configure(self, flags, env):
         env['PYTHON'] = sys.executable
         return super(Libotf2Installation, self).configure(flags, env)
+
+    @classmethod
+    def minimal(cls):
+        """Creates a minimal LibOTF2 configuration for working with legacy data analysis tools.
+
+        Returns:
+            Libotf2Installation: Object handle for the LibOTF2 installation.
+        """
+        sources = {'libotf2': 'download'}
+        target_arch = HOST_ARCH
+        target_os = HOST_OS
+        target_family = APPLE_LLVM if HOST_OS is DARWIN else GNU
+        try:
+            target_compilers = target_family.installation()
+        except ConfigurationError:
+            raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
+        compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
+        inst = cls(sources, target_arch, target_os, compilers)
+        return inst
