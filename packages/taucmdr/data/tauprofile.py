@@ -25,6 +25,11 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""TAU trial data class.
+
+Parses a TAU profile file and generates a TauProfile class containing
+profile data and other relavent information
+"""
 
 import os
 import re
@@ -38,6 +43,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class TauProfile(object):
+    """Tau profile class."""
     
     _interval_header_re = re.compile(r'(\d+) templated_functions_MULTI_(.+)')
     
@@ -58,14 +64,16 @@ class TauProfile(object):
         self.atomic_events = atomic_events
         
     def interval_data(self):
-        df = pandas.DataFrame.from_dict({(self.trial, self.node, self.context, self.thread, region): self.interval_events[region] for region in self.interval_events.keys()}, orient='index')
-        return df
+        dataframe = pandas.DataFrame.from_dict({(self.trial, self.node, self.context, self.thread, region):
+                                                self.interval_events[region] for region in
+                                                self.interval_events.keys()}, orient='index')
+        return dataframe
     
     def atomic_data(self):
         index = ["Count", "Maximum", "Minimum", "Mean", "SumSq"]
-        df = pandas.DataFrame.from_dict(self.atomic_events, orient='index')
-        df.columns = index
-        return df
+        dataframe = pandas.DataFrame.from_dict(self.atomic_events, orient='index')
+        dataframe.columns = index
+        return dataframe
         
     @classmethod
     def _parse_header(cls, fin):
@@ -77,7 +85,8 @@ class TauProfile(object):
     def _parse_metadata(cls, fin):
         fields, xml_wanabe = fin.readline().split('<metadata>')
         xml_wanabe = '<metadata>'+xml_wanabe
-        if fields != "# Name Calls Subrs Excl Incl ProfileCalls" and fields != '# Name Calls Subrs Excl Incl ProfileCalls # ':
+        if (fields != "# Name Calls Subrs Excl Incl ProfileCalls" and
+                fields != '# Name Calls Subrs Excl Incl ProfileCalls # '):
             raise InternalError('Invalid profile file: %s' % fin.name)
         try:
             metadata_tree = ElementTree.fromstring(xml_wanabe)
