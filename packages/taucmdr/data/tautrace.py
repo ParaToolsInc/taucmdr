@@ -25,16 +25,21 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""TAU trace data class.
+
+Parses a OTF2 trace and generates a TauTrace class containing
+trace data and other relavent information.
+"""
 
 import os
 import sys
 import collections
-from taucmdr import logger
 from taucmdr.error import InternalError
 from taucmdr.cf.software.libotf2_installation import Libotf2Installation
 
 
 class TauTrace(object):
+    """Tau trace class."""
     
     def __init__(self, trial, trace_data):
         self.trial = trial
@@ -44,12 +49,16 @@ class TauTrace(object):
     def parse(cls, path, trial):
         otf2_installation = Libotf2Installation.minimal()
         sys.path.insert(0, os.path.join(otf2_installation.install_prefix, 'lib/python2.7/site-packages'))
-        import otf2
-        from otf2.events import *
-        trace_data = collections.defaultdict(list)
-        with otf2.reader.open(path) as trace:
-            for location, event in trace.events:
-                if isinstance(event, Enter) or isinstance(event, Leave):
-                    trace_data[(location.name, event.region.name)].append(event.time)
-        return cls(trial, trace_data)
+        try:
+            import otf2
+            from otf2.events import Enter, Leave
+        except ImportError:
+            raise InternalError('Cannot import LibOTF2 python bindings.')
+        else:
+            trace_data = collections.defaultdict(list)
+            with otf2.reader.open(path) as trace:
+                for location, event in trace.events:
+                    if isinstance(event, Enter) or isinstance(event, Leave):
+                        trace_data[(location.name, event.region.name)].append(event.time)
+            return cls(trial, trace_data)
         

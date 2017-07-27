@@ -25,10 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""TAU trial data class.
+"""TAU profile data class.
 
 Parses a TAU profile file and generates a TauProfile class containing
-profile data and other relavent information
+profile data and other relavent information.
 """
 
 import os
