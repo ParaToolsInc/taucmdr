@@ -34,9 +34,7 @@ Amazon S3 API compatible object store.
 """
 
 import json
-
 import requests
-
 import six
 from taucmdr import logger
 from taucmdr.cf.storage import AbstractStorage, StorageRecord
@@ -67,7 +65,8 @@ class _TauEnterpriseDatabase(object):
     """
 
     def __init__(self, endpoint):
-        request = requests.get(endpoint)
+        self.session = requests.Session()
+        request = self.session.get(endpoint)
         request.raise_for_status()
         self.endpoint = endpoint
         self.status = request.status_code
@@ -83,7 +82,7 @@ class _TauEnterpriseDatabase(object):
             HTTPError: The server did not understand the request.
         """
 
-        request = requests.get(self.endpoint)
+        request = self.session.get(self.endpoint)
         request.raise_for_status()
         response = request.json()
         if '_links' in response and 'child' in response['_links']:
@@ -132,6 +131,7 @@ class _TauEnterpriseTable(object):
         self.database = database
         self.name = name
         self.endpoint = "{}/{}".format(database.endpoint, name.lower())
+        self.session = database.session
 
     def _to_record(self, record):
         """Removes server-produced metadata from query results"""
@@ -150,7 +150,7 @@ class _TauEnterpriseTable(object):
         if match_any:
             cond = self._query_to_match_any(cond)
         url = "{}/?where={}".format(self.endpoint, json.dumps(cond))
-        request = requests.get(url)
+        request = self.session.get(url)
         request.raise_for_status()
         response = request.json()
         if '_meta' in response and response['_meta']['total'] > 0:
@@ -170,11 +170,11 @@ class _TauEnterpriseTable(object):
         else:
             return None
         if delete:
-            request = requests.delete(url)
+            request = self.session.delete(url)
             request.raise_for_status()
             return
         else:
-            request = requests.get(url)
+            request = self.session.get(url)
         request.raise_for_status()
         response = request.json()
         if '_id' in response:
@@ -200,7 +200,7 @@ class _TauEnterpriseTable(object):
         return len(matches)
 
     def insert(self, element):
-        request = requests.post(self.endpoint, json.dumps(element), headers={'Content-Type': 'application/json'})
+        request = self.session.post(self.endpoint, json.dumps(element), headers={'Content-Type': 'application/json'})
         request.raise_for_status()
         return _TauEnterpriseJsonRecord(self.database, element, eid=request.json()['_id'])
 
@@ -214,11 +214,11 @@ class _TauEnterpriseTable(object):
             update_ids = [record.eid for record in self.search(keys, match_any=match_any)]
         for update_id in update_ids:
             url = "{}/{}".format(self.endpoint, update_id)
-            request = requests.patch(url, json.dumps(fields), headers={'Content-Type': 'application/json'})
+            request = self.session.patch(url, json.dumps(fields), headers={'Content-Type': 'application/json'})
             request.raise_for_status()
 
     def purge(self):
-        request = requests.delete(self.endpoint)
+        request = self.session.delete(self.endpoint)
         request.raise_for_status()
 
 
