@@ -326,15 +326,10 @@ class Controller(object):
                                      self.model.name, model.eid, via, foreign_model.name, affected_keys)
                         self._disassociate(model, foreign_model, affected_keys, via)
                 for foreign_model, via in model.references:
-                    # pylint complains because `model` is changing on every iteration so we'll have
-                    # a different lambda function `test` on each iteration.  This is exactly what
-                    # we want so we disble the warning. 
-                    # pylint: disable=cell-var-from-loop, undefined-loop-variable
-                    test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
-                    affected = database.match(via, test=test, table_name=foreign_model.name)
+                    affected = database.search_inside(via, model.eid, table_name=foreign_model.name)
                     affected_keys = [record.eid for record in affected]
                     if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
+                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)",
                                      self.model.name, model.eid, via, foreign_model.name, affected_keys)
                         self._disassociate(model, foreign_model, affected_keys, via)
                 removed_data.append(dict(model))

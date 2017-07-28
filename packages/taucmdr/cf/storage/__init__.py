@@ -267,9 +267,25 @@ class AbstractStorage(object):
         """
 
     @abstractmethod
+    def search_inside(self, field, value, table_name=None):
+        """Find multiple records such that a field either equals a value, or is a collection which contains that value.
+
+        Args:
+            field (str): Name of the data field to match.
+            value: The value which the field must equal or contain
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
+
+        Returns:
+            list: Matching data records.
+
+        Raises:
+            ValueError: Invalid value for `keys`.
+        """
+
+    @abstractmethod
     def match(self, field, table_name=None, regex=None, test=None):
         """Find records where `field` matches `regex` or `test`.
-        
+
         Either `regex` or `test` may be specified, not both.  
         If `regex` is given, then all records with `field` matching the regular expression are returned.
         If test is given then all records with `field` set to a value that caues `test` to return True are returned. 

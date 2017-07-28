@@ -34,7 +34,7 @@ Functions used for unit tests of tau_enterprise.py.
 import unittest
 import requests
 from taucmdr import tests
-from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase
+from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase, TauEnterpriseStorage
 
 _DATABASE_URL = "http://east03.paratools.com:5000"
 
@@ -46,6 +46,8 @@ class TauEnterpriseStorageTests(tests.TestCase):
         try:
             self.database = _TauEnterpriseDatabase(_DATABASE_URL)
             self.database.purge()
+            self.storage = TauEnterpriseStorage("db_test", _DATABASE_URL)
+            self.storage.connect_database()
         except (requests.ConnectionError, requests.HTTPError):
             # Don't bother running any of the tests if we can't connect to the database
             raise unittest.SkipTest
@@ -174,3 +176,74 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.assertEqual(all_count, 1, "After remove, only 1 record should be present")
         remaining_element = table.get(eid=eid_1).element
         self.assertDictEqual(element_1, remaining_element, "The remaining element should be the one not removed")
+
+    def test_count(self):
+        self.storage.purge(table_name='application')
+        element_1 = {'opencl': False, 'mpc': False, 'pthreads': True}
+        element_2 = {'opencl': True, 'mpc': False, 'pthreads': True}
+        self.storage.insert(element_1, table_name='application')
+        self.storage.insert(element_2, table_name='application')
+        count = self.storage.count(table_name='application')
+        self.assertEqual(count, 2, "After purge and insert of two elements, two elements should be present")
+
+    def test_get(self):
+        self.storage.purge(table_name='application')
+        element_1 = {'opencl': False, 'mpc': False, 'pthreads': True}
+        element_2 = {'opencl': True, 'mpc': False, 'pthreads': True}
+        record_1 = self.storage.insert(element_1, table_name='application')
+        record_2 = self.storage.insert(element_2, table_name='application')
+        get_result_1 = self.storage.get(keys=record_1.eid, table_name='application')
+        self.assertEqual(get_result_1.eid, record_1.eid, "EID from insert and EID get should be same")
+        self.assertDictEqual(element_1, get_result_1.element, "Element from insert and get should be same")
+        get_result_2 = self.storage.get(keys={'opencl':True}, table_name='application')
+        self.assertEqual(get_result_2.eid, record_2.eid, "EID from insert and dict get should be same")
+        self.assertDictEqual(get_result_2.element, record_2.element)
+
+    def test_search(self):
+        self.storage.purge(table_name='application')
+        element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
+                     'shmem': False, 'mpi': False, 'cuda': False,
+                     'linkage': 'dynamic', 'openmp': False,
+                     'tbb': False, 'projects': [], 'name': 'hello'}
+        element_2 = {'opencl': True, 'mpc': False, 'pthreads': False,
+                     'shmem': False, 'mpi': False, 'cuda': False,
+                     'linkage': 'dynamic', 'openmp': False,
+                     'tbb': False, 'projects': [], 'name': 'hello'}
+        element_3 = {'opencl': False, 'mpc': True, 'pthreads': False,
+                     'shmem': False, 'mpi': False, 'cuda': False,
+                     'linkage': 'dynamic', 'openmp': False,
+                     'tbb': False, 'projects': [], 'name': 'hello'}
+        eid_1 = self.storage.insert(element_1, table_name='application').eid
+        eid_2 = self.storage.insert(element_2, table_name='application').eid
+        eid_3 = self.storage.insert(element_3, table_name='application').eid
+        result = self.storage.search(keys={'opencl': True}, table_name='application')
+        self.assertEqual(len(result), 1, "Wrong number of results for opencl=True")
+        self.assertEqual(result[0].eid, eid_2, "EIDs don't match for opencl=True")
+        self.assertNotEqual(result[0].eid, eid_1, "EIDs match for wrong record for opencl=True")
+        self.assertNotEqual(result[0].eid, eid_3, "EIDs match for wrong record for opencl=True")
+        result = self.storage.search(keys={'opencl': False}, table_name='application')
+        self.assertEqual(len(result), 2, "Wrong number of results for opencl=False")
+        result = self.storage.search(keys={'opencl': True, 'mpc': True}, table_name='application')
+        self.assertEqual(len(result), 0, "Wrong number of results for opencl=True, mpc=True")
+        result = self.storage.search(keys={'opencl': True, 'mpc': True}, table_name='application', match_any=True)
+        self.assertEqual(len(result), 2, "Wrong number of results for opencl=True, mpc=True with match_any")
+        result= self.storage.search(keys={'foo': 'bar'}, table_name='application')
+        self.assertTrue(not result, "Search for nonexistent field should return empty")
+
+    def test_search_inside(self):
+        self.storage.purge(table_name='experiment')
+        element_1 = {"project": 1, "application": 1, "target": 1, "measurement": 1, "trials": [1, 2, 3, 8, 10],
+                   "tau_makefile": "Makefile.tau-ec0e67e7", "name": "delphi-hello-sample"}
+        element_2 = {"project": 1, "application": 1, "target": 1, "measurement": 2, "trials": [4, 5, 6, 7],
+                     "tau_makefile": "Makefile.tau-ec0e67e7", "name": "delphi-hello-instrument"}
+        element_3 = {"project": 1, "application": 2, "target": 1, "measurement": 2, "trials": 11,
+                     "tau_makefile": "Makefile.tau-ec0e67e7", "name": "delphi-foo-instrument"}
+        eid_1 = self.storage.insert(element_1, table_name='experiment').eid
+        eid_2 = self.storage.insert(element_2, table_name='experiment').eid
+        eid_3 = self.storage.insert(element_3, table_name='experiment').eid
+        result = self.storage.search_inside('trials', 3, table_name='experiment')
+        self.assertEqual(result[0].eid, eid_1, "Search for 3 in trials should have returned first element")
+        result = self.storage.search_inside('trials', 4, table_name='experiment')
+        self.assertEqual(result[0].eid, eid_2, "Search for 4 in trials should have returned second element")
+        result = self.storage.search_inside('trials', 11, table_name='experiment')
+        self.assertEqual(result[0].eid, eid_3, "Search for 11 in trials should have returned third element")

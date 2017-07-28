@@ -358,15 +358,13 @@ class TauEnterpriseStorage(AbstractStorage):
         if keys is None:
             return None
         elif isinstance(keys, self.Record.eid_type):
-            element = table.get(eid=keys)
+            return table.get(eid=keys)
         elif isinstance(keys, dict) and keys:
-            element = table.get(keys=keys, match_any=match_any)
+            return table.get(keys=keys, match_any=match_any)
         elif isinstance(keys, (list, tuple)):
             return [self.get(key, table_name=table_name, match_any=match_any) for key in keys]
         else:
             raise ValueError(keys)
-        if element:
-            return self.Record(self, element=element)
         return None
 
     def search(self, keys=None, table_name=None, match_any=False):
@@ -405,6 +403,23 @@ class TauEnterpriseStorage(AbstractStorage):
             return result
         else:
             raise ValueError(keys)
+
+    def search_inside(self, field, value, table_name=None):
+        """Find multiple records such that a field either equals a value, or is a collection which contains that value.
+
+        Args:
+            field (str): Name of the data field to match.
+            value: The value which the field must equal or contain
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
+
+        Returns:
+            list: Matching data records.
+
+        Raises:
+            ValueError: Invalid value for `keys`.
+        """
+        query = {field: {'$in': [value]}}
+        return self.search(keys=query, table_name=table_name)
 
     def match(self, field, table_name=None, regex=None, test=None):
         """Find records where `field` matches `regex` or `test`.
@@ -473,9 +488,7 @@ class TauEnterpriseStorage(AbstractStorage):
         Returns:
             Record: The new record.
         """
-        eid = self.table(table_name).insert(data)
-        record = self.Record(self, eid=eid, element=data)
-        return record
+        return self.table(table_name).insert(data)
 
     def update(self, fields, keys, table_name=None, match_any=False):
         """Update records.
