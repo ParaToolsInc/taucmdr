@@ -32,6 +32,7 @@ Functions used for unit tests of tau_enterprise.py.
 """
 
 import unittest
+import uuid
 import requests
 from taucmdr import tests
 from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase, TauEnterpriseStorage
@@ -44,10 +45,12 @@ class TauEnterpriseStorageTests(tests.TestCase):
 
     def setUp(self):
         try:
-            self.database = _TauEnterpriseDatabase(_DATABASE_URL)
+            # Generate a random database name so that concurrently running tests don't clobber each other.
+            self.db_name = uuid.uuid4().hex
+            self.database = _TauEnterpriseDatabase(_DATABASE_URL, self.db_name)
             self.database.purge()
-            self.storage = TauEnterpriseStorage("db_test", _DATABASE_URL)
-            self.storage.connect_database()
+            self.storage = TauEnterpriseStorage("db_test", "")
+            self.storage.connect_database(url=_DATABASE_URL, db_name=self.db_name)
         except (requests.ConnectionError, requests.HTTPError):
             # Don't bother running any of the tests if we can't connect to the database
             raise unittest.SkipTest

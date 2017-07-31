@@ -37,6 +37,7 @@ import json
 import requests
 import six
 from taucmdr import logger
+from taucmdr.error import InternalError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord
 
 LOGGER = logger.get_logger(__name__)
@@ -64,8 +65,11 @@ class _TauEnterpriseDatabase(object):
 
     """
 
-    def __init__(self, endpoint):
+    def __init__(self, endpoint, db_name):
+        self.db_name = db_name
         self.session = requests.Session()
+        # The requested database is sent as an HTTP header
+        self.session.headers['Database-Name'] = self.db_name
         request = self.session.get(endpoint)
         request.raise_for_status()
         self.endpoint = endpoint
@@ -286,9 +290,20 @@ class TauEnterpriseStorage(AbstractStorage):
         raise NotImplementedError
 
     def connect_database(self, *args, **kwargs):
-        """Open the database for reading and writing."""
+        """Open the database for reading and writing.
+
+        Args:
+            url (str): URL of the database to connect to.
+            db_name (str): The name of the database to use
+
+        Returns:
+            bool: True if a new connection was made, false otherwise.
+        """
         if self._database is None:
-            self._database = _TauEnterpriseDatabase(self.prefix)
+            self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'])
+            return True
+        else:
+            return False
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
@@ -314,7 +329,8 @@ class TauEnterpriseStorage(AbstractStorage):
         raise NotImplementedError
 
     def table(self, table_name):
-        self.connect_database()
+        if self._database is None:
+            raise InternalError("Attempt to get table when no database is connected.")
         if table_name is None:
             return _TauEnterpriseTable(self._database, 'key')
         else:
