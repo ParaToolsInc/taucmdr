@@ -250,3 +250,37 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.assertEqual(result[0].eid, eid_2, "Search for 4 in trials should have returned second element")
         result = self.storage.search_inside('trials', 11, table_name='experiment')
         self.assertEqual(result[0].eid, eid_3, "Search for 11 in trials should have returned third element")
+
+    def test_transaction(self):
+        self.storage.purge(table_name='application')
+        element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
+                     'shmem': False, 'mpi': False, 'cuda': True,
+                     'linkage': 'dynamic', 'openmp': False,
+                     'tbb': False, 'projects': [], 'name': 'hello'}
+        element_2 = {'opencl': True, 'mpc': False, 'pthreads': False,
+                     'shmem': False, 'mpi': False, 'cuda': False,
+                     'linkage': 'dynamic', 'openmp': True,
+                     'tbb': False, 'projects': [], 'name': 'hello'}
+        element_3 = {'opencl': False, 'mpc': True, 'pthreads': False,
+                     'shmem': False, 'mpi': False, 'cuda': False,
+                     'linkage': 'dynamic', 'openmp': False,
+                     'tbb': True, 'projects': [], 'name': 'hello'}
+        eid_1 = self.storage.insert(element_1, table_name='application').eid
+        with self.storage as database:
+            eid_2 = self.storage.insert(element_2, table_name='application').eid
+        count = self.storage.count(table_name='application')
+        self.assertEqual(count, 2, "After successful transaction, table should have two elements")
+        get_eid_1 = self.storage.get(keys=eid_1, table_name='application').eid
+        self.assertEqual(eid_1, get_eid_1, "After successful transaction, element 1 should be in table")
+        get_eid_2 = self.storage.get(keys=eid_2, table_name='application').eid
+        self.assertEqual(eid_2, get_eid_2, "After successful transaction, element 2 should be in table")
+        try:
+            with self.storage as database:
+                eid_3 = self.storage.insert(element_2, table_name='application').eid
+                raise RuntimeError
+        except RuntimeError:
+            pass
+        count = self.storage.count(table_name='application')
+        self.assertEqual(count, 2, "After unsuccessful transaction, table should still have two elements")
+        result_3 = self.storage.get(keys=eid_3, table_name='application')
+        self.assertIsNone(result_3, "After unsuccessful transaction, table should not contain element 3")

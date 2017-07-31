@@ -119,6 +119,26 @@ class _TauEnterpriseDatabase(object):
         for table in self.tables():
             _TauEnterpriseTable(self, table).purge()
 
+    def start_transaction(self):
+        """Begin a transaction, which can be reverted with :any:`_TauEnterpriseDatabase.revert_transaction`.
+
+        Returns:
+            str: A transaction ID which should be passed to :any:`_TauEnterpriseDatabase.revert_transaction`
+            to revert the transaction.
+        """
+        return self.table('transaction').insert({}).eid
+
+    def revert_transaction(self, transaction_id):
+        """Reverts a transaction previously started with :any:`_TauEnterpriseDatabase.start_transaction`.
+
+        After this call, the transaction ID is invalid and must not be used again.
+
+        Args:
+            transaction_id (str): The ID of the transaction to revert.
+        """
+        return self.table('transaction').remove(eid=transaction_id)
+
+
 
 class _TauEnterpriseTable(object):
     """Represents a table within the remote database.
@@ -179,6 +199,8 @@ class _TauEnterpriseTable(object):
             return
         else:
             request = self.session.get(url)
+        if request.status_code == 404:
+            return None
         request.raise_for_status()
         response = request.json()
         if '_id' in response:
@@ -192,10 +214,10 @@ class _TauEnterpriseTable(object):
             return None
 
     def get(self, keys=None, eid=None, match_any=False):
-        return self._get(keys=keys, eid=eid, match_any=False)
+        return self._get(keys=keys, eid=eid, match_any=match_any)
 
     def remove(self, keys=None, eid=None, match_any=False):
-        return self._get(keys=keys, eid=eid, match_any=False, delete=True)
+        return self._get(keys=keys, eid=eid, match_any=match_any, delete=True)
 
     def count(self, cond, match_any=False):
         if cond is None:
@@ -239,6 +261,8 @@ class TauEnterpriseStorage(AbstractStorage):
         super(TauEnterpriseStorage, self).__init__(name)
         self._database = None
         self._prefix = prefix
+        self._transaction_id = None
+        self._transaction_count = 0
 
     def __len__(self):
         return self.count()
@@ -321,12 +345,19 @@ class TauEnterpriseStorage(AbstractStorage):
 
     def __enter__(self):
         """Initiates the database transaction."""
-        # TODO
-        raise NotImplementedError
+        if self._transaction_count == 0:
+            self._transaction_id = self._database.start_transaction()
+        self._transaction_count += 1
+        return self
 
     def __exit__(self, ex_type, value, traceback):
         """Finalizes the database transaction."""
-        raise NotImplementedError
+        self._transaction_count -= 1
+        if self._transaction_count == 0:
+            if ex_type:
+                self._database.revert_transaction(self._transaction_id)
+            self._transaction_id = None
+        return False
 
     def table(self, table_name):
         if self._database is None:
@@ -375,7 +406,7 @@ class TauEnterpriseStorage(AbstractStorage):
             return None
         elif isinstance(keys, self.Record.eid_type):
             return table.get(eid=keys)
-        elif isinstance(keys, dict) and keys:
+        elif isinstance(keys, dict):
             return table.get(keys=keys, match_any=match_any)
         elif isinstance(keys, (list, tuple)):
             return [self.get(key, table_name=table_name, match_any=match_any) for key in keys]
@@ -410,7 +441,7 @@ class TauEnterpriseStorage(AbstractStorage):
         elif isinstance(keys, self.Record.eid_type):
             element = table.get(eid=keys)
             return [element] if element else []
-        elif isinstance(keys, dict) and keys:
+        elif isinstance(keys, dict):
             return table.search(keys, match_any=match_any)
         elif isinstance(keys, (list, tuple)):
             result = []
@@ -581,7 +612,7 @@ class TauEnterpriseStorage(AbstractStorage):
             return None
         elif isinstance(keys, self.Record.eid_type):
             table.remove(eid=keys)
-        elif isinstance(keys, dict) and keys:
+        elif isinstance(keys, dict):
             table.remove(keys=keys, match_any=match_any)
         elif isinstance(keys, (list, tuple)):
             for key in keys:
