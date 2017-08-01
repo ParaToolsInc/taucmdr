@@ -274,8 +274,9 @@ class TauEnterpriseStorage(AbstractStorage):
         raise KeyError
 
     def __setitem__(self, key, value):
-        if self.contains({'key': key}):
-            self.update({'value': value}, {'key': key})
+        eid = self.get({'key': key}).eid
+        if eid:
+            self.update({'value': value}, eid)
         else:
             self.insert({'key': key, 'value': value})
 
