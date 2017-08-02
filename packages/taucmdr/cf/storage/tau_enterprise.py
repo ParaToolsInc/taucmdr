@@ -32,11 +32,12 @@ This currently means storing key-value pairs and database records accessed
 through a REST API backed by MongoDB and files in Ceph through RADOSGW, an
 Amazon S3 API compatible object store.
 """
-
+                                
+import os
 import json
 import requests
 import six
-from taucmdr import logger
+from taucmdr import logger, util
 from taucmdr.error import InternalError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
@@ -347,7 +348,6 @@ class TauEnterpriseStorage(AbstractStorage):
             bool: True if a new connection was made, false otherwise.
         """
         if self._database is None:
-            print("Connecting to DB: {}".format(kwargs['db_name']))
             self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'], storage=self)
             return True
         else:
