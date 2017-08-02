@@ -104,15 +104,15 @@ class TauEnterpriseStorageTests(tests.TestCase):
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello1'}
         element_2 = {'opencl': True, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello2'}
         element_3 = {'opencl': False, 'mpc': True, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello3'}
         table = self.database.table('application')
         eid_1 = table.insert(element_1).eid
         eid_2 = table.insert(element_2).eid
@@ -132,9 +132,9 @@ class TauEnterpriseStorageTests(tests.TestCase):
     def test_table_update(self):
         self.database.purge()
         table = self.database.table('application')
-        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': False}
-        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': False}
-        element_3 = {'name': 'hello', 'opencl': True, 'mpc': True, 'pthreads': False}
+        element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': False}
+        element_2 = {'name': 'hello2', 'opencl': True, 'mpc': False, 'pthreads': False}
+        element_3 = {'name': 'hello3', 'opencl': True, 'mpc': True, 'pthreads': False}
         eid_1 = table.insert(element_1).eid
         eid_2 = table.insert(element_2).eid
         eid_3 = table.insert(element_3).eid
@@ -166,9 +166,9 @@ class TauEnterpriseStorageTests(tests.TestCase):
     def test_table_remove(self):
         self.database.purge()
         table = self.database.table('application')
-        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': False}
-        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': False}
-        element_3 = {'name': 'hello', 'opencl': True, 'mpc': True, 'pthreads': False}
+        element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': False}
+        element_2 = {'name': 'hello2', 'opencl': True, 'mpc': False, 'pthreads': False}
+        element_3 = {'name': 'hello3', 'opencl': True, 'mpc': True, 'pthreads': False}
         eid_1 = table.insert(element_1).eid
         table.insert(element_2)
         table.insert(element_3)
@@ -182,8 +182,8 @@ class TauEnterpriseStorageTests(tests.TestCase):
 
     def test_count(self):
         self.storage.purge(table_name='application')
-        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': True}
-        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': True}
+        element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': True}
+        element_2 = {'name': 'hello2', 'opencl': True, 'mpc': False, 'pthreads': True}
         self.storage.insert(element_1, table_name='application')
         self.storage.insert(element_2, table_name='application')
         count = self.storage.count(table_name='application')
@@ -191,8 +191,8 @@ class TauEnterpriseStorageTests(tests.TestCase):
 
     def test_get(self):
         self.storage.purge(table_name='application')
-        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': True}
-        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': True}
+        element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': True}
+        element_2 = {'name': 'hello2', 'opencl': True, 'mpc': False, 'pthreads': True}
         record_1 = self.storage.insert(element_1, table_name='application')
         record_2 = self.storage.insert(element_2, table_name='application')
         get_result_1 = self.storage.get(keys=record_1.eid, table_name='application')
@@ -207,15 +207,15 @@ class TauEnterpriseStorageTests(tests.TestCase):
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello1'}
         element_2 = {'opencl': True, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello2'}
         element_3 = {'opencl': False, 'mpc': True, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello3'}
         eid_1 = self.storage.insert(element_1, table_name='application').eid
         eid_2 = self.storage.insert(element_2, table_name='application').eid
         eid_3 = self.storage.insert(element_3, table_name='application').eid
@@ -256,15 +256,15 @@ class TauEnterpriseStorageTests(tests.TestCase):
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': True,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello1'}
         element_2 = {'opencl': True, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': True,
-                     'tbb': False, 'projects': [], 'name': 'hello'}
+                     'tbb': False, 'projects': [], 'name': 'hello2'}
         element_3 = {'opencl': False, 'mpc': True, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
                      'linkage': 'dynamic', 'openmp': False,
-                     'tbb': True, 'projects': [], 'name': 'hello'}
+                     'tbb': True, 'projects': [], 'name': 'hello3'}
         eid_1 = self.storage.insert(element_1, table_name='application').eid
         with self.storage as database:
             eid_2 = self.storage.insert(element_2, table_name='application').eid
