@@ -242,6 +242,8 @@ class Model(StorageRecord):
                         raise ModelError(cls, "%s: conflicting associations: '%s' vs. '%s'" % 
                                          (model_attr_name, existing, forward))
 
+
+
     @classmethod
     def validate(cls, data):
         """Validates data against the model.
@@ -278,25 +280,14 @@ class Model(StorageRecord):
                     value = []
                 elif not isinstance(value, list):
                     raise ModelError(cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
-                else:
-                    for eid in value:
-                        try:
-                            if cls.eid_type(eid) != eid:
-                                raise ValueError
-                        except ValueError:
-                            raise ModelError(cls, "Invalid ID '%s' in '%s'" % (eid, attr))
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
                 value = data.get(attr, None)
                 if value is not None:
-                    try:
-                        if cls.eid_type(value) != value:
-                            raise ValueError
-                    except ValueError:
-                        raise ModelError(cls, "Invalid ID '%s' in '%s'" % (value, attr))
                     validated[attr] = value
         return validated
+ 
     
     @classmethod
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
