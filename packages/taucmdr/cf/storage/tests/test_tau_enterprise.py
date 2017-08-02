@@ -132,9 +132,9 @@ class TauEnterpriseStorageTests(tests.TestCase):
     def test_table_update(self):
         self.database.purge()
         table = self.database.table('application')
-        element_1 = {'opencl': False, 'mpc': False, 'pthreads': False}
-        element_2 = {'opencl': True, 'mpc': False, 'pthreads': False}
-        element_3 = {'opencl': True, 'mpc': True, 'pthreads': False}
+        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': False}
+        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': False}
+        element_3 = {'name': 'hello', 'opencl': True, 'mpc': True, 'pthreads': False}
         eid_1 = table.insert(element_1).eid
         eid_2 = table.insert(element_2).eid
         eid_3 = table.insert(element_3).eid
@@ -166,9 +166,9 @@ class TauEnterpriseStorageTests(tests.TestCase):
     def test_table_remove(self):
         self.database.purge()
         table = self.database.table('application')
-        element_1 = {'opencl': False, 'mpc': False, 'pthreads': False}
-        element_2 = {'opencl': True, 'mpc': False, 'pthreads': False}
-        element_3 = {'opencl': True, 'mpc': True, 'pthreads': False}
+        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': False}
+        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': False}
+        element_3 = {'name': 'hello', 'opencl': True, 'mpc': True, 'pthreads': False}
         eid_1 = table.insert(element_1).eid
         table.insert(element_2)
         table.insert(element_3)
@@ -182,8 +182,8 @@ class TauEnterpriseStorageTests(tests.TestCase):
 
     def test_count(self):
         self.storage.purge(table_name='application')
-        element_1 = {'opencl': False, 'mpc': False, 'pthreads': True}
-        element_2 = {'opencl': True, 'mpc': False, 'pthreads': True}
+        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': True}
+        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': True}
         self.storage.insert(element_1, table_name='application')
         self.storage.insert(element_2, table_name='application')
         count = self.storage.count(table_name='application')
@@ -191,8 +191,8 @@ class TauEnterpriseStorageTests(tests.TestCase):
 
     def test_get(self):
         self.storage.purge(table_name='application')
-        element_1 = {'opencl': False, 'mpc': False, 'pthreads': True}
-        element_2 = {'opencl': True, 'mpc': False, 'pthreads': True}
+        element_1 = {'name': 'hello', 'opencl': False, 'mpc': False, 'pthreads': True}
+        element_2 = {'name': 'hello', 'opencl': True, 'mpc': False, 'pthreads': True}
         record_1 = self.storage.insert(element_1, table_name='application')
         record_2 = self.storage.insert(element_2, table_name='application')
         get_result_1 = self.storage.get(keys=record_1.eid, table_name='application')
