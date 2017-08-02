@@ -38,9 +38,27 @@ import requests
 import six
 from taucmdr import logger
 from taucmdr.error import InternalError
-from taucmdr.cf.storage import AbstractStorage, StorageRecord
+from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
+
+class TauEnterpriseStorageError(StorageError):
+    """Indicates that the database connection has not been initialized."""
+
+    message_fmt = ("%(value)s\n"
+                   "\n"
+                   "%(hints)s\n"
+                   "Please contact %(contact)s for assistance.")
+
+    def __init__(self, table_name):
+        """Initialize the error object.
+        
+        Args:
+            table_name (str): Table on which access was attempted
+        """
+        value = "Attempt to access table '%s' before database connection established" % table_name
+        super(TauEnterpriseStorageError, self).__init__(value)
+        self.table_name = table_name
 
 
 class _TauEnterpriseJsonRecord(StorageRecord):
@@ -65,8 +83,9 @@ class _TauEnterpriseDatabase(object):
 
     """
 
-    def __init__(self, endpoint, db_name):
+    def __init__(self, endpoint, db_name, storage=None):
         self.db_name = db_name
+        self.storage = storage
         self.session = requests.Session()
         # The requested database is sent as an HTTP header
         self.session.headers['Database-Name'] = self.db_name
@@ -126,7 +145,8 @@ class _TauEnterpriseDatabase(object):
             str: A transaction ID which should be passed to :any:`_TauEnterpriseDatabase.revert_transaction`
             to revert the transaction.
         """
-        return self.table('transaction').insert({}).eid
+        tid = self.table('transaction').insert({}).eid
+        return tid
 
     def revert_transaction(self, transaction_id):
         """Reverts a transaction previously started with :any:`_TauEnterpriseDatabase.start_transaction`.
@@ -159,7 +179,7 @@ class _TauEnterpriseTable(object):
 
     def _to_record(self, record):
         """Removes server-produced metadata from query results"""
-        return _TauEnterpriseJsonRecord(self.database,
+        return _TauEnterpriseJsonRecord(self.database.storage,
                                         {k: v for k, v in record.iteritems() if not k.startswith('_')},
                                         eid=record['_id'] if '_id' in record else None)
 
@@ -228,7 +248,7 @@ class _TauEnterpriseTable(object):
     def insert(self, element):
         request = self.session.post(self.endpoint, json.dumps(element), headers={'Content-Type': 'application/json'})
         request.raise_for_status()
-        return _TauEnterpriseJsonRecord(self.database, element, eid=request.json()['_id'])
+        return _TauEnterpriseJsonRecord(self.database.storage, element, eid=request.json()['_id'])
 
     def update(self, fields, keys=None, eids=None, match_any=False):
         update_ids = []
@@ -274,9 +294,9 @@ class TauEnterpriseStorage(AbstractStorage):
         raise KeyError
 
     def __setitem__(self, key, value):
-        eid = self.get({'key': key}).eid
-        if eid:
-            self.update({'value': value}, eid)
+        result = self.get({'key': key})
+        if result is not None:
+            self.update({'value': value}, result.eid)
         else:
             self.insert({'key': key, 'value': value})
 
@@ -306,13 +326,15 @@ class TauEnterpriseStorage(AbstractStorage):
 
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
-        # TODO
-        raise NotImplementedError
+        if not os.path.isdir(self._prefix):
+            try:
+                util.mkdirp(self._prefix)
+            except Exception as err:
+                raise StorageError("Failed to access %s filesystem prefix '%s': %s" % (self.name, self._prefix, err))
 
     def disconnect_filesystem(self, *args, **kwargs):
         """Disconnects the store filesystem."""
-        # TODO
-        raise NotImplementedError
+        return
 
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing.
@@ -325,7 +347,8 @@ class TauEnterpriseStorage(AbstractStorage):
             bool: True if a new connection was made, false otherwise.
         """
         if self._database is None:
-            self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'])
+            print("Connecting to DB: {}".format(kwargs['db_name']))
+            self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'], storage=self)
             return True
         else:
             return False
@@ -342,7 +365,7 @@ class TauEnterpriseStorage(AbstractStorage):
     def __str__(self):
         """Human-readable identifier for this database."""
         # pylint: disable=protected-access
-        return self._database.endpoint
+        return "{} {}".format(self._database.endpoint, self._prefix)
 
     def __enter__(self):
         """Initiates the database transaction."""
@@ -362,7 +385,8 @@ class TauEnterpriseStorage(AbstractStorage):
 
     def table(self, table_name):
         if self._database is None:
-            raise InternalError("Attempt to get table when no database is connected.")
+            #raise TauEnterpriseStorageError(table_name)
+            raise InternalError("bad")
         if table_name is None:
             return _TauEnterpriseTable(self._database, 'key')
         else:

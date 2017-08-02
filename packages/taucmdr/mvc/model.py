@@ -281,19 +281,20 @@ class Model(StorageRecord):
                 else:
                     for eid in value:
                         try:
-                            int(eid)
+                            if cls.eid_type(eid) != eid:
+                                raise ValueError
                         except ValueError:
-                            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
+                            raise ModelError(cls, "Invalid ID '%s' in '%s'" % (eid, attr))
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
                 value = data.get(attr, None)
                 if value is not None:
                     try:
-                        if int(value) != value:
+                        if cls.eid_type(value) != value:
                             raise ValueError
                     except ValueError:
-                        raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+                        raise ModelError(cls, "Invalid ID '%s' in '%s'" % (value, attr))
                     validated[attr] = value
         return validated
     
