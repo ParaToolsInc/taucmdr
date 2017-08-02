@@ -140,7 +140,7 @@ class TauEnterpriseStorageTests(tests.TestCase):
         eid_3 = table.insert(element_3).eid
         table.update({'mpc': True}, eids=eid_1)
         updated_element_1 = table.get(eid=eid_1).element
-        correct_element_1 = {'opencl': False, 'mpc': True, 'pthreads': False}
+        correct_element_1 = {'name': 'hello1', 'opencl': False, 'mpc': True, 'pthreads': False}
         self.assertDictEqual(updated_element_1, correct_element_1, "Updated element has wrong value")
         table.update({'pthreads': True}, keys={'opencl': True})
         updated_element_2 = table.get(eid=eid_2).element
@@ -234,22 +234,22 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.assertTrue(not result, "Search for nonexistent field should return empty")
 
     def test_search_inside(self):
-        self.storage.purge(table_name='experiment')
-        element_1 = {"project": 1, "application": 1, "target": 1, "measurement": 1, "trials": [1, 2, 3, 8, 10],
-                   "tau_makefile": "Makefile.tau-ec0e67e7", "name": "delphi-hello-sample"}
-        element_2 = {"project": 1, "application": 1, "target": 1, "measurement": 2, "trials": [4, 5, 6, 7],
-                     "tau_makefile": "Makefile.tau-ec0e67e7", "name": "delphi-hello-instrument"}
-        element_3 = {"project": 1, "application": 2, "target": 1, "measurement": 2, "trials": 11,
-                     "tau_makefile": "Makefile.tau-ec0e67e7", "name": "delphi-foo-instrument"}
-        eid_1 = self.storage.insert(element_1, table_name='experiment').eid
-        eid_2 = self.storage.insert(element_2, table_name='experiment').eid
-        eid_3 = self.storage.insert(element_3, table_name='experiment').eid
-        result = self.storage.search_inside('trials', 3, table_name='experiment')
-        self.assertEqual(result[0].eid, eid_1, "Search for 3 in trials should have returned first element")
-        result = self.storage.search_inside('trials', 4, table_name='experiment')
-        self.assertEqual(result[0].eid, eid_2, "Search for 4 in trials should have returned second element")
-        result = self.storage.search_inside('trials', 11, table_name='experiment')
-        self.assertEqual(result[0].eid, eid_3, "Search for 11 in trials should have returned third element")
+        self.storage.purge(table_name='compiler')
+        element_1 = {'path': u'/usr/bin/gcc', 'role': 'Host_CC',
+                'uid': '22bf4003', 'family': 'GNU', 'include_path': ["1", "2", "3", "10"]}
+        element_2 = {'path': u'/usr/bin/g++', 'role': 'Host_CXX',
+                'uid': '148623fa', 'family': 'GNU', 'include_path': ["4", "6", "7", "8", "9"]}
+        element_3 = {'path': u'/usr/bin/gfortran', 'role': 'Host_FC',
+                'uid': '7e1c0e82', 'family': 'GNU', 'include_path': ["11"]}
+        eid_1 = self.storage.insert(element_1, table_name='compiler').eid
+        eid_2 = self.storage.insert(element_2, table_name='compiler').eid
+        eid_3 = self.storage.insert(element_3, table_name='compiler').eid
+        result = self.storage.search_inside('include_path', "3", table_name='compiler')
+        self.assertEqual(result[0].eid, eid_1, "Search for 3 in include_path should have returned first element")
+        result = self.storage.search_inside('include_path', "4", table_name='compiler')
+        self.assertEqual(result[0].eid, eid_2, "Search for 4 in include_path should have returned second element")
+        result = self.storage.search_inside('include_path', "11", table_name='compiler')
+        self.assertEqual(result[0].eid, eid_3, "Search for 11 in include_path should have returned third element")
 
     def test_transaction(self):
         self.storage.purge(table_name='application')
@@ -276,7 +276,7 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.assertEqual(eid_2, get_eid_2, "After successful transaction, element 2 should be in table")
         try:
             with self.storage as database:
-                eid_3 = self.storage.insert(element_2, table_name='application').eid
+                eid_3 = self.storage.insert(element_3, table_name='application').eid
                 raise RuntimeError
         except RuntimeError:
             pass
