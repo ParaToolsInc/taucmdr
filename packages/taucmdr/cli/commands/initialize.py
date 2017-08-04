@@ -108,7 +108,7 @@ class InitializeCommand(AbstractCommand):
         # Override model defaults so measurements are created unless explicitly disabled
         measurement_group['--source-inst'].default = 'automatic'
         measurement_group['--profile'].default = 'tau'
-        measurement_group['--trace'].default = 'slog2'
+        measurement_group['--trace'].default = 'otf2'
         measurement_group['--sample'].default = True
         return parser
 
