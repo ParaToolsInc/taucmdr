@@ -89,6 +89,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf</span> <span class="kn">import</span> <span class="n">software</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span> 
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">IBM_BGL</span><span class="p">,</span> <span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">CRAY_CNL</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
@@ -159,12 +160,10 @@
     <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">None</span>
     <span class="k">elif</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">CRAY_CNL</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s1">&#39;/opt/cray/papi/default&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s1">&#39;/opt/cray/papi/default&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;download&#39;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;download&#39;</span></div>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;/opt/cray/papi/default&#39;</span><span class="p">,</span> <span class="s1">&#39;/opt/cray/pe/papi/default&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">path</span>
+    <span class="k">return</span> <span class="s1">&#39;download&#39;</span></div>
 
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
@@ -465,6 +464,16 @@
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
+        <span class="s1">&#39;libotf2_source&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to libotf2 installation or archive file&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--otf&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|None)&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">},</span>
         <span class="s1">&#39;forced_makefile&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)&#39;</span><span class="p">,</span>
@@ -539,13 +548,15 @@
                 <span class="n">sources</span><span class="p">[</span><span class="n">attr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="n">sources</span></div>
     
+<div class="viewcode-block" id="Target.get_installation"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.Target.get_installation">[docs]</a>    <span class="k">def</span> <span class="nf">get_installation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">software</span><span class="o">.</span><span class="n">get_installation</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">())</span></div>
+    
 <div class="viewcode-block" id="Target.acquire_sources"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.Target.acquire_sources">[docs]</a>    <span class="k">def</span> <span class="nf">acquire_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Acquire all source code packages known to this target.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">taucmdr.cf</span> <span class="kn">import</span> <span class="n">software</span>
         <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">attr</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">):</span>
-                <span class="bp">cls</span> <span class="o">=</span> <span class="n">software</span><span class="o">.</span><span class="n">get_installation</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
-                <span class="n">inst</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">())</span>
+                <span class="n">inst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_installation</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">inst</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">()</span>
                 <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
@@ -636,7 +647,7 @@
                      <span class="s2">&quot;Check loaded modules and the PATH environment variable&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">found</span></div>
-
+    
 <div class="viewcode-block" id="Target.papi_metrics"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.Target.papi_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">papi_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="o">=</span><span class="s2">&quot;PRESET&quot;</span><span class="p">,</span> <span class="n">include_modifiers</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;List PAPI metrics available on this target.</span>
 <span class="sd">        </span>
@@ -655,10 +666,10 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[]</span>
         <span class="kn">from</span> <span class="nn">HTMLParser</span> <span class="kn">import</span> <span class="n">HTMLParser</span>
-        <span class="kn">from</span> <span class="nn">taucmdr.cf.software.papi_installation</span> <span class="kn">import</span> <span class="n">PapiInstallation</span>
+        
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">html_parser</span> <span class="o">=</span> <span class="n">HTMLParser</span><span class="p">()</span>
-        <span class="n">papi</span> <span class="o">=</span> <span class="n">PapiInstallation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">())</span>
+        <span class="n">papi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_installation</span><span class="p">(</span><span class="s1">&#39;papi&#39;</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">_format</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
             <span class="n">desc</span> <span class="o">=</span> <span class="n">html_parser</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;desc&#39;</span><span class="p">])</span>

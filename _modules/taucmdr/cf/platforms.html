@@ -323,6 +323,11 @@
                     <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span> 
                     <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
  
+<span class="n">TAU_CRAY_KNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">CRAY_CNL</span><span class="p">),</span> <span class="s1">&#39;craycnl&#39;</span><span class="p">,</span> 
+                        <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span> 
+                         <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span> 
+                         <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">CRAY_SHMEM</span><span class="p">})</span>
+ 
 <span class="n">TAU_BGP</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_CNK</span><span class="p">),</span> <span class="s1">&#39;bgp&#39;</span><span class="p">,</span> 
                    <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">,</span> 
                     <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 

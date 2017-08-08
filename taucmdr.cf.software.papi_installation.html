@@ -62,12 +62,31 @@
 <dl class="method">
 <dt id="taucmdr.cf.software.papi_installation.PapiInstallation.check_metrics">
 <code class="descname">check_metrics</code><span class="sig-paren">(</span><em>metrics</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/papi_installation.html#PapiInstallation.check_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.papi_installation.PapiInstallation.check_metrics" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks compatibility of PAPI metrics.</p>
+<p>Extracts all PAPI metrics from <cite>metrics</cite> and executes papi_event_chooser to check compatibility.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>metrics</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; List of metrics.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
+PAPI metrics are not compatible on the current host.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.papi_installation.PapiInstallation.make">
 <code class="descname">make</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em>, <em>parallel=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/papi_installation.html#PapiInstallation.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.papi_installation.PapiInstallation.make" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.papi_installation.PapiInstallation.parse_metrics">
+<code class="descname">parse_metrics</code><span class="sig-paren">(</span><em>metrics</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/papi_installation.html#PapiInstallation.parse_metrics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.papi_installation.PapiInstallation.parse_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts PAPI metrics from a list of metrics and strips TAU&#8217;s metric prefixes.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.papi_installation.PapiInstallation.xml_event_info">
