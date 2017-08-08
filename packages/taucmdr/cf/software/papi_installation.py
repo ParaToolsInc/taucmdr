@@ -39,6 +39,7 @@ from xml.etree import ElementTree
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
 
 LOGGER = logger.get_logger(__name__)
 
@@ -51,6 +52,13 @@ class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
+        # PAPI can't be built with IBM compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is IBM:
+            try:
+                gnu_compilers = GNU.installation()
+            except ConfigurationError:
+                raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
+            compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os, 
                                                compilers, REPOS, None, LIBRARIES, None)
         self._xml_event_info = None
@@ -61,6 +69,11 @@ class PapiInstallation(AutotoolsInstallation):
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
         return src_prefix
+
+    def configure(self, flags, env):
+        env['CC'] = self.compilers[CC].unwrap().absolute_path
+        env['CXX'] = self.compilers[CXX].unwrap().absolute_path
+        return super(PapiInstallation, self).configure(flags, env)
 
     def make(self, flags, env, parallel=True):
         # PAPI's tests often fail to compile, so disable them.
