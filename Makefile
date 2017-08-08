@@ -103,7 +103,11 @@ else
   ifeq ($(ARCH),i386)
     CONDA_ARCH = x86
   else
-    USE_MINICONDA = false
+    ifeq ($(ARCH),ppc64le)
+      CONDA_ARCH = ppc64le
+    else
+      USE_MINICONDA = false
+    endif
   endif
 endif
 CONDA_VERSION = latest
