@@ -41,6 +41,7 @@ import os
 import glob
 import shutil
 import resource
+import multiprocessing
 from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
@@ -669,8 +670,11 @@ class TauInstallation(Installation):
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
-        if self.target_arch is INTEL_KNL:
-            useropts.append('-DTAU_MAX_THREADS=512')
+        nprocs = multiprocessing.cpu_count()
+        if nprocs > 128:
+            # Work around TAU's silly hard-coded thread limits.
+            nprocs = 1 << ((nprocs-1).bit_length() + 1)
+            useropts.append('-DTAU_MAX_THREADS=%d' % nprocs)
         flags.append('-useropt=%s' % '#'.join(useropts))
         
         cmd = ['./configure'] + flags
