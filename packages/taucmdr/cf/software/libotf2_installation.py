@@ -30,15 +30,8 @@
 The OTF2 library  provides an interface to write and read trace data.
 """
 
-import os
-import sys
-import fileinput
-from taucmdr import logger
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
-
-
-LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://www.vi-hps.org/upload/packages/otf2/otf2-2.1-rc2.tar.gz'}
 
@@ -52,4 +45,5 @@ class Libotf2Installation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources, 
-                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+

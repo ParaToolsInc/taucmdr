@@ -38,6 +38,7 @@ from subprocess import CalledProcessError
 from xml.etree import ElementTree
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
+from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
 
