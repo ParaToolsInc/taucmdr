@@ -49,7 +49,11 @@ INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation',
 PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group',
                          CC='pgcc', CXX=('pgCC', 'pgc++', 'pgcxx'), FC=('pgfortran', 'pgf90', 'pgf77'))
 
-IBM = HOST_COMPILERS.add('IBM', CC='xlc', CXX=('xlc++', 'xlC'), FC='xlf')
+IBM = HOST_COMPILERS.add('IBM', 
+                         CC=('xlc_r', 'xlc'), 
+                         CXX=('xlc++_r', 'xlc++', 'xlC_r', 'xlC', 'xlcuf'), 
+                         FC=('xlf_r', 'xlf', 'xlf90_r', 'xlf90', 'xlf95_r', 'xlf95', 
+                             'xlf2003_r', 'xlf2003', 'xlf2008_r', 'xlf2008'))
 
 IBM_BG = HOST_COMPILERS.add('BlueGene',
                             CC=('bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r'),
