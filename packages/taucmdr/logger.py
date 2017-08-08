@@ -76,7 +76,10 @@ def get_terminal_size():
             dims = (default_width, default_height)
     width = dims[0] if dims[0] >= 10 else default_width
     height = dims[1] if dims[1] >= 1 else default_height
-    return width, height
+    try:
+        return int(width), int(height)
+    except ValueError:
+        return default_width, default_height
 
 
 def _get_term_size_windows():
@@ -171,8 +174,8 @@ def _get_term_size_env():
                or None if the size could not be determined.
     """
     try:
-        return (os.environ['LINES'], os.environ['COLUMNS'])
-    except KeyError:
+        return (int(os.environ['LINES']), int(os.environ['COLUMNS']))
+    except (KeyError, ValueError):
         return None
 
 
