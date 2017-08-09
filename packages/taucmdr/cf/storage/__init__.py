@@ -219,7 +219,7 @@ class AbstractStorage(object):
         """
 
     @abstractmethod    
-    def get(self, keys, table_name=None, match_any=False):
+    def get(self, keys, table_name=None, match_any=False, populate=None):
         """Find a single record.
         
         The behavior depends on the type of `keys`:
@@ -233,6 +233,7 @@ class AbstractStorage(object):
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
+            populate (list): Names of fields containing foreign keys to populate, or None to disable
 
         Returns:
             Record: The matching data record if `keys` was a self.Record.eid_type or dict.
@@ -244,7 +245,7 @@ class AbstractStorage(object):
         """
 
     @abstractmethod
-    def search(self, keys=None, table_name=None, match_any=False):
+    def search(self, keys=None, table_name=None, match_any=False, populate=None):
         """Find multiple records.
         
         The behavior depends on the type of `keys`:
@@ -258,6 +259,7 @@ class AbstractStorage(object):
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
+            populate (list): Names of fields containing foreign keys to populate, or None to disable
 
         Returns:
             list: Matching data records.
@@ -410,4 +412,11 @@ class AbstractStorage(object):
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
         """
 
+    @abstractmethod
+    def is_remote(self):
+        """Indicates whether this storage class represents a remote connection
+
+        Returns:
+            bool: True if remote, False if local
+        """
 

@@ -69,10 +69,11 @@ class _TauEnterpriseJsonRecord(StorageRecord):
         super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element)
 
     def __str__(self):
-        return json.dumps(self.element)
+        return json.dumps({k: (v.element if type(v) is _TauEnterpriseJsonRecord else v)
+                           for k,v in self.element.iteritems()})
 
     def __repr__(self):
-        return json.dumps(self.element)
+        return str(self)
 
 
 class _TauEnterpriseDatabase(object):
@@ -178,8 +179,12 @@ class _TauEnterpriseTable(object):
         self.endpoint = "{}/{}".format(database.endpoint, name.lower())
         self.session = database.session
 
-    def _to_record(self, record):
+    def _to_record(self, record, populate):
         """Removes server-produced metadata from query results"""
+        # Convert each server-side-populated field to a record
+        for populated_field in populate if populate else []:
+            if populated_field in record:
+                record[populated_field] = self._to_record(record[populated_field], None)
         return _TauEnterpriseJsonRecord(self.database.storage,
                                         {k: v for k, v in record.iteritems() if not k.startswith('_')},
                                         eid=record['_id'] if '_id' in record else None)
@@ -189,29 +194,37 @@ class _TauEnterpriseTable(object):
         """Converts a query in the form of a dict from match-all form to match-any form"""
         return {'$or': [{k: v} for k, v in cond.iteritems()]}
 
-    def search(self, cond, match_any=False):
+    @staticmethod
+    def _embed_query(cond):
+        """Produces an embedding request from a list of field names"""
+        if not cond:
+            return ""
+        else:
+            return "&embedded={}".format(json.dumps({k: 1 for k in cond}))
+
+    def search(self, cond, match_any=False, populate=None):
         if cond is None:
             cond = {}
         if match_any:
             cond = self._query_to_match_any(cond)
-        url = "{}/?where={}".format(self.endpoint, json.dumps(cond))
+        url = "{}/?where={}{}".format(self.endpoint, json.dumps(cond), self._embed_query(populate))
         request = self.session.get(url)
         request.raise_for_status()
         response = request.json()
         if '_meta' in response and response['_meta']['total'] > 0:
-            return [self._to_record(result) for result in response['_items']]
+            return [self._to_record(result, populate) for result in response['_items']]
         else:
             return []
 
-    def _get(self, keys=None, eid=None, match_any=False, delete=False):
+    def _get(self, keys=None, eid=None, match_any=False, delete=False, populate=None):
         if match_any and keys is not None:
             keys = self._query_to_match_any(keys)
         if eid is not None:
-            url = "{}/{}".format(self.endpoint, eid)
+            url = "{}/{}?{}".format(self.endpoint, eid, self._embed_query(populate))
         elif isinstance(keys, dict):
-            url = "{}/?where={}".format(self.endpoint, json.dumps(keys))
+            url = "{}/?where={}&{}".format(self.endpoint, json.dumps(keys), self._embed_query(populate))
         elif isinstance(keys, six.string_types):
-            url = "{}/?where={}".format(self.endpoint, keys)
+            url = "{}/?where={}&{}".format(self.endpoint, keys, self._embed_query(populate))
         else:
             return None
         if delete:
@@ -226,16 +239,16 @@ class _TauEnterpriseTable(object):
         response = request.json()
         if '_id' in response:
             # A single item was returned
-            return self._to_record(response)
+            return self._to_record(response, populate)
         elif '_meta' in response and response['_meta']['total'] > 0:
             # More that one item was returned
-            return self._to_record(response['_items'][0])
+            return self._to_record(response['_items'][0], populate)
         else:
             # No items were returned
             return None
 
-    def get(self, keys=None, eid=None, match_any=False):
-        return self._get(keys=keys, eid=eid, match_any=match_any)
+    def get(self, keys=None, eid=None, match_any=False, populate=None):
+        return self._get(keys=keys, eid=eid, match_any=match_any, populate=populate)
 
     def remove(self, keys=None, eid=None, match_any=False):
         return self._get(keys=keys, eid=eid, match_any=match_any, delete=True)
@@ -403,7 +416,7 @@ class TauEnterpriseStorage(AbstractStorage):
         """
         return self.table(table_name).count({})
 
-    def get(self, keys, table_name=None, match_any=False):
+    def get(self, keys, table_name=None, match_any=False, populate=None):
         """Find a single record.
 
         The behavior depends on the type of `keys`:
@@ -417,6 +430,7 @@ class TauEnterpriseStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
+            populate (list): Names of fields containing foreign keys to populate, or None to disable
 
         Returns:
             Record: The matching data record if `keys` was a self.Record.eid_type or dict.
@@ -430,16 +444,16 @@ class TauEnterpriseStorage(AbstractStorage):
         if keys is None:
             return None
         elif isinstance(keys, self.Record.eid_type):
-            return table.get(eid=keys)
+            return table.get(eid=keys, populate=populate)
         elif isinstance(keys, dict):
-            return table.get(keys=keys, match_any=match_any)
+            return table.get(keys=keys, match_any=match_any, populate=populate)
         elif isinstance(keys, (list, tuple)):
-            return [self.get(key, table_name=table_name, match_any=match_any) for key in keys]
+            return [self.get(key, table_name=table_name, match_any=match_any, populate=populate) for key in keys]
         else:
             raise ValueError(keys)
         return None
 
-    def search(self, keys=None, table_name=None, match_any=False):
+    def search(self, keys=None, table_name=None, match_any=False, populate=None):
         """Find multiple records.
 
         The behavior depends on the type of `keys`:
@@ -453,6 +467,7 @@ class TauEnterpriseStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
+            populate (list): Names of fields containing foreign keys to populate, or None to disable
 
         Returns:
             list: Matching data records.
@@ -462,16 +477,16 @@ class TauEnterpriseStorage(AbstractStorage):
         """
         table = self.table(table_name)
         if keys is None:
-            return table.search(cond=None)
+            return table.search(cond=None, populate=populate)
         elif isinstance(keys, self.Record.eid_type):
-            element = table.get(eid=keys)
+            element = table.get(eid=keys, populate=populate)
             return [element] if element else []
         elif isinstance(keys, dict):
-            return table.search(keys, match_any=match_any)
+            return table.search(keys, match_any=match_any, populate=populate)
         elif isinstance(keys, (list, tuple)):
             result = []
             for key in keys:
-                result.extend(self.search(keys=key, table_name=table_name, match_any=match_any))
+                result.extend(self.search(keys=key, table_name=table_name, match_any=match_any, populate=populate))
             return result
         else:
             raise ValueError(keys)
@@ -653,3 +668,11 @@ class TauEnterpriseStorage(AbstractStorage):
         """
         table = self.table(table_name)
         table.purge()
+
+    def is_remote(self):
+        """Indicates whether this storage class represents a remote connection
+
+        Returns:
+            bool: True if remote, False if local
+        """
+        return True

@@ -284,3 +284,16 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.assertEqual(count, 2, "After unsuccessful transaction, table should still have two elements")
         result_3 = self.storage.get(keys=eid_3, table_name='application')
         self.assertIsNone(result_3, "After unsuccessful transaction, table should not contain element 3")
+
+    def test_populate(self):
+        self.storage.purge(table_name='compiler')
+        element_1 = {'path': u'/usr/bin/gcc', 'role': 'Host_CC',
+                     'uid': '22bf4003', 'family': 'GNU', 'include_path': ["1", "2", "3", "10"]}
+        eid_1 = self.storage.insert(element_1, table_name='compiler').eid
+        element_2 = {'path': u'/usr/bin/g++', 'role': 'Host_CXX',
+                     'uid': '148623fa', 'family': 'GNU', 'include_path': ["4", "6", "7", "8", "9"],
+                     'wrapped': eid_1}
+        eid_2 = self.storage.insert(element_2, table_name='compiler').eid
+        record_2 = self.storage.get(keys=eid_2, table_name='compiler', populate=['wrapped'])
+        self.assertEqual(record_2['wrapped']['role'], 'Host_CC', "Populated field should contain value from foreign ref")
+        self.assertEqual(record_2['wrapped'].eid, eid_1, "Populated field should have eid of foreign ref")

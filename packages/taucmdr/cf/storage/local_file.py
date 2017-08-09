@@ -240,7 +240,7 @@ class LocalFileStorage(AbstractStorage):
         """
         return len(self.table(table_name))
     
-    def get(self, keys, table_name=None, match_any=False):
+    def get(self, keys, table_name=None, match_any=False, populate=None):
         """Find a single record.
         
         The behavior depends on the type of `keys`:
@@ -254,6 +254,7 @@ class LocalFileStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
+            populate (list): Names of fields containing foreign keys to populate, or None to disable
 
         Returns:
             Record: The matching data record if `keys` was a self.Record.eid_type or dict.
@@ -263,6 +264,8 @@ class LocalFileStorage(AbstractStorage):
         Raises:
             ValueError: Invalid value for `keys`.
         """
+        if populate:
+            raise NotImplementedError
         table = self.table(table_name)
         if keys is None:
             return None
@@ -281,7 +284,7 @@ class LocalFileStorage(AbstractStorage):
             return self.Record(self, element=element)
         return None
 
-    def search(self, keys=None, table_name=None, match_any=False):
+    def search(self, keys=None, table_name=None, match_any=False, populate=None):
         """Find multiple records.
         
         The behavior depends on the type of `keys`:
@@ -295,6 +298,7 @@ class LocalFileStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
+            populate (list): Names of fields containing foreign keys to populate, or None to disable
 
         Returns:
             list: Matching data records.
@@ -303,6 +307,8 @@ class LocalFileStorage(AbstractStorage):
             ValueError: Invalid value for `keys`.
         """
         #LOGGER.debug("Search '%s' for '%s'", table_name, keys)
+        if populate:
+            raise NotImplementedError
         table = self.table(table_name)
         if keys is None:
             #LOGGER.debug("%s: all()", table_name)
@@ -528,3 +534,11 @@ class LocalFileStorage(AbstractStorage):
         """
         LOGGER.debug("%s: purge()", table_name)
         self.table(table_name).purge()
+
+    def is_remote(self):
+        """Indicates whether this storage class represents a remote connection
+
+        Returns:
+            bool: True if remote, False if local
+        """
+        return False
