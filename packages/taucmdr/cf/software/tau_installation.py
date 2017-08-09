@@ -188,6 +188,7 @@ class TauInstallation(Installation):
                  measure_callsite=False,
                  callpath_depth=100,
                  throttle=True,
+                 metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
                  forced_makefile=None):
@@ -237,6 +238,7 @@ class TauInstallation(Installation):
             measure_callsite (bool): If True then record event callsites.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
             throttle (bool): If True then throttle lightweight events.
+            metadata_merge (bool): If True then merge metadata.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
@@ -282,6 +284,7 @@ class TauInstallation(Installation):
         assert measure_callsite in (True, False)
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
+        assert metadata_merge in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert isinstance(forced_makefile, six.string_types) or forced_makefile is None
@@ -337,6 +340,7 @@ class TauInstallation(Installation):
         self.measure_callsite = measure_callsite
         self.callpath_depth = callpath_depth
         self.throttle = throttle
+        self.metadata_merge = metadata_merge
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
@@ -997,6 +1001,7 @@ class TauInstallation(Installation):
         env['TAU_CALLSITE'] = str(int(self.measure_callsite))
         env['TAU_METRICS'] = ",".join(self.metrics) + ","
         env['TAU_THROTTLE'] = str(int(self.throttle))
+        env['TAU_MERGE_METADATA'] = str(int(self.metadata_merge))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
             env['TAU_THROTTLE_NUMCALLS'] = str(int(self.throttle_num_calls))

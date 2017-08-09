@@ -303,6 +303,12 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'metadata_merge': {
+           'type': 'boolean',
+           'default': True,
+           'description': 'merge metadata of TAU profiles',
+           'argparse': {'flags': ('--metadata-merge',)},
+        },
         'callsite': {
             'type': 'boolean',
             'default': False,
