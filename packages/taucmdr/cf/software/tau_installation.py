@@ -47,12 +47,12 @@ from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
-from taucmdr.cf.software.installation import Installation, parallel_make_flags
+from taucmdr.cf.software.installation import Installation, parallel_make_flags, new_os_environ
 from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
 from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -435,11 +435,9 @@ class TauInstallation(Installation):
 
     def verify(self):
         super(TauInstallation, self).verify()
-        
         # Check PAPI metrics for compatibility
         if self._uses_papi():
             self.dependencies['papi'].check_metrics(self.metrics)
-
         # Check for TAU libraries
         tau_makefile = self.get_makefile()
         makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau", "")
@@ -450,41 +448,46 @@ class TauInstallation(Installation):
                 break
         else:
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
-
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         with open(tau_makefile, 'r') as fin:
             for line in fin:
-                if self._uses_binutils() and 'BFDINCLUDE=' in line:
-                    binutils = self.dependencies['binutils']
-                    bfd_inc = line.split('=')[1].strip().strip("-I")
-                    if binutils.include_path != bfd_inc:
-                        LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
-                        raise SoftwarePackageError("BFDINCLUDE in '%s' is invalid" % tau_makefile)
-                if self._uses_libunwind() and 'UNWIND_INC=' in line:
-                    libunwind = self.dependencies['libunwind']
-                    libunwind_inc = line.split('=')[1].strip().strip("-I")
-                    if libunwind.include_path != libunwind_inc:
-                        LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
-                        raise SoftwarePackageError("UNWIND_INC in '%s' is invalid" % tau_makefile)
-                if self._uses_papi() and 'PAPIDIR=' in line:
-                    papi = self.dependencies['papi']
-                    papi_dir = line.split('=')[1].strip()
-                    if papi.install_prefix != papi_dir:
-                        LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
-                        raise SoftwarePackageError("PAPI_DIR in '%s' is invalid" % tau_makefile)
-                if self._uses_scorep() and 'SCOREPDIR=' in line:
-                    scorep = self.dependencies['scorep']
-                    scorep_dir = line.split('=')[1].strip()
-                    if scorep.install_prefix != scorep_dir:
-                        LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
-                        raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
-                if self._uses_libotf2() and 'OTFINC=' in line:
-                    libotf2 = self.dependencies['libotf2']
-                    libotf2_dir = line.split('=')[1].strip().strip("-I")
-                    if libotf2.include_path != libotf2_dir:
-                        LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
-                        raise SoftwarePackageError("OTFINC in '%s' is invalid" % tau_makefile)
-
+                if line.startswith('#'):
+                    continue
+                elif 'BFDINCLUDE=' in line:
+                    if self._uses_binutils():
+                        binutils = self.dependencies['binutils']
+                        bfd_inc = line.split('=')[1].strip().strip("-I")
+                        if binutils.include_path != bfd_inc:
+                            LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
+                            raise SoftwarePackageError("BFDINCLUDE in '%s' is invalid" % tau_makefile)
+                elif 'UNWIND_INC=' in line:
+                    if self._uses_libunwind(): 
+                        libunwind = self.dependencies['libunwind']
+                        libunwind_inc = line.split('=')[1].strip().strip("-I")
+                        if libunwind.include_path != libunwind_inc:
+                            LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
+                            raise SoftwarePackageError("UNWIND_INC in '%s' is invalid" % tau_makefile)
+                elif 'PAPIDIR=' in line:
+                    if self._uses_papi():
+                        papi = self.dependencies['papi']
+                        papi_dir = line.split('=')[1].strip()
+                        if papi.install_prefix != papi_dir:
+                            LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
+                            raise SoftwarePackageError("PAPI_DIR in '%s' is invalid" % tau_makefile)
+                elif 'SCOREPDIR=' in line:
+                    if self._uses_scorep():
+                        scorep = self.dependencies['scorep']
+                        scorep_dir = line.split('=')[1].strip()
+                        if scorep.install_prefix != scorep_dir:
+                            LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
+                            raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
+                elif 'OTFINC=' in line:
+                    if self._uses_libotf2():
+                        libotf2 = self.dependencies['libotf2']
+                        libotf2_dir = line.split('=')[1].strip().strip("-I")
+                        if libotf2.include_path != libotf2_dir:
+                            LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
+                            raise SoftwarePackageError("OTFINC in '%s' is invalid" % tau_makefile)
         # Check for iowrapper libraries and link options
         if self.io_inst:
             # Replace right-most occurance of 'Makefile.tau' with 'shared'
@@ -717,8 +720,6 @@ class TauInstallation(Installation):
         if self.forced_makefile:
             forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
             self._set_install_prefix(forced_install_prefix)
-            for pkg in six.itervalues(self.dependencies):
-                pkg.install(force_reinstall=False)
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
             return 
         if not self.src or not force_reinstall:
@@ -734,22 +735,24 @@ class TauInstallation(Installation):
                 elif not force_reinstall:
                     LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
-        try:
-            # TAU's configure scripts create/touch/edit files so need to open the umask waaaaaay early.
-            with util.umask(0o02):
+        with new_os_environ(), util.umask(002):
+            try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
                     shutil.move(self._prepare_src(), self.install_prefix)
                 self._src_prefix = self.install_prefix
-                self.configure()
-                self.make_install()
-            self.set_group()
-        except Exception as err:
-            LOGGER.info("%s installation failed: %s ", self.title, err)
-            raise
+                self.installation_sequence()
+                self.set_group()
+            except Exception as err:
+                LOGGER.info("%s installation failed: %s ", self.title, err)
+                raise
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
+    
+    def installation_sequence(self):
+        self.configure()
+        self.make_install()
 
     def _compiler_tags(self):
         return {host_compilers.INTEL: 'intel' if self.tau_magic.operating_system is CRAY_CNL else 'icpc',
