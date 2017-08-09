@@ -71,17 +71,17 @@ class PapiInstallation(AutotoolsInstallation):
             src_prefix = os.path.join(src_prefix, 'src')
         return src_prefix
 
-    def configure(self, flags, env):
-        env['CC'] = self.compilers[CC].unwrap().absolute_path
-        env['CXX'] = self.compilers[CXX].unwrap().absolute_path
-        return super(PapiInstallation, self).configure(flags, env)
+    def configure(self, flags):
+        os.environ['CC'] = self.compilers[CC].unwrap().absolute_path
+        os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
+        return super(PapiInstallation, self).configure(flags)
 
-    def make(self, flags, env, parallel=True):
+    def make(self, flags):
         # PAPI's tests often fail to compile, so disable them.
         for line in fileinput.input(os.path.join(self._src_prefix, 'Makefile'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
-        super(PapiInstallation, self).make(flags, env, parallel)
+        super(PapiInstallation, self).make(flags)
 
     def xml_event_info(self):
         if not self._xml_event_info:

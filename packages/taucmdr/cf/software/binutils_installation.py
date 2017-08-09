@@ -64,11 +64,11 @@ class BinutilsInstallation(AutotoolsInstallation):
         super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def configure(self, flags, env):
+    def configure(self, flags):
         from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
         flags.extend(['--disable-nls', '--disable-werror'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
-            env[var] = None
+            del os.environ[var]
         if self.target_os is DARWIN:
             flags.append('CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
             flags.append('CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
@@ -92,13 +92,12 @@ class BinutilsInstallation(AutotoolsInstallation):
                         break
                 else:
                     raise ConfigurationError("Cannot find KNC native compilers in /usr/linux-k1om-*")
-            env['PATH'] = os.pathsep.join([os.path.dirname(k1om_ar), env.get('PATH', os.environ['PATH'])])
+            os.environ['PATH'] = os.pathsep.join((os.path.dirname(k1om_ar), os.environ['PATH']))
             flags.append('--host=x86_64-k1om-linux')
-        return super(BinutilsInstallation, self).configure(flags, env)
+        return super(BinutilsInstallation, self).configure(flags)
 
-    def make_install(self, flags, env, parallel=False):
-        super(BinutilsInstallation, self).make_install(flags, env, parallel)
-
+    def make_install(self, flags):
+        super(BinutilsInstallation, self).make_install(flags)
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(self._src_prefix, 'bfd', '*.h')):
             shutil.copy(hdr, self.include_path)
@@ -108,11 +107,9 @@ class BinutilsInstallation(AutotoolsInstallation):
             except IOError:
                 dst = os.path.join(self.include_path, os.path.basename(hdr))
                 shutil.copytree(hdr, dst)
-
         LOGGER.debug("Copying missing libiberty libraries")
         shutil.copy(os.path.join(self._src_prefix, 'libiberty', 'libiberty.a'), self.lib_path)
         shutil.copy(os.path.join(self._src_prefix, 'opcodes', 'libopcodes.a'), self.lib_path)
-
         LOGGER.debug("Fixing BFD header")
         for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky

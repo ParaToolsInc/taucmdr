@@ -67,26 +67,26 @@ class LibunwindInstallation(AutotoolsInstallation):
         super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
-    def configure(self, flags, env):
-        env['CC'] = self.compilers[CC].unwrap().absolute_path
-        env['CXX'] = self.compilers[CXX].unwrap().absolute_path
+    def configure(self, flags):
+        os.environ['CC'] = self.compilers[CC].unwrap().absolute_path
+        os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
         if self.target_arch is IBM_BGQ:
             flags.append('--disable-shared')
             for line in fileinput.input(os.path.join(self._src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
         elif self.target_os is CRAY_CNL:
-            env['CFLAGS'] = '-fPIC'
-            env['CXXFLAGS'] = '-fPIC'
+            os.environ['CFLAGS'] = '-fPIC'
+            os.environ['CXXFLAGS'] = '-fPIC'
             flags.append('--disable-shared')
             flags.append('--disable-minidebuginfo')
         # Fix test so `make install` succeeds more frequently 
         for line in fileinput.input(os.path.join(self._src_prefix, 'tests', 'crasher.c'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
-        return super(LibunwindInstallation, self).configure(flags, env)
+        return super(LibunwindInstallation, self).configure(flags)
 
-    def make(self, flags, env, parallel=True):
+    def make(self, flags):
         """Build libunwind.
         
         libunwind's test programs often fail to build but the library itself 
@@ -95,12 +95,12 @@ class LibunwindInstallation(AutotoolsInstallation):
         """
         # pylint: disable=broad-except
         try:
-            super(LibunwindInstallation, self).make(flags, env, parallel)
+            super(LibunwindInstallation, self).make(flags)
         except Exception as err:
             LOGGER.debug("libunwind make failed, but continuing anyway: %s", err)
 
 
-    def make_install(self, flags, env, parallel=False):
+    def make_install(self, flags):
         if self.target_arch in [PPC64, PPC64LE]:
             flags.append('-i')
-        super(LibunwindInstallation, self).make_install(flags, env, parallel)
+        super(LibunwindInstallation, self).make_install(flags)

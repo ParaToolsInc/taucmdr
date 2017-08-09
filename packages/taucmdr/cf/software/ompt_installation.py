@@ -52,16 +52,14 @@ class OmptInstallation(CMakeInstallation):
         super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os, 
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 
-    def cmake(self, flags, env):
-        flags.append('-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path)
-        flags.append('-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path)
-        flags.append('-DCMAKE_C_FLAGS=-fPIC')
-        flags.append('-DCMAKE_CXX_FLAGS=-fPIC')
-        flags.append('-DCMAKE_BUILD_TYPE=Release')
-        return super(OmptInstallation, self).cmake(flags, env)
+    def cmake(self, flags):
+        flags.extend(['-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path,
+                      '-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path,
+                      '-DCMAKE_C_FLAGS=-fPIC',
+                      '-DCMAKE_CXX_FLAGS=-fPIC',
+                      '-DCMAKE_BUILD_TYPE=Release'])
+        return super(OmptInstallation, self).cmake(flags)
 
-    def make(self, flags, env, parallel=True):
-        header_flags = [i for i in flags]
-        header_flags.append('libomp-needed-headers')
-        super(OmptInstallation, self).make(header_flags, env)
-        return super(OmptInstallation, self).make(flags, env)
+    def make(self, flags):
+        super(OmptInstallation, self).make(flags + ['libomp-needed-headers'])
+        return super(OmptInstallation, self).make(flags)

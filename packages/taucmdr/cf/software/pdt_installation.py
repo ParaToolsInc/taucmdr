@@ -187,12 +187,10 @@ class PdtInstallation(AutotoolsInstallation):
             self._retry_verify = False
             self.verify()
     
-    def configure(self, flags, env):
+    def configure(self, _):
         family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC'}
-        family = self.compilers[CXX].info.family
-        compiler_flag = family_flags.get(family.name, '')
-        prefix_flag = '-prefix=%s' % self.install_prefix
-        cmd = ['./configure', prefix_flag, compiler_flag]
+        compiler_flag = family_flags.get(self.compilers[CXX].info.family.name, '')
+        cmd = ['./configure', '-prefix=' + self.install_prefix, compiler_flag]
         LOGGER.info("Configuring PDT...")
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s configure failed' % self.title)
