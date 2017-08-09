@@ -264,6 +264,7 @@ class Experiment(Model):
                     measure_callsite=measurement.get_or_default('callsite'),
                     callpath_depth=measurement.get_or_default('callpath'),
                     throttle=measurement.get_or_default('throttle'),
+                    metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     forced_makefile=target.get('forced_makefile', None))
