@@ -135,10 +135,10 @@ def attributes():
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     
     knc_intel_only = _require_compiler_family(INTEL, 
-                                              "You must use Intel compilers to target the Xeon Phi",
+                                              "You must use Intel compilers to target the Xeon Phi (KNC)",
                                               "Try adding `--compilers=Intel` to the command line")
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
-                                                  "You must use Intel MPI compilers to target the Xeon Phi",
+                                                  "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-compilers=Intel` to the command line")
     
     return {
