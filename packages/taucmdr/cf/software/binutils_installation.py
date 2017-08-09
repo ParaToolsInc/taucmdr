@@ -68,7 +68,7 @@ class BinutilsInstallation(AutotoolsInstallation):
         from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
         flags.extend(['--disable-nls', '--disable-werror'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
-            del os.environ[var]
+            os.environ.pop(var, None)
         if self.target_os is DARWIN:
             flags.append('CFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
             flags.append('CXXFLAGS=-Wno-error=unused-value -Wno-error=deprecated-declarations -fPIC')
