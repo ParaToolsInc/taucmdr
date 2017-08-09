@@ -188,6 +188,9 @@ class _CompilerRole(KeyedRecord):
     def __str__(self):
         return self.keyword
 
+    def __repr__(self):
+        return '_CompilerRole(%s)' % self.keyword
+
 class _CompilerFamily(TrackedInstance):
     """Information about a compiler family.
     
@@ -308,6 +311,9 @@ class _CompilerInfo(TrackedInstance):
 
     def __str__(self):
         return "(%s, %s, %s)" % (self.command, self.family, self.role)
+
+    def __repr__(self):
+        return "_CompilerInfo(%s, %s, %s)" % (self.command, self.family, self.role)
         
     @classmethod
     def _find(cls, command, family, role):
@@ -534,8 +540,6 @@ class InstalledCompiler(object):
                 LOGGER.warning("Unexpected output from compiler wrapper '%s'."
                                " TAU will attempt to continue but may fail later on.", self.absolute_path)
             return wrapped
-        LOGGER.warning("Unable to identify compiler wrapped by wrapper '%s'."
-                       " TAU will attempt to continue but may fail later on.", self.absolute_path)
         return None
 
     def _parse_wrapped_args(self, args):
@@ -681,7 +685,7 @@ class InstalledCompilerFamily(object):
         if not self.members:
             raise ConfigurationError("%s compilers not found." % self.family.name)
 
-    def get(self, role, default):
+    def get(self, role, default=None):
         try:
             return self[role]
         except KeyError:
