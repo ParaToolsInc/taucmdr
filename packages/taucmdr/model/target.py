@@ -46,7 +46,6 @@ from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
-from taucmdr.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -534,9 +533,6 @@ class Target(Model):
                 compilers[role.keyword] = compiler_record.installation()
                 LOGGER.debug("compilers[%s] = '%s'", role.keyword, compilers[role.keyword].absolute_path)
                 eids.append(compiler_record.eid)
-            missing = [role for role in TAU_MINIMAL_COMPILERS if role.keyword not in compilers]
-            if missing:
-                raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
             self._compilers = InstalledCompilerSet('_'.join([str(x) for x in sorted(eids)]), **compilers)
         return self._compilers
 
