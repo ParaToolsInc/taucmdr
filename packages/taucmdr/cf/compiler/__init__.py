@@ -684,6 +684,10 @@ class InstalledCompilerFamily(object):
         if not self.members:
             raise ConfigurationError("%s compilers not found." % self.family.name)
 
+    def __contains__(self, role):
+        """Returns True if any installed compiler can fill a given role."""
+        return role in self.members
+
     def get(self, role, default=None):
         try:
             return self[role]
