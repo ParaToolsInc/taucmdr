@@ -182,10 +182,10 @@
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
     
     <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">_require_compiler_family</span><span class="p">(</span><span class="n">INTEL</span><span class="p">,</span> 
-                                              <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
+                                              <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi (KNC)&quot;</span><span class="p">,</span>
                                               <span class="s2">&quot;Try adding `--compilers=Intel` to the command line&quot;</span><span class="p">)</span>
     <span class="n">knc_intel_mpi_only</span> <span class="o">=</span> <span class="n">_require_compiler_family</span><span class="p">(</span><span class="n">INTEL_MPI</span><span class="p">,</span>
-                                                  <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi&quot;</span><span class="p">,</span>
+                                                  <span class="s2">&quot;You must use Intel MPI compilers to target the Xeon Phi (KNC)&quot;</span><span class="p">,</span>
                                                   <span class="s2">&quot;Try adding `--mpi-compilers=Intel` to the command line&quot;</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="p">{</span>

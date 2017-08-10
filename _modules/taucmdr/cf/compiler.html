@@ -232,7 +232,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">kbase</span> <span class="o">=</span> <span class="n">kbase</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;_CompilerRole(</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span></div>
 
 <div class="viewcode-block" id="_CompilerFamily"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerFamily">[docs]</a><span class="k">class</span> <span class="nc">_CompilerFamily</span><span class="p">(</span><span class="n">TrackedInstance</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about a compiler family.</span>
@@ -354,6 +357,9 @@
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;_CompilerInfo(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span>
         
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
@@ -580,8 +586,6 @@
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unexpected output from compiler wrapper &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span>
                                <span class="s2">&quot; TAU will attempt to continue but may fail later on.&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">wrapped</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to identify compiler wrapped by wrapper &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span>
-                       <span class="s2">&quot; TAU will attempt to continue but may fail later on.&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">None</span>
 
     <span class="k">def</span> <span class="nf">_parse_wrapped_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
@@ -727,7 +731,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> compilers not found.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-<div class="viewcode-block" id="InstalledCompilerFamily.get"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerFamily.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+<div class="viewcode-block" id="InstalledCompilerFamily.get"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerFamily.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">role</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>

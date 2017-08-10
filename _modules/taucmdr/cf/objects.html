@@ -133,8 +133,8 @@
 <span class="sd">    Change object creation proceedure so that only one instance of a :any:`KeyedRecord`</span>
 <span class="sd">    exists for a given key argument.  Overridding ``__new__`` would be less creepy,</span>
 <span class="sd">    but then we can&#39;t prevent ``__init__`` from being called on the returned class instance,</span>
-<span class="sd">    i.e. the instance returned is reinitialized every time the it is retrieved.  Using</span>
-<span class="sd">    this metaclass guarantees we call ``__new__`` and ``__init__`` only once per class instance.</span>
+<span class="sd">    i.e. the instance returned is reinitialized every time it is retrieved.</span>
+<span class="sd">    This metaclass guarantees we call ``__new__`` and ``__init__`` only once per class instance.</span>
 <span class="sd">    </span>
 <span class="sd">    To learn more about metaclasses:</span>
 <span class="sd">    * http://docs.python.org/2/reference/datamodel.html</span>

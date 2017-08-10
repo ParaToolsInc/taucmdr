@@ -77,15 +77,8 @@
 <span class="sd">The OTF2 library  provides an interface to write and read trace data.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">fileinput</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software.installation</span> <span class="kn">import</span> <span class="n">AutotoolsInstallation</span>
 
-
-
-<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">REPOS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="s1">&#39;http://www.vi-hps.org/upload/packages/otf2/otf2-2.1-rc2.tar.gz&#39;</span><span class="p">}</span>
 
@@ -99,7 +92,8 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Libotf2Installation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;libotf2&#39;</span><span class="p">,</span> <span class="s1">&#39;libotf2&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> 
-                                                   <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="n">HEADERS</span><span class="p">)</span></div>
+                                                  <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="n">HEADERS</span><span class="p">)</span></div>
+
 </pre></div>
 
       </div>

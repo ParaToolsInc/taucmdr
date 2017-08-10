@@ -137,8 +137,8 @@ No instance has this key value.</td>
 <p>Change object creation proceedure so that only one instance of a <a class="reference internal" href="#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a>
 exists for a given key argument.  Overridding <code class="docutils literal"><span class="pre">__new__</span></code> would be less creepy,
 but then we can&#8217;t prevent <code class="docutils literal"><span class="pre">__init__</span></code> from being called on the returned class instance,
-i.e. the instance returned is reinitialized every time the it is retrieved.  Using
-this metaclass guarantees we call <code class="docutils literal"><span class="pre">__new__</span></code> and <code class="docutils literal"><span class="pre">__init__</span></code> only once per class instance.</p>
+i.e. the instance returned is reinitialized every time it is retrieved.
+This metaclass guarantees we call <code class="docutils literal"><span class="pre">__new__</span></code> and <code class="docutils literal"><span class="pre">__init__</span></code> only once per class instance.</p>
 <p>To learn more about metaclasses:
 * <a class="reference external" href="http://docs.python.org/2/reference/datamodel.html">http://docs.python.org/2/reference/datamodel.html</a>
 * <a class="reference external" href="http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python">http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python</a>

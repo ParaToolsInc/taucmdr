@@ -75,9 +75,9 @@
 <span class="sd">&quot;&quot;&quot;Software installation management.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">configuration</span>
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.progress</span> <span class="kn">import</span> <span class="n">ProgressIndicator</span><span class="p">,</span> <span class="n">progress_spinner</span>
@@ -87,7 +87,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software</span> <span class="kn">import</span> <span class="n">SoftwarePackageError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf</span> <span class="kn">import</span> <span class="n">compiler</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">InstalledCompilerSet</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span>
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -155,6 +155,15 @@
     <span class="k">return</span> <span class="n">tmp_prefix</span></div>
     
 
+<span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="new_os_environ"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.new_os_environ">[docs]</a><span class="k">def</span> <span class="nf">new_os_environ</span><span class="p">():</span>
+    <span class="n">old_environ</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="o">=</span> <span class="n">old_environ</span></div>
+        
 
 <div class="viewcode-block" id="Installation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation">[docs]</a><span class="k">class</span> <span class="nc">Installation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Encapsulates a software package installation.</span>
@@ -435,174 +444,8 @@
         <span class="bp">cls</span> <span class="o">=</span> <span class="n">software</span><span class="o">.</span><span class="n">get_installation</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Installation.install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Installs the software package.</span>
-<span class="sd">        </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: This method must be overridden by a subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-    
-<div class="viewcode-block" id="Installation.compiletime_config"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.compiletime_config">[docs]</a>    <span class="k">def</span> <span class="nf">compiletime_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Configure compilation environment to use this software package. </span>
-
-<span class="sd">        Returns command line options and environment variables required by this</span>
-<span class="sd">        software package **when it is used to compile other software packages**.</span>
-<span class="sd">        The default behavior, to be overridden by subclasses as needed, is to </span>
-<span class="sd">        prepend ``self.bin_path`` to the PATH environment variable.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            opts (list): Optional list of command line options.</span>
-<span class="sd">            env (dict): Optional dictionary of environment variables.</span>
-<span class="sd">            </span>
-<span class="sd">        Returns: </span>
-<span class="sd">            tuple: opts, env updated for the new environment.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">opts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">opts</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="k">if</span> <span class="n">env</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]])</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span></div>
-
-<div class="viewcode-block" id="Installation.runtime_config"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.runtime_config">[docs]</a>    <span class="k">def</span> <span class="nf">runtime_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Configure runtime environment to use this software package.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns command line options and environment variables required by this </span>
-<span class="sd">        software package **when other software packages depending on it execute**.</span>
-<span class="sd">        The default behavior, to be overridden by subclasses as needed, is to </span>
-<span class="sd">        prepend ``self.bin_path`` to the PATH environment variable and </span>
-<span class="sd">        ``self.lib_path`` to the system library path (e.g. LD_LIBRARY_PATH).</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            opts (list): Optional list of command line options.</span>
-<span class="sd">            env (dict): Optional dictionary of environment variables.</span>
-<span class="sd">            </span>
-<span class="sd">        Returns: </span>
-<span class="sd">            tuple: opts, env updated for the new environment.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">opts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">opts</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="k">if</span> <span class="n">env</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]])</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">&#39;darwin&#39;</span><span class="p">:</span>
-                <span class="n">library_path</span> <span class="o">=</span> <span class="s1">&#39;DYLD_LIBRARY_PATH&#39;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">library_path</span> <span class="o">=</span> <span class="s1">&#39;LD_LIBRARY_PATH&#39;</span>   
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]])</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span></div></div>
-
-<div class="viewcode-block" id="MakeInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation">[docs]</a><span class="k">class</span> <span class="nc">MakeInstallation</span><span class="p">(</span><span class="n">Installation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class for installations that follows the process:</span>
-<span class="sd">          make [flags] all [options]</span>
-<span class="sd">          make [flags] install [options]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="MakeInstallation.make"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation.make">[docs]</a>    <span class="k">def</span> <span class="nf">make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Invoke `make`.</span>
-<span class="sd">        </span>
-<span class="sd">        Changes to `env` are propagated to subsequent steps, i.e. `make install`.</span>
-<span class="sd">        Changes to `flags` are not propogated to subsequent steps.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            flags (list): Command line flags to pass to `make`.</span>
-<span class="sd">            env (dict): Environment variables to set before invoking `make`.</span>
-<span class="sd">            parallel (bool): If True, pass parallelization flags to `make`.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            SoftwarePackageError: Compilation failed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Making </span><span class="si">%s</span><span class="s2"> at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
-        <span class="n">par_flags</span> <span class="o">=</span> <span class="n">parallel_make_flags</span><span class="p">()</span> <span class="k">if</span> <span class="n">parallel</span> <span class="k">else</span> <span class="p">[]</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">par_flags</span> <span class="o">+</span> <span class="n">flags</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compiling </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
-            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> compilation failed&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="MakeInstallation.make_install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation.make_install">[docs]</a>    <span class="k">def</span> <span class="nf">make_install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Invoke `make install`.</span>
-<span class="sd">        </span>
-<span class="sd">        Changes to `env` are propagated to subsequent steps.  Normally there </span>
-<span class="sd">        wouldn&#39;t be anything after `make install`, but a subclass could change that.</span>
-<span class="sd">        Changes to `flags` are not propogated to subsequent steps.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            flags (list): Command line flags to pass to `make`.</span>
-<span class="sd">            env (dict): Environment variables to set before invoking `make`.</span>
-<span class="sd">            parallel (bool): If True, pass parallelization flags to `make`.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            SoftwarePackageError: Configuration failed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Installing </span><span class="si">%s</span><span class="s2"> to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">parallel</span><span class="p">:</span>
-            <span class="n">flags</span> <span class="o">+=</span> <span class="n">parallel_make_flags</span><span class="p">()</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">,</span> <span class="s1">&#39;install&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Installing </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> installation failed&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="c1"># Some systems use lib64 instead of lib</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="o">+</span><span class="s1">&#39;64&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="o">+</span><span class="s1">&#39;64&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">)</span></div>
-            
-
-<div class="viewcode-block" id="MakeInstallation.install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Installs the software package.</span>
-<span class="sd">        </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: This method must be overridden by a subclass.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
-
-<div class="viewcode-block" id="AutotoolsInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation">[docs]</a><span class="k">class</span> <span class="nc">AutotoolsInstallation</span><span class="p">(</span><span class="n">MakeInstallation</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class for installations that follow the GNU Autotools installation process.</span>
-<span class="sd">    </span>
-<span class="sd">    The GNU Autotools installation process is::</span>
-<span class="sd">        ./configure [options]</span>
-<span class="sd">        make [flags] all [options] </span>
-<span class="sd">        make [flags] install [options]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-<div class="viewcode-block" id="AutotoolsInstallation.configure"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation.configure">[docs]</a>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Invoke `configure`.</span>
-<span class="sd">        </span>
-<span class="sd">        Changes to `env` are propagated to subsequent steps, i.e. `make`.</span>
-<span class="sd">        Changes to `flags` are not propogated to subsequent steps.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            flags (list): Command line flags to pass to `configure`.</span>
-<span class="sd">            env (dict): Environment variables to set before invoking `configure`.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            SoftwarePackageError: Configuration failed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Configuring </span><span class="si">%s</span><span class="s2"> at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
-        <span class="c1"># Prepare configuration flags</span>
-        <span class="n">flags</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--prefix=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">]</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;./configure&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Configuring </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> configure failed&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>   </div>
-    
-<div class="viewcode-block" id="AutotoolsInstallation.install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Execute the typical GNU Autotools installation sequence.</span>
+<div class="viewcode-block" id="Installation.install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute the installation sequence in a sanitized environment.</span>
 <span class="sd">        </span>
 <span class="sd">        Modifies the system by building and installing software.</span>
 <span class="sd">        </span>
@@ -628,30 +471,162 @@
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">):</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cleaning </span><span class="si">%s</span><span class="s2"> installation prefix &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
             <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="c1"># Environment variables are shared between the subprocesses</span>
-        <span class="c1"># created for `configure` ; `make` ; `make install`</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">()</span>
-            <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">002</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">([],</span> <span class="n">env</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">([],</span> <span class="n">env</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">([],</span> <span class="n">env</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_group</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> installation failed: </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-            <span class="k">raise</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Delete the decompressed source code to save space and clean up in preperation for</span>
-            <span class="c1"># future reconfigurations.  The compressed source archive is retained.</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
-            <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">None</span>
-
+        <span class="k">with</span> <span class="n">new_os_environ</span><span class="p">(),</span> <span class="n">util</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">002</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">installation_sequence</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_group</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> installation failed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+                <span class="k">raise</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Delete the decompressed source code to save space. The source archive is retained.</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
+                <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="c1"># Verify the new installation</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Verifying </span><span class="si">%s</span><span class="s2"> installation...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span></div>
 
+<div class="viewcode-block" id="Installation.installation_sequence"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.installation_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">installation_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="Installation.compiletime_config"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.compiletime_config">[docs]</a>    <span class="k">def</span> <span class="nf">compiletime_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Configure compilation environment to use this software package. </span>
+
+<span class="sd">        Returns command line options and environment variables required by this</span>
+<span class="sd">        software package **when it is used to compile other software packages**.</span>
+<span class="sd">        The default behavior, to be overridden by subclasses as needed, is to </span>
+<span class="sd">        prepend ``self.bin_path`` to the PATH environment variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            opts (list): Optional list of command line options.</span>
+<span class="sd">            env (dict): Optional dictionary of environment variables.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns: </span>
+<span class="sd">            tuple: opts, env updated for the new environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">opts</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">env</span> <span class="k">if</span> <span class="n">env</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span>
+        <span class="k">return</span> <span class="n">opts</span><span class="p">,</span> <span class="n">env</span></div>
+
+<div class="viewcode-block" id="Installation.runtime_config"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.runtime_config">[docs]</a>    <span class="k">def</span> <span class="nf">runtime_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Configure runtime environment to use this software package.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns command line options and environment variables required by this </span>
+<span class="sd">        software package **when other software packages depending on it execute**.</span>
+<span class="sd">        The default behavior, to be overridden by subclasses as needed, is to </span>
+<span class="sd">        prepend ``self.bin_path`` to the PATH environment variable and </span>
+<span class="sd">        ``self.lib_path`` to the system library path (e.g. LD_LIBRARY_PATH).</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            opts (list): Optional list of command line options.</span>
+<span class="sd">            env (dict): Optional dictionary of environment variables.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns: </span>
+<span class="sd">            tuple: opts, env updated for the new environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">opts</span><span class="p">)</span> <span class="k">if</span> <span class="n">opts</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">env</span> <span class="k">if</span> <span class="n">env</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">):</span>
+            <span class="n">library_path</span> <span class="o">=</span> <span class="s1">&#39;DYLD_LIBRARY_PATH&#39;</span> <span class="k">if</span> <span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span> <span class="k">else</span> <span class="s1">&#39;LD_LIBRARY_PATH&#39;</span>   
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="n">library_path</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span>
+        <span class="k">return</span> <span class="n">opts</span><span class="p">,</span> <span class="n">env</span></div></div>
+
+
+<div class="viewcode-block" id="MakeInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation">[docs]</a><span class="k">class</span> <span class="nc">MakeInstallation</span><span class="p">(</span><span class="n">Installation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for installations that follows the process:</span>
+<span class="sd">          make [flags] all [options]</span>
+<span class="sd">          make [flags] install [options]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MakeInstallation.make"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation.make">[docs]</a>    <span class="k">def</span> <span class="nf">make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Invoke `make`.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            flags (list): Command line flags to pass to `make`.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SoftwarePackageError: Compilation failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Making </span><span class="si">%s</span><span class="s2"> at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">parallel_make_flags</span><span class="p">()</span> <span class="o">+</span> <span class="n">flags</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compiling </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
+            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> compilation failed&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MakeInstallation.make_install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation.make_install">[docs]</a>    <span class="k">def</span> <span class="nf">make_install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Invoke `make install`.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            flags (list): Command line flags to pass to `make`.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SoftwarePackageError: Configuration failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Installing </span><span class="si">%s</span><span class="s2"> to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">,</span> <span class="s1">&#39;install&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">parallel_make_flags</span><span class="p">()</span> <span class="o">+</span> <span class="n">flags</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Installing </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">,</span> <span class="s1">&#39;install&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
+            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> installation failed&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="c1"># Some systems use lib64 instead of lib</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="o">+</span><span class="s1">&#39;64&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">symlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="o">+</span><span class="s1">&#39;64&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MakeInstallation.installation_sequence"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.MakeInstallation.installation_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">installation_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">([])</span></div></div>
+
+
+<div class="viewcode-block" id="AutotoolsInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation">[docs]</a><span class="k">class</span> <span class="nc">AutotoolsInstallation</span><span class="p">(</span><span class="n">MakeInstallation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for installations that follow the GNU Autotools installation process.</span>
+<span class="sd">    </span>
+<span class="sd">    The GNU Autotools installation process is::</span>
+<span class="sd">        ./configure [options]</span>
+<span class="sd">        make [flags] all [options] </span>
+<span class="sd">        make [flags] install [options]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="AutotoolsInstallation.configure"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation.configure">[docs]</a>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Invoke `configure`.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            flags (list): Command line flags to pass to `configure`.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SoftwarePackageError: Configuration failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Configuring </span><span class="si">%s</span><span class="s2"> at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;./configure&#39;</span><span class="p">,</span> <span class="s1">&#39;--prefix=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Configuring </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> configure failed&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>   </div>
+    
+<div class="viewcode-block" id="AutotoolsInstallation.installation_sequence"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.AutotoolsInstallation.installation_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">installation_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">([])</span></div></div>
+    
 
 <div class="viewcode-block" id="CMakeInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.CMakeInstallation">[docs]</a><span class="k">class</span> <span class="nc">CMakeInstallation</span><span class="p">(</span><span class="n">MakeInstallation</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for installations that follow the CMake installation process.</span>
@@ -681,15 +656,11 @@
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot determine CMake version.  CMake 2.8 or higher is required.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cmake</span>
 
-<div class="viewcode-block" id="CMakeInstallation.cmake"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.CMakeInstallation.cmake">[docs]</a>    <span class="k">def</span> <span class="nf">cmake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+<div class="viewcode-block" id="CMakeInstallation.cmake"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.CMakeInstallation.cmake">[docs]</a>    <span class="k">def</span> <span class="nf">cmake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Invoke `cmake`.</span>
-<span class="sd">        </span>
-<span class="sd">        Changes to `env` are propagated to subsequent steps, i.e. `make`.</span>
-<span class="sd">        Changes to `flags` are not propogated to subsequent steps.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            flags (list): Command line flags to pass to `cmake`.</span>
-<span class="sd">            env (dict): Environment variables to set before invoking `cmake`.</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            SoftwarePackageError: Configuration failed.</span>
@@ -698,60 +669,13 @@
         <span class="n">cmake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cmake</span><span class="p">()</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmake</span><span class="p">,</span> <span class="s1">&#39;-DCMAKE_INSTALL_PREFIX=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing CMake for </span><span class="si">%s</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;CMake failed for </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="CMakeInstallation.install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.CMakeInstallation.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Execute the typical GNU Autotools installation sequence.</span>
-<span class="sd">        </span>
-<span class="sd">        Modifies the system by building and installing software.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            force_reinstall (bool): If True, reinstall even if the software package passes verification.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            SoftwarePackageError: Installation failed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
-            <span class="n">pkg</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">force_reinstall</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-            <span class="k">except</span> <span class="n">SoftwarePackageError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> source package is unavailable and the installation at &#39;</span><span class="si">%s</span><span class="s2">&#39; &quot;</span>
-                                               <span class="s2">&quot;is invalid: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
-                                               <span class="s2">&quot;Specify source code path or URL to enable package reinstallation.&quot;</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
-                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Installing </span><span class="si">%s</span><span class="s2"> to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">):</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Cleaning </span><span class="si">%s</span><span class="s2"> installation prefix &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
-            <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="c1"># Environment variables are shared between the subprocesses</span>
-        <span class="c1"># created for `configure` ; `make` ; `make install`</span>
-        <span class="n">env</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">()</span>
-            <span class="k">with</span> <span class="n">util</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">002</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cmake</span><span class="p">([],</span> <span class="n">env</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">([],</span> <span class="n">env</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">([],</span> <span class="n">env</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_group</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> installation failed: </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-            <span class="k">raise</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Delete the decompressed source code to save space and clean up in preperation for</span>
-            <span class="c1"># future reconfigurations.  The compressed source archive is retained.</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">)</span>
-            <span class="n">util</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">None</span>
-
-        <span class="c1"># Verify the new installation</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Verifying </span><span class="si">%s</span><span class="s2"> installation...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span></div></div>
-
+<div class="viewcode-block" id="CMakeInstallation.installation_sequence"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.CMakeInstallation.installation_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">installation_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmake</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">([])</span></div></div>
 </pre></div>
 
       </div>

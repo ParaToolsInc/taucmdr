@@ -66,45 +66,25 @@ make [flags] install [options]</dd>
 </dl>
 <dl class="method">
 <dt id="taucmdr.cf.software.installation.AutotoolsInstallation.configure">
-<code class="descname">configure</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#AutotoolsInstallation.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.AutotoolsInstallation.configure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure</code><span class="sig-paren">(</span><em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#AutotoolsInstallation.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.AutotoolsInstallation.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invoke <cite>configure</cite>.</p>
-<p>Changes to <cite>env</cite> are propagated to subsequent steps, i.e. <cite>make</cite>.
-Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>configure</cite>.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>configure</cite>.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>configure</cite>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Configuration failed.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Configuration failed.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.software.installation.AutotoolsInstallation.install">
-<code class="descname">install</code><span class="sig-paren">(</span><em>force_reinstall=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#AutotoolsInstallation.install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.AutotoolsInstallation.install" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the typical GNU Autotools installation sequence.</p>
-<p>Modifies the system by building and installing software.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, reinstall even if the software package passes verification.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Installation failed.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dt id="taucmdr.cf.software.installation.AutotoolsInstallation.installation_sequence">
+<code class="descname">installation_sequence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#AutotoolsInstallation.installation_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.AutotoolsInstallation.installation_sequence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -121,45 +101,25 @@ make [flags] install [options]</dd>
 </dl>
 <dl class="method">
 <dt id="taucmdr.cf.software.installation.CMakeInstallation.cmake">
-<code class="descname">cmake</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#CMakeInstallation.cmake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.CMakeInstallation.cmake" title="Permalink to this definition">¶</a></dt>
+<code class="descname">cmake</code><span class="sig-paren">(</span><em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#CMakeInstallation.cmake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.CMakeInstallation.cmake" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invoke <cite>cmake</cite>.</p>
-<p>Changes to <cite>env</cite> are propagated to subsequent steps, i.e. <cite>make</cite>.
-Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>cmake</cite>.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>cmake</cite>.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>cmake</cite>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Configuration failed.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Configuration failed.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.software.installation.CMakeInstallation.install">
-<code class="descname">install</code><span class="sig-paren">(</span><em>force_reinstall=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#CMakeInstallation.install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.CMakeInstallation.install" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the typical GNU Autotools installation sequence.</p>
-<p>Modifies the system by building and installing software.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, reinstall even if the software package passes verification.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Installation failed.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dt id="taucmdr.cf.software.installation.CMakeInstallation.installation_sequence">
+<code class="descname">installation_sequence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#CMakeInstallation.installation_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.CMakeInstallation.installation_sequence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -331,14 +291,17 @@ prepend <code class="docutils literal"><span class="pre">self.bin_path</span></c
 
 <dl class="method">
 <dt id="taucmdr.cf.software.installation.Installation.install">
-<code class="descname">install</code><span class="sig-paren">(</span><em>force_reinstall</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#Installation.install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.Installation.install" title="Permalink to this definition">¶</a></dt>
-<dd><p>Installs the software package.</p>
+<code class="descname">install</code><span class="sig-paren">(</span><em>force_reinstall=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#Installation.install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.Installation.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the installation sequence in a sanitized environment.</p>
+<p>Modifies the system by building and installing software.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211;
-This method must be overridden by a subclass.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, reinstall even if the software package passes verification.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Installation failed.</td>
 </tr>
 </tbody>
 </table>
@@ -347,6 +310,11 @@ This method must be overridden by a subclass.</td>
 <dl class="attribute">
 <dt id="taucmdr.cf.software.installation.Installation.install_prefix">
 <code class="descname">install_prefix</code><a class="headerlink" href="#taucmdr.cf.software.installation.Installation.install_prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.installation.Installation.installation_sequence">
+<code class="descname">installation_sequence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#Installation.installation_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.Installation.installation_sequence" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -443,40 +411,22 @@ Describs why the installation is invalid.</td>
 make [flags] all [options]
 make [flags] install [options]</p>
 <dl class="method">
-<dt id="taucmdr.cf.software.installation.MakeInstallation.install">
-<code class="descname">install</code><span class="sig-paren">(</span><em>force_reinstall</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#MakeInstallation.install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.MakeInstallation.install" title="Permalink to this definition">¶</a></dt>
-<dd><p>Installs the software package.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">NotImplementedError</span></code> &#8211;
-This method must be overridden by a subclass.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dt id="taucmdr.cf.software.installation.MakeInstallation.installation_sequence">
+<code class="descname">installation_sequence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#MakeInstallation.installation_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.MakeInstallation.installation_sequence" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.installation.MakeInstallation.make">
-<code class="descname">make</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em>, <em>parallel=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#MakeInstallation.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.MakeInstallation.make" title="Permalink to this definition">¶</a></dt>
+<code class="descname">make</code><span class="sig-paren">(</span><em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#MakeInstallation.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.MakeInstallation.make" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invoke <cite>make</cite>.</p>
-<p>Changes to <cite>env</cite> are propagated to subsequent steps, i.e. <cite>make install</cite>.
-Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>make</cite>.</li>
-<li><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, pass parallelization flags to <cite>make</cite>.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Compilation failed.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Compilation failed.</td>
 </tr>
 </tbody>
 </table>
@@ -484,31 +434,27 @@ Compilation failed.</p>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.installation.MakeInstallation.make_install">
-<code class="descname">make_install</code><span class="sig-paren">(</span><em>flags</em>, <em>env</em>, <em>parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#MakeInstallation.make_install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.MakeInstallation.make_install" title="Permalink to this definition">¶</a></dt>
+<code class="descname">make_install</code><span class="sig-paren">(</span><em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#MakeInstallation.make_install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.MakeInstallation.make_install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invoke <cite>make install</cite>.</p>
-<p>Changes to <cite>env</cite> are propagated to subsequent steps.  Normally there
-wouldn&#8217;t be anything after <cite>make install</cite>, but a subclass could change that.
-Changes to <cite>flags</cite> are not propogated to subsequent steps.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before invoking <cite>make</cite>.</li>
-<li><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, pass parallelization flags to <cite>make</cite>.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flags</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line flags to pass to <cite>make</cite>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-Configuration failed.</p>
-</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
+Configuration failed.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 </dd></dl>
+
+<dl class="function">
+<dt id="taucmdr.cf.software.installation.new_os_environ">
+<code class="descclassname">taucmdr.cf.software.installation.</code><code class="descname">new_os_environ</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/installation.html#new_os_environ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.installation.new_os_environ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="taucmdr.cf.software.installation.parallel_make_flags">
