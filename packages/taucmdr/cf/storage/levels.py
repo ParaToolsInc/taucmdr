@@ -72,3 +72,4 @@ def highest_writable_storage():
         else:
             raise StorageError("No writable storage levels")
         return highest_writable_storage.value
+
