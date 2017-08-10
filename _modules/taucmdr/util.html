@@ -483,21 +483,16 @@
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
 <span class="sd">        cmd (list): Command and its command line arguments.</span>
-<span class="sd">        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.</span>
-<span class="sd">        env (dict): Environment variables to set before launching cmd.</span>
+<span class="sd">        cwd (str): If not None, change directory to `cwd` before creating the subprocess.</span>
+<span class="sd">        env (dict): Environment variables to set or unset before launching cmd.</span>
 <span class="sd">        stdout (bool): If True send subprocess stdout and stderr to this processes&#39; stdout.</span>
 <span class="sd">        log (bool): If True send subprocess stdout and stderr to the debug log.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        int: Subprocess return code.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">cwd</span><span class="p">:</span>
-        <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">env</span><span class="p">:</span>
-        <span class="c1"># Don&#39;t accidentally unset all environment variables with an empty dict</span>
-        <span class="n">subproc_env</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">subproc_env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+    <span class="n">subproc_env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">env</span><span class="p">:</span> 
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">subproc_env</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
