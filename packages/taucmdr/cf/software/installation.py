@@ -294,7 +294,7 @@ class Installation(object):
             reuse_archive (bool): If True don't download, just confirm that the archive exists.
             
         Returns:
-            str: Path to the acquired source archive.
+            str: Absolute path to the source archive.
             
         Raises:
             ConfigurationError: Package source code not provided or couldn't be acquired.
@@ -303,16 +303,24 @@ class Installation(object):
             raise ConfigurationError("No source code provided for %s" % self.title)
         if os.path.isdir(self.src):
             return self.src
+        archive_file = os.path.basename(self.src)
+        if reuse_archive:
+            for storage in reversed(ORDERED_LEVELS):
+                try:
+                    archive = os.path.join(storage.prefix, "src", archive_file)
+                except StorageError as err:
+                    continue
+                if os.path.exists(archive):
+                    return archive
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
-        if not reuse_archive or (reuse_archive and not os.path.exists(archive)):
-            try:
-                util.download(self.src, archive)
-            except IOError:
-                hints = ("If a firewall is blocking access to this server, use another method to download "
-                         "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
-                         "Check that the file or directory is accessible")
-                raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+        try:
+            util.download(self.src, archive)
+        except IOError:
+            hints = ("If a firewall is blocking access to this server, use another method to download "
+                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+                     "Check that the file or directory is accessible")
+            raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
         return archive
 
     def _prepare_src(self, reuse_archive=True):
@@ -330,24 +338,13 @@ class Installation(object):
         Raises:
             ConfigurationError: The source code couldn't be acquired or unpacked.
         """
-        # Acquire a new copy of the source archive, if needed.
-        self.acquire_source(reuse_archive)
-        # Locate archive file
-        for storage in ORDERED_LEVELS:
-            try:
-                archive_prefix = os.path.join(storage.prefix, "src")
-            except StorageError as err:
-                LOGGER.debug(err)
-                continue
-            archive = os.path.join(archive_prefix, os.path.basename(self.src))
-            if os.path.exists(archive):
-                LOGGER.info("Using %s source archive '%s'", self.title, archive)
-                break
+        archive = self.acquire_source(reuse_archive)
+        LOGGER.info("Using %s source archive '%s'", self.title, archive)
         try:
             return util.extract_archive(archive, tmpfs_prefix())
         except IOError as err:
             if reuse_archive:
-                # Try again with a fresh copy of the source archive
+                LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy." % archive)
                 return self._prepare_src(reuse_archive=False)
             raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
                                      "Check that the file or directory is accessible")
