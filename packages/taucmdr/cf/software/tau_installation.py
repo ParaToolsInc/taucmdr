@@ -393,6 +393,9 @@ class TauInstallation(Installation):
             target_compilers = target_family.installation()
         except ConfigurationError:
             raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
+        for role in TAU_MINIMAL_COMPILERS:
+            if role not in target_compilers:
+                raise SoftwarePackageError("A %s compiler (required to build TAU) could not be found." % role.language)
         compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
         inst = cls(sources, target_arch, target_os, compilers, minimal_configuration=True)
         return inst
