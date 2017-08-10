@@ -148,6 +148,9 @@ def build_parser(setup_cfg, default_cfg):
 
 
 def main():
+    from taucmdr.cf.software import tau_installation
+    tau_installation.check_env_compat()
+
     comment = configuration.config_file_comment
     setup_cfg = configuration.open_config_file('setup.cfg')
     setup_cfg.initial_comment = comment(taucmdr.version_banner())
