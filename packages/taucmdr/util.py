@@ -436,21 +436,16 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     
     Args:
         cmd (list): Command and its command line arguments.
-        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
-        env (dict): Environment variables to set before launching cmd.
+        cwd (str): If not None, change directory to `cwd` before creating the subprocess.
+        env (dict): Environment variables to set or unset before launching cmd.
         stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
         log (bool): If True send subprocess stdout and stderr to the debug log.
         
     Returns:
         int: Subprocess return code.
     """
-    if not cwd:
-        cwd = os.getcwd()
-    if not env:
-        # Don't accidentally unset all environment variables with an empty dict
-        subproc_env = None
-    else:
-        subproc_env = dict(os.environ)
+    subproc_env = dict(os.environ)
+    if env: 
         for key, val in env.iteritems():
             if val is None:
                 subproc_env.pop(key, None)
