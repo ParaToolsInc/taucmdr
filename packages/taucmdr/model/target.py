@@ -445,6 +445,13 @@ class Target(Model):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
         
+    def on_create(self):
+        for comp in self.compilers().itervalues():
+            comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
+            
+    def on_delete(self):
+        util.rmtree(os.path.join(self.storage.prefix, 'bin', self['name']))
+        
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
