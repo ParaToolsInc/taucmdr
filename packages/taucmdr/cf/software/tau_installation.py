@@ -135,6 +135,20 @@ PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
 
 
+def check_env_compat():
+    """Checks the current shell environment for incompatible libraries or modules.
+
+    Other instrumentation packages like Darshan can conflict with TAU.  This routine
+    checks that no conflicting packages are active in the current environment.
+
+    Raises:
+        ConfigurationError: TAU cannot be used in the current environment.
+    """
+    if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
+        raise ConfigurationError("TAU cannot be used with darshan. ",
+                                 "Unload the darshan module and try again.") 
+
+
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
 
@@ -714,9 +728,7 @@ class TauInstallation(Installation):
         Raises:
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
-        if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
-            raise ConfigurationError("TAU cannot be used with darshan."
-                                     "Please unload the darshan module and try again") 
+        check_env_compat()
         if self.forced_makefile:
             forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
             self._set_install_prefix(forced_install_prefix)
