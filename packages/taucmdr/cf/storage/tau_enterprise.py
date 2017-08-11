@@ -202,6 +202,13 @@ class _TauEnterpriseTable(object):
         else:
             return "&embedded={}".format(json.dumps({k: 1 for k in cond}))
 
+    @staticmethod
+    def _prop_query(propagate):
+        if not propagate:
+            return ""
+        else:
+            return "&propagate=true"
+
     def search(self, cond, match_any=False, populate=None):
         if cond is None:
             cond = {}
@@ -216,15 +223,17 @@ class _TauEnterpriseTable(object):
         else:
             return []
 
-    def _get(self, keys=None, eid=None, match_any=False, delete=False, populate=None):
+    def _get(self, keys=None, eid=None, match_any=False, delete=False, populate=None, propagate=False):
         if match_any and keys is not None:
             keys = self._query_to_match_any(keys)
         if eid is not None:
-            url = "{}/{}?{}".format(self.endpoint, eid, self._embed_query(populate))
+            url = "{}/{}?{}{}".format(self.endpoint, eid, self._embed_query(populate), self._prop_query(propagate))
         elif isinstance(keys, dict):
-            url = "{}/?where={}&{}".format(self.endpoint, json.dumps(keys), self._embed_query(populate))
+            url = "{}/?where={}&{}{}".format(self.endpoint, json.dumps(keys), self._embed_query(populate),
+                                             self._prop_query(propagate))
         elif isinstance(keys, six.string_types):
-            url = "{}/?where={}&{}".format(self.endpoint, keys, self._embed_query(populate))
+            url = "{}/?where={}&{}{}".format(self.endpoint, keys, self._embed_query(populate),
+                                             self._prop_query(propagate))
         else:
             return None
         if delete:
@@ -250,8 +259,8 @@ class _TauEnterpriseTable(object):
     def get(self, keys=None, eid=None, match_any=False, populate=None):
         return self._get(keys=keys, eid=eid, match_any=match_any, populate=populate)
 
-    def remove(self, keys=None, eid=None, match_any=False):
-        return self._get(keys=keys, eid=eid, match_any=match_any, delete=True)
+    def remove(self, keys=None, eid=None, match_any=False, propagate=False):
+        return self._get(keys=keys, eid=eid, match_any=match_any, delete=True, propagate=propagate)
 
     def count(self, cond, match_any=False):
         if cond is None:
@@ -259,12 +268,13 @@ class _TauEnterpriseTable(object):
         matches = self.search(cond, match_any)
         return len(matches)
 
-    def insert(self, element):
-        request = self.session.post(self.endpoint, json.dumps(element), headers={'Content-Type': 'application/json'})
+    def insert(self, element, propagate=False):
+        url = "{}/?{}".format(self.endpoint, self._prop_query(propagate))
+        request = self.session.post(url, json.dumps(element), headers={'Content-Type': 'application/json'})
         request.raise_for_status()
         return _TauEnterpriseJsonRecord(self.database.storage, element, eid=request.json()['_id'])
 
-    def update(self, fields, keys=None, eids=None, match_any=False):
+    def update(self, fields, keys=None, eids=None, match_any=False, propagate=False):
         update_ids = []
         if isinstance(eids, (list, tuple)):
             update_ids = eids
@@ -273,7 +283,7 @@ class _TauEnterpriseTable(object):
         elif keys is not None:
             update_ids = [record.eid for record in self.search(keys, match_any=match_any)]
         for update_id in update_ids:
-            url = "{}/{}".format(self.endpoint, update_id)
+            url = "{}/{}?{}".format(self.endpoint, update_id, self._prop_query(propagate))
             request = self.session.patch(url, json.dumps(fields), headers={'Content-Type': 'application/json'})
             request.raise_for_status()
 
@@ -563,7 +573,7 @@ class TauEnterpriseStorage(AbstractStorage):
         else:
             raise ValueError(keys)
 
-    def insert(self, data, table_name=None):
+    def insert(self, data, table_name=None, propagate=False):
         """Create a new record.
 
         If the table doesn't exist it will be created.
@@ -571,13 +581,15 @@ class TauEnterpriseStorage(AbstractStorage):
         Args:
             data (dict): Data to insert in table.
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
 
         Returns:
             Record: The new record.
         """
-        return self.table(table_name).insert(data)
+        return self.table(table_name).insert(data, propagate=propagate)
 
-    def update(self, fields, keys, table_name=None, match_any=False):
+    def update(self, fields, keys, table_name=None, match_any=False, propagate=False):
         """Update records.
 
         The behavior depends on the type of `keys`:
@@ -591,21 +603,23 @@ class TauEnterpriseStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
 
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
-            table.update(fields, eids=[keys])
+            table.update(fields, eids=[keys], propagate=propagate)
         elif isinstance(keys, dict):
-            table.update(fields, keys=keys)
+            table.update(fields, keys=keys, propagate=propagate)
         elif isinstance(keys, (list, tuple)):
-            table.update(fields, eids=keys)
+            table.update(fields, eids=keys, propagate=propagate)
         else:
             raise ValueError(keys)
 
-    def unset(self, fields, keys, table_name=None, match_any=False):
+    def unset(self, fields, keys, table_name=None, match_any=False, propagate=False):
         """Update records by unsetting fields.
 
         Update only allows you to update a record by adding new fields or overwriting existing fields.
@@ -622,15 +636,17 @@ class TauEnterpriseStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
 
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
         table = self.table(table_name)
         update_fields = {field: None for field in fields}
-        table.update(update_fields, eids=[keys])
+        table.update(update_fields, eids=[keys], propagate=propagate)
 
-    def remove(self, keys, table_name=None, match_any=False):
+    def remove(self, keys, table_name=None, match_any=False, propagate=False):
         """Delete records.
 
         The behavior depends on the type of `keys`:
@@ -643,6 +659,8 @@ class TauEnterpriseStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
 
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
@@ -651,12 +669,12 @@ class TauEnterpriseStorage(AbstractStorage):
         if keys is None:
             return None
         elif isinstance(keys, self.Record.eid_type):
-            table.remove(eid=keys)
+            table.remove(eid=keys, propagate=propagate)
         elif isinstance(keys, dict):
-            table.remove(keys=keys, match_any=match_any)
+            table.remove(keys=keys, match_any=match_any, propagate=propagate)
         elif isinstance(keys, (list, tuple)):
             for key in keys:
-                self.remove(key, table_name=table_name, match_any=match_any)
+                self.remove(key, table_name=table_name, match_any=match_any, propagate=propagate)
         else:
             raise ValueError(keys)
 

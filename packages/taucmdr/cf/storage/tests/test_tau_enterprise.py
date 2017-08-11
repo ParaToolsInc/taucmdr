@@ -295,5 +295,18 @@ class TauEnterpriseStorageTests(tests.TestCase):
                      'wrapped': eid_1}
         eid_2 = self.storage.insert(element_2, table_name='compiler').eid
         record_2 = self.storage.get(keys=eid_2, table_name='compiler', populate=['wrapped'])
-        self.assertEqual(record_2['wrapped']['role'], 'Host_CC', "Populated field should contain value from foreign ref")
+        self.assertEqual(record_2['wrapped']['role'], 'Host_CC',
+                         "Populated field should contain value from foreign ref")
         self.assertEqual(record_2['wrapped'].eid, eid_1, "Populated field should have eid of foreign ref")
+
+    def test_propagate_on_insert(self):
+        self.storage.purge(table_name='project')
+        self.storage.purge(table_name='measurement')
+        measurement = {'name': 'test-meas', 'projects': []}
+        meas_eid = self.storage.insert(measurement, table_name='measurement').eid
+        proj_1 = {'name': 'proj-1', 'measurements': [meas_eid]}
+        proj_1_eid = self.storage.insert(proj_1, table_name='project', propagate=True).eid
+        meas_from_db = self.storage.get(keys=meas_eid, table_name='measurement')
+        self.assertEqual(proj_1_eid, meas_from_db['projects'][0], 
+                'After propagate from project to measurement, measurement should '
+                'contain a backreference to project.')

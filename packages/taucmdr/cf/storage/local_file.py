@@ -412,7 +412,7 @@ class LocalFileStorage(AbstractStorage):
         else:
             raise ValueError(keys)
 
-    def insert(self, data, table_name=None):
+    def insert(self, data, table_name=None, propagate=False):
         """Create a new record.
         
         If the table doesn't exist it will be created.
@@ -420,15 +420,19 @@ class LocalFileStorage(AbstractStorage):
         Args:
             data (dict): Data to insert in table.
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
-            
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
+
         Returns:
             Record: The new record.
         """
+        if propagate:
+            raise NotImplementedError
         eid = self.table(table_name).insert(data)
         record = self.Record(self, eid=eid, element=data)
         return record
 
-    def update(self, fields, keys, table_name=None, match_any=False):
+    def update(self, fields, keys, table_name=None, match_any=False, propagate=False):
         """Update records.
         
         The behavior depends on the type of `keys`:
@@ -442,10 +446,14 @@ class LocalFileStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
-            
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
+
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
+        if propagate:
+            raise NotImplementedError
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
             #LOGGER.debug("%s: update(%r, eid=%r)", table_name, fields, keys)
@@ -459,7 +467,7 @@ class LocalFileStorage(AbstractStorage):
         else:
             raise ValueError(keys)
       
-    def unset(self, fields, keys, table_name=None, match_any=False):
+    def unset(self, fields, keys, table_name=None, match_any=False, propagate=False):
         """Update records by unsetting fields.
         
         Update only allows you to update a record by adding new fields or overwriting existing fields. 
@@ -476,10 +484,14 @@ class LocalFileStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
-            
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
+
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
+        if propagate:
+            raise NotImplementedError
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
             for field in fields:
@@ -496,7 +508,7 @@ class LocalFileStorage(AbstractStorage):
         else:
             raise ValueError(keys)
         
-    def remove(self, keys, table_name=None, match_any=False):
+    def remove(self, keys, table_name=None, match_any=False, propagate=False):
         """Delete records.
         
         The behavior depends on the type of `keys`:
@@ -509,10 +521,14 @@ class LocalFileStorage(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
                               in `keys` may match or if False then all keys in `keys` must match.
-            
+            propagate (bool): Whether the database should propagate associations (that is, create backlinks from
+                referred-to foreign keys in the inserted record).
+
         Raises:
             ValueError: ``bool(keys) == False`` or invaild value for `keys`.
         """
+        if propagate:
+            raise NotImplementedError
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
             #LOGGER.debug("%s: remove(eid=%r)", table_name, keys)
