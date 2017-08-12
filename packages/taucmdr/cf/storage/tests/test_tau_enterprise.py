@@ -310,3 +310,42 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.assertEqual(proj_1_eid, meas_from_db['projects'][0], 
                 'After propagate from project to measurement, measurement should '
                 'contain a backreference to project.')
+
+    def test_propagate_on_update(self):
+        self.storage.purge(table_name='project')
+        self.storage.purge(table_name='measurement')
+        measurement_1 = {'name': 'test-meas', 'projects': []}
+        meas_eid_1 = self.storage.insert(measurement_1, table_name='measurement').eid
+        measurement_2 = {'name': 'test-meas2', 'projects': []}
+        meas_eid_2 = self.storage.insert(measurement_2, table_name='measurement').eid
+        proj_1 = {'name': 'proj-1', 'measurements': [meas_eid_1]}
+        proj_1_eid = self.storage.insert(proj_1, table_name='project', propagate=True).eid
+        meas_1_from_db = self.storage.get(keys=meas_eid_1, table_name='measurement')
+        self.assertEqual(proj_1_eid, meas_1_from_db['projects'][0],
+                         'After propagate from project to measurement, '
+                         'measurement %s should contain a backreference to project: %s.'
+                         % (meas_1_from_db, meas_1_from_db['projects'][0]))
+        # Now update the proj to point to the other measurement
+        self.storage.update({'measurements': [meas_eid_2]}, proj_1_eid, table_name='project', propagate=True)
+        meas_1_from_db = self.storage.get(keys=meas_eid_1, table_name='measurement')
+        meas_2_from_db = self.storage.get(keys=meas_eid_2, table_name='measurement')
+        self.assertTrue(len(meas_1_from_db['projects']) == 0,
+                        'After propagating update, meas_1 should have no projects')
+        self.assertEqual(proj_1_eid, meas_2_from_db['projects'][0],
+                         'After propagating update, meas_2 should have proj_1')
+
+    def test_propagate_on_delete(self):
+        self.storage.purge(table_name='project')
+        self.storage.purge(table_name='measurement')
+        measurement = {'name': 'test-meas', 'projects': []}
+        meas_eid = self.storage.insert(measurement, table_name='measurement').eid
+        proj_1 = {'name': 'proj-1', 'measurements': [meas_eid]}
+        proj_1_eid = self.storage.insert(proj_1, table_name='project', propagate=True).eid
+        meas_from_db = self.storage.get(keys=meas_eid, table_name='measurement')
+        self.assertEqual(proj_1_eid, meas_from_db['projects'][0],
+                         'After propagate from project to measurement, '
+                         'measurement should contain a backreference to project.')
+        self.storage.remove(proj_1_eid, table_name='project', propagate=True)
+        meas_from_db = self.storage.get(keys=meas_eid, table_name='measurement')
+        self.assertTrue(len(meas_from_db['projects']) == 0,
+                        'After propagating delete, meas_1 should have no projects')
