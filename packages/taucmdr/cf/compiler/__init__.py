@@ -277,7 +277,8 @@ class _CompilerFamily(TrackedInstance):
         # Settle down pylint... the __instances__ member is created by the metaclass
         # pylint: disable=no-member
         if candidates:
-            families = candidates + [inst for inst in cls.__instances__ if inst not in candidates]
+            keywords = {candidate.kbase.keyword for candidate in candidates}
+            families = candidates + [inst for inst in cls.__instances__ if inst not in candidates and inst.kbase.keyword in keywords]
         else:
             families = cls.__instances__
         for family in families:
@@ -297,7 +298,11 @@ class _CompilerFamily(TrackedInstance):
                     return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
+        System = [candidate for candidate in candidates if candidate.name == 'System']
+        if len(System) == 1:
+            return System[0]
+        else:
+            raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
 
 
 class _CompilerInfo(TrackedInstance):
