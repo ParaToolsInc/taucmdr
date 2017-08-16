@@ -221,6 +221,8 @@ class LocalFileStorage(AbstractStorage):
             return lhs & rhs
         def _or(lhs, rhs): 
             return lhs | rhs
+        def _not(query):
+            return ~query
         join = _or if match_any else _and
         itr = keys.iteritems()
         key, val = itr.next()
@@ -228,7 +230,9 @@ class LocalFileStorage(AbstractStorage):
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))
         if selected_project is not None:
-            query = _and(query, tinydb.where('selected_project') == selected_project)
+            selected_project_query = _or(tinydb.where('selected_project') == selected_project, _not(tinydb.where('selected_project')))
+            project_query = _or(tinydb.where('project') == selected_project, _not(tinydb.where('project')))
+            query = _and(query, project_query)
         return query
 
     def count(self, table_name=None):
