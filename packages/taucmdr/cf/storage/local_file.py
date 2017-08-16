@@ -215,7 +215,7 @@ class LocalFileStorage(AbstractStorage):
             return self._database.table(table_name)
     
     @staticmethod
-    def _query(keys, match_any):
+    def _query(keys, match_any, selected_project=None):
         """Construct a TinyDB query object."""
         def _and(lhs, rhs): 
             return lhs & rhs
@@ -227,6 +227,8 @@ class LocalFileStorage(AbstractStorage):
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))
+        if selected_project is not None:
+            query = _and(query, tinydb.where('selected_project') == selected_project)
         return query
 
     def count(self, table_name=None):
@@ -375,6 +377,11 @@ class LocalFileStorage(AbstractStorage):
         Raises:
             ValueError: Invalid value for `keys`.
         """
+        try:
+            from taucmdr.cf.storage.levels import PROJECT_STORAGE
+            selected_project = PROJECT_STORAGE['selected_project']
+        except (AttributeError, KeyError):
+            selected_project = None
         table = self.table(table_name)
         if keys is None:
             return False
@@ -383,7 +390,7 @@ class LocalFileStorage(AbstractStorage):
             return table.contains(eid=keys)
         elif isinstance(keys, dict) and keys:
             #LOGGER.debug("%s: contains(keys=%r)", table_name, keys)
-            return table.contains(self._query(keys, match_any))
+            return table.contains(self._query(keys, match_any, selected_project))
         elif isinstance(keys, (list, tuple)):
             return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
         else:
