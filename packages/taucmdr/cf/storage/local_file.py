@@ -381,7 +381,10 @@ class LocalFileStorage(AbstractStorage):
         """
         try:
             from taucmdr.cf.storage.levels import PROJECT_STORAGE
-            selected_project = PROJECT_STORAGE['selected_project']
+            if PROJECT_STORAGE._database is not None:
+                selected_project = PROJECT_STORAGE['selected_project']
+            else:
+                selected_project = None
         except (AttributeError, KeyError):
             selected_project = None
         table = self.table(table_name)
