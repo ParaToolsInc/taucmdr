@@ -102,6 +102,9 @@ class Knowledgebase(object):
                 envars = (envars,) 
             self._roles[key] = _CompilerRole(keyword+'_'+key, language, envars, self)
 
+    def __repr__(self):
+        return 'Knowledgebase(%s)' % self.keyword
+    
     @classmethod
     def all_roles(cls):
         """Return all known compiler roles."""
@@ -241,14 +244,19 @@ class _CompilerFamily(TrackedInstance):
         self.link_library_flags = link_library_flags or ['-l']
         self.show_wrapper_flags = show_wrapper_flags or []
         self.members = {}
+        self.commands = set()
         for role, commands in six.iteritems(members):
             self.members[role] = [_CompilerInfo(self, cmd, role) for cmd in commands]
+            self.commands.update(commands)
             
     def installation(self):
         return InstalledCompilerFamily(self)
 
     def __str__(self):
         return self.name
+    
+    def __repr__(self):
+        return "_CompilerFamily(%s)" % self.name
 
     @classmethod
     def probe(cls, absolute_path, candidates=None):
@@ -274,16 +282,20 @@ class _CompilerFamily(TrackedInstance):
         LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
         messages = []
         stdout = None
-        # Settle down pylint... the __instances__ member is created by the metaclass
+        # Settle down pylint... the __instances__ member is created by __new__
         # pylint: disable=no-member
         if candidates:
-            keywords = {candidate.kbase.keyword for candidate in candidates}
-            families = candidates + [inst for inst in cls.__instances__ if inst not in candidates and inst.kbase.keyword in keywords]
+            candidate_kbases = {candidate.kbase for candidate in candidates}
+            families = candidates + [inst for inst in cls.__instances__ 
+                                     if inst not in candidates and inst.kbase in candidate_kbases]
         else:
             families = cls.__instances__
+        basename = os.path.basename(absolute_path)
+        with_regex, without_regex = [], []
         for family in families:
-            if not family.family_regex:
-                continue
+            if basename in family.commands:
+                (with_regex if family.family_regex else without_regex).append(family)
+        for family in with_regex:
             cmd = [absolute_path] + family.version_flags
             try:
                 stdout = util.get_command_output(cmd)
@@ -298,11 +310,9 @@ class _CompilerFamily(TrackedInstance):
                     return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        System = [candidate for candidate in candidates if candidate.name == 'System']
-        if len(System) == 1:
-            return System[0]
-        else:
-            raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
+        if len(without_regex) == 1:
+            return without_regex[0]
+        raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
 
 
 class _CompilerInfo(TrackedInstance):
