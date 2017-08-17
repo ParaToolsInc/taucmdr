@@ -310,8 +310,13 @@ class _CompilerFamily(TrackedInstance):
                     return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        if len(without_regex) == 1:
-            return without_regex[0]
+        if len(without_regex) > 0:
+            guess = without_regex[0]
+            if len(without_regex) > 1:
+                LOGGER.warning(("Assuming '%s' is a %s compiler but it could be to any of these: %s\n"
+                                "If this assumption is incorrect then you should manually specify your compilers"), 
+                               absolute_path, guess.name, ', '.join([family.name for family in without_regex]))
+            return guess
         raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
 
 
