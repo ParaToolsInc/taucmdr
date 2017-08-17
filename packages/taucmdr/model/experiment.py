@@ -102,8 +102,8 @@ class ExperimentController(Controller):
         key_dict['project'] = Project.controller(self.storage).selected().eid
     
     def search(self, keys=None):
-        keys = dict(keys)
         try:
+            keys = dict(keys)
             self._restrict_project(keys)
         except TypeError:
             try:
