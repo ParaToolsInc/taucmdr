@@ -309,6 +309,14 @@ class LocalFileStorage(AbstractStorage):
             ValueError: Invalid value for `keys`.
         """
         #LOGGER.debug("Search '%s' for '%s'", table_name, keys)
+        try:
+            from taucmdr.cf.storage.levels import PROJECT_STORAGE
+            if PROJECT_STORAGE._database is not None:
+                selected_project = PROJECT_STORAGE['selected_project']
+            else:
+                selected_project = None
+        except (AttributeError, KeyError):
+            selected_project = None
         table = self.table(table_name)
         if keys is None:
             #LOGGER.debug("%s: all()", table_name)
@@ -319,7 +327,7 @@ class LocalFileStorage(AbstractStorage):
             return [self.Record(self, element=element)] if element else []
         elif isinstance(keys, dict) and keys:
             #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
-            return [self.Record(self, element=element) for element in table.search(self._query(keys, match_any))]
+            return [self.Record(self, element=element) for element in table.search(self._query(keys, match_any, selected_project))]
         elif isinstance(keys, (list, tuple)):
             #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
             result = []
