@@ -215,24 +215,18 @@ class LocalFileStorage(AbstractStorage):
             return self._database.table(table_name)
     
     @staticmethod
-    def _query(keys, match_any, selected_project=None):
+    def _query(keys, match_any):
         """Construct a TinyDB query object."""
         def _and(lhs, rhs): 
             return lhs & rhs
         def _or(lhs, rhs): 
             return lhs | rhs
-        def _not(query):
-            return ~query
         join = _or if match_any else _and
         itr = keys.iteritems()
         key, val = itr.next()
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))
-        if selected_project is not None:
-            selected_project_query = _or(tinydb.where('selected_project') == selected_project, _not(tinydb.where('selected_project')))
-            project_query = _or(tinydb.where('project') == selected_project, _not(tinydb.where('project')))
-            query = _and(query, project_query)
         return query
 
     def count(self, table_name=None):
@@ -309,14 +303,6 @@ class LocalFileStorage(AbstractStorage):
             ValueError: Invalid value for `keys`.
         """
         #LOGGER.debug("Search '%s' for '%s'", table_name, keys)
-        try:
-            from taucmdr.cf.storage.levels import PROJECT_STORAGE
-            if PROJECT_STORAGE._database is not None:
-                selected_project = PROJECT_STORAGE['selected_project']
-            else:
-                selected_project = None
-        except (AttributeError, KeyError):
-            selected_project = None
         table = self.table(table_name)
         if keys is None:
             #LOGGER.debug("%s: all()", table_name)
@@ -327,7 +313,7 @@ class LocalFileStorage(AbstractStorage):
             return [self.Record(self, element=element)] if element else []
         elif isinstance(keys, dict) and keys:
             #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
-            return [self.Record(self, element=element) for element in table.search(self._query(keys, match_any, selected_project))]
+            return [self.Record(self, element=element) for element in table.search(self._query(keys, match_any))]
         elif isinstance(keys, (list, tuple)):
             #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
             result = []
@@ -389,14 +375,6 @@ class LocalFileStorage(AbstractStorage):
         Raises:
             ValueError: Invalid value for `keys`.
         """
-        try:
-            from taucmdr.cf.storage.levels import PROJECT_STORAGE
-            if PROJECT_STORAGE._database is not None:
-                selected_project = PROJECT_STORAGE['selected_project']
-            else:
-                selected_project = None
-        except (AttributeError, KeyError):
-            selected_project = None
         table = self.table(table_name)
         if keys is None:
             return False
@@ -405,7 +383,7 @@ class LocalFileStorage(AbstractStorage):
             return table.contains(eid=keys)
         elif isinstance(keys, dict) and keys:
             #LOGGER.debug("%s: contains(keys=%r)", table_name, keys)
-            return table.contains(self._query(keys, match_any, selected_project))
+            return table.contains(self._query(keys, match_any))
         elif isinstance(keys, (list, tuple)):
             return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
         else:

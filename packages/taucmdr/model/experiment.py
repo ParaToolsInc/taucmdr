@@ -37,6 +37,7 @@ import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
+from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
@@ -94,10 +95,30 @@ def attributes():
     }
 
 
+class ExperimentController(Controller):
+
+    def _restrict_project(self, key_dict):
+        key_dict['project'] = Project.controller(self.storage).selected().eid
+    
+    def search(self, keys=None):
+        keys = dict(keys)
+        try:
+            self._restrict_project(keys)
+        except TypeError:
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).search(keys)
+
+
 class Experiment(Model):
     """Experiment data model."""
 
     __attributes__ = attributes
+    
+    __controller__ = ExperimentController
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
