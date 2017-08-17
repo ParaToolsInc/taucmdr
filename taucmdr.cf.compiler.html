@@ -193,6 +193,20 @@ command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.<
 <em class="property">classmethod </em><code class="descname">find_any</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompiler.find_any"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompiler.find_any" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="taucmdr.cf.compiler.InstalledCompiler.generate_wrapper">
+<code class="descname">generate_wrapper</code><span class="sig-paren">(</span><em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompiler.generate_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompiler.generate_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a compiler wrapper script that uses <code class="xref any docutils literal"><span class="pre">tau.TAU_SCRIPT</span></code> to invoke the compiler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Path to a directory in which the wrapper script will be created.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="classmethod">
 <dt id="taucmdr.cf.compiler.InstalledCompiler.probe">
 <em class="property">classmethod </em><code class="descname">probe</code><span class="sig-paren">(</span><em>command</em>, <em>family=None</em>, <em>role=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompiler.probe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompiler.probe" title="Permalink to this definition">¶</a></dt>
@@ -295,6 +309,12 @@ are actually installed on the system.</p>
 <dt id="taucmdr.cf.compiler.InstalledCompilerFamily.FIXME">
 <code class="descname">FIXME</code><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerFamily.FIXME" title="Permalink to this definition">¶</a></dt>
 <dd><p>members</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.compiler.InstalledCompilerFamily.__contains__">
+<code class="descname">__contains__</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerFamily.__contains__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerFamily.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if any installed compiler can fill a given role.</p>
 </dd></dl>
 
 <dl class="method">

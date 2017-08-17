@@ -341,7 +341,7 @@
 <span class="sd">            reuse_archive (bool): If True don&#39;t download, just confirm that the archive exists.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            str: Path to the acquired source archive.</span>
+<span class="sd">            str: Absolute path to the source archive.</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: Package source code not provided or couldn&#39;t be acquired.</span>
@@ -350,16 +350,24 @@
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No source code provided for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span>
+        <span class="n">archive_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reuse_archive</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">ORDERED_LEVELS</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">,</span> <span class="n">archive_file</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">StorageError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">archive</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">archive</span>
         <span class="n">archive_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">highest_writable_storage</span><span class="p">()</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
         <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">archive_prefix</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">reuse_archive</span> <span class="ow">or</span> <span class="p">(</span><span class="n">reuse_archive</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">archive</span><span class="p">)):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">util</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-                <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;If a firewall is blocking access to this server, use another method to download &quot;</span>
-                         <span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; and copy that file to &#39;</span><span class="si">%s</span><span class="s2">&#39; before trying this operation.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">archive_prefix</span><span class="p">),</span>
-                         <span class="s2">&quot;Check that the file or directory is accessible&quot;</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot acquire source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;If a firewall is blocking access to this server, use another method to download &quot;</span>
+                     <span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; and copy that file to &#39;</span><span class="si">%s</span><span class="s2">&#39; before trying this operation.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">archive_prefix</span><span class="p">),</span>
+                     <span class="s2">&quot;Check that the file or directory is accessible&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot acquire source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">archive</span></div>
 
 <div class="viewcode-block" id="Installation._prepare_src"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation._prepare_src">[docs]</a>    <span class="k">def</span> <span class="nf">_prepare_src</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_archive</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -377,24 +385,13 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: The source code couldn&#39;t be acquired or unpacked.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Acquire a new copy of the source archive, if needed.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="p">)</span>
-        <span class="c1"># Locate archive file</span>
-        <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="n">ORDERED_LEVELS</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">archive_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">StorageError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">archive_prefix</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">archive</span><span class="p">):</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using </span><span class="si">%s</span><span class="s2"> source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
-                <span class="k">break</span>
+        <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using </span><span class="si">%s</span><span class="s2"> source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">util</span><span class="o">.</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">tmpfs_prefix</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">reuse_archive</span><span class="p">:</span>
-                <span class="c1"># Try again with a fresh copy of the source archive</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Unable to extract source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;.  Downloading a new copy.&quot;</span> <span class="o">%</span> <span class="n">archive</span><span class="p">)</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">(</span><span class="n">reuse_archive</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot extract source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
                                      <span class="s2">&quot;Check that the file or directory is accessible&quot;</span><span class="p">)</span></div>

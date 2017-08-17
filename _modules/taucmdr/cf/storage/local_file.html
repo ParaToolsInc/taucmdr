@@ -262,18 +262,24 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span></div>
     
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">,</span> <span class="n">selected_project</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Construct a TinyDB query object.&quot;&quot;&quot;</span>
         <span class="k">def</span> <span class="nf">_and</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span> 
             <span class="k">return</span> <span class="n">lhs</span> <span class="o">&amp;</span> <span class="n">rhs</span>
         <span class="k">def</span> <span class="nf">_or</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span> 
             <span class="k">return</span> <span class="n">lhs</span> <span class="o">|</span> <span class="n">rhs</span>
+        <span class="k">def</span> <span class="nf">_not</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+            <span class="k">return</span> <span class="o">~</span><span class="n">query</span>
         <span class="n">join</span> <span class="o">=</span> <span class="n">_or</span> <span class="k">if</span> <span class="n">match_any</span> <span class="k">else</span> <span class="n">_and</span>
         <span class="n">itr</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
         <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">itr</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
         <span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">itr</span><span class="p">:</span>
             <span class="n">query</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">selected_project</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">selected_project_query</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;selected_project&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">selected_project</span><span class="p">,</span> <span class="n">_not</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;selected_project&#39;</span><span class="p">)))</span>
+            <span class="n">project_query</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">selected_project</span><span class="p">,</span> <span class="n">_not</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">)))</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">_and</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">project_query</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">query</span>
 
 <div class="viewcode-block" id="LocalFileStorage.count"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.local_file.html#taucmdr.cf.storage.levels.LocalFileStorage.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -350,6 +356,14 @@
 <span class="sd">            ValueError: Invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1">#LOGGER.debug(&quot;Search &#39;%s&#39; for &#39;%s&#39;&quot;, table_name, keys)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+            <span class="k">if</span> <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">_database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">selected_project</span> <span class="o">=</span> <span class="n">PROJECT_STORAGE</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">selected_project</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">selected_project</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="c1">#LOGGER.debug(&quot;%s: all()&quot;, table_name)</span>
@@ -360,7 +374,7 @@
             <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="n">element</span><span class="p">)]</span> <span class="k">if</span> <span class="n">element</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">keys</span><span class="p">:</span>
             <span class="c1">#LOGGER.debug(&quot;%s: search(keys=%r)&quot;, table_name, keys)</span>
-            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="n">element</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="n">element</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">,</span> <span class="n">selected_project</span><span class="p">))]</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="c1">#LOGGER.debug(&quot;%s: search(keys=%r)&quot;, table_name, keys)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
@@ -422,6 +436,14 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+            <span class="k">if</span> <span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">_database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">selected_project</span> <span class="o">=</span> <span class="n">PROJECT_STORAGE</span><span class="p">[</span><span class="s1">&#39;selected_project&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">selected_project</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">selected_project</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">False</span>
@@ -430,7 +452,7 @@
             <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">keys</span><span class="p">:</span>
             <span class="c1">#LOGGER.debug(&quot;%s: contains(keys=%r)&quot;, table_name, keys)</span>
-            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">,</span> <span class="n">selected_project</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
