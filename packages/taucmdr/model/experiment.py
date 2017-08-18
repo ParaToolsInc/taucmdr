@@ -35,7 +35,8 @@ The selected experiment will be used for application compilation and trial visua
 import os
 import fasteners
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ExperimentSelectionError, UniqueAttributeError
+from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
+from taucmdr.error import ExperimentSelectionError, UniqueAttributeError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
@@ -97,6 +98,7 @@ def attributes():
 
 
 class ExperimentController(Controller):
+    """Experiment data controller."""
 
     def _restrict_project(self, key_dict):
         key_dict['project'] = Project.controller(self.storage).selected().eid
@@ -231,7 +233,7 @@ class ExperimentController(Controller):
             for model in changing:
                 model.on_delete()
 
-    def export_records(cls, keys=None, eids=None):
+    def export_records(self, keys=None, eids=None):
         try:
             keys = dict(keys)
             self._restrict_project(keys)
