@@ -48,7 +48,7 @@ from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags, new_os_environ
 from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
-from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
+from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
@@ -971,7 +971,7 @@ class TauInstallation(Installation):
             pass
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
-        if self.source_inst != 'never':
+        if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
             opts.append('-DTAU_ENABLED=1')
         env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
