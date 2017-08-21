@@ -36,6 +36,9 @@ from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
 from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
+from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
+from taucmdr.cli.commands.project.edit import COMMAND as project_edit_cmd
+from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
 
 class CreateTest(tests.TestCase):
     
@@ -94,3 +97,25 @@ class CreateTest(tests.TestCase):
 	argv = ['exp2', '--target', 'targ1', '--application', 'test_app', '--measurement', 'meas_ompt']
 	_, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
 	self.assertFalse(stderr)
+
+    def test_new_project(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, project_create_cmd, ['test_proj'])
+        self.assertIn("Created a new project named 'test_proj'", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, project_edit_cmd, ['test_proj', '--add-measurements', 'profile', 'sample'])
+        self.assertIn("Added measurement 'profile' to project configuration", stdout)
+        self.assertIn("Added measurement 'sample' to project configuration", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, project_edit_cmd, ['test_proj', '--add-application', 'app1'])
+        self.assertIn("Added application 'app1' to project configuration", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, project_edit_cmd, ['test_proj', '--add-target', 'targ1'])
+        self.assertIn("Added target 'targ1' to project configuration", stdout)
+        self.assertFalse(stderr)
+        _, stderr = self.assertCommandReturnValue(0, project_select_cmd, ['test_proj'])
+        self.assertFalse(stderr)
+        argv = ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'sample']
+        stdout, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertIn("Created a new experiment", stdout)
+        self.assertFalse(stderr)
