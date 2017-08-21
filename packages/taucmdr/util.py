@@ -64,6 +64,8 @@ _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
 _DTEMP_STACK = []
 
+_DTEMP_ERROR_STACK = []
+
 # Don't make this a raw string!  \033 is unicode for '\x1b'.
 _COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 
@@ -71,7 +73,11 @@ _COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 def _cleanup_dtemp():
     if _DTEMP_STACK:
         for path in _DTEMP_STACK:
-            rmtree(path, ignore_errors=True)
+            if not any(path in paths for paths in _DTEMP_ERROR_STACK):
+                rmtree(path, ignore_errors=True)
+    if _DTEMP_ERROR_STACK:
+        LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
+                       ', '.join(_DTEMP_ERROR_STACK))
 atexit.register(_cleanup_dtemp)
 
 
@@ -124,6 +130,8 @@ def mkdirp(*args):
                 if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
                     raise
 
+def add_error_stack(path):
+    _DTEMP_ERROR_STACK.append(path)
 
 def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """Wrapper around shutil.rmtree to work around stale or slow NFS directories.

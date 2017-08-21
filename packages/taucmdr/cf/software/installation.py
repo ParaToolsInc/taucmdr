@@ -80,7 +80,8 @@ def tmpfs_prefix():
     
     Returns:
         str: Path to a uniquely-named directory in the temporary filesystem. The directory 
-            and all its contents **will be deleted** when the program exits.
+            and all its contents **will be deleted** when the program exits if it installs
+            correctly.
     """
     try:
         tmp_prefix = tmpfs_prefix.value
@@ -430,6 +431,7 @@ class Installation(object):
                 self.set_group()
             except Exception as err:
                 LOGGER.info("%s installation failed: %s", self.title, err)
+                #util.add_error_stack(self._src_prefix)
                 raise
             else:
                 # Delete the decompressed source code to save space. The source archive is retained.
@@ -521,6 +523,7 @@ class MakeInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             cmd = ['make'] + flags
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+                util.add_error_stack(self._src_prefix)
                 raise SoftwarePackageError('%s compilation failed' % self.title)
 
     def make_install(self, flags):
@@ -539,6 +542,7 @@ class MakeInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             cmd = ['make', 'install'] + flags
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+                util.add_error_stack(self._src_prefix)
                 raise SoftwarePackageError('%s installation failed' % self.title)
         # Some systems use lib64 instead of lib
         if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
@@ -572,6 +576,7 @@ class AutotoolsInstallation(MakeInstallation):
         cmd = ['./configure', '--prefix=%s' % self.install_prefix] + flags
         LOGGER.info("Configuring %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('%s configure failed' % self.title)   
     
     def installation_sequence(self):
@@ -621,6 +626,7 @@ class CMakeInstallation(MakeInstallation):
         cmd = [cmake, '-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('CMake failed for %s' %self.title)
     
     def installation_sequence(self):
