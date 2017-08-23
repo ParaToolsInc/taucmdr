@@ -98,6 +98,10 @@ def attributes():
                          'metavar': '<text>'},
             'description': "description of this trial"
         },
+        'phase': {
+            'type': 'string',
+            'description': "phase of trial"
+        },
     }
 
 
@@ -126,6 +130,7 @@ class TrialController(Controller):
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
         try:
+            self.update({'phase': 'running'}, trial.eid)
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
@@ -148,6 +153,7 @@ class TrialController(Controller):
 
         banner('BEGIN', expr.name, trial['begin_time'])
         try:
+            self.update({'phase': 'running'}, trial.eid)
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
@@ -159,6 +165,7 @@ class TrialController(Controller):
             end_time = str(datetime.utcnow())
             banner('END', expr.name, end_time)
 
+        self.update({'phase': 'post-processing'}, trial.eid)
         data_size = 0
         for dir_path, _, file_names in os.walk(trial.prefix):
             for name in file_names:
@@ -178,6 +185,7 @@ class TrialController(Controller):
         LOGGER.info('Command: %s', ' '.join(cmd))
         LOGGER.info('Current working directory: %s', cwd)
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
+        self.update({'phase': 'completed'}, trial.eid)
         return retval
 
     def perform(self, expr, cmd, cwd, env, description):
@@ -197,6 +205,7 @@ class TrialController(Controller):
                 'command': ' '.join(cmd),
                 'cwd': cwd,
                 'environment': 'FIXME',
+                'phase': 'initializing',
                 'begin_time': str(datetime.utcnow())}
         if description is not None:
             data['description'] = str(description)

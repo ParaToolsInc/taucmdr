@@ -38,7 +38,8 @@ from taucmdr.model.trial import Trial
 DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
                      {'header': 'Command', 'value': 'command'},
-                     {'header': 'Description', 'value': 'description'}]
+                     {'header': 'Description', 'value': 'description'},
+                     {'header': 'Status', 'value': 'phase'}]
 
 class TrialListCommand(ListCommand):
     """``trial list`` subcommand."""
