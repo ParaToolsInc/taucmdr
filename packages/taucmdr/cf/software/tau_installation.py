@@ -224,6 +224,7 @@ class TauInstallation(Installation):
             mpi_library_path (list): Paths to search for MPI library files.
             mpi_libraries (list): MPI libraries to include when linking with TAU.
             cuda_support (bool): Enable or disable CUDA support in TAU.
+            cuda_prefix (str): Path to CUDA toolkit installation.
             opencl_support (bool): Enable or disable OpenCL support in TAU.
             shmem_support (bool): Enable or disable SHMEM support in TAU.
             shmem_include_path (list):  Paths to search for SHMEM header files.

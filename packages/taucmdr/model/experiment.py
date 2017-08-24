@@ -385,7 +385,7 @@ class Experiment(Model):
                     mpi_library_path=target.get('mpi_library_path', []),
                     mpi_libraries=target.get('mpi_libraries', []),
                     cuda_support=application.get_or_default('cuda'),
-                    cuda_prefix=target.get('cuda', None),
+                    cuda_prefix=target.get('cuda_toolkit', None),
                     opencl_support=application.get_or_default('opencl'),
                     opencl_prefix=target.get('opencl', None),
                     shmem_support=application.get_or_default('shmem'),
