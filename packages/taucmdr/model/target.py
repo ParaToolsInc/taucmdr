@@ -40,7 +40,7 @@ import glob
 
 import six
 from taucmdr import logger, util
-from taucmdr.error import InternalError, ConfigurationError, IncompatibleRecordError 
+from taucmdr.error import ConfigurationError, IncompatibleRecordError 
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
@@ -120,6 +120,16 @@ def papi_source_default():
     return 'download'
 
 
+def cuda_default():
+    nvcc = util.which('nvcc')
+    if nvcc:
+        return os.path.dirname(os.path.dirname(nvcc))
+    else:
+        default_path = '/usr/local/cuda'
+        return default_path if os.path.exists(default_path) else None
+            
+
+
 def attributes():
     """Construct attributes dictionary for the target model.
     
@@ -134,6 +144,7 @@ def attributes():
     from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
+    from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
     
     knc_intel_only = _require_compiler_family(INTEL, 
                                               "You must use Intel compilers to target the Xeon Phi (KNC)",
@@ -331,11 +342,30 @@ def attributes():
                          'metavar': '<flag>'},
             'rebuild_required': True
         },
-        'cuda': {
+        CUDA_CXX.keyword: {
+            'model': Compiler,
+            'required': False,
+            'description': 'CUDA compiler command',
+            'argparse': {'flags': ('--cuda-cxx',),
+                         'group': 'CUDA',
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },
+        CUDA_FC.keyword: {
+            'model': Compiler,
+            'required': False,
+            'description': 'CUDA Fortran compiler command',
+            'argparse': {'flags': ('--cuda-fc',),
+                         'group': 'CUDA',
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },  
+        'cuda_toolkit': {
             'type': 'string',
-            'description': 'path to NVIDIA CUDA installation (enables OpenCL support)',
-            'argparse': {'flags': ('--cuda',),
-                         'group': 'software package',
+            'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
+            'default': cuda_default(), 
+            'argparse': {'flags': ('--cuda-toolkit',),
+                         'group': 'CUDA',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
             'rebuild_required': True

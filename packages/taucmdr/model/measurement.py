@@ -194,7 +194,7 @@ def attributes():
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
-            'compat': {True: Target.require('cuda')},
+            'compat': {True: Target.require('cuda_toolkit')},
         },
         'shmem': {
             'type': 'boolean',

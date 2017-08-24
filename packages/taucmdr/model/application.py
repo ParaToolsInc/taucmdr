@@ -43,6 +43,7 @@ from taucmdr.mvc.model import Model
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
+from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 
 
 def attributes():
@@ -96,7 +97,7 @@ def attributes():
             'default': False,
             'description': 'application uses NVIDIA CUDA',
             'argparse': {'flags': ('--cuda',)},
-            'compat': {True: Target.require('cuda')},
+            'compat': {True: Target.require('cuda_toolkit')},
             'rebuild_required': True
         },
         'opencl': {
@@ -206,11 +207,10 @@ class Application(Model):
         found = []
         for compiler in compilers:
             is_host = compiler['role'].startswith(HOST_COMPILERS.keyword)
-            is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword)
-            is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword)
-            if (is_mpi and self['mpi']) or (is_shmem and self['shmem']):
-                found.append(compiler)
-            elif is_host and not (self['mpi'] or self['shmem']):
+            is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword) and self['mpi']
+            is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword) and self['shmem']
+            is_cuda = compiler['role'].startswith(CUDA_COMPILERS.keyword) and self['cuda']
+            if is_host or is_mpi or is_shmem or is_cuda:
                 found.append(compiler)
         if not found:
             raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" %
