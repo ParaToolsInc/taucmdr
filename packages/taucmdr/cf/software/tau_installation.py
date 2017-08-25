@@ -51,6 +51,7 @@ from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
 from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
+from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
 
 
@@ -125,7 +126,9 @@ TAU_COMPILER_WRAPPERS = {CC: 'tau_cc.sh',
                          MPI_FC: 'tau_f90.sh',
                          SHMEM_CC: 'tau_cc.sh',
                          SHMEM_CXX: 'tau_cxx.sh',
-                         SHMEM_FC: 'tau_f90.sh'}
+                         SHMEM_FC: 'tau_f90.sh',
+                         CUDA_CXX: 'tau_cxx.sh',
+                         CUDA_FC: 'tau_ftn.sh'}
 
 TAU_MINIMAL_COMPILERS = [CC, CXX]
 
