@@ -68,7 +68,7 @@ The selected experiment will be used for application compilation and trial visua
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.attributes">
-<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'taucmdr.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'taucmdr.model.project.Project'&gt;, 'required': True, 'description': 'Project this experiment belongs to'}, 'application': {'argparse': {'flags': ('--application',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'argparse': {'flags': ('--measurement',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'target': {'argparse': {'flags': ('--target',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.target.Target'&gt;, 'required': True, 'description': &quot;The experiment's hardware/software configuration&quot;}}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'taucmdr.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'taucmdr.model.project.Project'&gt;, 'required': True, 'unique': True, 'description': 'Project this experiment belongs to'}, 'application': {'argparse': {'flags': ('--application',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'argparse': {'flags': ('--measurement',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'target': {'argparse': {'flags': ('--target',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.target.Target'&gt;, 'required': True, 'description': &quot;The experiment's hardware/software configuration&quot;}}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -209,7 +209,7 @@ The experiment is not configured to perform the desired run.</p>
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.project.Project'&gt;, 'experiment'), (&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment')])</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment'), (&lt;class 'taucmdr.model.project.Project'&gt;, 'experiment')])</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -257,6 +257,58 @@ Invalid trial number or no trials in selected experiment.</td>
 <code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.verify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks all components of the experiment for mutual compatibility.</p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.model.experiment.ExperimentController">
+<em class="property">class </em><code class="descclassname">taucmdr.model.experiment.</code><code class="descname">ExperimentController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller" title="taucmdr.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.controller.Controller</span></code></a></p>
+<p>Experiment data controller.</p>
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.all">
+<code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.exists">
+<code class="descname">exists</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.export_records">
+<code class="descname">export_records</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.export_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.export_records" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.one">
+<code class="descname">one</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.one" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.search" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.unset">
+<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.unset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>data</em>, <em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

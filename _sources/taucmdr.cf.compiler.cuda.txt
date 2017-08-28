@@ -1,0 +1,7 @@
+taucmdr.cf.compiler.cuda module
+===============================
+
+.. automodule:: taucmdr.cf.compiler.cuda
+    :members:
+    :undoc-members:
+    :show-inheritance:

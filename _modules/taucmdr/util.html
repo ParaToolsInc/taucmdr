@@ -108,6 +108,8 @@
 
 <span class="n">_DTEMP_STACK</span> <span class="o">=</span> <span class="p">[]</span>
 
+<span class="n">_DTEMP_ERROR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
+
 <span class="c1"># Don&#39;t make this a raw string!  \033 is unicode for &#39;\x1b&#39;.</span>
 <span class="n">_COLOR_CONTROL_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033\\</span><span class="s1">[([0-9]|3[0-8]|4[0-8])m&#39;</span><span class="p">)</span>
 
@@ -115,7 +117,11 @@
 <span class="k">def</span> <span class="nf">_cleanup_dtemp</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">_DTEMP_STACK</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_DTEMP_STACK</span><span class="p">:</span>
-            <span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">_DTEMP_ERROR_STACK</span><span class="p">):</span>
+                <span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_DTEMP_ERROR_STACK</span><span class="p">:</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;The following temporary directories were not deleted due to build errors: </span><span class="si">%s</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_DTEMP_ERROR_STACK</span><span class="p">))</span>
 <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">_cleanup_dtemp</span><span class="p">)</span>
 
 
@@ -168,6 +174,8 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
                     <span class="k">raise</span></div>
 
+<div class="viewcode-block" id="add_error_stack"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.add_error_stack">[docs]</a><span class="k">def</span> <span class="nf">add_error_stack</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">_DTEMP_ERROR_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="rmtree"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.rmtree">[docs]</a><span class="k">def</span> <span class="nf">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">onerror</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrapper around shutil.rmtree to work around stale or slow NFS directories.</span>

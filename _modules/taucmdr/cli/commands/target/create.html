@@ -86,6 +86,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="n">FC</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_COMPILERS</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.cuda</span> <span class="kn">import</span> <span class="n">CUDA_COMPILERS</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">TauMagic</span><span class="p">,</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">CRAY_CNL</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TAU_MINIMAL_COMPILERS</span>
 
@@ -319,6 +320,9 @@
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM) arguments&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">SHMEM_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--shmem-compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;shmem_family&#39;</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
 
+        <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;CUDA arguments&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">CUDA_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--cuda-compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;cuda_family&#39;</span><span class="p">,</span> <span class="n">hint</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">parser</span>
 
     <span class="k">def</span> <span class="nf">_parse_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
@@ -342,7 +346,7 @@
 <span class="sd">            dict: InstalledCompiler instances indexed by role keyword.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">kbase</span> <span class="ow">in</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="n">MPI_COMPILERS</span><span class="p">,</span> <span class="n">SHMEM_COMPILERS</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">kbase</span> <span class="ow">in</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="n">MPI_COMPILERS</span><span class="p">,</span> <span class="n">SHMEM_COMPILERS</span><span class="p">,</span> <span class="n">CUDA_COMPILERS</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">kbase</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">command</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>

@@ -85,7 +85,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span> 
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span> 
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.compiler</span> <span class="kn">import</span> <span class="n">Compiler</span>
@@ -165,6 +165,16 @@
     <span class="k">return</span> <span class="s1">&#39;download&#39;</span></div>
 
 
+<div class="viewcode-block" id="cuda_default"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.cuda_default">[docs]</a><span class="k">def</span> <span class="nf">cuda_default</span><span class="p">():</span>
+    <span class="n">nvcc</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;nvcc&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nvcc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">nvcc</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">default_path</span> <span class="o">=</span> <span class="s1">&#39;/usr/local/cuda&#39;</span>
+        <span class="k">return</span> <span class="n">default_path</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">default_path</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span></div>
+            
+
+
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Construct attributes dictionary for the target model.</span>
 <span class="sd">    </span>
@@ -179,6 +189,7 @@
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span><span class="p">,</span> <span class="n">INTEL</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span><span class="p">,</span> <span class="n">INTEL</span> <span class="k">as</span> <span class="n">INTEL_MPI</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
+    <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.cuda</span> <span class="kn">import</span> <span class="n">CUDA_CXX</span><span class="p">,</span> <span class="n">CUDA_FC</span>
     
     <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">_require_compiler_family</span><span class="p">(</span><span class="n">INTEL</span><span class="p">,</span> 
                                               <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi (KNC)&quot;</span><span class="p">,</span>
@@ -376,11 +387,30 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;flag&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
-        <span class="s1">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">CUDA_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;CUDA compiler command&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda-cxx&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;CUDA&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">},</span>
+        <span class="n">CUDA_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;CUDA Fortran compiler command&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda-fc&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;CUDA&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">},</span>  
+        <span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path to NVIDIA CUDA installation (enables OpenCL support)&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path to NVIDIA CUDA Toolkit (enables OpenCL support)&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">cuda_default</span><span class="p">(),</span> 
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda-toolkit&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;CUDA&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">ParsePackagePathAction</span><span class="p">},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>

@@ -13,6 +13,7 @@ Submodules
 
 .. toctree::
 
+   taucmdr.cf.compiler.cuda
    taucmdr.cf.compiler.host
    taucmdr.cf.compiler.mpi
    taucmdr.cf.compiler.shmem

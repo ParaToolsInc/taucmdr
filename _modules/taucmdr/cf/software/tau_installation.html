@@ -95,9 +95,10 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software</span> <span class="kn">import</span> <span class="n">SoftwarePackageError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.software.installation</span> <span class="kn">import</span> <span class="n">Installation</span><span class="p">,</span> <span class="n">parallel_make_flags</span><span class="p">,</span> <span class="n">new_os_environ</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">host</span> <span class="k">as</span> <span class="n">host_compilers</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span><span class="p">,</span> <span class="n">GNU</span><span class="p">,</span> <span class="n">APPLE_LLVM</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.host</span> <span class="kn">import</span> <span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">,</span> <span class="n">FC</span><span class="p">,</span> <span class="n">UPC</span><span class="p">,</span> <span class="n">GNU</span><span class="p">,</span> <span class="n">APPLE_LLVM</span><span class="p">,</span> <span class="n">IBM</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.cuda</span> <span class="kn">import</span> <span class="n">CUDA_CXX</span><span class="p">,</span> <span class="n">CUDA_FC</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">TauMagic</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">CRAY_CNL</span><span class="p">,</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">HOST_OS</span>
 
 
@@ -172,7 +173,9 @@
                          <span class="n">MPI_FC</span><span class="p">:</span> <span class="s1">&#39;tau_f90.sh&#39;</span><span class="p">,</span>
                          <span class="n">SHMEM_CC</span><span class="p">:</span> <span class="s1">&#39;tau_cc.sh&#39;</span><span class="p">,</span>
                          <span class="n">SHMEM_CXX</span><span class="p">:</span> <span class="s1">&#39;tau_cxx.sh&#39;</span><span class="p">,</span>
-                         <span class="n">SHMEM_FC</span><span class="p">:</span> <span class="s1">&#39;tau_f90.sh&#39;</span><span class="p">}</span>
+                         <span class="n">SHMEM_FC</span><span class="p">:</span> <span class="s1">&#39;tau_f90.sh&#39;</span><span class="p">,</span>
+                         <span class="n">CUDA_CXX</span><span class="p">:</span> <span class="s1">&#39;tau_cxx.sh&#39;</span><span class="p">,</span>
+                         <span class="n">CUDA_FC</span><span class="p">:</span> <span class="s1">&#39;tau_ftn.sh&#39;</span><span class="p">}</span>
 
 <span class="n">TAU_MINIMAL_COMPILERS</span> <span class="o">=</span> <span class="p">[</span><span class="n">CC</span><span class="p">,</span> <span class="n">CXX</span><span class="p">]</span>
 
@@ -271,6 +274,7 @@
 <span class="sd">            mpi_library_path (list): Paths to search for MPI library files.</span>
 <span class="sd">            mpi_libraries (list): MPI libraries to include when linking with TAU.</span>
 <span class="sd">            cuda_support (bool): Enable or disable CUDA support in TAU.</span>
+<span class="sd">            cuda_prefix (str): Path to CUDA toolkit installation.</span>
 <span class="sd">            opencl_support (bool): Enable or disable OpenCL support in TAU.</span>
 <span class="sd">            shmem_support (bool): Enable or disable SHMEM support in TAU.</span>
 <span class="sd">            shmem_include_path (list):  Paths to search for SHMEM header files.</span>
@@ -1018,7 +1022,7 @@
             <span class="k">pass</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span><span class="p">:</span>
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-g&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">IBM</span><span class="p">:</span>
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-DTAU_ENABLED=1&#39;</span><span class="p">)</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_MAKEFILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_OPTIONS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_opts</span><span class="p">)</span>

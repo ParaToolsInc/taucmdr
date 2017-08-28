@@ -82,8 +82,10 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">fasteners</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
-<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ExperimentSelectionError</span><span class="p">,</span> <span class="n">UniqueAttributeError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">taucmdr.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">highest_writable_storage</span>
@@ -106,7 +108,8 @@
         <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Project</span><span class="p">,</span>
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;Project this experiment belongs to&quot;</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;Project this experiment belongs to&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span>
@@ -141,10 +144,160 @@
     <span class="p">}</span></div>
 
 
+<div class="viewcode-block" id="ExperimentController"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController">[docs]</a><span class="k">class</span> <span class="nc">ExperimentController</span><span class="p">(</span><span class="n">Controller</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Experiment data controller.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_restrict_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_dict</span><span class="p">):</span>
+        <span class="n">key_dict</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">eid</span>
+
+<div class="viewcode-block" id="ExperimentController.one"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.one">[docs]</a>    <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ExperimentController.all"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">keys</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">eid</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="n">key</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">eid</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="ExperimentController.search"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExperimentController.exists"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExperimentController.create"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">unique</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;unique&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">unique</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">unique</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">UniqueAttributeError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">unique</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="k">as</span> <span class="n">database</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="s1">&#39;model&#39;</span> <span class="ow">or</span> <span class="s1">&#39;collection&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]:</span>
+                    <span class="n">affected</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">affected</span><span class="p">:</span>
+                        <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_associate</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">foreign_cls</span><span class="p">,</span> <span class="n">affected</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="ExperimentController.update"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExperimentController.unset"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">unset</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExperimentController.delete"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="k">as</span> <span class="n">database</span><span class="p">:</span>
+            <span class="n">removed_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">changing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
+                    <span class="n">affected_keys</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">affected_keys</span><span class="p">:</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> 
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">references</span><span class="p">:</span>
+                    <span class="c1"># pylint complains because `model` is changing on every iteration so we&#39;ll have</span>
+                    <span class="c1"># a different lambda function `test` on each iteration.  This is exactly what</span>
+                    <span class="c1"># we want so we disble the warning. </span>
+                    <span class="c1"># pylint: disable=cell-var-from-loop, undefined-loop-variable</span>
+                    <span class="n">test</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="o">==</span> <span class="n">x</span>
+                    <span class="n">affected</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">affected_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">record</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">affected</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">affected_keys</span><span class="p">:</span>
+                        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> 
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
+                <span class="n">removed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+            <span class="n">database</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">on_delete</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ExperimentController.export_records"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.ExperimentController.export_records">[docs]</a>    <span class="k">def</span> <span class="nf">export_records</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_restrict_project</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">export_records</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">)</span></div></div>
+
 <div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Experiment data model.&quot;&quot;&quot;</span>
 
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
+    
+    <span class="n">__controller__</span> <span class="o">=</span> <span class="n">ExperimentController</span>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Experiment.controller"><a class="viewcode-back" href="../../../taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment.controller">[docs]</a>    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">PROJECT_STORAGE</span><span class="p">):</span>
@@ -279,7 +432,7 @@
                     <span class="n">mpi_library_path</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mpi_library_path&#39;</span><span class="p">,</span> <span class="p">[]),</span>
                     <span class="n">mpi_libraries</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mpi_libraries&#39;</span><span class="p">,</span> <span class="p">[]),</span>
                     <span class="n">cuda_support</span><span class="o">=</span><span class="n">application</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">),</span>
-                    <span class="n">cuda_prefix</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                    <span class="n">cuda_prefix</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
                     <span class="n">opencl_support</span><span class="o">=</span><span class="n">application</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;opencl&#39;</span><span class="p">),</span>
                     <span class="n">opencl_prefix</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;opencl&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
                     <span class="n">shmem_support</span><span class="o">=</span><span class="n">application</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;shmem&#39;</span><span class="p">),</span>
