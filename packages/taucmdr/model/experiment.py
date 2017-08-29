@@ -312,7 +312,8 @@ class Experiment(Model):
 
     @property
     def prefix(self):
-        return os.path.join(self.populate('project').prefix, self['name'])
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            return os.path.join(self.populate('project').prefix, self['name'])
 
     def verify(self):
         """Checks all components of the experiment for mutual compatibility."""
@@ -348,7 +349,7 @@ class Experiment(Model):
         return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
 
     def next_trial_number(self):
-        trials = self.populate('trials')
+        trials = self.populate(attribute='trials', defaults=True)
         for i, j in enumerate(sorted([trial['number'] for trial in trials])):
             if i != j:
                 return i
@@ -366,7 +367,8 @@ class Experiment(Model):
         """
         from taucmdr.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self['name'])
-        populated = self.populate(defaults=True)
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            populated = self.populate(defaults=True)
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
@@ -487,7 +489,8 @@ class Experiment(Model):
             raise ConfigurationError("Cannot find executable: %s" % application_cmd[0])
         tau = self.configure()
         cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
-        return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env, description)
+        proj = self.populate('project')
+        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
 
     def trials(self, trial_numbers=None):
         """Get a list of modeled trial records.

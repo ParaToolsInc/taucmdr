@@ -37,6 +37,7 @@ compilers are installed then there will target configurations for each compiler 
 
 import os
 import glob
+import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, IncompatibleRecordError 
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
@@ -46,6 +47,7 @@ from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -563,7 +565,8 @@ class Target(Model):
             compilers = {}
             for role in Knowledgebase.all_roles():
                 try:
-                    compiler_record = self.populate(role.keyword)
+                    with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+                        compiler_record = self.populate(role.keyword)
                 except KeyError:
                     continue
                 compilers[role.keyword] = compiler_record.installation()
