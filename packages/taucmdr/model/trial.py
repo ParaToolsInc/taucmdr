@@ -35,6 +35,7 @@ the performance data.
 import os
 import glob
 import errno
+import fasteners
 from datetime import datetime
 
 import six
@@ -44,6 +45,7 @@ from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -190,28 +192,31 @@ class TrialController(Controller):
         self.update({'phase': 'completed'}, trial.eid)
         return retval
 
-    def perform(self, expr, cmd, cwd, env, description):
+    def perform(self, proj, cmd, cwd, env, description):
         """Performs a trial of an experiment.
 
         Args:
             expr (Experiment): Experiment data.
+            proj (Project): Project data.
             cmd (str): Command to profile, with command line arguments.
             cwd (str): Working directory to perform trial in.
             env (dict): Environment variables to set before performing the trial.
             description (str): Description of this trial.
         """
-        trial_number = expr.next_trial_number()
-        LOGGER.debug("New trial number is %d", trial_number)
-        data = {'number': trial_number,
-                'experiment': expr.eid,
-                'command': ' '.join(cmd),
-                'cwd': cwd,
-                'environment': 'FIXME',
-                'phase': 'initializing',
-                'begin_time': str(datetime.utcnow())}
-        if description is not None:
-            data['description'] = str(description)
-        trial = self.create(data)
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            expr = proj.populate('experiment')
+            trial_number = expr.next_trial_number()
+            LOGGER.debug("New trial number is %d", trial_number)
+            data = {'number': trial_number,
+                    'experiment': expr.eid,
+                    'command': ' '.join(cmd),
+                    'cwd': cwd,
+                    'environment': 'FIXME',
+                    'phase': 'initializing',
+                    'begin_time': str(datetime.utcnow())}
+            if description is not None:
+                data['description'] = str(description)
+            trial = self.create(data)
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix
