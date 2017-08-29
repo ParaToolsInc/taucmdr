@@ -31,7 +31,7 @@ import os
 import multiprocessing
 from subprocess import CalledProcessError
 from contextlib import contextmanager
-from taucmdr import logger, util, configuration
+from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator, progress_spinner
 from taucmdr.cf.storage import StorageError
@@ -57,8 +57,8 @@ def parallel_make_flags(nprocs=None):
     """
     if not nprocs:
         try:
-            nprocs = int(configuration.get('build.max_make_jobs'))
-        except KeyError:
+            nprocs = int(os.environ['__TAUCMDR_MAX_MAKE_JOBS__'])
+        except (KeyError, ValueError):
             nprocs = max(1, multiprocessing.cpu_count() - 1)
         try:
             nprocs = int(nprocs)
@@ -309,7 +309,7 @@ class Installation(object):
             for storage in reversed(ORDERED_LEVELS):
                 try:
                     archive = os.path.join(storage.prefix, "src", archive_file)
-                except StorageError as err:
+                except StorageError:
                     continue
                 if os.path.exists(archive):
                     return archive
@@ -345,7 +345,7 @@ class Installation(object):
             return util.extract_archive(archive, tmpfs_prefix())
         except IOError as err:
             if reuse_archive:
-                LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy." % archive)
+                LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
                 return self._prepare_src(reuse_archive=False)
             raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
                                      "Check that the file or directory is accessible")

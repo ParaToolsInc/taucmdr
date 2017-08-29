@@ -30,6 +30,17 @@
 Program entry point for all activities related to packaging.  Distributions,
 documentation, and unit testing are all handled from this script. 
 """
+import os
+import sys
+import shutil
+import tempfile
+import fileinput
+import subprocess
+import setuptools
+from ConfigParser import SafeConfigParser
+from setuptools.command.test import test as TestCommand
+from setuptools.command.install import install as InstallCommand
+
 
 #######################################################################################################################
 # PACKAGE CONFIGURATION
@@ -87,18 +98,6 @@ CLASSIFIERS = [
 #######################################################################################################################
 # END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
 #######################################################################################################################
-
-
-import os
-import sys
-import shutil
-import tempfile
-import fileinput
-import setuptools
-import subprocess
-from setuptools import Command
-from setuptools.command.test import test as TestCommand
-from setuptools.command.install import install as InstallCommand
 
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
@@ -231,16 +230,8 @@ class Install(InstallCommand):
         self.install_data = os.path.join(self.prefix)
         self.record = os.path.join(self.prefix, 'install.log')
 
-    def _import_system_config(self):
-        sys.path.insert(0, os.path.join(self.prefix, 'packages'))
-        from taucmdr import configuration
-        from taucmdr.cf.storage.levels import SYSTEM_STORAGE
-        SYSTEM_STORAGE.connect_filesystem()
-        configuration.import_from_file(os.path.join(PACKAGE_TOPDIR, 'defaults.cfg'), SYSTEM_STORAGE)
-
-    def _configure_project(self, init_args):
+    def _configure_project(self, config):
         from taucmdr import EXIT_SUCCESS 
-        from taucmdr.cf.software import SoftwarePackageError
         from taucmdr.cf.storage.levels import PROJECT_STORAGE
         from taucmdr.cli.commands.initialize import COMMAND as init_command
         from taucmdr.cli.commands.select import COMMAND as select_command
@@ -248,71 +239,77 @@ class Install(InstallCommand):
         from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
 
         # Call `tau initialize` to configure system-level packages supporting default experiments
+        #init_args = list(sum(config.items(), ()))
+        init_args = ['%s=%s' % item for item in config.iteritems()]
         if init_command.main(init_args) != EXIT_SUCCESS:
-            raise SoftwarePackageError("`tau initialize` failed with arguments %s." % init_args,
-                                       "Check that the values specified in 'defaults.cfg' are valid.")
+            return
         proj_ctrl = Project.controller()
         proj = proj_ctrl.selected().populate()
         # Acquire source packages
         for targ in proj['targets']:
-            targ.acquire_sources()        
+            targ.acquire_sources()
         # Add papi configurations
         for meas in proj['measurements']:
             measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
+        # Add OpenMP measurement methods
+        if config.get('--openmp', 'False') == 'True':
+            for meas in proj['measurements']:
+                for pkg in 'ompt', 'opari':
+                    measurement_copy_cmd.main([meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
         proj = proj_ctrl.selected().populate()
         # Iterate through default configurations and configure system-level packages for each
         for targ in proj['targets']:
             for app in proj['applications']:
                 for meas in proj['measurements']:
                     argv = ['--target', targ['name'], '--application', app['name'], '--measurement', meas['name']]
-                    if select_command.main(argv) != EXIT_SUCCESS:
-                        raise SoftwarePackageError("`%s %s` failed." % (select_command, ' '.join(argv)),
-                                                   "Check that the values specified in 'defaults.cfg' are valid.")
+                    select_command.main(argv)
         # Clean up
         PROJECT_STORAGE.destroy()
 
     def _configure_new_installation(self):
         sys.path.insert(0, os.path.join(self.prefix, 'packages'))
         import taucmdr
-        from taucmdr import logger, util, configuration
-        from taucmdr.cli.commands.configure import COMMAND as configure_command
-        from taucmdr.cf.storage.levels import highest_writable_storage
+        from taucmdr import util
         from taucmdr.cf.software.tau_installation import TauInstallation
 
         # Clean up the build directory
         os.chdir(self.build_base)
         util.rmtree('.tau', ignore_errors=True)
 
-        # Show system-level configuration
-        configure_command.main(['-@', 'system'])
-
         # Get configuration
-        defaults_cfg = configuration.default_config('defaults.cfg')
-        target_cfg = defaults_cfg['Target']
-        have_mpi = (target_cfg['MPI_CC'] and target_cfg['MPI_CXX'] and target_cfg['MPI_FC'])
-        have_shmem = (target_cfg['SHMEM_CC'] and target_cfg['SHMEM_CXX'] and target_cfg['SHMEM_FC'])
-        host_os = target_cfg['host_os']
-        host_arch = target_cfg['host_arch']
-
+        setup_cfg = SafeConfigParser(allow_no_value=True)
+        setup_cfg.readfp(open(os.path.join(PACKAGE_TOPDIR, 'setup.cfg')))
+        config = dict(setup_cfg.items('tau_initialize'))
+        have_openmp = True # Update as needed in future
+        have_mpi = bool(config.get('--mpi-cc', False) and 
+                        config.get('--mpi-cxx', False) and 
+                        config.get('--mpi-fc', False))
+        have_shmem = bool(config.get('--shmem-cc', False) and 
+                          config.get('--shmem-cxx', False) and 
+                          config.get('--shmem-fc', False))
+        have_cuda = bool(config.get('--cuda-cxx', False))
+        
         # Minimal tau installation
         tau = TauInstallation.minimal()
         tau.install()
 
         # Configure TAU and all dependencies in various combinations
-        self._configure_project([])
-        if have_mpi:
-            self._configure_project(['--mpi=True'])
-        if have_shmem:
-            self._configure_project(['--shmem=True'])
-        if have_mpi and have_shmem:
-            self._configure_project(['--mpi=True', '--shmem=True'])
-
+        self._configure_project(config)
+        for openmp in set([False, have_openmp]):
+            for mpi in set([False, have_mpi]):
+                for shmem in set([False, have_shmem]):
+                    for cuda in set([False, have_cuda]):
+                        config.update({'--openmp': str(openmp), 
+                                       '--mpi': str(mpi),
+                                       '--shmem': str(shmem),
+                                       '--cuda': str(cuda)})
+                        self._configure_project(config)
         # Indicate success
         print taucmdr.version_banner()
     
     def run(self):
         if not self.force:
-            print ("Whoops, this script is used internally by the TAU Commander installer.\n"
+            print ("Whoops!  This script is used internally by the TAU Commander installer.\n"
                    "Calling it directly can (probably will) break things.\n"
                    "Try this instead:\n"
                    "  ./configure\n"
@@ -320,12 +317,7 @@ class Install(InstallCommand):
         elif self.initialize:
             self._configure_new_installation()
         else:
-            try:
-                retval = InstallCommand.run(self)
-            except:
-                retval = -1
-            if not retval:
-                self._import_system_config()
+            InstallCommand.run(self)
                 
 
 def update_version():
@@ -368,7 +360,7 @@ def get_commands():
 
 def get_data_files():
     data_files = [("", ["LICENSE", "README.md", "VERSION"])]
-    for root, dirs, files in os.walk("examples"):
+    for root, _, files in os.walk("examples"):
         dst_src = (root, [os.path.join(root, i) for i in files])
         data_files.append(dst_src)
     return data_files
