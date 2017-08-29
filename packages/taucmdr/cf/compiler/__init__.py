@@ -40,7 +40,7 @@ try to detect the compiler and trusts the user to specify the right "magic words
 at configuration. Worse, TAU sometimes does probe the compiler to discover things
 like MPI headers, except it does such a poor job that many time we get the wrong
 answer or simply cause the configure script to fail entirely. This has been a major
-painpoints for TAU users.
+painpoint for TAU users.
 
 The reason for this mess is that compiler detection is very hard.  Projects like 
 `SciPy`_ that depend on a compiler's stdout stream for compiler detection have more
