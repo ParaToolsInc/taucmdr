@@ -119,13 +119,12 @@ def papi_source_default():
 
 
 def cuda_default():
+    default_path = '/usr/local/cuda'
     nvcc = util.which('nvcc')
-    if nvcc:
-        return os.path.dirname(os.path.dirname(nvcc))
-    else:
-        default_path = '/usr/local/cuda'
+    if not nvcc or os.path.dirname(nvcc) in ('/usr/bin', '/usr/local/bin'):
         return default_path if os.path.exists(default_path) else None
-            
+    else:
+        return os.path.dirname(os.path.dirname(nvcc))
 
 
 def attributes():
