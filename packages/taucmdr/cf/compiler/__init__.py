@@ -138,8 +138,9 @@ class Knowledgebase(object):
         All other families may be yielded in any order.
         """
         from taucmdr.cf.platforms import HOST_TAU_MAGIC
-        preferred = HOST_TAU_MAGIC.preferred_families[self]
-        yield preferred
+        preferred = HOST_TAU_MAGIC.preferred_families.get(self, None)
+        if preferred is not None:
+            yield preferred
         for family in self._families.itervalues():
             if family is not preferred:
                 yield family
