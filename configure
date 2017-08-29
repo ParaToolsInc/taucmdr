@@ -32,17 +32,13 @@ if Python 2.6 is detected.
 
 Writes a configuration file used to initialize a new TAU Commander installation.
 """
-
 import os
 import sys
+
 
 PROG = sys.argv[0]
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
-
-SETUP_CFG_FILE = os.path.join(PACKAGE_TOPDIR, 'setup.cfg')
-
-DEFAULTS_CFG_FILE = os.path.join(PACKAGE_TOPDIR, 'defaults.cfg')
 
 FALLBACK_WARNING = ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
                     "\n"
@@ -53,11 +49,13 @@ FALLBACK_WARNING = ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     "\n"
                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n")
 
+
 def _default_prefix():
+    # This routine must be Python 2.6 and Python3 compatible
     try:
         fin = open(os.path.join(PACKAGE_TOPDIR, "VERSION"))
     except IOError:
-        sys.stderr.writeln("ERROR: VERSION file is missing!")
+        sys.stderr.write("ERROR: VERSION file is missing!\n")
         sys.exit(-1)
     else:
         version = fin.readline().strip()
@@ -66,27 +64,22 @@ def _default_prefix():
     return '/opt/ParaTools/taucmdr-%s' % version
 
 
-def _get_prefix():
+def _bootstrap_python():
     # This routine must be Python 2.6 and Python3 compatible
-    from optparse import OptionParser, BadOptionError, AmbiguousOptionError
+    import subprocess
+    from optparse import OptionParser, BadOptionError
     class PassThroughOptionParser(OptionParser):
         def _process_args(self, largs, rargs, values):
             while rargs:
                 try:
-                    OptionParser._process_args(self,largs,rargs,values)
-                except (BadOptionError, AmbiguousOptionError) as e:
-                    largs.append(e.opt_str)
+                    OptionParser._process_args(self, largs, rargs, values)
+                except BadOptionError as err:
+                    largs.append(err.opt_str)
+    print(FALLBACK_WARNING)
     parser = PassThroughOptionParser(description=FALLBACK_WARNING)
     parser.add_option("--prefix", dest="prefix", help='Installation prefix.', metavar="<path>")
     options, _ = parser.parse_args()
-    return options.prefix if options.prefix else _default_prefix()
-
-
-def _bootstrap_conda():
-    # This routine must be Python 2.6 and Python3 compatible
-    import subprocess
-    print(FALLBACK_WARNING)
-    prefix = _get_prefix()
+    prefix = options.prefix if options.prefix else _default_prefix()
     cmd = ['make', 'python_check', 'INSTALLDIR=' + prefix]
     try:
         subprocess.check_call(cmd, cwd=PACKAGE_TOPDIR)
@@ -99,128 +92,91 @@ def _bootstrap_conda():
     os.execv(PROG, sys.argv)
 
 
-def build_parser(setup_cfg, default_cfg):
-    """Builds the command line parser from tau subcommands.
-    
-    Merges arguments from `tau {target|application|measurement} create` into one parser.
-    
-    Returns:
-        MutuableArgumentParser: The new argument parser.
-    """
-    def update_defaults(section, parser):
-        for key, val in section.iteritems():
-                for act in parser._actions:
-                    if val and act.dest == key:
-                        act.default = val
-    install = setup_cfg['install']
-    description = ("Write installation configuration files:\n"
-                   "  - %s\n"
-                   "  - %s\n"
-                   "\n"
-                   "The values passed to this script will be saved at the system level\n"
-                   "as the defaults for all new configuration objects.  These values can\n"
-                   "be changed in future via `tau configure`."
-                   % (SETUP_CFG_FILE, DEFAULTS_CFG_FILE))
-    parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, description=description)
-    parser.add_argument('--prefix', metavar='<path>', help='Installation prefix.',
-                        default=install.get('prefix', _default_prefix()))
-    parser.add_argument('-c', '--compile', nargs='?', const=True, metavar='T/F', 
-                        action=arguments.ParseBooleanAction, help="Compile .py files to .pyc bytecode files.",
-                        default=configuration.parse_config_string(install.get('compile', True)))
-    parser.add_argument('-O', '--optimize', nargs='?', type=int, const=1, metavar='<level>',
-                        help="Also compile .py files to optimized .pyo bytecode files.",
-                        default=configuration.parse_config_string(install.get('optimize', 1)))
-    
-    target_parser = target_create_cmd.parser
-    update_defaults(default_cfg['Target'], target_parser)
-    parser.merge(target_parser, group_title='target arguments', include_positional=False,
-                 exclude=['from-tau-makefile'])
-    
-    application_parser = application_create_cmd.parser
-    update_defaults(default_cfg['Application'], application_parser)
-    parser.merge(application_parser, group_title='application arguments', include_positional=False)
-    
-    measurement_parser = measurement_create_cmd.parser
-    update_defaults(default_cfg['Measurement'], measurement_parser)    
-    parser.merge(measurement_create_cmd.parser, group_title='measurement arguments', include_positional=False)
+def _print_section(title, items):
+    title = util.hline(title, 'cyan')
+    rows = [['Argument', 'Value']]
+    for arg, val in sorted(items):
+        rows.append([arg, val])
+    table = Texttable(logger.LINE_WIDTH)
+    table.set_cols_align(['r', 'l'])
+    table.add_rows(rows)
+    print('\n'.join([title, table.draw(), '']))
 
-    return parser
+
+def _translate_arg(arg):
+    if isinstance(arg, basestring):
+        return arg
+    try:
+        return ' '.join(arg)
+    except TypeError:
+        pass
+    return str(arg)
 
 
 def main():
+    """Program entry point."""
     from taucmdr.cf.software import tau_installation
     tau_installation.check_env_compat()
-
-    comment = configuration.config_file_comment
-    setup_cfg = configuration.open_config_file('setup.cfg')
-    setup_cfg.initial_comment = comment(taucmdr.version_banner())
-    if 'build' not in setup_cfg:
-        setup_cfg['build'] = {}
-        setup_cfg['build']['build-base'] = "build"
-        setup_cfg.comments['build'] = comment("Arguments to `python setup.py build`.", box=True)
-    if 'install' not in setup_cfg:
-        setup_cfg['install'] = {}
-        setup_cfg.comments['install'] = comment("Arguments to `python setup.py install`.", box=True)
-
-    defaults_cfg = configuration.default_config('defaults.cfg')
-    defaults_cfg.initial_comment = comment("Initial default values for a new TAU Commander installation.  "
-                                           "These can be changed after installation via the `tau configure` command.")
     
-    parser = build_parser(setup_cfg, defaults_cfg)
+    init_parser = initialize_cmd.parser
+    parser = arguments.get_parser(prog=PROG, usage='%s [arguments]' % PROG, 
+                                  description="Pre-build TAU configurations.")
+    parser.add_argument('--prefix', metavar='<path>', help='Installation prefix.', default=_default_prefix())
+    parser.merge(init_parser, include_positional=False,
+                 exclude_groups=['project arguments'],
+                 exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name', 
+                                    'tau-options', 'from-tau-makefile', 'bare'])
     args = parser.parse_args()
-    compilers = target_create_cmd.parse_compiler_flags(args)
-    
-    # Disable Score-P if Fortran compiler not specifieid
-    if FC.keyword not in compilers:
-        args.scorep_source = 'None'
-
-    # Merge new values into configuration.
-    for section in defaults_cfg.sections:
-        for key in defaults_cfg[section]:
-            val = getattr(args, key, None)
-            if val is not None:
-                defaults_cfg[section][key] = val
-                
-    # OpenMP support is badly broken in TAU (high overhead, runtime overlaps, etc.).  
-    # Ignore by default to avoid angry customers.  Maybe one day this will be fixed...
-    defaults_cfg['Measurement']['openmp'] = 'ignore'   
-
-    # Check and expand prefix
     if args.prefix.startswith("="):
-        print("\nWARNING: Installation prefix starts with '='.  Is that what you intended?")
+        LOGGER.warning("Installation prefix starts with '='.  Is that what you intended?")
     prefix = os.path.abspath(os.path.expanduser(args.prefix))
-
-    # Configure installation parameters
-    install = setup_cfg['install']
-    install['prefix'] = prefix
-    install['compile'] = args.compile
-    install['optimize'] = args.optimize
+    del args.prefix
     
-    # Write config files
-    with open(SETUP_CFG_FILE, "w") as fout:
-        setup_cfg.write(fout)
-    with open(DEFAULTS_CFG_FILE, "w") as fout:
-        defaults_cfg.write(fout)
+    sections = {}
+    for key, val in sorted(vars(args).iteritems()):
+        if key.endswith('_family'):
+            continue
+        for action in parser._actions:
+            if key == action.dest:
+                items = sections.setdefault(action.container.title.title(), [])
+                items.append((action.option_strings[0], _translate_arg(val)))
+                break
+    for title, items in sections.iteritems():
+        _print_section(title, items)
     
-    print('\nTAU Commander configured successfully!  Type `make install` to finish the installation.')
+    config = SafeConfigParser(allow_no_value=True)
+    config.add_section('build')
+    config.set('build', 'build-base', 'build')
+    config.add_section('install')
+    config.set('install', 'prefix', prefix)
+    config.set('install', 'compile', 'true')
+    config.set('install', 'optimize', '1')
+    config.add_section('tau_initialize')
+    for items in sections.itervalues():
+        for key, val in items:
+            config.set('tau_initialize', key, _translate_arg(val))
+    with open(os.path.join(PACKAGE_TOPDIR, 'setup.cfg'), "w") as fout:
+        config.write(fout)
+        
+    LOGGER.info('Type `make install` to build TAU configurations to support the project configuration listed above.')
+    return EXIT_SUCCESS
 
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
     try:
+        # We import some packages just to assert that they're importable
+        # pylint: disable=unused-import,broad-except
         import setuptools
-        import taucmdr
-        from taucmdr import __version__ as taucmdr_version
-        from taucmdr import logger, configuration
+        from ConfigParser import SafeConfigParser
+        from texttable import Texttable
+        from taucmdr import logger, util, EXIT_SUCCESS
         from taucmdr.cli import arguments
-        from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
-        from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
-        from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
-        from taucmdr.cf.compiler.host import FC
+        from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
     except (SystemExit, Exception) as err:
         # Prevent infinite recursion: only bootstrap once
         if not os.environ.get('__TAUCMDR_CONFIGURE_BOOTSTRAPPED__'):
-            _bootstrap_conda()
+            _bootstrap_python()
         else:
             sys.stderr.write("ERROR: %s\n"
                              "\n"
@@ -230,5 +186,6 @@ if __name__ == '__main__':
                              "add '<install_prefix>/conda/bin' to your PATH environment variable\n"
                              "and try this command again.\n" % err)
             sys.exit(-1)
+    LOGGER = logger.get_logger(__name__)
     sys.exit(main())
     
