@@ -304,7 +304,7 @@ class LocalFileStorage(AbstractStorage):
         """
         #LOGGER.debug("Search '%s' for '%s'", table_name, keys)
         table = self.table(table_name)
-        if not keys:
+        if keys is None:
             #LOGGER.debug("%s: all()", table_name)
             return [self.Record(self, element=element) for element in table.all()]
         elif isinstance(keys, self.Record.eid_type):
