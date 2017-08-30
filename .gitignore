@@ -83,8 +83,8 @@ benchmarks
 
 # Python packaging files
 # general things to ignore
-build/
-dist/
+/build
+/dist
 packages/*.sh
 packages/*.tgz
 packages/*.tar.*
@@ -97,8 +97,6 @@ __pycache__/
 *~
 .tox
 .cache
-defaults.cfg
-setup.cfg
 
 # Deployment private and public key, but DO store encrypted private key for Travis-CI
 id_rsa_Travis2GH
