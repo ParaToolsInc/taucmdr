@@ -85,7 +85,7 @@ class _TauEnterpriseDatabase(object):
 
     """
 
-    def __init__(self, endpoint, db_name, storage=None):
+    def __init__(self, endpoint, db_name, token=None, storage=None):
         self.db_name = db_name
         self.storage = storage
         self.session = requests.Session()
@@ -93,6 +93,7 @@ class _TauEnterpriseDatabase(object):
         self.session.verify = False
         # The requested database is sent as an HTTP header
         self.session.headers['Database-Name'] = self.db_name
+        self.session.headers['Authorization'] = 'token ' + token
         request = self.session.get(endpoint)
         request.raise_for_status()
         self.endpoint = endpoint
@@ -373,7 +374,9 @@ class TauEnterpriseStorage(AbstractStorage):
             bool: True if a new connection was made, false otherwise.
         """
         if self._database is None:
-            self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'], storage=self)
+            self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'],
+                                                    token=kwargs['token'] if 'token' in kwargs else None,
+                                                    storage=self)
             return True
         else:
             return False

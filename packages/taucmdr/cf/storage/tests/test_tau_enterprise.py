@@ -38,6 +38,7 @@ from taucmdr import tests
 from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase, TauEnterpriseStorage
 
 _DATABASE_URL = "https://east03.paratools.com:5000"
+_TEST_USER_TOKEN = "7905233407184ba9a6602cdaef7907a9"
 
 
 class TauEnterpriseStorageTests(tests.TestCase):
@@ -46,11 +47,11 @@ class TauEnterpriseStorageTests(tests.TestCase):
     def setUp(self):
         try:
             # Generate a random database name so that concurrently running tests don't clobber each other.
-            self.db_name = uuid.uuid4().hex
-            self.database = _TauEnterpriseDatabase(_DATABASE_URL, self.db_name)
+            self.db_name = uuid.uuid4().hex[-8:]
+            self.database = _TauEnterpriseDatabase(_DATABASE_URL, self.db_name, token=_TEST_USER_TOKEN)
             self.database.purge()
             self.storage = TauEnterpriseStorage("db_test", "")
-            self.storage.connect_database(url=_DATABASE_URL, db_name=self.db_name)
+            self.storage.connect_database(url=_DATABASE_URL, db_name=self.db_name, token=_TEST_USER_TOKEN)
         except (requests.ConnectionError, requests.HTTPError):
             # Don't bother running any of the tests if we can't connect to the database
             raise unittest.SkipTest
