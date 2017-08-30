@@ -73,7 +73,11 @@ def get_terminal_size():
         if current_os == 'Linux' or current_os == 'Darwin' or current_os.startswith('CYGWIN'):
             dims = _get_term_size_posix()
         if not dims:
-            dims = (default_width, default_height)
+            dims = default_width, default_height
+    try:
+        dims = map(int, dims)
+    except ValueError:
+        dims = default_width, default_height
     width = dims[0] if dims[0] >= 10 else default_width
     height = dims[1] if dims[1] >= 1 else default_height
     return width, height
@@ -171,8 +175,8 @@ def _get_term_size_env():
                or None if the size could not be determined.
     """
     try:
-        return (os.environ['LINES'], os.environ['COLUMNS'])
-    except KeyError:
+        return (int(os.environ['LINES']), int(os.environ['COLUMNS']))
+    except (KeyError, ValueError):
         return None
 
 

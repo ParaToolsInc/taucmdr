@@ -110,7 +110,7 @@ def attributes():
                          'metavar': '<format>',
                          'nargs': '?',
                          'choices':('slog2', 'otf2', 'none'),
-                         'const': 'slog2'},
+                         'const': 'otf2'},
             'compat': {'otf2': Target.exclude('libotf2_source', None),
                        lambda x: x != 'none': _discourage_callpath}
         },
@@ -194,7 +194,7 @@ def attributes():
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
-            'compat': {True: Target.require('cuda')},
+            'compat': {True: Target.require('cuda_toolkit')},
         },
         'shmem': {
             'type': 'boolean',
@@ -302,6 +302,12 @@ def attributes():
                          'metavar': 'count',
                          'nargs': '?',
                          'const': 100000},
+        },
+        'metadata_merge': {
+            'type': 'boolean',
+            'default': True,
+            'description': 'merge metadata of TAU profiles',
+            'argparse': {'flags': ('--metadata-merge',)},
         },
         'callsite': {
             'type': 'boolean',

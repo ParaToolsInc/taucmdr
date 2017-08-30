@@ -35,6 +35,7 @@ the performance data.
 import os
 import glob
 import errno
+import fasteners
 from datetime import datetime
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
@@ -42,6 +43,7 @@ from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -98,6 +100,10 @@ def attributes():
                          'metavar': '<text>'},
             'description': "description of this trial"
         },
+        'phase': {
+            'type': 'string',
+            'description': "phase of trial"
+        },
     }
 
 
@@ -126,6 +132,7 @@ class TrialController(Controller):
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
         try:
+            self.update({'phase': 'running'}, trial.eid)
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
@@ -148,6 +155,7 @@ class TrialController(Controller):
 
         banner('BEGIN', expr.name, trial['begin_time'])
         try:
+            self.update({'phase': 'running'}, trial.eid)
             retval = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
@@ -159,6 +167,7 @@ class TrialController(Controller):
             end_time = str(datetime.utcnow())
             banner('END', expr.name, end_time)
 
+        self.update({'phase': 'post-processing'}, trial.eid)
         data_size = 0
         for dir_path, _, file_names in os.walk(trial.prefix):
             for name in file_names:
@@ -178,29 +187,34 @@ class TrialController(Controller):
         LOGGER.info('Command: %s', ' '.join(cmd))
         LOGGER.info('Current working directory: %s', cwd)
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
+        self.update({'phase': 'completed'}, trial.eid)
         return retval
 
-    def perform(self, expr, cmd, cwd, env, description):
+    def perform(self, proj, cmd, cwd, env, description):
         """Performs a trial of an experiment.
 
         Args:
             expr (Experiment): Experiment data.
+            proj (Project): Project data.
             cmd (str): Command to profile, with command line arguments.
             cwd (str): Working directory to perform trial in.
             env (dict): Environment variables to set before performing the trial.
             description (str): Description of this trial.
         """
-        trial_number = expr.next_trial_number()
-        LOGGER.debug("New trial number is %d", trial_number)
-        data = {'number': trial_number,
-                'experiment': expr.eid,
-                'command': ' '.join(cmd),
-                'cwd': cwd,
-                'environment': 'FIXME',
-                'begin_time': str(datetime.utcnow())}
-        if description is not None:
-            data['description'] = str(description)
-        trial = self.create(data)
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            expr = proj.populate('experiment')
+            trial_number = expr.next_trial_number()
+            LOGGER.debug("New trial number is %d", trial_number)
+            data = {'number': trial_number,
+                    'experiment': expr.eid,
+                    'command': ' '.join(cmd),
+                    'cwd': cwd,
+                    'environment': 'FIXME',
+                    'phase': 'initializing',
+                    'begin_time': str(datetime.utcnow())}
+            if description is not None:
+                data['description'] = str(description)
+            trial = self.create(data)
         # Tell TAU to send profiles and traces to the trial prefix
         env['PROFILEDIR'] = trial.prefix
         env['TRACEDIR'] = trial.prefix

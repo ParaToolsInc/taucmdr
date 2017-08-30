@@ -39,6 +39,7 @@ from taucmdr.cf.compiler import Knowledgebase, InstalledCompiler, InstalledCompi
 from taucmdr.cf.compiler.host import HOST_COMPILERS, FC
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
+from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
 from taucmdr.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
 
@@ -272,6 +273,9 @@ class TargetCreateCommand(CreateCommand):
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', hint)
 
+        group = parser.add_argument_group('CUDA arguments')
+        self._configure_argument_group(group, CUDA_COMPILERS, '--cuda-compilers', 'cuda_family', hint)
+
         return parser
 
     def _parse_args(self, argv):
@@ -295,7 +299,7 @@ class TargetCreateCommand(CreateCommand):
             dict: InstalledCompiler instances indexed by role keyword.
         """
         compilers = {}
-        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS:
+        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS, CUDA_COMPILERS:
             for role in kbase.roles.itervalues():
                 try:
                     command = getattr(args, role.keyword)

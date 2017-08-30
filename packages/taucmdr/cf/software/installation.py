@@ -28,10 +28,10 @@
 """Software installation management."""
 
 import os
-import sys
 import multiprocessing
 from subprocess import CalledProcessError
-from taucmdr import logger, util, configuration
+from contextlib import contextmanager
+from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator, progress_spinner
 from taucmdr.cf.storage import StorageError
@@ -40,7 +40,7 @@ from taucmdr.cf.storage.levels import highest_writable_storage
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
-from taucmdr.cf.platforms import Architecture, OperatingSystem
+from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_OS, DARWIN
 
 LOGGER = logger.get_logger(__name__)
 
@@ -57,8 +57,8 @@ def parallel_make_flags(nprocs=None):
     """
     if not nprocs:
         try:
-            nprocs = int(configuration.get('build.max_make_jobs'))
-        except KeyError:
+            nprocs = int(os.environ['__TAUCMDR_MAX_MAKE_JOBS__'])
+        except (KeyError, ValueError):
             nprocs = max(1, multiprocessing.cpu_count() - 1)
         try:
             nprocs = int(nprocs)
@@ -78,7 +78,8 @@ def tmpfs_prefix():
     
     Returns:
         str: Path to a uniquely-named directory in the temporary filesystem. The directory 
-            and all its contents **will be deleted** when the program exits.
+            and all its contents **will be deleted** when the program exits if it installs
+            correctly.
     """
     try:
         tmp_prefix = tmpfs_prefix.value
@@ -108,6 +109,15 @@ def tmpfs_prefix():
     return tmp_prefix
     
 
+@contextmanager
+def new_os_environ():
+    old_environ = os.environ
+    try:
+        os.environ = dict(os.environ)
+        yield os.environ
+    finally:
+        os.environ = old_environ
+        
 
 class Installation(object):
     """Encapsulates a software package installation.
@@ -285,7 +295,7 @@ class Installation(object):
             reuse_archive (bool): If True don't download, just confirm that the archive exists.
             
         Returns:
-            str: Path to the acquired source archive.
+            str: Absolute path to the source archive.
             
         Raises:
             ConfigurationError: Package source code not provided or couldn't be acquired.
@@ -294,16 +304,24 @@ class Installation(object):
             raise ConfigurationError("No source code provided for %s" % self.title)
         if os.path.isdir(self.src):
             return self.src
+        archive_file = os.path.basename(self.src)
+        if reuse_archive:
+            for storage in reversed(ORDERED_LEVELS):
+                try:
+                    archive = os.path.join(storage.prefix, "src", archive_file)
+                except StorageError:
+                    continue
+                if os.path.exists(archive):
+                    return archive
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
-        if not reuse_archive or (reuse_archive and not os.path.exists(archive)):
-            try:
-                util.download(self.src, archive)
-            except IOError:
-                hints = ("If a firewall is blocking access to this server, use another method to download "
-                         "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
-                         "Check that the file or directory is accessible")
-                raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+        try:
+            util.download(self.src, archive)
+        except IOError:
+            hints = ("If a firewall is blocking access to this server, use another method to download "
+                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+                     "Check that the file or directory is accessible")
+            raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
         return archive
 
     def _prepare_src(self, reuse_archive=True):
@@ -321,24 +339,13 @@ class Installation(object):
         Raises:
             ConfigurationError: The source code couldn't be acquired or unpacked.
         """
-        # Acquire a new copy of the source archive, if needed.
-        self.acquire_source(reuse_archive)
-        # Locate archive file
-        for storage in ORDERED_LEVELS:
-            try:
-                archive_prefix = os.path.join(storage.prefix, "src")
-            except StorageError as err:
-                LOGGER.debug(err)
-                continue
-            archive = os.path.join(archive_prefix, os.path.basename(self.src))
-            if os.path.exists(archive):
-                LOGGER.info("Using %s source archive '%s'", self.title, archive)
-                break
+        archive = self.acquire_source(reuse_archive)
+        LOGGER.info("Using %s source archive '%s'", self.title, archive)
         try:
             return util.extract_archive(archive, tmpfs_prefix())
         except IOError as err:
             if reuse_archive:
-                # Try again with a fresh copy of the source archive
+                LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
                 return self._prepare_src(reuse_archive=False)
             raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
                                      "Check that the file or directory is accessible")
@@ -388,174 +395,8 @@ class Installation(object):
         cls = software.get_installation(name)
         self.dependencies[name] = cls(sources, self.target_arch, self.target_os, self.compilers, *args, **kwargs)
 
-    def install(self, force_reinstall):
-        """Installs the software package.
-        
-        Raises:
-            NotImplementedError: This method must be overridden by a subclass.
-        """
-        raise NotImplementedError
-    
-    def compiletime_config(self, opts=None, env=None):
-        """Configure compilation environment to use this software package. 
-
-        Returns command line options and environment variables required by this
-        software package **when it is used to compile other software packages**.
-        The default behavior, to be overridden by subclasses as needed, is to 
-        prepend ``self.bin_path`` to the PATH environment variable.
-        
-        Args:
-            opts (list): Optional list of command line options.
-            env (dict): Optional dictionary of environment variables.
-            
-        Returns: 
-            tuple: opts, env updated for the new environment.
-        """
-        opts = list(opts) if opts else []
-        env = dict(env) if env else dict(os.environ)
-        if os.path.isdir(self.bin_path):
-            try:
-                env['PATH'] = os.pathsep.join([self.bin_path, env['PATH']])
-            except KeyError:
-                env['PATH'] = self.bin_path
-        return list(set(opts)), env
-
-    def runtime_config(self, opts=None, env=None):
-        """Configure runtime environment to use this software package.
-        
-        Returns command line options and environment variables required by this 
-        software package **when other software packages depending on it execute**.
-        The default behavior, to be overridden by subclasses as needed, is to 
-        prepend ``self.bin_path`` to the PATH environment variable and 
-        ``self.lib_path`` to the system library path (e.g. LD_LIBRARY_PATH).
-        
-        Args:
-            opts (list): Optional list of command line options.
-            env (dict): Optional dictionary of environment variables.
-            
-        Returns: 
-            tuple: opts, env updated for the new environment.
-        """
-        opts = list(opts) if opts else []
-        env = dict(env) if env else dict(os.environ)
-        if os.path.isdir(self.bin_path):
-            try:
-                env['PATH'] = os.pathsep.join([self.bin_path, env['PATH']])
-            except KeyError:
-                env['PATH'] = self.bin_path
-        if os.path.isdir(self.lib_path):
-            if sys.platform == 'darwin':
-                library_path = 'DYLD_LIBRARY_PATH'
-            else:
-                library_path = 'LD_LIBRARY_PATH'   
-            try:
-                env[library_path] = os.pathsep.join([self.lib_path, env[library_path]])
-            except KeyError:
-                env[library_path] = self.lib_path
-        return list(set(opts)), env
-
-class MakeInstallation(Installation):
-    """Base class for installations that follows the process:
-          make [flags] all [options]
-          make [flags] install [options]
-    """
-
-    def make(self, flags, env, parallel=True):
-        """Invoke `make`.
-        
-        Changes to `env` are propagated to subsequent steps, i.e. `make install`.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `make`.
-            env (dict): Environment variables to set before invoking `make`.
-            parallel (bool): If True, pass parallelization flags to `make`.
-            
-        Raises:
-            SoftwarePackageError: Compilation failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Making %s at '%s'", self.name, self._src_prefix)
-        flags = list(flags)
-        par_flags = parallel_make_flags() if parallel else []
-        cmd = ['make'] + par_flags + flags
-        LOGGER.info("Compiling %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            cmd = ['make'] + flags
-            if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-                raise SoftwarePackageError('%s compilation failed' % self.title)
-
-    def make_install(self, flags, env, parallel=False):
-        """Invoke `make install`.
-        
-        Changes to `env` are propagated to subsequent steps.  Normally there 
-        wouldn't be anything after `make install`, but a subclass could change that.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `make`.
-            env (dict): Environment variables to set before invoking `make`.
-            parallel (bool): If True, pass parallelization flags to `make`.
-            
-        Raises:
-            SoftwarePackageError: Configuration failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Installing %s to '%s'", self.name, self.install_prefix)
-        flags = list(flags)
-        if parallel:
-            flags += parallel_make_flags()
-        cmd = ['make', 'install'] + flags
-        LOGGER.info("Installing %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            raise SoftwarePackageError('%s installation failed' % self.title)
-        # Some systems use lib64 instead of lib
-        if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
-            os.symlink(self.lib_path+'64', self.lib_path)
-            
-
-    def install(self, force_reinstall):
-        """Installs the software package.
-        
-        Raises:
-            NotImplementedError: This method must be overridden by a subclass.
-        """
-        raise NotImplementedError
-
-class AutotoolsInstallation(MakeInstallation):
-    """Base class for installations that follow the GNU Autotools installation process.
-    
-    The GNU Autotools installation process is::
-        ./configure [options]
-        make [flags] all [options] 
-        make [flags] install [options]
-    """
-    
-    def configure(self, flags, env):
-        """Invoke `configure`.
-        
-        Changes to `env` are propagated to subsequent steps, i.e. `make`.
-        Changes to `flags` are not propogated to subsequent steps.
-        
-        Args:
-            flags (list): Command line flags to pass to `configure`.
-            env (dict): Environment variables to set before invoking `configure`.
-            
-        Raises:
-            SoftwarePackageError: Configuration failed.
-        """
-        assert self._src_prefix
-        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
-        flags = list(flags)
-        # Prepare configuration flags
-        flags += ['--prefix=%s' % self.install_prefix]
-        cmd = ['./configure'] + flags
-        LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
-            raise SoftwarePackageError('%s configure failed' % self.title)   
-    
     def install(self, force_reinstall=False):
-        """Execute the typical GNU Autotools installation sequence.
+        """Execute the installation sequence in a sanitized environment.
         
         Modifies the system by building and installing software.
         
@@ -581,30 +422,166 @@ class AutotoolsInstallation(MakeInstallation):
         if os.path.isdir(self.install_prefix):
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-        # Environment variables are shared between the subprocesses
-        # created for `configure` ; `make` ; `make install`
-        env = {}
-        try:
-            self._src_prefix = self._prepare_src()
-            with util.umask(002):
-                self.configure([], env)
-                self.make([], env)
-                self.make_install([], env)
-            self.set_group()
-        except Exception as err:
-            LOGGER.info("%s installation failed: %s ", self.title, err)
-            raise
-        else:
-            # Delete the decompressed source code to save space and clean up in preperation for
-            # future reconfigurations.  The compressed source archive is retained.
-            LOGGER.debug("Deleting '%s'", self._src_prefix)
-            util.rmtree(self._src_prefix, ignore_errors=True)
-            self._src_prefix = None
-
+        with new_os_environ(), util.umask(002):
+            try:
+                self._src_prefix = self._prepare_src()
+                self.installation_sequence()
+                self.set_group()
+            except Exception as err:
+                LOGGER.info("%s installation failed: %s", self.title, err)
+                #util.add_error_stack(self._src_prefix)
+                raise
+            else:
+                # Delete the decompressed source code to save space. The source archive is retained.
+                LOGGER.debug("Deleting '%s'", self._src_prefix)
+                util.rmtree(self._src_prefix, ignore_errors=True)
+                self._src_prefix = None
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
 
+    def installation_sequence(self):
+        raise NotImplementedError
+
+    def compiletime_config(self, opts=None, env=None):
+        """Configure compilation environment to use this software package. 
+
+        Returns command line options and environment variables required by this
+        software package **when it is used to compile other software packages**.
+        The default behavior, to be overridden by subclasses as needed, is to 
+        prepend ``self.bin_path`` to the PATH environment variable.
+        
+        Args:
+            opts (list): Optional list of command line options.
+            env (dict): Optional dictionary of environment variables.
+            
+        Returns: 
+            tuple: opts, env updated for the new environment.
+        """
+        opts = list(opts) if opts else []
+        env = dict(env if env else os.environ)
+        if os.path.isdir(self.bin_path):
+            try:
+                env['PATH'] = os.pathsep.join([self.bin_path, env['PATH']])
+            except KeyError:
+                env['PATH'] = self.bin_path
+        return opts, env
+
+    def runtime_config(self, opts=None, env=None):
+        """Configure runtime environment to use this software package.
+        
+        Returns command line options and environment variables required by this 
+        software package **when other software packages depending on it execute**.
+        The default behavior, to be overridden by subclasses as needed, is to 
+        prepend ``self.bin_path`` to the PATH environment variable and 
+        ``self.lib_path`` to the system library path (e.g. LD_LIBRARY_PATH).
+        
+        Args:
+            opts (list): Optional list of command line options.
+            env (dict): Optional dictionary of environment variables.
+            
+        Returns: 
+            tuple: opts, env updated for the new environment.
+        """
+        opts = list(opts) if opts else []
+        env = dict(env if env else os.environ)
+        if os.path.isdir(self.bin_path):
+            try:
+                env['PATH'] = os.pathsep.join([self.bin_path, env['PATH']])
+            except KeyError:
+                env['PATH'] = self.bin_path
+        if os.path.isdir(self.lib_path):
+            library_path = 'DYLD_LIBRARY_PATH' if HOST_OS is DARWIN else 'LD_LIBRARY_PATH'   
+            try:
+                env[library_path] = os.pathsep.join([self.lib_path, env[library_path]])
+            except KeyError:
+                env[library_path] = self.lib_path
+        return opts, env
+
+
+class MakeInstallation(Installation):
+    """Base class for installations that follows the process:
+          make [flags] all [options]
+          make [flags] install [options]
+    """
+
+    def make(self, flags):
+        """Invoke `make`.
+        
+        Args:
+            flags (list): Command line flags to pass to `make`.
+            
+        Raises:
+            SoftwarePackageError: Compilation failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Making %s at '%s'", self.name, self._src_prefix)
+        cmd = ['make'] + parallel_make_flags() + flags
+        LOGGER.info("Compiling %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            cmd = ['make'] + flags
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+                util.add_error_stack(self._src_prefix)
+                raise SoftwarePackageError('%s compilation failed' % self.title)
+
+    def make_install(self, flags):
+        """Invoke `make install`.
+        
+        Args:
+            flags (list): Command line flags to pass to `make`.
+            
+        Raises:
+            SoftwarePackageError: Configuration failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Installing %s to '%s'", self.name, self.install_prefix)
+        cmd = ['make', 'install'] + parallel_make_flags() + flags
+        LOGGER.info("Installing %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            cmd = ['make', 'install'] + flags
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+                util.add_error_stack(self._src_prefix)
+                raise SoftwarePackageError('%s installation failed' % self.title)
+        # Some systems use lib64 instead of lib
+        if os.path.isdir(self.lib_path+'64') and not os.path.isdir(self.lib_path):
+            os.symlink(self.lib_path+'64', self.lib_path)
+
+    def installation_sequence(self):
+        self.make([])
+        self.make_install([])
+
+
+class AutotoolsInstallation(MakeInstallation):
+    """Base class for installations that follow the GNU Autotools installation process.
+    
+    The GNU Autotools installation process is::
+        ./configure [options]
+        make [flags] all [options] 
+        make [flags] install [options]
+    """
+    
+    def configure(self, flags):
+        """Invoke `configure`.
+        
+        Args:
+            flags (list): Command line flags to pass to `configure`.
+            
+        Raises:
+            SoftwarePackageError: Configuration failed.
+        """
+        assert self._src_prefix
+        LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
+        cmd = ['./configure', '--prefix=%s' % self.install_prefix] + flags
+        LOGGER.info("Configuring %s...", self.title)
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            util.add_error_stack(self._src_prefix)
+            raise SoftwarePackageError('%s configure failed' % self.title)   
+    
+    def installation_sequence(self):
+        self.configure([])
+        self.make([])
+        self.make_install([])
+    
 
 class CMakeInstallation(MakeInstallation):
     """Base class for installations that follow the CMake installation process.
@@ -634,15 +611,11 @@ class CMakeInstallation(MakeInstallation):
             LOGGER.warning("Cannot determine CMake version.  CMake 2.8 or higher is required.")
         return cmake
 
-    def cmake(self, flags, env):
+    def cmake(self, flags):
         """Invoke `cmake`.
-        
-        Changes to `env` are propagated to subsequent steps, i.e. `make`.
-        Changes to `flags` are not propogated to subsequent steps.
         
         Args:
             flags (list): Command line flags to pass to `cmake`.
-            env (dict): Environment variables to set before invoking `cmake`.
             
         Raises:
             SoftwarePackageError: Configuration failed.
@@ -651,57 +624,11 @@ class CMakeInstallation(MakeInstallation):
         cmake = self._get_cmake()
         cmd = [cmake, '-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, env=env, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('CMake failed for %s' %self.title)
     
-    def install(self, force_reinstall=False):
-        """Execute the typical GNU Autotools installation sequence.
-        
-        Modifies the system by building and installing software.
-        
-        Args:
-            force_reinstall (bool): If True, reinstall even if the software package passes verification.
-            
-        Raises:
-            SoftwarePackageError: Installation failed.
-        """
-        for pkg in self.dependencies.itervalues():
-            pkg.install(force_reinstall)
-        if os.path.isdir(self.src) or not force_reinstall:
-            try:
-                return self.verify()
-            except SoftwarePackageError as err:
-                if os.path.isdir(self.src):
-                    raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
-                                               "is invalid: %s" % (self.title, self.install_prefix, err),
-                                               "Specify source code path or URL to enable package reinstallation.")
-                elif not force_reinstall:
-                    LOGGER.debug(err)
-        LOGGER.info("Installing %s to '%s'", self.title, self.install_prefix)
-        if os.path.isdir(self.install_prefix):
-            LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
-            util.rmtree(self.install_prefix, ignore_errors=True)
-        # Environment variables are shared between the subprocesses
-        # created for `configure` ; `make` ; `make install`
-        env = {}
-        try:
-            self._src_prefix = self._prepare_src()
-            with util.umask(002):
-                self.cmake([], env)
-                self.make([], env)
-                self.make_install([], env)
-            self.set_group()
-        except Exception as err:
-            LOGGER.info("%s installation failed: %s ", self.title, err)
-            raise
-        else:
-            # Delete the decompressed source code to save space and clean up in preperation for
-            # future reconfigurations.  The compressed source archive is retained.
-            LOGGER.debug("Deleting '%s'", self._src_prefix)
-            util.rmtree(self._src_prefix, ignore_errors=True)
-            self._src_prefix = None
-
-        # Verify the new installation
-        LOGGER.info("Verifying %s installation...", self.title)
-        return self.verify()
-
+    def installation_sequence(self):
+        self.cmake([])
+        self.make([])
+        self.make_install([])

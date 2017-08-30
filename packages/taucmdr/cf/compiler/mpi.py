@@ -44,16 +44,23 @@ MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing I
                               FC=('MPI Fortran', ('MPI_FC', 'MPI_F77', 'MPI_F90')))
 
 SYSTEM = MPI_COMPILERS.add('System', show_wrapper_flags=['-show'],
-                           CC='mpicc', CXX=('mpic++', 'mpicxx', 'mpiCC'), FC=('mpiftn', 'mpif90', 'mpif77', 'mpifort'))
+                           CC='mpicc', 
+                           CXX=('mpic++', 'mpicxx', 'mpiCC'), 
+                           FC=('mpiftn', 'mpif90', 'mpif77', 'mpifort'))
 
 INTEL = MPI_COMPILERS.add('Intel', show_wrapper_flags=['-show'],
-                          CC='mpiicc', CXX='mpiicpc', FC='mpiifort')
+                          CC='mpiicc', 
+                          CXX='mpiicpc', 
+                          FC='mpiifort')
 
-IBM = MPI_COMPILERS.add('IBM', show_wrapper_flags=['-show'],
-                        CC=('mpixlc', 'mpixlc_r'), 
-                        CXX=('mpixlcxx', 'mpixlcxx_r'),
-                        FC=('mpixlf95', 'mpixlf95_r', 'mpixlf90', 'mpixlf90_r', 'mpixlf2003', 'mpixlf2003_r', 
-                            'mpixlf2008', 'mpixlf2008_r', 'mpixlf77', 'mpixlf77_r'))
+IBM = MPI_COMPILERS.add('IBM', family_regex=r'^IBM XL',
+                        version_flags=['-qversion'],
+                        show_wrapper_flags=['-show'],
+                        CC=('mpixlc_r', 'mpixlc', 'mpicc'), 
+                        CXX=('mpixlcxx_r', 'mpixlcxx', 'mpixlC_r', 'mpic++', 'mpicxx', 'mpiCC'),
+                        FC=('mpixlf_r', 'mpixlf', 'mpixlf90_r', 'mpixlf90', 'mpixlf95_r', 'mpixlf95', 
+                            'mpixlf2003_r', 'mpixlf2003', 'mpixlf2008_r', 'mpixlf2008', 'mpixlf77_r', 'mpixlf77', 
+                            'mpifort', 'mpif90', 'mpif77'))
 
 CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
                          version_flags=['-craype-verbose', '--version', '-E'],

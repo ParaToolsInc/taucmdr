@@ -35,8 +35,10 @@ The selected experiment will be used for application compilation and trial visua
 import os
 import fasteners
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ExperimentSelectionError
+from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
+from taucmdr.error import ExperimentSelectionError, UniqueAttributeError
 from taucmdr.mvc.model import Model
+from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
@@ -59,7 +61,8 @@ def attributes():
         'project': {
             'model': Project,
             'required': True,
-            'description': "Project this experiment belongs to"
+            'description': "Project this experiment belongs to",
+            'unique': True
         },
         'target': {
             'model': Target,
@@ -94,10 +97,160 @@ def attributes():
     }
 
 
+class ExperimentController(Controller):
+    """Experiment data controller."""
+
+    def _restrict_project(self, key_dict):
+        key_dict['project'] = Project.controller(self.storage).selected().eid
+
+    def one(self, keys):
+        try:
+            keys = dict(keys)
+            self._restrict_project(keys)
+        except TypeError:
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).one(keys)
+    
+    def all(self):
+        try:
+            keys = dict()
+            keys['project'] = Project.controller(self.storage).selected().eid
+        except TypeError:
+            try:
+                for key in keys:
+                    key['project'] = Project.controller(self.storage).selected().eid
+            except TypeError:
+                keys = None
+        return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
+
+    def search(self, keys=None):
+        try:
+            keys = dict(keys)
+            self._restrict_project(keys)
+        except (TypeError, ValueError):
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).search(keys)
+
+    def exists(self, keys):
+        try:
+            keys = dict(keys)
+            self._restrict_project(keys)
+        except TypeError:
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).exists(keys)
+
+    def create(self, data):
+        try:
+            data = dict(data)
+            self._restrict_project(data)
+        except TypeError:
+            try:
+                for key in data:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        self._restrict_project(data)
+        data = self.model.validate(data)
+        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
+        if unique and self.storage.contains(unique, match_any=False, table_name=self.model.name):
+            raise UniqueAttributeError(self.model, unique)
+        with self.storage as database:
+            record = database.insert(data, table_name=self.model.name)
+            for attr, foreign in self.model.associations.iteritems():
+                if 'model' or 'collection' in self.model.attributes[attr]:
+                    affected = record.get(attr, None)
+                    if affected:
+                        foreign_cls, via = foreign
+                        self._associate(record, foreign_cls, affected, via)
+            model = self.model(record)
+            model.check_compatibility(model)
+            model.on_create()
+            return model
+
+    def update(self, data, keys):
+        try:
+            keys = dict(keys)
+            self._restrict_project(keys)
+        except TypeError:
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).update(data, keys)
+
+    def unset(self, fields, keys):
+        try:
+            keys = dict(keys)
+            self._restrict_project(keys)
+        except TypeError:
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).unset(fields, keys)
+
+    def delete(self, keys):
+        self._restrict_project(keys)
+        with self.storage as database:
+            removed_data = []
+            changing = self.search(keys)
+            for model in changing:
+                for attr, foreign in model.associations.iteritems():
+                    foreign_model, via = foreign
+                    affected_keys = model.get(attr, None)
+                    if affected_keys:
+                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
+                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
+                        self._disassociate(model, foreign_model, affected_keys, via)
+                for foreign_model, via in model.references:
+                    # pylint complains because `model` is changing on every iteration so we'll have
+                    # a different lambda function `test` on each iteration.  This is exactly what
+                    # we want so we disble the warning. 
+                    # pylint: disable=cell-var-from-loop, undefined-loop-variable
+                    test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
+                    affected = database.match(via, test=test, table_name=foreign_model.name)
+                    affected_keys = [record.eid for record in affected]
+                    if affected_keys:
+                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
+                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
+                        self._disassociate(model, foreign_model, affected_keys, via)
+                removed_data.append(dict(model))
+            database.remove(keys, table_name=self.model.name)
+            for model in changing:
+                model.on_delete()
+
+    def export_records(self, keys=None, eids=None):
+        try:
+            keys = dict(keys)
+            self._restrict_project(keys)
+        except TypeError:
+            try:
+                for key in keys:
+                    self._restrict_project(key)
+            except TypeError:
+                pass
+        return super(ExperimentController, self).export_records(keys, eids)
+
 class Experiment(Model):
     """Experiment data model."""
 
     __attributes__ = attributes
+    
+    __controller__ = ExperimentController
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
@@ -159,7 +312,8 @@ class Experiment(Model):
 
     @property
     def prefix(self):
-        return os.path.join(self.populate('project').prefix, self['name'])
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            return os.path.join(self.populate('project').prefix, self['name'])
 
     def verify(self):
         """Checks all components of the experiment for mutual compatibility."""
@@ -195,7 +349,7 @@ class Experiment(Model):
         return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
 
     def next_trial_number(self):
-        trials = self.populate('trials')
+        trials = self.populate(attribute='trials', defaults=True)
         for i, j in enumerate(sorted([trial['number'] for trial in trials])):
             if i != j:
                 return i
@@ -213,7 +367,8 @@ class Experiment(Model):
         """
         from taucmdr.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self['name'])
-        populated = self.populate(defaults=True)
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            populated = self.populate(defaults=True)
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
@@ -232,7 +387,7 @@ class Experiment(Model):
                     mpi_library_path=target.get('mpi_library_path', []),
                     mpi_libraries=target.get('mpi_libraries', []),
                     cuda_support=application.get_or_default('cuda'),
-                    cuda_prefix=target.get('cuda', None),
+                    cuda_prefix=target.get('cuda_toolkit', None),
                     opencl_support=application.get_or_default('opencl'),
                     opencl_prefix=target.get('opencl', None),
                     shmem_support=application.get_or_default('shmem'),
@@ -264,6 +419,7 @@ class Experiment(Model):
                     measure_callsite=measurement.get_or_default('callsite'),
                     callpath_depth=measurement.get_or_default('callpath'),
                     throttle=measurement.get_or_default('throttle'),
+                    metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     forced_makefile=target.get('forced_makefile', None))
@@ -333,7 +489,8 @@ class Experiment(Model):
             raise ConfigurationError("Cannot find executable: %s" % application_cmd[0])
         tau = self.configure()
         cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
-        return Trial.controller(self.storage).perform(self, cmd, os.getcwd(), env, description)
+        proj = self.populate('project')
+        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
 
     def trials(self, trial_numbers=None):
         """Get a list of modeled trial records.

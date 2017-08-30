@@ -127,8 +127,8 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             if group.title not in [positional_title, optional_title]:
                 yield group
                 
-    def merge(self, parser, group_title=None, 
-              include_positional=False, include_optional=True, include_storage=False, exclude=None):
+    def merge(self, parser, group_title=None, include_positional=False, include_optional=True, include_storage=False, 
+              exclude_groups=None, exclude_arguments=None):
         """Merge arguments from a parser into this parser.
         
         Modify this parser by adding additional arguments taken from the supplied parser.
@@ -139,14 +139,17 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             include_positional (bool): If True, include positional arguments.
             include_optional (bool): If True, include optional arguments.
             include_storage (bool): If True, include the storage level argument, see :any:`STORAGE_LEVEL_FLAG`.
-            exclude (list): Strings identifying arguments that should be excluded.
+            exclude_groups (list): Strings identifying argument groups that should be excluded.
+            exclude_arguments (list): Strings identifying arguments that should be excluded.
         """
-        group = self.add_argument_group(group_title) if group_title else self
         for action in parser._actions:
+            if exclude_groups and action.container.title in exclude_groups:
+                continue
+            dst_group = self.add_argument_group(group_title if group_title else action.container.title)
             optional = bool(action.option_strings)
             storage = '-'+STORAGE_LEVEL_FLAG in action.option_strings
-            excluded = exclude and bool([optstr for optstr in action.option_strings  
-                                         for substr in exclude if substr in optstr])
+            excluded = exclude_arguments and bool([optstr for optstr in action.option_strings  
+                                                   for substr in exclude_arguments if substr in optstr])
             # pylint: disable=too-many-boolean-expressions
             if (excluded or
                     (not include_storage and storage) or
@@ -154,7 +157,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
                     (not include_positional and not optional)):
                 continue
             try:
-                group._add_action(action)
+                dst_group._add_action(action)
             except argparse.ArgumentError:
                 # Argument is already in this parser.
                 pass

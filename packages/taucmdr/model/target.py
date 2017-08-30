@@ -37,8 +37,9 @@ compilers are installed then there will target configurations for each compiler 
 
 import os
 import glob
+import fasteners
 from taucmdr import logger, util
-from taucmdr.error import InternalError, ConfigurationError, IncompatibleRecordError 
+from taucmdr.error import ConfigurationError, IncompatibleRecordError 
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
@@ -46,7 +47,7 @@ from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
-from taucmdr.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -119,6 +120,15 @@ def papi_source_default():
     return 'download'
 
 
+def cuda_default():
+    default_path = '/usr/local/cuda'
+    nvcc = util.which('nvcc')
+    if not nvcc or os.path.dirname(nvcc) in ('/usr/bin', '/usr/local/bin'):
+        return default_path if os.path.exists(default_path) else None
+    else:
+        return os.path.dirname(os.path.dirname(nvcc))
+
+
 def attributes():
     """Construct attributes dictionary for the target model.
     
@@ -133,12 +143,13 @@ def attributes():
     from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
+    from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
     
     knc_intel_only = _require_compiler_family(INTEL, 
-                                              "You must use Intel compilers to target the Xeon Phi",
+                                              "You must use Intel compilers to target the Xeon Phi (KNC)",
                                               "Try adding `--compilers=Intel` to the command line")
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
-                                                  "You must use Intel MPI compilers to target the Xeon Phi",
+                                                  "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-compilers=Intel` to the command line")
     
     return {
@@ -330,11 +341,30 @@ def attributes():
                          'metavar': '<flag>'},
             'rebuild_required': True
         },
-        'cuda': {
+        CUDA_CXX.keyword: {
+            'model': Compiler,
+            'required': False,
+            'description': 'CUDA compiler command',
+            'argparse': {'flags': ('--cuda-cxx',),
+                         'group': 'CUDA',
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },
+        CUDA_FC.keyword: {
+            'model': Compiler,
+            'required': False,
+            'description': 'CUDA Fortran compiler command',
+            'argparse': {'flags': ('--cuda-fc',),
+                         'group': 'CUDA',
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },  
+        'cuda_toolkit': {
             'type': 'string',
-            'description': 'path to NVIDIA CUDA installation (enables OpenCL support)',
-            'argparse': {'flags': ('--cuda',),
-                         'group': 'software package',
+            'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
+            'default': cuda_default(), 
+            'argparse': {'flags': ('--cuda-toolkit',),
+                         'group': 'CUDA',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
@@ -446,6 +476,13 @@ class Target(Model):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
         
+    def on_create(self):
+        for comp in self.compilers().itervalues():
+            comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
+            
+    def on_delete(self):
+        util.rmtree(os.path.join(self.storage.prefix, 'bin', self['name']))
+        
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
@@ -528,15 +565,13 @@ class Target(Model):
             compilers = {}
             for role in Knowledgebase.all_roles():
                 try:
-                    compiler_record = self.populate(role.keyword)
+                    with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+                        compiler_record = self.populate(role.keyword)
                 except KeyError:
                     continue
                 compilers[role.keyword] = compiler_record.installation()
                 LOGGER.debug("compilers[%s] = '%s'", role.keyword, compilers[role.keyword].absolute_path)
                 eids.append(compiler_record.eid)
-            missing = [role for role in TAU_MINIMAL_COMPILERS if role.keyword not in compilers]
-            if missing:
-                raise InternalError("Target '%s' is missing required compilers: %s" % (self['name'], missing))
             self._compilers = InstalledCompilerSet('_'.join([str(x) for x in sorted(eids)]), **compilers)
         return self._compilers
 

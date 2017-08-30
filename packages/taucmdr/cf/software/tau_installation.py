@@ -41,16 +41,18 @@ import os
 import glob
 import shutil
 import resource
+import multiprocessing
 from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
-from taucmdr.cf.software.installation import Installation, parallel_make_flags
+from taucmdr.cf.software.installation import Installation, parallel_make_flags, new_os_environ
 from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
-from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM
+from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-from taucmdr.cf.platforms import TauMagic, INTEL_KNL, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
+from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -124,13 +126,29 @@ TAU_COMPILER_WRAPPERS = {CC: 'tau_cc.sh',
                          MPI_FC: 'tau_f90.sh',
                          SHMEM_CC: 'tau_cc.sh',
                          SHMEM_CXX: 'tau_cxx.sh',
-                         SHMEM_FC: 'tau_f90.sh'}
+                         SHMEM_FC: 'tau_f90.sh',
+                         CUDA_CXX: 'tau_cxx.sh',
+                         CUDA_FC: 'tau_ftn.sh'}
 
 TAU_MINIMAL_COMPILERS = [CC, CXX]
 
 PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 
 TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
+
+
+def check_env_compat():
+    """Checks the current shell environment for incompatible libraries or modules.
+
+    Other instrumentation packages like Darshan can conflict with TAU.  This routine
+    checks that no conflicting packages are active in the current environment.
+
+    Raises:
+        ConfigurationError: TAU cannot be used in the current environment.
+    """
+    if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
+        raise ConfigurationError("TAU cannot be used with darshan. ",
+                                 "Unload the darshan module and try again.") 
 
 
 class TauInstallation(Installation):
@@ -186,6 +204,7 @@ class TauInstallation(Installation):
                  measure_callsite=False,
                  callpath_depth=100,
                  throttle=True,
+                 metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
                  forced_makefile=None):
@@ -208,6 +227,7 @@ class TauInstallation(Installation):
             mpi_library_path (list): Paths to search for MPI library files.
             mpi_libraries (list): MPI libraries to include when linking with TAU.
             cuda_support (bool): Enable or disable CUDA support in TAU.
+            cuda_prefix (str): Path to CUDA toolkit installation.
             opencl_support (bool): Enable or disable OpenCL support in TAU.
             shmem_support (bool): Enable or disable SHMEM support in TAU.
             shmem_include_path (list):  Paths to search for SHMEM header files.
@@ -235,6 +255,7 @@ class TauInstallation(Installation):
             measure_callsite (bool): If True then record event callsites.
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
             throttle (bool): If True then throttle lightweight events.
+            metadata_merge (bool): If True then merge metadata.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
@@ -280,6 +301,7 @@ class TauInstallation(Installation):
         assert measure_callsite in (True, False)
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
+        assert metadata_merge in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
@@ -335,6 +357,7 @@ class TauInstallation(Installation):
         self.measure_callsite = measure_callsite
         self.callpath_depth = callpath_depth
         self.throttle = throttle
+        self.metadata_merge = metadata_merge
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
@@ -373,6 +396,9 @@ class TauInstallation(Installation):
             target_compilers = target_family.installation()
         except ConfigurationError:
             raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
+        for role in TAU_MINIMAL_COMPILERS:
+            if role not in target_compilers:
+                raise SoftwarePackageError("A %s compiler (required to build TAU) could not be found." % role.language)
         compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
         inst = cls(sources, target_arch, target_os, compilers, minimal_configuration=True)
         return inst
@@ -429,11 +455,9 @@ class TauInstallation(Installation):
 
     def verify(self):
         super(TauInstallation, self).verify()
-        
         # Check PAPI metrics for compatibility
         if self._uses_papi():
             self.dependencies['papi'].check_metrics(self.metrics)
-
         # Check for TAU libraries
         tau_makefile = self.get_makefile()
         makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau", "")
@@ -444,41 +468,46 @@ class TauInstallation(Installation):
                 break
         else:
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
-
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         with open(tau_makefile, 'r') as fin:
             for line in fin:
-                if self._uses_binutils() and 'BFDINCLUDE=' in line:
-                    binutils = self.dependencies['binutils']
-                    bfd_inc = line.split('=')[1].strip().strip("-I")
-                    if binutils.include_path != bfd_inc:
-                        LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
-                        raise SoftwarePackageError("BFDINCLUDE in '%s' is invalid" % tau_makefile)
-                if self._uses_libunwind() and 'UNWIND_INC=' in line:
-                    libunwind = self.dependencies['libunwind']
-                    libunwind_inc = line.split('=')[1].strip().strip("-I")
-                    if libunwind.include_path != libunwind_inc:
-                        LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
-                        raise SoftwarePackageError("UNWIND_INC in '%s' is invalid" % tau_makefile)
-                if self._uses_papi() and 'PAPIDIR=' in line:
-                    papi = self.dependencies['papi']
-                    papi_dir = line.split('=')[1].strip()
-                    if papi.install_prefix != papi_dir:
-                        LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
-                        raise SoftwarePackageError("PAPI_DIR in '%s' is invalid" % tau_makefile)
-                if self._uses_scorep() and 'SCOREPDIR=' in line:
-                    scorep = self.dependencies['scorep']
-                    scorep_dir = line.split('=')[1].strip()
-                    if scorep.install_prefix != scorep_dir:
-                        LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
-                        raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
-                if self._uses_libotf2() and 'OTFINC=' in line:
-                    libotf2 = self.dependencies['libotf2']
-                    libotf2_dir = line.split('=')[1].strip().strip("-I")
-                    if libotf2.include_path != libotf2_dir:
-                        LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
-                        raise SoftwarePackageError("OTFINC in '%s' is invalid" % tau_makefile)
-
+                if line.startswith('#'):
+                    continue
+                elif 'BFDINCLUDE=' in line:
+                    if self._uses_binutils():
+                        binutils = self.dependencies['binutils']
+                        bfd_inc = line.split('=')[1].strip().strip("-I")
+                        if binutils.include_path != bfd_inc:
+                            LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
+                            raise SoftwarePackageError("BFDINCLUDE in '%s' is invalid" % tau_makefile)
+                elif 'UNWIND_INC=' in line:
+                    if self._uses_libunwind(): 
+                        libunwind = self.dependencies['libunwind']
+                        libunwind_inc = line.split('=')[1].strip().strip("-I")
+                        if libunwind.include_path != libunwind_inc:
+                            LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
+                            raise SoftwarePackageError("UNWIND_INC in '%s' is invalid" % tau_makefile)
+                elif 'PAPIDIR=' in line:
+                    if self._uses_papi():
+                        papi = self.dependencies['papi']
+                        papi_dir = line.split('=')[1].strip()
+                        if papi.install_prefix != papi_dir:
+                            LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
+                            raise SoftwarePackageError("PAPI_DIR in '%s' is invalid" % tau_makefile)
+                elif 'SCOREPDIR=' in line:
+                    if self._uses_scorep():
+                        scorep = self.dependencies['scorep']
+                        scorep_dir = line.split('=')[1].strip()
+                        if scorep.install_prefix != scorep_dir:
+                            LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
+                            raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
+                elif 'OTFINC=' in line:
+                    if self._uses_libotf2():
+                        libotf2 = self.dependencies['libotf2']
+                        libotf2_dir = line.split('=')[1].strip().strip("-I")
+                        if libotf2.include_path != libotf2_dir:
+                            LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
+                            raise SoftwarePackageError("OTFINC in '%s' is invalid" % tau_makefile)
         # Check for iowrapper libraries and link options
         if self.io_inst:
             # Replace right-most occurance of 'Makefile.tau' with 'shared'
@@ -669,8 +698,11 @@ class TauInstallation(Installation):
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
-        if self.target_arch is INTEL_KNL:
-            useropts.append('-DTAU_MAX_THREADS=512')
+        nprocs = multiprocessing.cpu_count()
+        if nprocs > 128:
+            # Work around TAU's silly hard-coded thread limits.
+            nprocs = 1 << ((nprocs-1).bit_length() + 1)
+            useropts.append('-DTAU_MAX_THREADS=%d' % nprocs)
         flags.append('-useropt=%s' % '#'.join(useropts))
         
         cmd = ['./configure'] + flags
@@ -702,11 +734,10 @@ class TauInstallation(Installation):
         Raises:
             SoftwarePackageError: TAU failed installation or did not pass verification after it was installed.
         """
+        check_env_compat()
         if self.forced_makefile:
             forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
             self._set_install_prefix(forced_install_prefix)
-            for pkg in self.dependencies.itervalues():
-                pkg.install(force_reinstall=False)
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
             return 
         if not self.src or not force_reinstall:
@@ -722,22 +753,24 @@ class TauInstallation(Installation):
                 elif not force_reinstall:
                     LOGGER.debug(err)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
-        try:
-            # TAU's configure scripts create/touch/edit files so need to open the umask waaaaaay early.
-            with util.umask(002):
+        with new_os_environ(), util.umask(002):
+            try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
                     shutil.move(self._prepare_src(), self.install_prefix)
                 self._src_prefix = self.install_prefix
-                self.configure()
-                self.make_install()
-            self.set_group()
-        except Exception as err:
-            LOGGER.info("%s installation failed: %s ", self.title, err)
-            raise
+                self.installation_sequence()
+                self.set_group()
+            except Exception as err:
+                LOGGER.info("%s installation failed: %s ", self.title, err)
+                raise
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()
+    
+    def installation_sequence(self):
+        self.configure()
+        self.make_install()
 
     def _compiler_tags(self):
         return {host_compilers.INTEL: 'intel' if self.tau_magic.operating_system is CRAY_CNL else 'icpc',
@@ -942,7 +975,7 @@ class TauInstallation(Installation):
             pass
         if self.sample or self.compiler_inst != 'never':
             opts.append('-g')
-        if self.source_inst != 'never':
+        if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
             opts.append('-DTAU_ENABLED=1')
         env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
@@ -989,6 +1022,7 @@ class TauInstallation(Installation):
         env['TAU_CALLSITE'] = str(int(self.measure_callsite))
         env['TAU_METRICS'] = ",".join(self.metrics) + ","
         env['TAU_THROTTLE'] = str(int(self.throttle))
+        env['TAU_MERGE_METADATA'] = str(int(self.metadata_merge))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
             env['TAU_THROTTLE_NUMCALLS'] = str(int(self.throttle_num_calls))

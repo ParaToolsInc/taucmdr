@@ -25,7 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Binutils software installation management.
+"""PAPI software installation management.
 
 PAPI is used to measure hardware performance counters.
 """
@@ -38,7 +38,9 @@ from subprocess import CalledProcessError
 from xml.etree import ElementTree
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
+from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
 
 LOGGER = logger.get_logger(__name__)
 
@@ -51,6 +53,13 @@ class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
+        # PAPI can't be built with IBM compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is IBM:
+            try:
+                gnu_compilers = GNU.installation()
+            except ConfigurationError:
+                raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
+            compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os, 
                                                compilers, REPOS, None, LIBRARIES, None)
         self._xml_event_info = None
@@ -62,12 +71,20 @@ class PapiInstallation(AutotoolsInstallation):
             src_prefix = os.path.join(src_prefix, 'src')
         return src_prefix
 
-    def make(self, flags, env, parallel=True):
+    def configure(self, flags):
+        cc = self.compilers[CC].unwrap().absolute_path
+        cxx = self.compilers[CXX].unwrap().absolute_path
+        os.environ['CC'] = cc
+        os.environ['CXX'] = cxx
+        flags.extend(['CC='+cc, 'CXX='+cxx])
+        return super(PapiInstallation, self).configure(flags)
+
+    def make(self, flags):
         # PAPI's tests often fail to compile, so disable them.
         for line in fileinput.input(os.path.join(self._src_prefix, 'Makefile'), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
-        super(PapiInstallation, self).make(flags, env, parallel)
+        super(PapiInstallation, self).make(flags)
 
     def xml_event_info(self):
         if not self._xml_event_info:

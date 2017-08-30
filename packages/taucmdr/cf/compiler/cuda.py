@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,42 +25,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""CUDA compiler knowledgebase."""
 
-"""Test functions.
-
-Functions used for unit tests of configure.py.
-"""
-
-from taucmdr import tests
-from taucmdr.cli.commands.configure import COMMAND as configure_cmd
-from taucmdr.cf.storage.project import ProjectStorageError
+from taucmdr.cf.compiler import Knowledgebase
 
 
-class ConfigureTest(tests.TestCase):
-    """Unit tests for `taucmdr configure`"""
+CUDA_COMPILERS = Knowledgebase('CUDA', 'Compilers supporting CUDA',
+                               CXX=('CUDA', 'CU'),
+                               FC=('CUDA Fortran', 'CUF'))
 
-    def test_no_args(self):
-        self.reset_project_storage(['--bare'])
-        stdout, stderr = self.assertCommandReturnValue(0, configure_cmd, [])
-        self.assertFalse(stderr)
-        self.assertIn("selected_project", stdout)
+NVIDIA = CUDA_COMPILERS.add('NVIDIA', CXX='nvcc') 
 
-    def test_no_project(self):
-        self.destroy_project_storage()
-        self.assertRaises(ProjectStorageError, self.exec_command, cmd=configure_cmd, argv=['some_key'])
+IBM = CUDA_COMPILERS.add('IBM', family_regex=r'^IBM XL', version_flags=['-qversion'],
+                         FC='xlcuf')
 
-    def test_invalid_key(self):
-        self.reset_project_storage(['--bare'])
-        stdout, stderr = self.assertNotCommandReturnValue(0, configure_cmd, ['invalid_key'])
-        self.assertFalse(stdout)
-        self.assertIn("Invalid key: invalid_key", stderr)
-
-    def test_h_arg(self):
-        self.reset_project_storage()
-        stdout, _ = self.assertCommandReturnValue(0, configure_cmd, ['-h'])
-        self.assertIn('Show this help message and exit', stdout)
-
-    def test_help_arg(self):
-        self.reset_project_storage()
-        stdout, _ = self.assertCommandReturnValue(0, configure_cmd, ['--help'])
-        self.assertIn('Show this help message and exit', stdout)
+CUDA_CXX = CUDA_COMPILERS.roles['CXX']
+CUDA_FC = CUDA_COMPILERS.roles['FC']

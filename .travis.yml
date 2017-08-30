@@ -37,8 +37,7 @@ before_install:
 
 # Test ./configure && make install while boostraping Python 2.7 environment and required packages.
 install:
-  - ./configure --prefix="$INSTALLDIR"
-  - make install || (tail -1000 "$HOME/.tau/debug_log" && false)
+  - make install INSTALLDIR="$INSTALLDIR" || (tail -1000 "$HOME/.tau/debug_log" && false)
   - export PATH="$INSTALLDIR/conda/bin:$PATH"
   - which python
   - which pip
