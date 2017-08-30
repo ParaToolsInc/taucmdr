@@ -39,15 +39,12 @@ MKDIR = mkdir -p
 ifneq ("$(wildcard setup.cfg)","")
   BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
   INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
-else
-  ifeq ($(INSTALLDIR),)
-    $(error INSTALLDIR not set)
-  endif
-  # Bootstrap setup.cfg
-  $(shell cp .bootstrap.cfg setup.cfg && echo "prefix = $(INSTALLDIR)" >> "setup.cfg")
 endif
 ifeq ($(BUILDDIR),)
   BUILDDIR=build
+endif
+ifeq ($(INSTALLDIR),)
+  INSTALLDIR=/opt/ParaTools/taucmdr-1.1.2
 endif
 
 TAU = $(INSTALLDIR)/bin/tau
@@ -135,21 +132,23 @@ PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
 .PHONY: build install clean python_check
 
-.DEFAULT: build
+.DEFAULT: help
 
-build: python_check
-	$(ECHO)$(PYTHON) setup.py build
+help: 
+	@echo "-------------------------------------------------------------------------------"
+	@echo "TAU Commander installation"
+	@echo
+	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)]"
+	@echo "-------------------------------------------------------------------------------"
 
-install: build
+install: python_check
 # Build python files and set system-level defaults
-	$(ECHO)$(PYTHON) setup.py install --force
+	$(ECHO)$(PYTHON) setup.py install --prefix $(INSTALLDIR)
 # Copy archive files to system-level src, if available
 	@mkdir -p $(INSTALLDIR)/system/src
 	@cp -v packages/*.tgz $(INSTALLDIR)/system/src 2>/dev/null || true
 	@cp -v packages/*.tar.* $(INSTALLDIR)/system/src 2>/dev/null || true
 	@cp -v packages/*.zip $(INSTALLDIR)/system/src 2>/dev/null || true
-# Build dependencies using archives and system-level defaults
-	$(ECHO)$(PYTHON) setup.py install --force --initialize
 # Add PYTHON_FLAGS to python command line in bin/tau
 	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
 	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
@@ -175,5 +174,4 @@ $(CONDA_SRC):
 
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
-	$(ECHO)$(RM) setup.cfg
 

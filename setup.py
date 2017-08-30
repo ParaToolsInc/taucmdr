@@ -30,24 +30,12 @@
 Program entry point for all activities related to packaging.  Distributions,
 documentation, and unit testing are all handled from this script. 
 """
-import os
-import sys
-import shutil
-import tempfile
-import fileinput
-import subprocess
-import setuptools
-from ConfigParser import SafeConfigParser
-from setuptools.command.test import test as TestCommand
-from setuptools.command.install import install as InstallCommand
-
-
-#######################################################################################################################
-# PACKAGE CONFIGURATION
-#######################################################################################################################
 
 # Package name
 NAME = "taucmdr"
+
+# Package version
+VERSION = "1.1.2"
 
 # Package author information
 AUTHOR = "ParaTools, Inc."
@@ -80,7 +68,7 @@ CLASSIFIERS = [
     #   3 - Alpha
     #   4 - Beta
     #   5 - Production/Stable
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 5 - Production/Stable',
 
     # Indicate who your project is intended for
     'Intended Audience :: Developers',
@@ -98,20 +86,44 @@ CLASSIFIERS = [
 #######################################################################################################################
 # END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
 #######################################################################################################################
+# Distuilts defines attributes in the initialize_options() method
+# pylint: disable=attribute-defined-outside-init
+# pylint: disable=wrong-import-position
+import os
+import sys
+import shutil
+import tempfile
+import fileinput
+import subprocess
+import setuptools
+from setuptools.command.test import test as TestCommand
+from setuptools.command.install import install as InstallCommand
+from setuptools.command.install_lib import install_lib as InstallLibCommand
 
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 
-# Check if sphinx is installed
+
+# Customize the BuildSphinx command depending on if Sphinx is installed
 try:
     from sphinx import apidoc as sphinx_apidoc
     from sphinx.setup_command import BuildDoc
-except ImportError:
-    HAVE_SPHINX = False
-else:
-    HAVE_SPHINX = True 
 
-if HAVE_SPHINX:
+except ImportError:
+    from distutils.cmd import Command
+    class BuildSphinx(Command):
+        """Report that Sphinx is required to build documentation."""
+        description = 'Sphinx not installed!'
+        user_options = []
+        def initialize_options(self):
+            pass
+        def finalize_options(self):
+            pass 
+        def run(self):
+            print "Sphinx must be installed to generate developer documentation."
+            sys.exit(-1)
+
+else:
     class BuildSphinx(BuildDoc):
         """Customize the build_sphinx command.
         
@@ -119,7 +131,7 @@ if HAVE_SPHINX:
         with content files, run sphinx-apidoc to auto-document the "taucmdr" package, then
         proceed with normal build_sphinx behavior.
         """
-        
+
         _custom_user_options = [('update-gh-pages', None, 'Commit documentation to gh-pages branch and push.'),
                                 ('gh-origin-url=', None, 'Git repo origin URL'),
                                 ('gh-user-name=', None, 'user.name in git config'),
@@ -137,8 +149,8 @@ if HAVE_SPHINX:
     
         def _shell(self, cmd, cwd=None):
             try:
-                FNULL = open(os.devnull, 'w')
-                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=FNULL, stdout=FNULL)
+                fnull = open(os.devnull, 'w')
+                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=fnull, stdout=fnull)
             except subprocess.CalledProcessError as err:
                 sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd[:2]) + ' ...', err.returncode))
                 sys.exit(err.returncode)
@@ -165,7 +177,7 @@ if HAVE_SPHINX:
             self.source_dir = copy_source_dir
     
         def _generate_api_docs(self):
-            package_source_dir = os.path.join(PACKAGE_TOPDIR,  self.distribution.package_dir[''], 'taucmdr')
+            package_source_dir = os.path.join(PACKAGE_TOPDIR, self.distribution.package_dir[''], 'taucmdr')
             sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
                                 '-P', # Include "_private" modules
                                 '-f', # Overwrite existing files
@@ -214,152 +226,48 @@ class Test(TestCommand):
                 shutil.rmtree(tmp_user_prefix, ignore_errors=True)
 
 
-class Install(InstallCommand):
+class InstallLib(InstallLibCommand):
+    """Custom install_lib command to only compile with optimization."""
 
-    _custom_user_options = [('initialize', None, "Initialize default TAU project dependencies")]
-    user_options = InstallCommand.user_options + _custom_user_options
+    def initialize_options(self):
+        InstallLibCommand.initialize_options(self)
+        
+    def finalize_options(self):
+        InstallLibCommand.finalize_options(self)
+        self.optimize = 1
+
+    def run(self):
+        InstallLibCommand.run(self)
+
+
+class Install(InstallCommand):
+    """Customize the install command with new lib, script, and data installation locations."""
 
     def initialize_options(self):
         InstallCommand.initialize_options(self)
-        self.initialize = False
-    
+        
     def finalize_options(self):
         InstallCommand.finalize_options(self)
         self.install_scripts = os.path.join(self.prefix, 'bin')
         self.install_lib = os.path.join(self.prefix, 'packages')
         self.install_data = os.path.join(self.prefix)
         self.record = os.path.join(self.prefix, 'install.log')
+        self.optimize = 1
 
-    def _configure_project(self, config):
-        from taucmdr import EXIT_SUCCESS 
-        from taucmdr.cf.storage.levels import PROJECT_STORAGE
-        from taucmdr.cli.commands.initialize import COMMAND as init_command
-        from taucmdr.cli.commands.select import COMMAND as select_command
-        from taucmdr.model.project import Project
-        from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
-
-        # Call `tau initialize` to configure system-level packages supporting default experiments
-        #init_args = list(sum(config.items(), ()))
-        init_args = ['%s=%s' % item for item in config.iteritems()]
-        if init_command.main(init_args) != EXIT_SUCCESS:
-            return
-        proj_ctrl = Project.controller()
-        proj = proj_ctrl.selected().populate()
-        # Acquire source packages
-        for targ in proj['targets']:
-            targ.acquire_sources()
-        # Add papi configurations
-        for meas in proj['measurements']:
-            measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
-        # Add OpenMP measurement methods
-        if config.get('--openmp', 'False') == 'True':
-            for meas in proj['measurements']:
-                for pkg in 'ompt', 'opari':
-                    measurement_copy_cmd.main([meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
-        proj = proj_ctrl.selected().populate()
-        # Iterate through default configurations and configure system-level packages for each
-        for targ in proj['targets']:
-            for app in proj['applications']:
-                for meas in proj['measurements']:
-                    argv = ['--target', targ['name'], '--application', app['name'], '--measurement', meas['name']]
-                    select_command.main(argv)
-        # Clean up
-        PROJECT_STORAGE.destroy()
-
-    def _configure_new_installation(self):
-        sys.path.insert(0, os.path.join(self.prefix, 'packages'))
-        import taucmdr
-        from taucmdr import util
-        from taucmdr.cf.software.tau_installation import TauInstallation
-
-        # Clean up the build directory
-        os.chdir(self.build_base)
-        util.rmtree('.tau', ignore_errors=True)
-
-        # Get configuration
-        setup_cfg = SafeConfigParser(allow_no_value=True)
-        setup_cfg.readfp(open(os.path.join(PACKAGE_TOPDIR, 'setup.cfg')))
-        config = dict(setup_cfg.items('tau_initialize'))
-        have_openmp = True # Update as needed in future
-        have_mpi = bool(config.get('--mpi-cc', False) and 
-                        config.get('--mpi-cxx', False) and 
-                        config.get('--mpi-fc', False))
-        have_shmem = bool(config.get('--shmem-cc', False) and 
-                          config.get('--shmem-cxx', False) and 
-                          config.get('--shmem-fc', False))
-        have_cuda = bool(config.get('--cuda-cxx', False))
-        
-        # Minimal tau installation
-        tau = TauInstallation.minimal()
-        tau.install()
-
-        # Configure TAU and all dependencies in various combinations
-        self._configure_project(config)
-        for openmp in set([False, have_openmp]):
-            for mpi in set([False, have_mpi]):
-                for shmem in set([False, have_shmem]):
-                    for cuda in set([False, have_cuda]):
-                        config.update({'--openmp': str(openmp), 
-                                       '--mpi': str(mpi),
-                                       '--shmem': str(shmem),
-                                       '--cuda': str(cuda)})
-                        self._configure_project(config)
-        # Indicate success
-        print taucmdr.version_banner()
-    
     def run(self):
-        if not self.force:
-            print ("Whoops!  This script is used internally by the TAU Commander installer.\n"
-                   "Calling it directly can (probably will) break things.\n"
-                   "Try this instead:\n"
-                   "  ./configure\n"
-                   "  make install")
-        elif self.initialize:
-            self._configure_new_installation()
-        else:
-            InstallCommand.run(self)
-                
+        InstallCommand.run(self)
 
-def update_version():
-    """Rewrite packages/taucmdr/__init__.py to update __version__.
 
-    Reads the version number from a file named VERSION in the top-level directory,
-    then uses :any:`fileinput` to update __version__ in packages/taucmdr/__init__.py.
-
-    Returns:
-        str: The version string to be passed to :any:`setuptools.setup`.
-    """
-    # Get version number from VERSION file
-    try:
-        fin = open(os.path.join(PACKAGE_TOPDIR, "VERSION"))
-    except IOError:
-        sys.stderr.write("ERROR: VERSION file is missing!\n")
-        sys.exit(-1)
-    else:
-        version = fin.readline().strip()
-    finally:
-        fin.close()
-    # Set taucmdr.__version__ to match VERSION file
+def _version():
+    """Rewrite packages/taucmdr/__init__.py to update __version__."""
     for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
         # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-        if line.startswith("__version__"):
-            sys.stdout.write('__version__ = "%s"\n' % version)
-        else:
-            sys.stdout.write(line)
-    return version
+        sys.stdout.write('__version__ = "%s"\n' % VERSION if line.startswith('__version__') else line)
+    return VERSION
 
 
-def get_commands():
-    cmdclass = {}
-    cmdclass['install'] = Install
-    cmdclass['test'] = Test
-    if HAVE_SPHINX:
-        cmdclass['build_sphinx'] = BuildSphinx
-    return cmdclass
-
-
-def get_data_files():
-    data_files = [("", ["LICENSE", "README.md", "VERSION"])]
+def _data_files():
+    data_files = [("", ["LICENSE", "README.md"])]
     for root, _, files in os.walk("examples"):
         dst_src = (root, [os.path.join(root, i) for i in files])
         data_files.append(dst_src)
@@ -367,20 +275,9 @@ def get_data_files():
 
 
 setuptools.setup(
-    # Package configuration
+    # Package metadata
     name=NAME,
-    version=update_version(),
-    packages=setuptools.find_packages("packages"),
-    package_dir={"": "packages"},
-    scripts=['bin/tau'],
-    zip_safe=False,
-    data_files=get_data_files(),
-
-    # Testing
-    test_suite='taucmdr',
-    tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
-
-    # Metadata for upload to PyPI
+    version=_version(),
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
@@ -388,8 +285,19 @@ setuptools.setup(
     license=LICENSE,
     keywords=KEYWORDS,
     url=HOMEPAGE,
-    classifiers=CLASSIFIERS,
-    
+    classifiers=CLASSIFIERS,   
+    # Package configuration
+    packages=setuptools.find_packages("packages"),
+    package_dir={"": "packages"},
+    scripts=['bin/tau'],
+    zip_safe=False,
+    data_files=_data_files(),
+    # Testing
+    test_suite='taucmdr',
+    tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
     # Custom commands
-    cmdclass=get_commands(),
+    cmdclass={'install': Install,
+              'install_lib': InstallLib,
+              'test': Test,
+              'build_sphinx': BuildSphinx}
 )
