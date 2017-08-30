@@ -36,14 +36,18 @@ TAU Commander are:
 Getting Started
 ===============
 
-Install in the usual way:
-  - `./configure [options] [--help]`
+Install TAU Commander to the default location:
   - `make install`
+
+Or, to install to a different location:
+  - `make install INSTALLDIR=/path/to/installation`
   
 Add TAU Commander to your PATH:
-  - Nearly everyone: `export PATH=/path/to/taucmdr/bin:$PATH`
-  - Everyone else: `set path=(/path/to/taucmdr/bin $path)` 
-  
+  - bash-like shells (nearly everyone): 
+    - `export PATH=/path/to/taucmdr/bin:$PATH`
+  - csh-like shells (nearly everyone else): 
+    - `set path=(/path/to/taucmdr/bin $path)` 
+
 Initialize a new TAU project:
   - cd `/path/to/your/code`
   - `tau initialize`
