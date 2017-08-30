@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+"""Build TAU configurations to support experiments."""
+import os
+import sys
+
+PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, '..', 'packages'))
+
+# pylint: disable=wrong-import-position
+from taucmdr import logger, util, EXIT_SUCCESS
+from taucmdr.cli import arguments
+from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
+from taucmdr.cli.commands.select import COMMAND as select_cmd
+from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
+from taucmdr.model.project import Project
+from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+
+
+LOGGER = logger.get_logger(__name__)
+
+
+def _translate_arg(flag, arg):
+    if isinstance(arg, basestring):
+        return [flag, arg]
+    if isinstance(arg, bool):
+        return ['%s=%s' % (flag, arg)]
+    try:
+        return [flag] + list(arg)
+    except TypeError:
+        pass
+    return [flag, str(arg)]
+
+
+def _initialize_project(args):
+    PROJECT_STORAGE.destroy()
+    argv = []
+    for key, val in sorted(vars(args).iteritems()):
+        for action in initialize_cmd.parser._actions:
+            if key == action.dest:
+                argv.extend(_translate_arg(action.option_strings[0], val))
+                break
+    if initialize_cmd.main(argv) != EXIT_SUCCESS:
+        return
+    proj_ctrl = Project.controller()
+    proj = proj_ctrl.selected().populate()
+    # Acquire source packages
+    for targ in proj['targets']:
+        targ.acquire_sources()
+    return proj, proj_ctrl
+    
+
+def _configure_project(args):
+    proj, proj_ctrl = _initialize_project(args)
+    # Add papi configurations
+    for meas in proj['measurements']:
+        measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
+    # Add OpenMP measurement methods
+    if getattr(args, 'openmp', False):
+        for meas in proj['measurements']:
+            for pkg in 'ompt', 'opari':
+                measurement_copy_cmd.main([meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
+    proj = proj_ctrl.selected().populate()
+    # Iterate through default configurations and configure system-level packages for each
+    for targ in proj['targets']:
+        for app in proj['applications']:
+            for meas in proj['measurements']:
+                try:
+                    select_cmd.main(['--target', targ['name'], 
+                                     '--application', app['name'], 
+                                     '--measurement', meas['name']])
+                except:
+                    pass
+
+
+def main(argv):
+    """Program entry point."""
+    prog = sys.argv[0]
+    parser = arguments.get_parser(prog=prog, usage='%s [arguments]' % prog, 
+                                  description="Pre-build TAU configurations.")
+    parser.add_argument('--minimal', help="Build minimal TAU configuration and exit.", 
+                        type=bool, default=False, const=True, nargs='?', metavar='T/F')
+    parser.merge(initialize_cmd.parser, include_positional=False,
+                 exclude_groups=['project arguments'],
+                 exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name', 
+                                    'tau-options', 'from-tau-makefile', 'bare'])
+    args = parser.parse_args(argv)
+    os.chdir(util.mkdtemp())
+    
+    have_openmp = True # Update as needed in future
+    have_mpi = bool(getattr(args, 'MPI_CC', False) and 
+                    getattr(args, 'MPI_CXX', False) and 
+                    getattr(args, 'MPI_FC', False))
+    have_shmem = bool(getattr(args, 'SHMEM_CC', False) and 
+                      getattr(args, 'SHMEM_CXX', False) and 
+                      getattr(args, 'SHMEM_FC', False))
+    have_cuda = bool(getattr(args, 'CUDA_CXX', False))
+
+    tau = TauInstallation.minimal()
+    tau.install()
+    _initialize_project(args)
+    if not args.minimal:
+        _configure_project(args)    
+        for openmp in set([False, have_openmp]):
+            for mpi in set([False, have_mpi]):
+                for shmem in set([False, have_shmem]):
+                    for cuda in set([False, have_cuda]):
+                        args.openmp = openmp
+                        args.mpi = mpi
+                        args.shmem = shmem
+                        args.cuda = cuda
+                        _configure_project(args)
+    return EXIT_SUCCESS
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

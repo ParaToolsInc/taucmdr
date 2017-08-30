@@ -91,6 +91,7 @@ CLASSIFIERS = [
 # pylint: disable=wrong-import-position
 import os
 import sys
+import glob
 import shutil
 import tempfile
 import fileinput
@@ -227,7 +228,7 @@ class Test(TestCommand):
 
 
 class InstallLib(InstallLibCommand):
-    """Custom install_lib command to only compile with optimization."""
+    """Custom install_lib command to always compile with optimization."""
 
     def initialize_options(self):
         InstallLibCommand.initialize_options(self)
@@ -256,7 +257,9 @@ class Install(InstallCommand):
 
     def run(self):
         InstallCommand.run(self)
-
+        shutil.move(os.path.join(self.prefix, 'bin', 'system_configure'),
+                    os.path.join(self.prefix, 'system', 'configure'))
+        
 
 def _version():
     """Rewrite packages/taucmdr/__init__.py to update __version__."""
@@ -271,6 +274,10 @@ def _data_files():
     for root, _, files in os.walk("examples"):
         dst_src = (root, [os.path.join(root, i) for i in files])
         data_files.append(dst_src)
+    src_files = []
+    for glob_pat in '*.tgz', '*.tar*', '*.zip':
+        src_files.extend(glob.glob(os.path.join('packages', glob_pat)))
+    data_files.append(("system/src", src_files))
     return data_files
 
 
@@ -289,7 +296,7 @@ setuptools.setup(
     # Package configuration
     packages=setuptools.find_packages("packages"),
     package_dir={"": "packages"},
-    scripts=['bin/tau'],
+    scripts=['scripts/tau', 'scripts/system_configure'],
     zip_safe=False,
     data_files=_data_files(),
     # Testing
