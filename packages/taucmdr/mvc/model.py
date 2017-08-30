@@ -66,7 +66,6 @@ class ModelMeta(type):
             return cls._attributes
         except AttributeError:
             cls._attributes = cls.__attributes__()
-            cls._configure_defaults()
             cls._construct_relationships()
             return cls._attributes
         
@@ -177,14 +176,6 @@ class Model(StorageRecord):
     def controller(cls, storage):
         return cls.__controller__(cls, storage)
     
-    @classmethod
-    def _configure_defaults(cls):
-        from taucmdr import configuration
-        for key, val in configuration.get().iteritems():
-            if val and key.startswith(cls.name):
-                attr = key.split('.')[-1]
-                cls.attributes[attr]['default'] = val
-
     @classmethod
     def _construct_relationships(cls):
         primary_key = None

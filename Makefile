@@ -33,21 +33,19 @@ VERBOSE = true
 
 # Shell utilities
 RM = rm -f
+MV = mv -f
 MKDIR = mkdir -p
 
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
   BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
   INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
-else
-  ifeq ($(INSTALLDIR),)
-    $(error INSTALLDIR not set)
-  endif
-  # Bootstrap setup.cfg
-  $(shell cp .bootstrap.cfg setup.cfg && echo "prefix = $(INSTALLDIR)" >> "setup.cfg")
 endif
 ifeq ($(BUILDDIR),)
   BUILDDIR=build
+endif
+ifeq ($(INSTALLDIR),)
+  INSTALLDIR=/opt/ParaTools/taucmdr-1.1.2
 endif
 
 TAU = $(INSTALLDIR)/bin/tau
@@ -120,11 +118,11 @@ CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
   PYTHON_EXE = $(CONDA)
-  PYTHON_FLAGS = -E
+  PYTHON_FLAGS = -EO
 else
   $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
   PYTHON_EXE = $(shell which python)
-  PYTHON_FLAGS =
+  PYTHON_FLAGS = -O
   ifeq ($(PYTHON_EXE),)
     $(error python not found in PATH.)
   else
@@ -135,30 +133,47 @@ PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
 .PHONY: build install clean python_check
 
-.DEFAULT: build
+.DEFAULT: help
 
+help: 
+	@echo "-------------------------------------------------------------------------------"
+	@echo "TAU Commander installation"
+	@echo
+	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)]"
+	@echo "-------------------------------------------------------------------------------"
+	
 build: python_check
+	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 
 install: build
-# Build python files and set system-level defaults
-	$(ECHO)$(PYTHON) setup.py install --force
-# Copy archive files to system-level src, if available
-	@mkdir -p $(INSTALLDIR)/system/src
-	@cp -v packages/*.tgz $(INSTALLDIR)/system/src 2>/dev/null || true
-	@cp -v packages/*.tar.* $(INSTALLDIR)/system/src 2>/dev/null || true
-	@cp -v packages/*.zip $(INSTALLDIR)/system/src 2>/dev/null || true
-# Build dependencies using archives and system-level defaults
-	$(ECHO)$(PYTHON) setup.py install --force --initialize
-# Add PYTHON_FLAGS to python command line in bin/tau
-	@tail -n +2 "$(TAU)" > "$(BUILDDIR)/tau.tail"
-	@echo `head -1 "$(TAU)"` $(PYTHON_FLAGS) > "$(BUILDDIR)/tau.head"
-	@cat "$(BUILDDIR)/tau.head" "$(BUILDDIR)/tau.tail" > "$(TAU)"
+# Install TAU Commander
+	$(ECHO)$(PYTHON) setup.py install --prefix $(INSTALLDIR)
+#	$(ECHO)$(MKDIR) $(INSTALLDIR)/system
+#	$(ECHO)$(MV) $(INSTALLDIR)/bin/system_configure $(INSTALLDIR)/system/configure	
+	$(ECHO)$(INSTALLDIR)/system/configure --minimal
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
-	@echo "TAU Commander is installed at \"$(INSTALLDIR)\""
-	@echo "Rememember to add \"$(INSTALLDIR)/bin\" to your PATH"
+	@echo "Hooray! TAU Commander is installed!" 
+	@echo
+	@echo "INSTALLDIR=\"$(INSTALLDIR)\""
+	@echo 
+	@echo "What's next?"
+	@echo
+	@echo "TAU Commander will automatically reconfigure TAU as you create experiments,"
+	@echo "so if you're just trying to get some performance data then just add"
+	@echo "TAU Commander's \"bin\" directory to your path and maybe have a look at"
+	@echo "the quick start guide at http://www.taucommander.com/guide."
+	@echo
+	@echo "If you'd like to pre-configure TAU for certain experiments then you can use"
+	@echo "the \"INSTALLDIR/system/configure\" script to generate new TAU configurations."
+	@echo "This is especially a good idea if you are a system administrator installing"
+	@echo "TAU Commander so that someone else can use it."
+	@echo
+	@echo "In short:"
+	@echo "  If you are a sysadmin then go run \"INSTALLDIR/system/configure\"."
+	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH environment variable." 
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
@@ -175,5 +190,4 @@ $(CONDA_SRC):
 
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
-	$(ECHO)$(RM) defaults.cfg setup.cfg
 
