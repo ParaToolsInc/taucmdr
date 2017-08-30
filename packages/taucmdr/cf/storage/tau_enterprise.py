@@ -89,6 +89,8 @@ class _TauEnterpriseDatabase(object):
         self.db_name = db_name
         self.storage = storage
         self.session = requests.Session()
+        #TODO Turn verification back on once not using a self-signed certificate
+        self.session.verify = False
         # The requested database is sent as an HTTP header
         self.session.headers['Database-Name'] = self.db_name
         request = self.session.get(endpoint)

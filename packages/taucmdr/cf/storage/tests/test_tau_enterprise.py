@@ -37,7 +37,7 @@ import requests
 from taucmdr import tests
 from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase, TauEnterpriseStorage
 
-_DATABASE_URL = "http://east03.paratools.com:5000"
+_DATABASE_URL = "https://east03.paratools.com:5000"
 
 
 class TauEnterpriseStorageTests(tests.TestCase):
