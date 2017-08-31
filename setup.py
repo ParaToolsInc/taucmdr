@@ -28,14 +28,16 @@
 """TAU Commander packaging.
 
 Program entry point for all activities related to packaging.  Distributions,
-documentation, and unit testing are all handled from this script. 
+documentation, and unit testing are all handled from this script.
+
+**IMPORTANT**
+It is assumed that this script is run with the same python interpreter as
+TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.   
 """
+
 
 # Package name
 NAME = "taucmdr"
-
-# Package version
-VERSION = "1.1.2"
 
 # Package author information
 AUTHOR = "ParaTools, Inc."
@@ -87,12 +89,11 @@ CLASSIFIERS = [
 # END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
 #######################################################################################################################
 # Distuilts defines attributes in the initialize_options() method
-# pylint: disable=attribute-defined-outside-init
-# pylint: disable=wrong-import-position
+# pylint: disable=attribute-defined-outside-init,wrong-import-position
 import os
 import sys
-import glob
 import shutil
+import fnmatch
 import tempfile
 import fileinput
 import subprocess
@@ -100,9 +101,10 @@ import setuptools
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 from setuptools.command.install_lib import install_lib as InstallLibCommand
-
+from setuptools.command.sdist import sdist as SDistCommand
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
 
 
 # Customize the BuildSphinx command depending on if Sphinx is installed
@@ -111,8 +113,8 @@ try:
     from sphinx.setup_command import BuildDoc
 
 except ImportError:
-    from distutils.cmd import Command
-    class BuildSphinx(Command):
+    from distutils import cmd as distutils_cmd
+    class BuildSphinx(distutils_cmd.Command):
         """Report that Sphinx is required to build documentation."""
         description = 'Sphinx not installed!'
         user_options = []
@@ -150,8 +152,8 @@ else:
     
         def _shell(self, cmd, cwd=None):
             try:
-                fnull = open(os.devnull, 'w')
-                subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=fnull, stdout=fnull)
+                with open(os.devnull, 'w') as fnull:
+                    subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=fnull, stdout=fnull)
             except subprocess.CalledProcessError as err:
                 sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd[:2]) + ' ...', err.returncode))
                 sys.exit(err.returncode)
@@ -254,30 +256,238 @@ class Install(InstallCommand):
         self.install_data = os.path.join(self.prefix)
         self.record = os.path.join(self.prefix, 'install.log')
         self.optimize = 1
-
+        
     def run(self):
         InstallCommand.run(self)
         shutil.move(os.path.join(self.prefix, 'bin', 'system_configure'),
                     os.path.join(self.prefix, 'system', 'configure'))
         
 
+class Release(SDistCommand):
+    """Build release packages."""
+    
+    description = "Build release packages."
+    
+    user_options = (SDistCommand.user_options + 
+                    [('target-arch=', None, "Target architecture"),
+                     ('target-os=', None, "Target operating system"),
+                     ('web', None, "Build a web-based distribution"),
+                     ('all', None, "Build release packages for all known (arch, os)")])
+    
+    def initialize_options(self):
+        SDistCommand.initialize_options(self)
+        self.target_arch = None
+        self.target_os = None
+        self.web = False
+        self.all = False
+        
+    def finalize_options(self):
+        SDistCommand.finalize_options(self)
+        from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
+        if self.all:
+            if self.web or self.target_arch or self.target_os:
+                print '--all must not be used with any other arguments'
+                sys.exit(-1)
+        if self.web:
+            if self.all or self.target_arch or self.target_os:
+                print '--web must not be used with any other arguments'
+                sys.exit(-1)
+        else: 
+            try:
+                self.target_arch = Architecture.find(self.target_arch or str(HOST_ARCH))
+            except KeyError:
+                print 'Invalid architecture: %s' % self.target_arch
+                print 'Known architectures: %s' % Architecture.keys()
+                sys.exit(-1)
+            try:
+                self.target_os = OperatingSystem.find(self.target_os or str(HOST_OS))
+            except KeyError:
+                print 'Invalid operating system: %s' % self.target_os
+                print 'Known operating system: %s' % OperatingSystem.keys()
+                sys.exit(-1)
+    
+    def _software_packages(self):
+        import taucmdr.cf.software
+        packages = []
+        for module_file in os.listdir(taucmdr.cf.software.__path__[0]):
+            if module_file.endswith('_installation.py'):
+                packages.append(module_file[:-16])
+        return packages
+
+    def _download(self, pkg):
+        from taucmdr import util
+        print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
+        module_name = pkg + '_installation'
+        repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)), 
+                                   globals(), locals(), ['REPOS'], -1), 'REPOS')
+        default = repos[None]
+        try:
+            arch_dct = repos[self.target_arch]
+        except KeyError:
+            src = default
+        else:
+            src = arch_dct.get(self.target_os, arch_dct.get(None, default))
+        dest = os.path.join(os.path.realpath(os.path.abspath('system')), 'src', os.path.basename(src))
+        if os.path.exists(dest):
+            print '%s already exists, skipping download' % dest
+        else:
+            util.download(src, dest)
+        
+    def _download_python(self):
+        from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX
+        make_arch = self.target_arch
+        make_os = self.target_os
+        arch_map = {X86_64: 'x86_64',
+                    INTEL_KNC: 'x86_64',
+                    INTEL_KNL: 'x86_64',
+                    IBM64: 'ppc64le',
+                    PPC64LE: 'ppc64le',
+                    ARM64: 'armv71'}
+        os_map = {DARWIN: 'Darwin',
+                  LINUX: 'Linux'}
+        try:
+            make_arch = arch_map[self.target_arch]
+        except KeyError:
+            return
+        try:
+            make_os = os_map[self.target_os]
+        except KeyError:
+            return
+        subprocess.call(['make', 'python_download', 'ARCH='+make_arch, 'OS='+make_os])
+        
+    def _build_web_release(self):
+        SDistCommand.run(self)
+        for path in self.archive_files:
+            print "Wrote '%s'" % path
+
+    def _build_target_release(self):
+        self._download_python()
+        for pkg in self._software_packages():
+            self._download(pkg)
+        SDistCommand.run(self)
+        dist_name = self.distribution.get_fullname()
+        for src in self.archive_files:
+            ext = os.path.basename(src).split(dist_name)[1]
+            dest = '-'.join([dist_name, str(self.target_os), str(self.target_arch)]) + ext
+            dest = os.path.join(self.dist_dir, dest)
+            shutil.move(src, dest)
+            print "Wrote '%s'" % dest
+
+    def run(self):
+        #from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX
+        if self.web:
+            self._build_web_release()
+        elif self.all:
+            pass
+        else:
+            self._build_target_release()
+
+
+# class Dependency(setuptools.Command):
+#     """Manage TAU dependencies."""
+#     
+#     description = "Manage TAU dependencies."
+#     
+#     user_options = [('download=', None, "Package name"),
+#                     ('pkg-arch=', None, "Package architecture"),
+#                     ('pkg-os=', None, "Package operating system"),
+#                     ('show', None, "List all possible TAU dependencies")]
+# 
+#     def initialize_options(self):
+#         from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
+#         self.download = None
+#         self.pkg_arch = str(HOST_ARCH)
+#         self.pkg_os = str(HOST_OS)
+#         self.show = False
+#         
+#     def finalize_options(self):
+#         from taucmdr.cf.platforms import Architecture, OperatingSystem
+#         try:
+#             self.pkg_arch = Architecture.find(self.pkg_arch)
+#         except KeyError:
+#             print 'Invalid architecture: %s' % self.pkg_arch
+#             print 'Known architectures: %s' % Architecture.keys()
+#             sys.exit(EXIT_FAILURE)
+#         try:
+#             self.pkg_os = OperatingSystem.find(self.pkg_os)
+#         except KeyError:
+#             print 'Invalid operating system: %s' % self.pkg_os
+#             print 'Known operating system: %s' % OperatingSystem.keys()
+#             sys.exit(EXIT_FAILURE)
+# 
+#     def _download(self):
+#         print "Downloading '%s' for (%s, %s)" % (self.download, self.pkg_arch, self.pkg_os)
+#         module_name = self.download + '_installation'
+#         pkg = __import__('.'.join(('taucmdr', 'cf', 'software', module_name)), globals(), locals(), ['REPOS'], -1)
+#         repos = getattr(pkg, 'REPOS')
+#         default = repos[None]
+#         try:
+#             arch_dct = repos[self.pkg_arch]
+#         except KeyError:
+#             src = default
+#         else:
+#             src = arch_dct.get(self.pkg_os, arch_dct.get(None, default))
+#         dest = os.path.join(os.path.realpath(os.path.abspath('system')), 'src', os.path.basename(src))
+#         util.download(src, dest)
+#         
+#     def _show(self):
+#         import taucmdr.cf.software
+#         pkgs = [name[:-13] for _, name, _ in util.walk_packages(taucmdr.cf.software.__path__, "") 
+#                 if name.endswith('_installation')]
+#         print '; '.join(pkgs)
+#     
+#     def run(self):
+#         if self.download:
+#             self._download()
+#         if self.show:
+#             self._show()
+
+
 def _version():
-    """Rewrite packages/taucmdr/__init__.py to update __version__."""
+    """Rewrite packages/taucmdr/__init__.py to update version."""
+    try:
+        with open(os.devnull, 'w') as fnull:
+            version = subprocess.check_output(['git', 'describe', '--tags'], stderr=fnull)
+    except subprocess.CalledProcessError:
+        version = "UNKNOWN"
+    version = version[1:-2]
     for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
         # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-        sys.stdout.write('__version__ = "%s"\n' % VERSION if line.startswith('__version__') else line)
-    return VERSION
+        sys.stdout.write('__version__ = "%s"\n' % version if line.startswith('__version__') else line)
+    return version
 
 
 def _data_files():
-    data_files = [("", ["LICENSE", "README.md"])]
-    for root, _, files in os.walk("examples"):
-        dst_src = (root, [os.path.join(root, i) for i in files])
-        data_files.append(dst_src)
-    src_files = []
-    for glob_pat in '*.tgz', '*.tar*', '*.zip':
-        src_files.extend(glob.glob(os.path.join('packages', glob_pat)))
-    data_files.append(("system/src", src_files))
+    """List files to be copied to the TAU Commander installation.
+    
+    Start with the files listed in MANIFEST.in, then exclude files that should not be installed.
+    """
+    from distutils.filelist import FileList
+    from distutils.text_file import TextFile
+    from distutils.errors import DistutilsTemplateError
+    filelist = FileList()
+    template = TextFile(os.path.join(PACKAGE_TOPDIR, 'MANIFEST.in'),
+                        strip_comments=1, skip_blanks=1, join_lines=1, 
+                        lstrip_ws=1, rstrip_ws=1, collapse_join=1)
+    try:
+        while True:
+            line = template.readline()
+            if line is None:
+                break
+            try:
+                filelist.process_template_line(line)
+            except (DistutilsTemplateError, ValueError) as err:
+                print "%s, line %d: %s" % (template.filename, template.current_line, err)
+    finally:
+        template.close()
+    excluded = ['Makefile', 'VERSION', 'MANIFEST.in', '*Miniconda*']
+    data_files = []
+    for path in filelist.files:
+        for excl in excluded:
+            if fnmatch.fnmatchcase(path, excl):
+                break
+        else:
+            data_files.append((os.path.dirname(path), [path]))
     return data_files
 
 
@@ -306,5 +516,6 @@ setuptools.setup(
     cmdclass={'install': Install,
               'install_lib': InstallLib,
               'test': Test,
-              'build_sphinx': BuildSphinx}
+              'build_sphinx': BuildSphinx,
+              'release': Release}
 )

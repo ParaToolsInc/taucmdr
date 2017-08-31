@@ -31,7 +31,7 @@ from __future__ import print_function
 
 import os
 import mimetypes
-from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAU_SCRIPT
+from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
 from taucmdr.cli.command import AbstractCommand
@@ -39,7 +39,7 @@ from taucmdr.cli.command import AbstractCommand
 
 LOGGER = logger.get_logger(__name__)
 
-_SCRIPT_CMD = os.path.basename(TAU_SCRIPT)
+_SCRIPT_CMD = os.path.basename(TAUCMDR_SCRIPT)
 
 _GENERIC_HELP = "See '%s --help' or contact %s for assistance" % (_SCRIPT_CMD, HELP_CONTACT)
 

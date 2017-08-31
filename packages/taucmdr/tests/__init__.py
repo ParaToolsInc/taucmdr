@@ -40,7 +40,7 @@ try:
 except ImportError:
     from six import StringIO
 from unittest import skipIf, skipUnless
-from taucmdr import logger, TAU_HOME, EXIT_SUCCESS, EXIT_FAILURE
+from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
@@ -249,7 +249,7 @@ class TestCase(unittest.TestCase):
     
     def assertManagedBuild(self, return_value, compiler_role, compiler_args, src):
         from taucmdr.cli.commands.build import COMMAND as build_command
-        test_src = os.path.join(TAU_HOME, '.testfiles', src)
+        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
         test_dst = os.path.join(get_test_workdir(), src)
         shutil.copyfile(test_src, test_dst)
         cc_cmd = self.assertCompiler(compiler_role)

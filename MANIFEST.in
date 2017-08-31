@@ -1,0 +1,7 @@
+#
+# Files to be included in a TAU Commander distribution package
+#
+include README.md LICENSE Makefile MANIFEST.in
+recursive-include examples *
+recursive-include system/src *
+global-exclude .*ptp*
