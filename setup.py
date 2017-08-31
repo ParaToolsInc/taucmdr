@@ -355,7 +355,7 @@ class Release(SDistCommand):
             make_os = os_map[self.target_os]
         except KeyError:
             return
-        subprocess.call(['make', 'python_download', 'ARCH='+make_arch, 'OS='+make_os])
+        subprocess.call(['make', 'python_download', 'HOST_ARCH='+make_arch, 'HOST_OS='+make_os])
         
     def _build_web_release(self):
         SDistCommand.run(self)

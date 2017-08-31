@@ -53,11 +53,11 @@ endif
 TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
-ifeq ($(OS),)
-  OS = $(shell uname -s)
+ifeq ($(HOST_OS),)
+  HOST_OS = $(shell uname -s)
 endif
-ifeq ($(ARCH),)
-  ARCH = $(shell uname -m)
+ifeq ($(HOST_ARCH),)
+  HOST_ARCH = $(shell uname -m)
 endif
 
 ifeq ($(VERBOSE),false)
@@ -86,27 +86,27 @@ endif
 
 # Miniconda configuration
 USE_MINICONDA = true
-ifeq ($(OS),Darwin)
-ifeq ($(ARCH),i386)
+ifeq ($(HOST_OS),Darwin)
+ifeq ($(HOST_ARCH),i386)
   USE_MINICONDA = false
 endif
 endif
-ifeq ($(OS),Darwin)
+ifeq ($(HOST_OS),Darwin)
   CONDA_OS = MacOSX
 else 
-  ifeq ($(OS),Linux)
+  ifeq ($(HOST_OS),Linux)
     CONDA_OS = Linux
   else
     USE_MINICONDA = false
   endif
 endif
-ifeq ($(ARCH),x86_64)
+ifeq ($(HOST_ARCH),x86_64)
   CONDA_ARCH = x86_64
 else 
-  ifeq ($(ARCH),i386)
+  ifeq ($(HOST_ARCH),i386)
     CONDA_ARCH = x86
   else
-    ifeq ($(ARCH),ppc64le)
+    ifeq ($(HOST_ARCH),ppc64le)
       CONDA_ARCH = ppc64le
     else
       USE_MINICONDA = false
@@ -125,7 +125,7 @@ ifeq ($(USE_MINICONDA),true)
   PYTHON_EXE = $(CONDA)
   PYTHON_FLAGS = -EO
 else
-  $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
+  $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
   CONDA_SRC = 
   PYTHON_EXE = $(shell which python)
   PYTHON_FLAGS = -O
