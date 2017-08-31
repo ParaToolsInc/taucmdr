@@ -35,10 +35,10 @@ the performance data.
 import os
 import glob
 import errno
-import fasteners
 from datetime import datetime
 
 import six
+import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
