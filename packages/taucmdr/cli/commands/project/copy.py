@@ -30,6 +30,7 @@
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CopyCommand
+from taucmdr.error import UniqueAttributeError, InternalError
 from taucmdr.model.project import Project
 from taucmdr.model.target import Target
 from taucmdr.model.application import Application
