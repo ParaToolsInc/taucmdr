@@ -27,6 +27,7 @@
 #
 """``project copy`` subcommand."""
 
+from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CopyCommand
 from taucmdr.model.project import Project
@@ -58,22 +59,45 @@ class ProjectCopyCommand(CopyCommand):
     
     def _construct_parser(self):
         parser = super(ProjectCopyCommand, self)._construct_parser()
-        parser.add_argument('--targets',
+        parser.add_argument('--target',
                             help="Target configurations in the project copy",
                             metavar='t',
                             nargs='+',
                             default=arguments.SUPPRESS)
-        parser.add_argument('--applications',
+        parser.add_argument('--application',
                             help="Application configurations in the project copy",
                             metavar='a',
                             nargs='+',
                             default=arguments.SUPPRESS)
-        parser.add_argument('--measurements',
+        parser.add_argument('--measurement',
                             help="Measurement configurations in the project copy",
                             metavar='m',
                             nargs='+',
                             default=arguments.SUPPRESS)
         return parser
+    
+    def _copy_record(self, store, updates, key):
+        ctrl = self.model.controller(store)
+        key_attr = self.model.key_attribute
+        matching = ctrl.search({key_attr: key})
+        if not matching:
+            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+        elif len(matching) > 1:
+            raise InternalError("More than one %s-level %s with %s='%s' exists!" % 
+                                (ctrl.storage.name, self.model_name, key_attr, key))
+        else:
+            found = matching[0]
+        data = dict(found)
+        data.pop('experiment', None)
+        data.pop('experiments', None)
+        data.update(updates)
+        key_attr = self.model.key_attribute
+        key = data[key_attr]
+        try:
+            ctrl.create(data)
+        except UniqueAttributeError:
+            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+        return EXIT_SUCCESS
 
     def main(self, argv):
         args = self._parse_args(argv)
@@ -96,8 +120,6 @@ class ProjectCopyCommand(CopyCommand):
             data['applications'] = [model.eid for model in applications]
         if measurements: 
             data['measurements'] = [model.eid for model in measurements]
-        
-        print data
         
         return self._copy_record(PROJECT_STORAGE, data, key)
 
