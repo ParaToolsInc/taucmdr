@@ -69,7 +69,7 @@ import stat
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
-from taucmdr import logger, util, TAU_SCRIPT
+from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
 
@@ -84,7 +84,7 @@ _COMPILER_WRAPPER_TEMPLATE = """#!/bin/sh
 # Created: %(date)s
 # Author: %(user)s
 #
-%(tau_script)s build %(command)s "$@" 
+%(taucmdr_script)s build %(command)s "$@" 
 """
 
 
@@ -691,17 +691,17 @@ class InstalledCompiler(object):
         return self._version_string
     
     def generate_wrapper(self, prefix):
-        """Generate a compiler wrapper script that uses :any:`tau.TAU_SCRIPT` to invoke the compiler.
+        """Generate a compiler wrapper script that uses :any:`tau.TAUCMDR_SCRIPT` to invoke the compiler.
         
         Args:
             prefix (str): Path to a directory in which the wrapper script will be created.
         """
-        script_file = os.path.join(prefix, '%s_%s' % (TAU_SCRIPT, self.command))
+        script_file = os.path.join(prefix, '%s_%s' % (TAUCMDR_SCRIPT, self.command))
         util.mkdirp(prefix)
         with open(script_file, "w+") as fout:
             wrapper = _COMPILER_WRAPPER_TEMPLATE % {'date': str(datetime.now()),
                                                     'user': getpass.getuser(),
-                                                    'tau_script': TAU_SCRIPT,
+                                                    'taucmdr_script': TAUCMDR_SCRIPT,
                                                     'command': self.command}
             fout.write(wrapper)
         os.chmod(script_file, os.stat(script_file).st_mode | 0111)

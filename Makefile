@@ -36,6 +36,8 @@ RM = rm -f
 MV = mv -f
 MKDIR = mkdir -p
 
+VERSION = $(shell git describe --tags --always 2>/dev/null || echo "UNKNOWN-VERSION")
+
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
   BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
@@ -45,15 +47,18 @@ ifeq ($(BUILDDIR),)
   BUILDDIR=build
 endif
 ifeq ($(INSTALLDIR),)
-  INSTALLDIR=/opt/ParaTools/taucmdr-1.1.2
+  INSTALLDIR=$(HOME)/taucmdr-$(VERSION)
 endif
 
 TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
-OS = $(shell uname -s)
-ARCH = $(shell uname -m)
-HOSTNAME = $(shell hostname | cut -d. -f1)
+ifeq ($(OS),)
+  OS = $(shell uname -s)
+endif
+ifeq ($(ARCH),)
+  ARCH = $(shell uname -m)
+endif
 
 ifeq ($(VERBOSE),false)
   ECHO=@
@@ -112,7 +117,7 @@ CONDA_VERSION = latest
 CONDA_REPO = https://repo.continuum.io/miniconda
 CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
-CONDA_SRC = packages/$(CONDA_PKG)
+CONDA_SRC = system/src/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
 CONDA = $(CONDA_DEST)/bin/python
 
@@ -121,6 +126,7 @@ ifeq ($(USE_MINICONDA),true)
   PYTHON_FLAGS = -EO
 else
   $(warning WARNING: There are no miniconda packages for this system: $(OS), $(ARCH).)
+  CONDA_SRC = 
   PYTHON_EXE = $(shell which python)
   PYTHON_FLAGS = -O
   ifeq ($(PYTHON_EXE),)
@@ -131,11 +137,11 @@ else
 endif
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
-.PHONY: build install clean python_check
+.PHONY: help build install clean python_check python_download
 
 .DEFAULT: help
 
-help: 
+help:
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander installation"
 	@echo
@@ -147,10 +153,7 @@ build: python_check
 	$(ECHO)$(PYTHON) setup.py build
 
 install: build
-# Install TAU Commander
 	$(ECHO)$(PYTHON) setup.py install --prefix $(INSTALLDIR)
-#	$(ECHO)$(MKDIR) $(INSTALLDIR)/system
-#	$(ECHO)$(MV) $(INSTALLDIR)/bin/system_configure $(INSTALLDIR)/system/configure	
 	$(ECHO)$(INSTALLDIR)/system/configure --minimal
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
@@ -161,33 +164,35 @@ install: build
 	@echo 
 	@echo "What's next?"
 	@echo
-	@echo "TAU Commander will automatically reconfigure TAU as you create experiments,"
-	@echo "so if you're just trying to get some performance data then just add"
+	@echo "TAU Commander will automatically generate new TAU configurations for each new"
+	@echo "experiment, so if you're just trying to get some performance data then go add"
 	@echo "TAU Commander's \"bin\" directory to your path and maybe have a look at"
 	@echo "the quick start guide at http://www.taucommander.com/guide."
 	@echo
-	@echo "If you'd like to pre-configure TAU for certain experiments then you can use"
-	@echo "the \"INSTALLDIR/system/configure\" script to generate new TAU configurations."
+	@echo "If you'd like to pre-configure TAU for a particular experiment then go use"
+	@echo "the \"INSTALLDIR/system/configure\" script to generate TAU configurations."
 	@echo "This is especially a good idea if you are a system administrator installing"
-	@echo "TAU Commander so that someone else can use it."
+	@echo "TAU Commander so that someone else can use it.  Without arguments, the"
+	@echo "\"configure\" script will generate as many TAU configurations as it can."
 	@echo
 	@echo "In short:"
 	@echo "  If you are a sysadmin then go run \"INSTALLDIR/system/configure\"."
-	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH environment variable." 
+	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH and get to work." 
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
 python_check: $(PYTHON_EXE)
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
+	
+python_download: $(CONDA_SRC)
 
 $(CONDA): $(CONDA_SRC)
 	$(ECHO)bash $< -b -p $(CONDA_DEST)
 	$(ECHO)touch $(CONDA_DEST)/bin/*
 
 $(CONDA_SRC):
-	$(ECHO)$(MKDIR) $(BUILDDIR)
+	$(ECHO)$(MKDIR) `dirname "$(CONDA_SRC)"`
 	$(call download,$(CONDA_URL),$(CONDA_SRC))
 
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR)
-

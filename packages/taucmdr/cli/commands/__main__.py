@@ -34,8 +34,7 @@ Instead, process arguments in the appropriate subcommand.
 import os
 import sys
 import taucmdr
-from taucmdr import __version__ as TAUCMDR_VERSION
-from taucmdr import cli, logger, util
+from taucmdr import cli, logger, util, TAUCMDR_VERSION, TAUCMDR_SCRIPT
 from taucmdr.cli import UnknownCommandError, arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.commands.build import COMMAND as build_command
@@ -62,7 +61,7 @@ class MainCommand(AbstractCommand):
                          util.color_text(taucmdr.TAUCMDR_URL, 'cyan', attrs=['bold']),
                          util.color_text(" ]", attrs=['bold'])] 
         super(MainCommand, self).__init__(__name__, summary_fmt=''.join(summary_parts), help_page_fmt=HELP_PAGE_FMT)
-        self.command = os.path.basename(taucmdr.TAU_SCRIPT)
+        self.command = os.path.basename(TAUCMDR_SCRIPT)
     
     def _construct_parser(self):
         usage = "%s [arguments] <subcommand> [options]"  % self.command
@@ -156,7 +155,7 @@ class MainCommand(AbstractCommand):
             LOGGER.debug('No shortcut found for %r', cmd)
      
         # Not sure what to do at this point, so advise the user and exit
-        LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", taucmdr.TAU_SCRIPT, cmd)
+        LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", TAUCMDR_SCRIPT, cmd)
         return cli.execute_command(['help'], [cmd])
 
 

@@ -42,14 +42,14 @@ a subclass of :any:`AbstractCommand`.
 
 import os
 import sys
-from taucmdr import TAU_SCRIPT, EXIT_FAILURE
+from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 
 
 LOGGER = logger.get_logger(__name__)
 
-SCRIPT_COMMAND = os.path.basename(TAU_SCRIPT)
+SCRIPT_COMMAND = os.path.basename(TAUCMDR_SCRIPT)
 
 COMMANDS_PACKAGE_NAME = __name__ + '.commands'
 
@@ -156,7 +156,7 @@ def command_from_module_name(module_name):
         str: A string that identifies the command.
     """
     if module_name == '__main__':
-        return os.path.basename(TAU_SCRIPT)
+        return os.path.basename(TAUCMDR_SCRIPT)
     else:
         return ' '.join(_command_as_list(module_name))
 

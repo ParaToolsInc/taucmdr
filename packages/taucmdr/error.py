@@ -34,7 +34,7 @@ Error classes should be defined in their appropriate modules.
 import os
 import sys
 import traceback
-from taucmdr import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING, TAU_SCRIPT
+from taucmdr import HELP_CONTACT, EXIT_FAILURE, EXIT_WARNING, TAUCMDR_SCRIPT
 from taucmdr import logger
 
 
@@ -120,7 +120,7 @@ class ConfigurationError(Error):
             *hints: Hint messages to help the user resolve this error.
         """
         if not hints:
-            hints = ["Try `%s --help`" % os.path.basename(TAU_SCRIPT)]
+            hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
         super(ConfigurationError, self).__init__(value, *hints)
     
     def __str__(self):
