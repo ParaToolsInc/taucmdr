@@ -35,7 +35,7 @@ It should be as short and simple.
 import os
 import sys
 
-__version__ = "1.1.2-16-g3932c0a"
+__version__ = "0.0.0"
 """str: TAU Commander Version"""
 
 TAUCMDR_VERSION = __version__

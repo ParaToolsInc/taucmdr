@@ -258,7 +258,9 @@ class Install(InstallCommand):
         self.optimize = 1
         
     def run(self):
+        from taucmdr import util
         InstallCommand.run(self)
+        util.mkdirp(os.path.join(self.prefix, 'system'))
         shutil.move(os.path.join(self.prefix, 'bin', 'system_configure'),
                     os.path.join(self.prefix, 'system', 'configure'))
         
@@ -374,7 +376,12 @@ class Release(SDistCommand):
             print "Wrote '%s'" % dest
 
     def run(self):
-        #from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX
+        from taucmdr import util
+        util.rmtree('system')
+        for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
+            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+            sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version() 
+                             if line.startswith('__version__') else line)
         if self.web:
             self._build_web_release()
         elif self.all:
@@ -383,78 +390,17 @@ class Release(SDistCommand):
             self._build_target_release()
 
 
-# class Dependency(setuptools.Command):
-#     """Manage TAU dependencies."""
-#     
-#     description = "Manage TAU dependencies."
-#     
-#     user_options = [('download=', None, "Package name"),
-#                     ('pkg-arch=', None, "Package architecture"),
-#                     ('pkg-os=', None, "Package operating system"),
-#                     ('show', None, "List all possible TAU dependencies")]
-# 
-#     def initialize_options(self):
-#         from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
-#         self.download = None
-#         self.pkg_arch = str(HOST_ARCH)
-#         self.pkg_os = str(HOST_OS)
-#         self.show = False
-#         
-#     def finalize_options(self):
-#         from taucmdr.cf.platforms import Architecture, OperatingSystem
-#         try:
-#             self.pkg_arch = Architecture.find(self.pkg_arch)
-#         except KeyError:
-#             print 'Invalid architecture: %s' % self.pkg_arch
-#             print 'Known architectures: %s' % Architecture.keys()
-#             sys.exit(EXIT_FAILURE)
-#         try:
-#             self.pkg_os = OperatingSystem.find(self.pkg_os)
-#         except KeyError:
-#             print 'Invalid operating system: %s' % self.pkg_os
-#             print 'Known operating system: %s' % OperatingSystem.keys()
-#             sys.exit(EXIT_FAILURE)
-# 
-#     def _download(self):
-#         print "Downloading '%s' for (%s, %s)" % (self.download, self.pkg_arch, self.pkg_os)
-#         module_name = self.download + '_installation'
-#         pkg = __import__('.'.join(('taucmdr', 'cf', 'software', module_name)), globals(), locals(), ['REPOS'], -1)
-#         repos = getattr(pkg, 'REPOS')
-#         default = repos[None]
-#         try:
-#             arch_dct = repos[self.pkg_arch]
-#         except KeyError:
-#             src = default
-#         else:
-#             src = arch_dct.get(self.pkg_os, arch_dct.get(None, default))
-#         dest = os.path.join(os.path.realpath(os.path.abspath('system')), 'src', os.path.basename(src))
-#         util.download(src, dest)
-#         
-#     def _show(self):
-#         import taucmdr.cf.software
-#         pkgs = [name[:-13] for _, name, _ in util.walk_packages(taucmdr.cf.software.__path__, "") 
-#                 if name.endswith('_installation')]
-#         print '; '.join(pkgs)
-#     
-#     def run(self):
-#         if self.download:
-#             self._download()
-#         if self.show:
-#             self._show()
-
-
 def _version():
-    """Rewrite packages/taucmdr/__init__.py to update version."""
-    try:
-        with open(os.devnull, 'w') as fnull:
-            version = subprocess.check_output(['git', 'describe', '--tags'], stderr=fnull)
-    except subprocess.CalledProcessError:
-        version = "UNKNOWN"
-    version = version[1:].strip()
-    for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
-        # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-        sys.stdout.write('__version__ = "%s"\n' % version if line.startswith('__version__') else line)
-    return version
+    version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
+    if os.path.exists(version_file):
+        with open(version_file) as fin:
+            version = fin.readline()
+    else:
+        try:
+            version = subprocess.check_output(['./.version.sh'])
+        except subprocess.CalledProcessError:
+            version = "0.0.0"
+    return version.strip()
 
 
 def _data_files():

@@ -83,6 +83,7 @@ benchmarks
 
 # Python packaging files
 # general things to ignore
+/VERSION
 /build
 /dist
 packages/*.sh

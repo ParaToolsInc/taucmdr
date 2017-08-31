@@ -36,7 +36,7 @@ RM = rm -f
 MV = mv -f
 MKDIR = mkdir -p
 
-VERSION = $(shell git describe --tags --always 2>/dev/null || echo "UNKNOWN-VERSION")
+VERSION = $(shell cat VERSION 2>&1 || ./.version.sh || echo "0.0.0")
 
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
