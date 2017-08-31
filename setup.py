@@ -450,7 +450,7 @@ def _version():
             version = subprocess.check_output(['git', 'describe', '--tags'], stderr=fnull)
     except subprocess.CalledProcessError:
         version = "UNKNOWN"
-    version = version[1:-2]
+    version = version[1:].strip()
     for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
         # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
         sys.stdout.write('__version__ = "%s"\n' % version if line.startswith('__version__') else line)
