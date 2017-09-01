@@ -34,11 +34,11 @@ some performance data (profiles, traces, etc.).
 """
 
 import os
-from taucmdr import logger
-from taucmdr.error import InternalError, ProjectSelectionError, ExperimentSelectionError
+from taucmdr import logger, ENTERPRISE_URL
+from taucmdr.error import InternalError, ProjectSelectionError, ExperimentSelectionError, NotConnectedError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, ENTERPRISE_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -117,7 +117,7 @@ class ProjectController(Controller):
                     raise InternalError("Experiment contains %s not in project" % attr)
             self.update({'experiment': experiment.eid}, project.eid)
             experiment.configure()
-    
+
     def unselect(self):
         del self.storage['selected_project']
         
@@ -130,6 +130,26 @@ class ProjectController(Controller):
             raise ProjectSelectionError("No project selected")
         else:
             return selected
+
+    def connect(self, token):
+        self.storage['api_token'] = token
+        LOGGER.info("Connected project to TAU Enterprise with API key %s", token)
+
+    def connect_with_password(self, username, password):
+        self.connect(ENTERPRISE_STORAGE.get_token_for_user(ENTERPRISE_URL, username, password))
+
+    def disconnect(self):
+        del self.storage['api_token']
+
+    def connected(self):
+        try:
+            token = self.storage['api_token']
+            if not token:
+                raise KeyError
+        except KeyError:
+            raise NotConnectedError("Project not connected to remote storage")
+        else:
+            return token
 
 
 class Project(Model):
@@ -182,6 +202,10 @@ class Project(Model):
     
     @classmethod
     def selected(cls, storage=PROJECT_STORAGE):
+        return cls.__controller__(cls, storage).selected()
+
+    @classmethod
+    def connected(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage).selected()
     
     @property

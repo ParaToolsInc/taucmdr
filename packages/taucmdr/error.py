@@ -189,7 +189,11 @@ class ExperimentSelectionError(ConfigurationError):
                      "Use `%s` to see available project configurations." % project_list_cmd)    
         super(ExperimentSelectionError, self).__init__(value, *hints)
 
+class NotConnectedError(ConfigurationError):
+    """Indicates an error due to a nonexistent remote connection."""
 
+class AuthenticationError(ConfigurationError):
+    """Indicates that the authentication attempt was unsuccessful"""
 
 
 def excepthook(etype, value, tb):

@@ -38,7 +38,7 @@ import json
 import requests
 import six
 from taucmdr import logger, util
-from taucmdr.error import InternalError
+from taucmdr.error import AuthenticationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
@@ -84,6 +84,15 @@ class _TauEnterpriseDatabase(object):
         status (int): The HTTP status code returned when the connection was opened
 
     """
+
+    @classmethod
+    def get_token_for_user(cls, endpoint, username, password):
+        url = "{}/token".format(endpoint)
+        r = requests.post(url, json.dumps({'username': username, 'password': password}),
+                          headers={'Content-Type': 'application/json'}, verify=False)
+        r.raise_for_status()
+        return r.json()['token']
+
 
     def __init__(self, endpoint, db_name, token=None, storage=None):
         self.db_name = db_name
@@ -363,6 +372,25 @@ class TauEnterpriseStorage(AbstractStorage):
         """Disconnects the store filesystem."""
         return
 
+    def get_token_for_user(self, endpoint, username, password):
+        """Get an API token for a given TAU Enterprise user.
+
+        Args:
+            endpoint (str): URL of the database to to authenticate against.
+            username (str): Username of user in remote database.
+            password (str): Password of user in remote database.
+
+        Returns:
+            str: API key to be included with all future database requests.
+
+        Raises:
+            AuthenticationError: Unable to authenticate with the provided username/password pair.
+        """
+        try:
+            return _TauEnterpriseDatabase.get_token_for_user(endpoint, username, password)
+        except:
+            raise AuthenticationError("Unable to log in with supplied username and password.")
+
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing.
 
@@ -413,8 +441,7 @@ class TauEnterpriseStorage(AbstractStorage):
 
     def table(self, table_name):
         if self._database is None:
-            #raise TauEnterpriseStorageError(table_name)
-            raise InternalError("bad")
+            raise TauEnterpriseStorageError(table_name)
         if table_name is None:
             return _TauEnterpriseTable(self._database, 'key')
         else:

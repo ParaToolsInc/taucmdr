@@ -95,6 +95,10 @@ USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PR
 PROJECT_DIR = '.tau'
 """str: Name of the project-level directory containing TAU Commander project files."""
 
+ENTERPRISE_URL = 'https://east03.paratools.com:5000'
+"""str: URL of the TAU Enterprise REST server."""
+
+
 def version_banner():
     """Return a human readable text banner describing the TAU Commander installation."""
     import platform

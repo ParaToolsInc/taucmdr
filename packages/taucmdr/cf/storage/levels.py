@@ -44,7 +44,7 @@ from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage.project import ProjectStorage
-
+from taucmdr.cf.storage.tau_enterprise import TauEnterpriseStorage
 
 SYSTEM_STORAGE = LocalFileStorage('system', SYSTEM_PREFIX)
 """System-level data storage."""
@@ -54,6 +54,9 @@ USER_STORAGE = LocalFileStorage('user', USER_PREFIX)
 
 PROJECT_STORAGE = ProjectStorage()
 """Project-level data storage."""
+
+ENTERPRISE_STORAGE = TauEnterpriseStorage('enterprise', None)
+"""Remote TAU Enterprise data storage."""
 
 ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
 """All storage levels in their preferred order."""
