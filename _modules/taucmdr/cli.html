@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -89,14 +89,14 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">TAU_SCRIPT</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">TAUCMDR_SCRIPT</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">InternalError</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">SCRIPT_COMMAND</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)</span>
+<span class="n">SCRIPT_COMMAND</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAUCMDR_SCRIPT</span><span class="p">)</span>
 
 <span class="n">COMMANDS_PACKAGE_NAME</span> <span class="o">=</span> <span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;.commands&#39;</span>
 
@@ -203,7 +203,7 @@
 <span class="sd">        str: A string that identifies the command.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">module_name</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAUCMDR_SCRIPT</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_command_as_list</span><span class="p">(</span><span class="n">module_name</span><span class="p">))</span></div>
 

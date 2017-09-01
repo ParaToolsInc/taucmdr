@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -74,8 +74,10 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;``project copy`` subcommand.&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli</span> <span class="kn">import</span> <span class="n">arguments</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.cli_view</span> <span class="kn">import</span> <span class="n">CopyCommand</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">UniqueAttributeError</span><span class="p">,</span> <span class="n">InternalError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.application</span> <span class="kn">import</span> <span class="n">Application</span>
@@ -105,22 +107,45 @@
     
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ProjectCopyCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_construct_parser</span><span class="p">()</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--targets&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--target&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Target configurations in the project copy&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--applications&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--application&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Application configurations in the project copy&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--measurements&#39;</span><span class="p">,</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--measurement&#39;</span><span class="p">,</span>
                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Measurement configurations in the project copy&quot;</span><span class="p">,</span>
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span>
                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span>
+    
+    <span class="k">def</span> <span class="nf">_copy_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">updates</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
+        <span class="n">key_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span>
+        <span class="n">matching</span> <span class="o">=</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">search</span><span class="p">({</span><span class="n">key_attr</span><span class="p">:</span> <span class="n">key</span><span class="p">})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">matching</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No </span><span class="si">%s</span><span class="s2">-level </span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2">=&#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">key_attr</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;More than one </span><span class="si">%s</span><span class="s2">-level </span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2">=&#39;</span><span class="si">%s</span><span class="s2">&#39; exists!&quot;</span> <span class="o">%</span> 
+                                <span class="p">(</span><span class="n">ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">key_attr</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">matching</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">found</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;experiments&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">updates</span><span class="p">)</span>
+        <span class="n">key_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">key_attr</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ctrl</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">UniqueAttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;A </span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2">=&#39;</span><span class="si">%s</span><span class="s2">&#39; already exists&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">key_attr</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">EXIT_SUCCESS</span>
 
 <div class="viewcode-block" id="ProjectCopyCommand.main"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.project.copy.html#taucmdr.cli.commands.project.copy.ProjectCopyCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
@@ -143,8 +168,6 @@
             <span class="n">data</span><span class="p">[</span><span class="s1">&#39;applications&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">applications</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">measurements</span><span class="p">:</span> 
             <span class="n">data</span><span class="p">[</span><span class="s1">&#39;measurements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">]</span>
-        
-        <span class="k">print</span> <span class="n">data</span>
         
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_record</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span></div></div>
 

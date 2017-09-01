@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -86,7 +86,7 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">skipIf</span><span class="p">,</span> <span class="n">skipUnless</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">TAU_HOME</span><span class="p">,</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">TAUCMDR_HOME</span><span class="p">,</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span>
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">InstalledCompiler</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">USER_STORAGE</span><span class="p">,</span> <span class="n">SYSTEM_STORAGE</span>
@@ -295,7 +295,7 @@
     
 <div class="viewcode-block" id="TestCase.assertManagedBuild"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertManagedBuild">[docs]</a>    <span class="k">def</span> <span class="nf">assertManagedBuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">compiler_role</span><span class="p">,</span> <span class="n">compiler_args</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.build</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">build_command</span>
-        <span class="n">test_src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="p">,</span> <span class="s1">&#39;.testfiles&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+        <span class="n">test_src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAUCMDR_HOME</span><span class="p">,</span> <span class="s1">&#39;.testfiles&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
         <span class="n">test_dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">get_test_workdir</span><span class="p">(),</span> <span class="n">src</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">test_src</span><span class="p">,</span> <span class="n">test_dst</span><span class="p">)</span>
         <span class="n">cc_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCompiler</span><span class="p">(</span><span class="n">compiler_role</span><span class="p">)</span>

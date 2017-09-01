@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -113,7 +113,6 @@
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_attributes</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__attributes__</span><span class="p">()</span>
-            <span class="bp">cls</span><span class="o">.</span><span class="n">_configure_defaults</span><span class="p">()</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_construct_relationships</span><span class="p">()</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_attributes</span>
         
@@ -224,14 +223,6 @@
 <div class="viewcode-block" id="Model.controller"><a class="viewcode-back" href="../../../taucmdr.mvc.model.html#taucmdr.mvc.model.Model.controller">[docs]</a>    <span class="k">def</span> <span class="nf">controller</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__controller__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">)</span></div>
     
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_configure_defaults</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">configuration</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
-                <span class="n">attr</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="bp">cls</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">][</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_construct_relationships</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="n">primary_key</span> <span class="o">=</span> <span class="bp">None</span>

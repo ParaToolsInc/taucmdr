@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -140,7 +140,7 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 
 <dl class="method">
 <dt id="taucmdr.cli.arguments.MutableArgumentGroupParser.merge">
-<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=False</em>, <em>include_optional=True</em>, <em>include_storage=False</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser.merge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">merge</code><span class="sig-paren">(</span><em>parser</em>, <em>group_title=None</em>, <em>include_positional=False</em>, <em>include_optional=True</em>, <em>include_storage=False</em>, <em>exclude_groups=None</em>, <em>exclude_arguments=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cli/arguments.html#MutableArgumentGroupParser.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cli.arguments.MutableArgumentGroupParser.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge arguments from a parser into this parser.</p>
 <p>Modify this parser by adding additional arguments taken from the supplied parser.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -153,7 +153,8 @@ and generates &#8220;scruffy&#8221; looking help, so we fix this problems in thi
 <li><strong>include_positional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include positional arguments.</li>
 <li><strong>include_optional</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include optional arguments.</li>
 <li><strong>include_storage</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, include the storage level argument, see <a class="reference internal" href="#taucmdr.cli.arguments.STORAGE_LEVEL_FLAG" title="taucmdr.cli.arguments.STORAGE_LEVEL_FLAG"><code class="xref any py py-data docutils literal"><span class="pre">STORAGE_LEVEL_FLAG</span></code></a>.</li>
-<li><strong>exclude</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Strings identifying arguments that should be excluded.</li>
+<li><strong>exclude_groups</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Strings identifying argument groups that should be excluded.</li>
+<li><strong>exclude_arguments</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Strings identifying arguments that should be excluded.</li>
 </ul>
 </td>
 </tr>

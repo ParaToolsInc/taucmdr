@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -80,7 +80,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">TAU_HOME</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">TAUCMDR_HOME</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">tests</span>
 
 
@@ -88,7 +88,7 @@
     <span class="sd">&quot;&quot;&quot;Runs Pylint to make sure the code scores at least 9.0&quot;&quot;&quot;</span>
        
 <div class="viewcode-block" id="PylintTest.run_pylint"><a class="viewcode-back" href="../../../taucmdr.tests.test_pylint.html#taucmdr.tests.test_pylint.PylintTest.run_pylint">[docs]</a>    <span class="k">def</span> <span class="nf">run_pylint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;pylint&quot;</span><span class="p">,</span> <span class="s1">&#39;--rcfile=&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="p">,</span> <span class="s2">&quot;pylintrc&quot;</span><span class="p">)]</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;pylint&quot;</span><span class="p">,</span> <span class="s1">&#39;--rcfile=&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAUCMDR_HOME</span><span class="p">,</span> <span class="s2">&quot;pylintrc&quot;</span><span class="p">)]</span>
         <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
         <span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="n">PYTHONPATH</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
@@ -106,7 +106,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertGreaterEqual</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;Pylint version </span><span class="si">%s</span><span class="s2"> is too old!&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">))</span></div>
     
 <div class="viewcode-block" id="PylintTest.test_pylint"><a class="viewcode-back" href="../../../taucmdr.tests.test_pylint.html#taucmdr.tests.test_pylint.PylintTest.test_pylint">[docs]</a>    <span class="k">def</span> <span class="nf">test_pylint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_pylint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAU_HOME</span><span class="p">,</span> <span class="s2">&quot;packages&quot;</span><span class="p">,</span> <span class="s2">&quot;taucmdr&quot;</span><span class="p">))</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_pylint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAUCMDR_HOME</span><span class="p">,</span> <span class="s2">&quot;packages&quot;</span><span class="p">,</span> <span class="s2">&quot;taucmdr&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Your code has been rated at&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="n">score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">stdout</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;Your code has been rated at&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/10&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>

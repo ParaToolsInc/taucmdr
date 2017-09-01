@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -183,7 +183,7 @@ This routine will return stupid results for archives with multiple top-level ele
 
 <dl class="function">
 <dt id="taucmdr.util.create_subprocess">
-<code class="descclassname">taucmdr.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em>, <em>show_progress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">taucmdr.util.</code><code class="descname">create_subprocess</code><span class="sig-paren">(</span><em>cmd</em>, <em>cwd=None</em>, <em>env=None</em>, <em>stdout=True</em>, <em>log=True</em>, <em>show_progress=False</em>, <em>error_buf=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/util.html#create_subprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.util.create_subprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a subprocess.</p>
 <p>See <a class="reference external" href="https://docs.python.org/library/subprocess.html#subprocess.Popen" title="(in Python v2.7)"><code class="xref any docutils literal"><span class="pre">subprocess.Popen</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -196,6 +196,9 @@ This routine will return stupid results for archives with multiple top-level ele
 <li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set or unset before launching cmd.</li>
 <li><strong>stdout</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to this processes&#8217; stdout.</li>
 <li><strong>log</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True send subprocess stdout and stderr to the debug log.</li>
+<li><strong>error_buf</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, stdout is not already being sent, and return value is
+non-zero then send last 100 lines of subprocess stdout and stderr
+to this processes&#8217; stdout.</li>
 </ul>
 </td>
 </tr>

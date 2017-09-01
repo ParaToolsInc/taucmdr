@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -84,6 +84,7 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">fasteners</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span><span class="p">,</span> <span class="n">IncompatibleRecordError</span> 
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span>
@@ -93,6 +94,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span> 
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">IBM_BGL</span><span class="p">,</span> <span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">CRAY_CNL</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -166,13 +168,12 @@
 
 
 <div class="viewcode-block" id="cuda_default"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.cuda_default">[docs]</a><span class="k">def</span> <span class="nf">cuda_default</span><span class="p">():</span>
+    <span class="n">default_path</span> <span class="o">=</span> <span class="s1">&#39;/usr/local/cuda&#39;</span>
     <span class="n">nvcc</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;nvcc&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">nvcc</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">nvcc</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">nvcc</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">nvcc</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;/usr/bin&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/local/bin&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">default_path</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">default_path</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">default_path</span> <span class="o">=</span> <span class="s1">&#39;/usr/local/cuda&#39;</span>
-        <span class="k">return</span> <span class="n">default_path</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">default_path</span><span class="p">)</span> <span class="k">else</span> <span class="bp">None</span></div>
-            
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">nvcc</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
@@ -611,7 +612,8 @@
             <span class="n">compilers</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">Knowledgebase</span><span class="o">.</span><span class="n">all_roles</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">compiler_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+                    <span class="k">with</span> <span class="n">fasteners</span><span class="o">.</span><span class="n">InterProcessLock</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;.lock&#39;</span><span class="p">)):</span>
+                        <span class="n">compiler_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="n">compilers</span><span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="n">compiler_record</span><span class="o">.</span><span class="n">installation</span><span class="p">()</span>

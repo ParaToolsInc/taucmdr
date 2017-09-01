@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -76,7 +76,7 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">mimetypes</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">EXIT_SUCCESS</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">TAUCMDR_SCRIPT</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">cli</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli</span> <span class="kn">import</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">UnknownCommandError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.command</span> <span class="kn">import</span> <span class="n">AbstractCommand</span>
@@ -84,7 +84,7 @@
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
-<span class="n">_SCRIPT_CMD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)</span>
+<span class="n">_SCRIPT_CMD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAUCMDR_SCRIPT</span><span class="p">)</span>
 
 <span class="n">_GENERIC_HELP</span> <span class="o">=</span> <span class="s2">&quot;See &#39;</span><span class="si">%s</span><span class="s2"> --help&#39; or contact </span><span class="si">%s</span><span class="s2"> for assistance&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_SCRIPT_CMD</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">)</span>
 

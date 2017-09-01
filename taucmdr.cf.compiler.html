@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -95,7 +95,7 @@ try to detect the compiler and trusts the user to specify the right &#8220;magic
 at configuration. Worse, TAU sometimes does probe the compiler to discover things
 like MPI headers, except it does such a poor job that many time we get the wrong
 answer or simply cause the configure script to fail entirely. This has been a major
-painpoints for TAU users.</p>
+painpoint for TAU users.</p>
 <p>The reason for this mess is that compiler detection is very hard.  Projects like
 <a class="reference external" href="http://www.scipy.org/">SciPy</a> that depend on a compiler&#8217;s stdout stream for compiler detection have more
 or less failed in this since compiler messages are exceptionally difficult to parse.
@@ -197,7 +197,7 @@ command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.<
 <dl class="method">
 <dt id="taucmdr.cf.compiler.InstalledCompiler.generate_wrapper">
 <code class="descname">generate_wrapper</code><span class="sig-paren">(</span><em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompiler.generate_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompiler.generate_wrapper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a compiler wrapper script that uses <code class="xref any docutils literal"><span class="pre">tau.TAU_SCRIPT</span></code> to invoke the compiler.</p>
+<dd><p>Generate a compiler wrapper script that uses <code class="xref any docutils literal"><span class="pre">tau.TAUCMDR_SCRIPT</span></code> to invoke the compiler.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

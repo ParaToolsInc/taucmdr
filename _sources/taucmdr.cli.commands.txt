@@ -21,7 +21,6 @@ Submodules
 
    taucmdr.cli.commands.__main__
    taucmdr.cli.commands.build
-   taucmdr.cli.commands.configure
    taucmdr.cli.commands.dashboard
    taucmdr.cli.commands.help
    taucmdr.cli.commands.initialize

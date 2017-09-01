@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -297,7 +297,6 @@
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.tests.html">taucmdr.cli.commands.tests package</a><ul>
 <li class="toctree-l6"><a class="reference internal" href="taucmdr.cli.commands.tests.html#submodules">Submodules</a><ul>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.tests.test_build.html">taucmdr.cli.commands.tests.test_build module</a></li>
-<li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.tests.test_configure.html">taucmdr.cli.commands.tests.test_configure module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.tests.test_dashboard.html">taucmdr.cli.commands.tests.test_dashboard module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.tests.test_help.html">taucmdr.cli.commands.tests.test_help module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="taucmdr.cli.commands.tests.test_initialize.html">taucmdr.cli.commands.tests.test_initialize module</a></li>
@@ -340,7 +339,6 @@
 <li class="toctree-l4"><a class="reference internal" href="taucmdr.cli.commands.html#submodules">Submodules</a><ul>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.__main__.html">taucmdr.cli.commands.__main__ module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.build.html">taucmdr.cli.commands.build module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.configure.html">taucmdr.cli.commands.configure module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.dashboard.html">taucmdr.cli.commands.dashboard module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.help.html">taucmdr.cli.commands.help module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="taucmdr.cli.commands.initialize.html">taucmdr.cli.commands.initialize module</a></li>
@@ -429,7 +427,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="taucmdr.tests.html">taucmdr.tests package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="taucmdr.tests.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="taucmdr.tests.test_configuration.html">taucmdr.tests.test_configuration module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="taucmdr.tests.test_error.html">taucmdr.tests.test_error module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="taucmdr.tests.test_logger.html">taucmdr.tests.test_logger module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="taucmdr.tests.test_pylint.html">taucmdr.tests.test_pylint module</a></li>
@@ -446,7 +443,6 @@
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="taucmdr.configuration.html">taucmdr.configuration module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="taucmdr.error.html">taucmdr.error module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="taucmdr.logger.html">taucmdr.logger module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="taucmdr.progress.html">taucmdr.progress module</a></li>
@@ -458,8 +454,8 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-taucmdr" title="Permalink to this headline">¶</a></h2>
 <p>TAU Commander package initialization.</p>
 <p>The first line of this file is the first thing to be executed whenever TAU Commander
-is invoked in any way. This module establishes global constants (as few as possible)
-and checks the Python version.  It must be kept as short and simple as possible.</p>
+is invoked in any way. This module establishes global constants and checks the Python version.
+It should be as short and simple.</p>
 <dl class="data">
 <dt id="taucmdr.EXIT_FAILURE">
 <code class="descclassname">taucmdr.</code><code class="descname">EXIT_FAILURE</code><em class="property"> = -100</em><a class="headerlink" href="#taucmdr.EXIT_FAILURE" title="Permalink to this definition">¶</a></dt>
@@ -504,24 +500,30 @@ and checks the Python version.  It must be kept as short and simple as possible.
 </dd></dl>
 
 <dl class="data">
-<dt id="taucmdr.TAUCMDR_URL">
-<code class="descclassname">taucmdr.</code><code class="descname">TAUCMDR_URL</code><em class="property"> = 'www.taucommander.com'</em><a class="headerlink" href="#taucmdr.TAUCMDR_URL" title="Permalink to this definition">¶</a></dt>
-<dd><p>str: URL of the TAU Commander project.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="taucmdr.TAU_HOME">
-<code class="descclassname">taucmdr.</code><code class="descname">TAU_HOME</code><em class="property"> = '/home/travis/build/ParaToolsInc/taucmdr'</em><a class="headerlink" href="#taucmdr.TAU_HOME" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.TAUCMDR_HOME">
+<code class="descclassname">taucmdr.</code><code class="descname">TAUCMDR_HOME</code><em class="property"> = '/home/travis/build/ParaToolsInc/taucmdr'</em><a class="headerlink" href="#taucmdr.TAUCMDR_HOME" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: Absolute path to the top-level TAU Commander directory.</p>
 <p>This directory contains at least <cite>bin</cite>, <cite>docs</cite>, and <cite>packages</cite> directories and is the root
 for system-level package installation paths. <strong>Do not</strong> change it once it is set.</p>
 </dd></dl>
 
 <dl class="data">
-<dt id="taucmdr.TAU_SCRIPT">
-<code class="descclassname">taucmdr.</code><code class="descname">TAU_SCRIPT</code><em class="property"> = 'sphinx'</em><a class="headerlink" href="#taucmdr.TAU_SCRIPT" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.TAUCMDR_SCRIPT">
+<code class="descclassname">taucmdr.</code><code class="descname">TAUCMDR_SCRIPT</code><em class="property"> = 'sphinx'</em><a class="headerlink" href="#taucmdr.TAUCMDR_SCRIPT" title="Permalink to this definition">¶</a></dt>
 <dd><p>str: Script that launched TAU Commander.</p>
 <p>Mainly used for help messages. <strong>Do not</strong> change it once it is set.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="taucmdr.TAUCMDR_URL">
+<code class="descclassname">taucmdr.</code><code class="descname">TAUCMDR_URL</code><em class="property"> = 'www.taucommander.com'</em><a class="headerlink" href="#taucmdr.TAUCMDR_URL" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: URL of the TAU Commander project.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="taucmdr.TAUCMDR_VERSION">
+<code class="descclassname">taucmdr.</code><code class="descname">TAUCMDR_VERSION</code><em class="property"> = '0.0.0'</em><a class="headerlink" href="#taucmdr.TAUCMDR_VERSION" title="Permalink to this definition">¶</a></dt>
+<dd><p>str: TAU Commander Version</p>
 </dd></dl>
 
 <dl class="data">

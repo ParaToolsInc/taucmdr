@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -81,7 +81,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span><span class="p">,</span> <span class="n">EXIT_WARNING</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">HELP_CONTACT</span><span class="p">,</span> <span class="n">EXIT_FAILURE</span><span class="p">,</span> <span class="n">EXIT_WARNING</span><span class="p">,</span> <span class="n">TAUCMDR_SCRIPT</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span>
 
 
@@ -167,7 +167,7 @@
 <span class="sd">            *hints: Hint messages to help the user resolve this error.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">hints</span><span class="p">:</span>
-            <span class="n">hints</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Try `</span><span class="si">%s</span><span class="s2"> --help`&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">)]</span>
+            <span class="n">hints</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Try `</span><span class="si">%s</span><span class="s2"> --help`&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">TAUCMDR_SCRIPT</span><span class="p">)]</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

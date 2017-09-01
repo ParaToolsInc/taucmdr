@@ -6,7 +6,6 @@ Submodules
 
 .. toctree::
 
-   taucmdr.tests.test_configuration
    taucmdr.tests.test_error
    taucmdr.tests.test_logger
    taucmdr.tests.test_pylint

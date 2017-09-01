@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -87,7 +87,7 @@
 <span class="sd">at configuration. Worse, TAU sometimes does probe the compiler to discover things</span>
 <span class="sd">like MPI headers, except it does such a poor job that many time we get the wrong</span>
 <span class="sd">answer or simply cause the configure script to fail entirely. This has been a major</span>
-<span class="sd">painpoints for TAU users.</span>
+<span class="sd">painpoint for TAU users.</span>
 
 <span class="sd">The reason for this mess is that compiler detection is very hard.  Projects like </span>
 <span class="sd">`SciPy`_ that depend on a compiler&#39;s stdout stream for compiler detection have more</span>
@@ -116,7 +116,7 @@
 <span class="kn">import</span> <span class="nn">getpass</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span>
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">TAU_SCRIPT</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">TAUCMDR_SCRIPT</span>
 <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.objects</span> <span class="kn">import</span> <span class="n">TrackedInstance</span><span class="p">,</span> <span class="n">KeyedRecord</span>
 
@@ -131,7 +131,7 @@
 <span class="s2"># Created: </span><span class="si">%(date)s</span><span class="s2"></span>
 <span class="s2"># Author: </span><span class="si">%(user)s</span><span class="s2"></span>
 <span class="s2">#</span>
-<span class="si">%(tau_script)s</span><span class="s2"> build </span><span class="si">%(command)s</span><span class="s2"> &quot;$@&quot; </span>
+<span class="si">%(taucmdr_script)s</span><span class="s2"> build </span><span class="si">%(command)s</span><span class="s2"> &quot;$@&quot; </span>
 <span class="s2">&quot;&quot;&quot;</span>
 
 
@@ -738,17 +738,17 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version_string</span>
     
 <div class="viewcode-block" id="InstalledCompiler.generate_wrapper"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.generate_wrapper">[docs]</a>    <span class="k">def</span> <span class="nf">generate_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Generate a compiler wrapper script that uses :any:`tau.TAU_SCRIPT` to invoke the compiler.</span>
+        <span class="sd">&quot;&quot;&quot;Generate a compiler wrapper script that uses :any:`tau.TAUCMDR_SCRIPT` to invoke the compiler.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            prefix (str): Path to a directory in which the wrapper script will be created.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">script_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">TAU_SCRIPT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">))</span>
+        <span class="n">script_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">TAUCMDR_SCRIPT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">))</span>
         <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">script_file</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
             <span class="n">wrapper</span> <span class="o">=</span> <span class="n">_COMPILER_WRAPPER_TEMPLATE</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
                                                     <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">(),</span>
-                                                    <span class="s1">&#39;tau_script&#39;</span><span class="p">:</span> <span class="n">TAU_SCRIPT</span><span class="p">,</span>
+                                                    <span class="s1">&#39;taucmdr_script&#39;</span><span class="p">:</span> <span class="n">TAUCMDR_SCRIPT</span><span class="p">,</span>
                                                     <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">}</span>
             <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">wrapper</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">script_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">script_file</span><span class="p">)</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="mo">0111</span><span class="p">)</span></div></div>

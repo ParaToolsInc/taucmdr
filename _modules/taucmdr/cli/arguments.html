@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.1.2
+        VERSION:     '1.1.2-23-gd92cac8
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -174,8 +174,8 @@
             <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">title</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">positional_title</span><span class="p">,</span> <span class="n">optional_title</span><span class="p">]:</span>
                 <span class="k">yield</span> <span class="n">group</span></div>
                 
-<div class="viewcode-block" id="MutableArgumentGroupParser.merge"><a class="viewcode-back" href="../../../taucmdr.cli.arguments.html#taucmdr.cli.arguments.MutableArgumentGroupParser.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
-              <span class="n">include_positional</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include_optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="MutableArgumentGroupParser.merge"><a class="viewcode-back" href="../../../taucmdr.cli.arguments.html#taucmdr.cli.arguments.MutableArgumentGroupParser.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">group_title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">include_positional</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">include_optional</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">include_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
+              <span class="n">exclude_groups</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">exclude_arguments</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merge arguments from a parser into this parser.</span>
 <span class="sd">        </span>
 <span class="sd">        Modify this parser by adding additional arguments taken from the supplied parser.</span>
@@ -186,14 +186,17 @@
 <span class="sd">            include_positional (bool): If True, include positional arguments.</span>
 <span class="sd">            include_optional (bool): If True, include optional arguments.</span>
 <span class="sd">            include_storage (bool): If True, include the storage level argument, see :any:`STORAGE_LEVEL_FLAG`.</span>
-<span class="sd">            exclude (list): Strings identifying arguments that should be excluded.</span>
+<span class="sd">            exclude_groups (list): Strings identifying argument groups that should be excluded.</span>
+<span class="sd">            exclude_arguments (list): Strings identifying arguments that should be excluded.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_title</span><span class="p">)</span> <span class="k">if</span> <span class="n">group_title</span> <span class="k">else</span> <span class="bp">self</span>
         <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">_actions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exclude_groups</span> <span class="ow">and</span> <span class="n">action</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">title</span> <span class="ow">in</span> <span class="n">exclude_groups</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">dst_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="n">group_title</span> <span class="k">if</span> <span class="n">group_title</span> <span class="k">else</span> <span class="n">action</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
             <span class="n">optional</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">option_strings</span><span class="p">)</span>
             <span class="n">storage</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">STORAGE_LEVEL_FLAG</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span>
-            <span class="n">excluded</span> <span class="o">=</span> <span class="n">exclude</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">([</span><span class="n">optstr</span> <span class="k">for</span> <span class="n">optstr</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span>  
-                                         <span class="k">for</span> <span class="n">substr</span> <span class="ow">in</span> <span class="n">exclude</span> <span class="k">if</span> <span class="n">substr</span> <span class="ow">in</span> <span class="n">optstr</span><span class="p">])</span>
+            <span class="n">excluded</span> <span class="o">=</span> <span class="n">exclude_arguments</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">([</span><span class="n">optstr</span> <span class="k">for</span> <span class="n">optstr</span> <span class="ow">in</span> <span class="n">action</span><span class="o">.</span><span class="n">option_strings</span>  
+                                                   <span class="k">for</span> <span class="n">substr</span> <span class="ow">in</span> <span class="n">exclude_arguments</span> <span class="k">if</span> <span class="n">substr</span> <span class="ow">in</span> <span class="n">optstr</span><span class="p">])</span>
             <span class="c1"># pylint: disable=too-many-boolean-expressions</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">excluded</span> <span class="ow">or</span>
                     <span class="p">(</span><span class="ow">not</span> <span class="n">include_storage</span> <span class="ow">and</span> <span class="n">storage</span><span class="p">)</span> <span class="ow">or</span>
@@ -201,7 +204,7 @@
                     <span class="p">(</span><span class="ow">not</span> <span class="n">include_positional</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">optional</span><span class="p">)):</span>
                 <span class="k">continue</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">group</span><span class="o">.</span><span class="n">_add_action</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+                <span class="n">dst_group</span><span class="o">.</span><span class="n">_add_action</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">:</span>
                 <span class="c1"># Argument is already in this parser.</span>
                 <span class="k">pass</span></div></div>
