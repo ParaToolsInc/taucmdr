@@ -44,6 +44,7 @@ import os
 import sys
 
 import six
+from types import ModuleType
 from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
@@ -209,7 +210,12 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
     commands = sorted((i for i in six.iteritems(_get_commands(package_name)) if i[0] != '__module__'))
     for _, topcmd in commands:
         for _, mod in six.iteritems(topcmd):
-            all_commands.append(mod['__module__'].__name__)
+            if isinstance(mod, dict):
+                all_commands.append(mod['__module__'].__name__)
+            elif isinstance(mod, ModuleType):
+                all_commands.append(mod.__name__)
+            else:
+                raise InternalError("%s is an invalid module." %mod)
     return all_commands
 
 def find_command(cmd):
