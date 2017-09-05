@@ -89,7 +89,7 @@ CLASSIFIERS = [
 # END PACKAGE CONFIGURATION (probably shouldn't change anything after this line)
 #######################################################################################################################
 # Distuilts defines attributes in the initialize_options() method
-# pylint: disable=attribute-defined-outside-init,wrong-import-position
+# pylint: disable=wrong-import-position
 import os
 import sys
 import shutil
@@ -177,6 +177,8 @@ else:
             copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
             shutil.rmtree(copy_source_dir, ignore_errors=True)
             shutil.copytree(self.source_dir, copy_source_dir)
+            # Distuilts defines attributes in the initialize_options() method
+            # pylint: disable=attribute-defined-outside-init
             self.source_dir = copy_source_dir
     
         def _generate_api_docs(self):
@@ -205,6 +207,8 @@ class Test(TestCommand):
     user_options = TestCommand.user_options + _custom_user_options
     
     def initialize_options(self):
+        # Distuilts defines attributes in the initialize_options() method
+        # pylint: disable=attribute-defined-outside-init
         TestCommand.initialize_options(self)
         self.system_sandbox = False
         self.user_sandbox = False
@@ -236,6 +240,8 @@ class InstallLib(InstallLibCommand):
         InstallLibCommand.initialize_options(self)
         
     def finalize_options(self):
+        # Distuilts defines attributes in the initialize_options() method
+        # pylint: disable=attribute-defined-outside-init
         InstallLibCommand.finalize_options(self)
         self.optimize = 1
 
@@ -250,6 +256,8 @@ class Install(InstallCommand):
         InstallCommand.initialize_options(self)
         
     def finalize_options(self):
+        # Distuilts defines attributes in the initialize_options() method
+        # pylint: disable=attribute-defined-outside-init
         InstallCommand.finalize_options(self)
         self.install_scripts = os.path.join(self.prefix, 'bin')
         self.install_lib = os.path.join(self.prefix, 'packages')
@@ -274,7 +282,7 @@ class Release(SDistCommand):
                     [('target-arch=', None, "Target architecture"),
                      ('target-os=', None, "Target operating system"),
                      ('web', None, "Build a web-based distribution"),
-                     ('all', None, "Build release packages for all known (arch, os)")])
+                     ('all', None, "List all (arch, os) combinations supported by TAU")])
     
     def initialize_options(self):
         SDistCommand.initialize_options(self)
@@ -284,6 +292,8 @@ class Release(SDistCommand):
         self.all = False
         
     def finalize_options(self):
+        # Distuilts defines attributes in the initialize_options() method
+        # pylint: disable=attribute-defined-outside-init
         SDistCommand.finalize_options(self)
         from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
         if self.all:
@@ -330,10 +340,7 @@ class Release(SDistCommand):
         else:
             src = arch_dct.get(self.target_os, arch_dct.get(None, default))
         dest = os.path.join(os.path.realpath(os.path.abspath('system')), 'src', os.path.basename(src))
-        if os.path.exists(dest):
-            print '%s already exists, skipping download' % dest
-        else:
-            util.download(src, dest)
+        util.download(src, dest)
         
     def _download_python(self):
         from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX
@@ -356,7 +363,7 @@ class Release(SDistCommand):
         except KeyError:
             return
         subprocess.call(['make', 'python_download', 'HOST_ARCH='+make_arch, 'HOST_OS='+make_os])
-        
+            
     def _build_web_release(self):
         SDistCommand.run(self)
         for path in self.archive_files:
@@ -375,20 +382,18 @@ class Release(SDistCommand):
             shutil.move(src, dest)
             print "Wrote '%s'" % dest
             
-    def _build_all(self):
+    def _list_all(self):
         from taucmdr.cf.platforms import TauMagic
-        self._build_web_release()
         targets = set()
         for magic in TauMagic.all():
             target = magic.architecture, magic.operating_system
             if target not in targets:
                 targets.add(target)
-                self.target_arch, self.target_os = target
-                self._build_target_release() 
+                print '(%s, %s)' % (str(target[0]), str(target[1]))
 
     def run(self):
         from taucmdr import util
-        util.rmtree('system')
+        util.rmtree('system', ignore_errors=True)
         for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version() 
@@ -396,7 +401,7 @@ class Release(SDistCommand):
         if self.web:
             self._build_web_release()
         elif self.all:
-            self._build_all()
+            self._list_all()
         else:
             self._build_target_release()
 
