@@ -374,6 +374,14 @@ class Release(SDistCommand):
             dest = os.path.join(self.dist_dir, dest)
             shutil.move(src, dest)
             print "Wrote '%s'" % dest
+            
+    def _build_all(self):
+        from taucmdr.cf.platforms import TauMagic
+        targets = set()
+        for magic in TauMagic.all():
+            targets.add((magic.architecture, magic.operating_system))
+        for target in targets:
+            print str(target[0]), str(target[1])
 
     def run(self):
         from taucmdr import util
@@ -385,7 +393,7 @@ class Release(SDistCommand):
         if self.web:
             self._build_web_release()
         elif self.all:
-            pass
+            self._build_all()
         else:
             self._build_target_release()
 
