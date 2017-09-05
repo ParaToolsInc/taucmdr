@@ -36,7 +36,7 @@ RM = rm -f
 MV = mv -f
 MKDIR = mkdir -p
 
-VERSION = $(shell cat VERSION 2>&1 || ./.version.sh || echo "0.0.0")
+VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
 
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
@@ -195,4 +195,4 @@ $(CONDA_SRC):
 	$(call download,$(CONDA_URL),$(CONDA_SRC))
 
 clean: 
-	$(ECHO)$(RM) -r $(BUILDDIR)
+	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
