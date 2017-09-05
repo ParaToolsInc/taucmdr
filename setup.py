@@ -377,11 +377,14 @@ class Release(SDistCommand):
             
     def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
+        self._build_web_release()
         targets = set()
         for magic in TauMagic.all():
-            targets.add((magic.architecture, magic.operating_system))
-        for target in targets:
-            print str(target[0]), str(target[1])
+            target = magic.architecture, magic.operating_system
+            if target not in targets:
+                targets.add(target)
+                self.target_arch, self.target_os = target
+                self._build_target_release() 
 
     def run(self):
         from taucmdr import util
