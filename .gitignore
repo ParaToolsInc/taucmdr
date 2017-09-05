@@ -86,6 +86,7 @@ benchmarks
 /VERSION
 /build
 /dist
+/taucmdr-*
 packages/*.sh
 packages/*.tgz
 packages/*.tar.*
