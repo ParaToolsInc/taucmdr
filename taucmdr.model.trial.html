@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.1.2-23-gd92cac8
+        VERSION:     '1.1.2-26-g8f8d6f10
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -160,6 +160,34 @@ SLOG2 traces and TAU profiles would return <code class="docutils literal"><span 
 <dt id="taucmdr.model.trial.Trial.prefix">
 <code class="descname">prefix</code><a class="headerlink" href="#taucmdr.model.trial.Trial.prefix" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.trial.Trial.queue_command">
+<code class="descname">queue_command</code><span class="sig-paren">(</span><em>expr</em>, <em>cmd</em>, <em>cwd</em>, <em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.queue_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.queue_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a command as part of an experiment trial.</p>
+<p>Creates a new subprocess for the command and checks for TAU data files
+when the subprocess exits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>expr</strong> (<a class="reference internal" href="taucmdr.model.experiment.html#taucmdr.model.experiment.Experiment" title="taucmdr.model.experiment.Experiment"><em>Experiment</em></a>) &#8211; Experiment data.</li>
+<li><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Command to profile, with command line arguments.</li>
+<li><strong>cwd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Working directory to perform trial in.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Environment variables to set before performing the trial.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Subprocess return code.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.model.trial.Trial.references">
