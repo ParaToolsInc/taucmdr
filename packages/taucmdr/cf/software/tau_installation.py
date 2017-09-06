@@ -168,16 +168,12 @@ class TauInstallation(Installation):
                  pthreads_support=False,
                  tbb_support=False,
                  mpi_support=False,
-                 mpi_include_path=None,
-                 mpi_library_path=None,
                  mpi_libraries=None,
                  cuda_support=False,
                  cuda_prefix=None,
                  opencl_support=False,
                  opencl_prefix=None,
                  shmem_support=False,
-                 shmem_include_path=None,
-                 shmem_library_path=None,
                  shmem_libraries=None,
                  mpc_support=False,
                  # Instrumentation methods and options
@@ -223,15 +219,11 @@ class TauInstallation(Installation):
             pthreads_support (bool): Enable or disable pthreads support in TAU.
             tbb_support (bool): Enable or disable tbb support in TAU.
             mpi_support (bool): Enable or disable MPI support in TAU.
-            mpi_include_path (list):  Paths to search for MPI header files.
-            mpi_library_path (list): Paths to search for MPI library files.
             mpi_libraries (list): MPI libraries to include when linking with TAU.
             cuda_support (bool): Enable or disable CUDA support in TAU.
             cuda_prefix (str): Path to CUDA toolkit installation.
             opencl_support (bool): Enable or disable OpenCL support in TAU.
             shmem_support (bool): Enable or disable SHMEM support in TAU.
-            shmem_include_path (list):  Paths to search for SHMEM header files.
-            shmem_library_path (list): Paths to search for SHMEM library files.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             mpc_support (bool): Enable or disable MPC support in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
@@ -266,16 +258,12 @@ class TauInstallation(Installation):
         assert pthreads_support in (True, False)
         assert tbb_support in (True, False)
         assert mpi_support in (True, False)
-        assert isinstance(mpi_include_path, list) or mpi_include_path is None
-        assert isinstance(mpi_library_path, list) or mpi_library_path is None
         assert isinstance(mpi_libraries, list) or mpi_libraries is None
         assert cuda_support in (True, False)
         assert isinstance(cuda_prefix, basestring) or cuda_prefix is None
         assert opencl_support in (True, False)
         assert isinstance(opencl_prefix, basestring) or opencl_prefix is None
         assert shmem_support in (True, False)
-        assert isinstance(shmem_include_path, list) or shmem_include_path is None
-        assert isinstance(shmem_library_path, list) or shmem_library_path is None
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
         assert source_inst in ("automatic", "manual", "never")
@@ -322,14 +310,10 @@ class TauInstallation(Installation):
         self.pthreads_support = pthreads_support
         self.tbb_support = tbb_support
         self.mpi_support = mpi_support
-        self.mpi_include_path = mpi_include_path if mpi_include_path is not None else [] 
-        self.mpi_library_path = mpi_library_path if mpi_library_path is not None else []
         self.mpi_libraries = mpi_libraries if mpi_libraries is not None else []
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
-        self.shmem_include_path = shmem_include_path if shmem_include_path is not None else [] 
-        self.shmem_library_path = shmem_library_path if shmem_library_path is not None else []
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
         self.source_inst = source_inst
@@ -538,13 +522,12 @@ class TauInstallation(Installation):
             LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
-    def _select_flags(self, header, libglobs, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
+    def _select_flags(self, header, libglobs, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
         def unique(seq):
             seen = set()
             return [x for x in seq if not (x in seen or seen.add(x))]
         selected_inc, selected_lib, selected_library = None, None, None
-        # Prefer user-specified paths over autodetected paths
-        include_path = unique(user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path)
+        include_path = unique(wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path)
         if include_path:
             # Unfortunately, TAU's configure script can only accept one path on -mpiinc
             # and it expects the compiler's include path argument (e.g. "-I") to be omitted
@@ -560,7 +543,7 @@ class TauInstallation(Installation):
                 raise ConfigurationError("%s not found on include path: %s" %
                                          (header, os.pathsep.join(include_path)),
                                          *hints)
-        library_path = unique(user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
+        library_path = unique(wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
         if library_path:
             selected_lib = None
             for libglob in libglobs:
@@ -646,8 +629,6 @@ class TauInstallation(Installation):
         if self.mpi_support:
             mpiinc, mpilib, mpilibrary = \
                 self._select_flags('mpi.h', ('libmpi*',),
-                                   self.mpi_include_path,
-                                   self.mpi_library_path,
                                    self.mpi_libraries,
                                    self.compilers[MPI_CC],
                                    self.compilers[MPI_CXX],
@@ -658,8 +639,6 @@ class TauInstallation(Installation):
         if self.shmem_support:
             shmeminc, shmemlib, shmemlibrary = \
                 self._select_flags('shmem.h', ('lib*shmem*', 'lib*sma*'),
-                                   self.shmem_include_path,
-                                   self.shmem_library_path,
                                    self.shmem_libraries,
                                    self.compilers[SHMEM_CC],
                                    self.compilers[SHMEM_CXX],
