@@ -39,7 +39,6 @@ SHMEM_COMPILERS = Knowledgebase('SHMEM', 'Compilers supporting Symmetric Hierarc
                                 FC=('SHMEM Fortran', ('SHMEM_FC', 'SHMEM_F77', 'SHMEM_F90')))
 
 OPENSHMEM = SHMEM_COMPILERS.add('OpenSHMEM',
-                                show_wrapper_flags=['-show'], 
                                 CC='oshcc', CXX=('oshcxx', 'oshc++', 'oshCC'), FC='oshfort')
 
 SOS = SHMEM_COMPILERS.add('SOS',
