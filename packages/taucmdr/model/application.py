@@ -105,7 +105,7 @@ def attributes():
             'default': False,
             'description': 'application uses OpenCL',
             'argparse': {'flags': ('--opencl',)},
-            'compat': {True: (Target.require('cuda'),
+            'compat': {True: (Target.require('cuda_toolkit'),
                               Measurement.encourage('opencl', True))},
             'rebuild_required': True
         },
