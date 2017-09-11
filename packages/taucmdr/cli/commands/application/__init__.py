@@ -31,4 +31,38 @@ from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.application import Application
 
 
-COMMAND = RootCommand(Application, __name__, group="configuration")
+HELP_PAGE = """
+TAU Commander Applications:
+
+Creating new applications:
+Enter:  tau application create <new_application_name>
+
+Copying a TAU Commander Application:
+Enter: tau application copy <existing_application_name> <new_application_name>
+The new application has the same properties as the original existing application.
+
+Editing a TAU Commander Application:
+Enter: tau application edit <application_name> --<application_property> <property setting>
+The following properties are set to True/False (T/F):
+    cuda, mpc, mpi, opencl, openmp, pthreads, shmem, tbb
+    e.g. tau application edit <application_name> --mpi T
+The property linkage is set to static/dynamic (default is dynamic) this is changed by:
+    tau application edit <application_name> --linkage static
+
+The application name can be changed with –new-name as shown below:
+tau application edit <application_name> <new_application_name>
+
+A selective instrumentation file may be specified with --select-file and its path.
+e.g. tau application edit <application_name> --select_file <path>
+
+Delete a TAU Commander Application:
+Enter: tau application delete <application_name>
+
+List TAU Commander Applications in a project:
+Enter: tau application list
+tau application list –l (long description)
+tau application list –s (short description)
+"""
+
+
+COMMAND = RootCommand(Application, __name__, group="configuration", help_page_fmt=HELP_PAGE)
