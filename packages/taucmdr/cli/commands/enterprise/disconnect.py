@@ -34,29 +34,18 @@ from taucmdr.model.project import Project
 from taucmdr.cli.command import AbstractCommand
 
 
-class EnterpriseConnectCommand(AbstractCommand):
-    """``enterprise connect`` subcommand."""
+class EnterpriseDisconnectCommand(AbstractCommand):
+    """``enterprise disconnect`` subcommand."""
 
     def _construct_parser(self):
-        usage = "%s <username> [arguments]" % self.command
+        usage = "%s" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('username', help="TAU Enterprise username", metavar='<username>')
-        parser.add_argument('--key',
-                            help="A pre-existing API key to use in place of the password.",
-                            metavar='<key>',
-                            default=None)
         return parser
 
     def main(self, argv):
         args = self._parse_args(argv)
         proj_ctrl = Project.controller()
-        if args.key is not None:
-            proj_ctrl.connect(args.key)
-        else:
-            username = args.username
-            password = getpass.getpass()
-            proj_ctrl.connect_with_password(username, password)
-        return EXIT_SUCCESS
+        proj_ctrl.disconnect()
 
 
-COMMAND = EnterpriseConnectCommand(__name__, summary_fmt=("Connect the current project to TAU Enterprise storage."))
+COMMAND = EnterpriseDisconnectCommand(__name__, summary_fmt=("Disconnect the current project from TAU Enterprise storage."))
