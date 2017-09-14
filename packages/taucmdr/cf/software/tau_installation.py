@@ -35,7 +35,7 @@ TAU is the core software package of TAU Commander.
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-lines
-
+# pylint: disable=too-many-branches
 
 import os
 import glob
@@ -168,16 +168,12 @@ class TauInstallation(Installation):
                  pthreads_support=False,
                  tbb_support=False,
                  mpi_support=False,
-                 mpi_include_path=None,
-                 mpi_library_path=None,
                  mpi_libraries=None,
                  cuda_support=False,
                  cuda_prefix=None,
                  opencl_support=False,
                  opencl_prefix=None,
                  shmem_support=False,
-                 shmem_include_path=None,
-                 shmem_library_path=None,
                  shmem_libraries=None,
                  mpc_support=False,
                  # Instrumentation methods and options
@@ -223,15 +219,11 @@ class TauInstallation(Installation):
             pthreads_support (bool): Enable or disable pthreads support in TAU.
             tbb_support (bool): Enable or disable tbb support in TAU.
             mpi_support (bool): Enable or disable MPI support in TAU.
-            mpi_include_path (list):  Paths to search for MPI header files.
-            mpi_library_path (list): Paths to search for MPI library files.
             mpi_libraries (list): MPI libraries to include when linking with TAU.
             cuda_support (bool): Enable or disable CUDA support in TAU.
             cuda_prefix (str): Path to CUDA toolkit installation.
             opencl_support (bool): Enable or disable OpenCL support in TAU.
             shmem_support (bool): Enable or disable SHMEM support in TAU.
-            shmem_include_path (list):  Paths to search for SHMEM header files.
-            shmem_library_path (list): Paths to search for SHMEM library files.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             mpc_support (bool): Enable or disable MPC support in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
@@ -266,16 +258,12 @@ class TauInstallation(Installation):
         assert pthreads_support in (True, False)
         assert tbb_support in (True, False)
         assert mpi_support in (True, False)
-        assert isinstance(mpi_include_path, list) or mpi_include_path is None
-        assert isinstance(mpi_library_path, list) or mpi_library_path is None
         assert isinstance(mpi_libraries, list) or mpi_libraries is None
         assert cuda_support in (True, False)
         assert isinstance(cuda_prefix, basestring) or cuda_prefix is None
         assert opencl_support in (True, False)
         assert isinstance(opencl_prefix, basestring) or opencl_prefix is None
         assert shmem_support in (True, False)
-        assert isinstance(shmem_include_path, list) or shmem_include_path is None
-        assert isinstance(shmem_library_path, list) or shmem_library_path is None
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
         assert source_inst in ("automatic", "manual", "never")
@@ -309,6 +297,7 @@ class TauInstallation(Installation):
                                               sources, target_arch, target_os, compilers, 
                                               REPOS, COMMANDS, None, None)
         self._tau_makefile = None
+        self._all_sources = sources
         if self.src == 'nightly':
             self.src = NIGHTLY
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
@@ -321,14 +310,10 @@ class TauInstallation(Installation):
         self.pthreads_support = pthreads_support
         self.tbb_support = tbb_support
         self.mpi_support = mpi_support
-        self.mpi_include_path = mpi_include_path if mpi_include_path is not None else [] 
-        self.mpi_library_path = mpi_library_path if mpi_library_path is not None else []
         self.mpi_libraries = mpi_libraries if mpi_libraries is not None else []
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
-        self.shmem_include_path = shmem_include_path if shmem_include_path is not None else [] 
-        self.shmem_library_path = shmem_library_path if shmem_library_path is not None else []
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
         self.source_inst = source_inst
@@ -469,45 +454,56 @@ class TauInstallation(Installation):
         else:
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
+        def check(pkg):
+            if getattr(self, '_uses_'+pkg)():
+                pkg_src = self._all_sources.get(pkg)
+                if pkg_src:
+                    return pkg_src != 'download'
+            return False
         with open(tau_makefile, 'r') as fin:
             for line in fin:
                 if line.startswith('#'):
                     continue
                 elif 'BFDINCLUDE=' in line:
-                    if self._uses_binutils():
+                    if check('binutils'):
                         binutils = self.dependencies['binutils']
                         bfd_inc = line.split('=')[1].strip().strip("-I")
                         if binutils.include_path != bfd_inc:
                             LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
-                            raise SoftwarePackageError("BFDINCLUDE in '%s' is invalid" % tau_makefile)
+                            raise SoftwarePackageError("BFDINCLUDE in '%s' is not '%s'" % 
+                                                       (tau_makefile, binutils.include_path))
                 elif 'UNWIND_INC=' in line:
-                    if self._uses_libunwind(): 
+                    if check('libunwind'): 
                         libunwind = self.dependencies['libunwind']
                         libunwind_inc = line.split('=')[1].strip().strip("-I")
                         if libunwind.include_path != libunwind_inc:
                             LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
-                            raise SoftwarePackageError("UNWIND_INC in '%s' is invalid" % tau_makefile)
+                            raise SoftwarePackageError("UNWIND_INC in '%s' is not '%s'" % 
+                                                       (tau_makefile, libunwind.include_path))
                 elif 'PAPIDIR=' in line:
-                    if self._uses_papi():
+                    if check('papi'):
                         papi = self.dependencies['papi']
                         papi_dir = line.split('=')[1].strip()
                         if papi.install_prefix != papi_dir:
                             LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
-                            raise SoftwarePackageError("PAPI_DIR in '%s' is invalid" % tau_makefile)
+                            raise SoftwarePackageError("PAPI_DIR in '%s' is not '%s'" % 
+                                                       (tau_makefile, papi.install_prefix))
                 elif 'SCOREPDIR=' in line:
-                    if self._uses_scorep():
+                    if check('scorep'):
                         scorep = self.dependencies['scorep']
                         scorep_dir = line.split('=')[1].strip()
                         if scorep.install_prefix != scorep_dir:
                             LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
-                            raise SoftwarePackageError("SCOREPDIR in '%s' is invalid" % tau_makefile)
+                            raise SoftwarePackageError("SCOREPDIR in '%s' is not '%s'" % 
+                                                       (tau_makefile, scorep.install_prefix))
                 elif 'OTFINC=' in line:
-                    if self._uses_libotf2():
+                    if check('libotf2'):
                         libotf2 = self.dependencies['libotf2']
                         libotf2_dir = line.split('=')[1].strip().strip("-I")
                         if libotf2.include_path != libotf2_dir:
                             LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
-                            raise SoftwarePackageError("OTFINC in '%s' is invalid" % tau_makefile)
+                            raise SoftwarePackageError("OTFINC in '%s' is not '%s'" % 
+                                                       (tau_makefile, libotf2.include_path))
         # Check for iowrapper libraries and link options
         if self.io_inst:
             # Replace right-most occurance of 'Makefile.tau' with 'shared'
@@ -526,13 +522,12 @@ class TauInstallation(Installation):
             LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
-    def _select_flags(self, header, libglobs, user_inc, user_lib, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
+    def _select_flags(self, header, libglobs, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
         def unique(seq):
             seen = set()
             return [x for x in seq if not (x in seen or seen.add(x))]
         selected_inc, selected_lib, selected_library = None, None, None
-        # Prefer user-specified paths over autodetected paths
-        include_path = unique(user_inc + wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path)
+        include_path = unique(wrap_cc.include_path + wrap_cxx.include_path + wrap_fc.include_path)
         if include_path:
             # Unfortunately, TAU's configure script can only accept one path on -mpiinc
             # and it expects the compiler's include path argument (e.g. "-I") to be omitted
@@ -548,7 +543,7 @@ class TauInstallation(Installation):
                 raise ConfigurationError("%s not found on include path: %s" %
                                          (header, os.pathsep.join(include_path)),
                                          *hints)
-        library_path = unique(user_lib + wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
+        library_path = unique(wrap_cc.library_path + wrap_cxx.library_path + wrap_fc.library_path)
         if library_path:
             selected_lib = None
             for libglob in libglobs:
@@ -634,8 +629,6 @@ class TauInstallation(Installation):
         if self.mpi_support:
             mpiinc, mpilib, mpilibrary = \
                 self._select_flags('mpi.h', ('libmpi*',),
-                                   self.mpi_include_path,
-                                   self.mpi_library_path,
                                    self.mpi_libraries,
                                    self.compilers[MPI_CC],
                                    self.compilers[MPI_CXX],
@@ -646,8 +639,6 @@ class TauInstallation(Installation):
         if self.shmem_support:
             shmeminc, shmemlib, shmemlibrary = \
                 self._select_flags('shmem.h', ('lib*shmem*', 'lib*sma*'),
-                                   self.shmem_include_path,
-                                   self.shmem_library_path,
                                    self.shmem_libraries,
                                    self.compilers[SHMEM_CC],
                                    self.compilers[SHMEM_CXX],
@@ -751,7 +742,12 @@ class TauInstallation(Installation):
                                                "is invalid: %s" % (self.title, self.install_prefix, err),
                                                "Specify source code path or URL to enable package reinstallation.")
                 elif not force_reinstall:
-                    LOGGER.debug(err)
+                    LOGGER.info(err)
+        if os.path.isdir(self.src) and not os.access(self.src, os.W_OK | os.X_OK):
+            raise SoftwarePackageError("Unable to configure TAU: '%s' is not writable." % self.src,
+                                       "Allow TAU Commander to manage your TAU configurations",
+                                       "Check for earlier error or warning messages",
+                                       "Ask your system administrator to build the missing TAU configuration")
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         with new_os_environ(), util.umask(002):
             try:
@@ -771,6 +767,8 @@ class TauInstallation(Installation):
     def installation_sequence(self):
         self.configure()
         self.make_install()
+        # Rebuild makefile cache on next call to get_makefile() since a new, possibly better makefile is now available
+        self._tau_makefile = None
 
     def _compiler_tags(self):
         return {host_compilers.INTEL: 'intel' if self.tau_magic.operating_system is CRAY_CNL else 'icpc',
@@ -816,7 +814,7 @@ class TauInstallation(Installation):
             tags.add('tbb')
         if self.mpi_support:
             tags.add('mpi')
-        if self.cuda_support:
+        if self.cuda_support or self.opencl_support:
             tags.add('cupti')
         if self.shmem_support:
             tags.add('shmem')
@@ -849,7 +847,31 @@ class TauInstallation(Installation):
             tags.add('shmem')
         LOGGER.debug("Incompatible tags: %s", tags)
         return tags
+    
+    def _makefile_tags(self, makefile):
+        return set(os.path.basename(makefile).split('.')[1].split('-')[1:])
 
+    def _match_makefile(self, config_tags):
+        tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
+        LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
+        dangerous_tags = self._incompatible_tags()
+        LOGGER.debug("Will not use makefiles containing tags: %s", dangerous_tags)
+        approx_tags = None
+        approx_makefile = None
+        for makefile in tau_makefiles:
+            tags = self._makefile_tags(makefile)
+            LOGGER.debug("%s has tags: %s", makefile, tags)
+            if config_tags <= tags:
+                LOGGER.debug("%s contains desired tags: %s", makefile, config_tags)
+                if tags <= config_tags:
+                    LOGGER.debug("Found TAU makefile %s", makefile)
+                    return makefile
+                elif not tags.intersection(dangerous_tags):
+                    if not approx_tags or tags < approx_tags:
+                        approx_makefile = makefile
+                        approx_tags = tags
+        return approx_makefile
+    
     def get_makefile(self):
         """Returns an absolute path to a TAU_MAKEFILE.
 
@@ -865,38 +887,24 @@ class TauInstallation(Installation):
         if self.forced_makefile:
             self._tau_makefile = self.forced_makefile
             return self.forced_makefile
-        tau_makefiles = glob.glob(os.path.join(self.lib_path, 'Makefile.tau*'))
-        LOGGER.debug("Found makefiles: '%s'", tau_makefiles)
         config_tags = self.get_tags()
         LOGGER.debug("Searching for makefile with tags: %s", config_tags)
-        approx_tags = None
-        approx_makefile = None
-        dangerous_tags = self._incompatible_tags()
-        LOGGER.debug("Will not use makefiles containing tags: %s", dangerous_tags)
-        for makefile in tau_makefiles:
-            tags = set(os.path.basename(makefile).split('.')[1].split('-')[1:])
-            LOGGER.debug("%s has tags: %s", makefile, tags)
-            if config_tags <= tags:
-                LOGGER.debug("%s contains desired tags: %s", makefile, config_tags)
-                if tags <= config_tags:
-                    makefile = os.path.join(self.lib_path, makefile)
-                    LOGGER.debug("Found TAU makefile %s", makefile)
-                    self._tau_makefile = makefile
-                    return makefile
-                elif not tags & dangerous_tags:
-                    if not approx_tags or tags < approx_tags:
-                        approx_makefile = makefile
-                        approx_tags = tags
-                    LOGGER.debug("Best approximate match is: %s", approx_tags)
-        LOGGER.debug("No TAU makefile exactly matches tags '%s'", config_tags)
-        if approx_makefile:
-            makefile = os.path.join(self.lib_path, approx_makefile)
-            LOGGER.debug("Found approximate match with TAU makefile %s", makefile)
-            self._tau_makefile = makefile
-            return makefile
-        LOGGER.debug("No TAU makefile approximately matches tags '%s'", config_tags)
-        raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" %
-                                   (', '.join(config_tags), self.install_prefix))
+        makefile = self._match_makefile(config_tags)
+        if not makefile: 
+            LOGGER.debug("No TAU makefile exactly matches tags '%s'", config_tags)
+            # No TAU configuration built with the required UID tag is available.
+            # Ignore UID and try again in case the TAU configuration was built manually without a UID.
+            # Warn the user that it's on them to know that the makefile is correct.
+            config_tags.remove(self.uid)
+            makefile = self._match_makefile(config_tags)
+            if not makefile:
+                LOGGER.debug("No TAU makefile approximately matches tags '%s'", config_tags)
+                raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" %
+                                           (', '.join(config_tags), self.install_prefix))
+        makefile = os.path.join(self.lib_path, makefile)
+        LOGGER.debug("Found TAU makefile %s", makefile)
+        self._tau_makefile = makefile
+        return makefile
 
     @staticmethod
     def _sanitize_environment(env):
@@ -977,8 +985,16 @@ class TauInstallation(Installation):
             opts.append('-g')
         if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
             opts.append('-DTAU_ENABLED=1')
-        env['TAU_MAKEFILE'] = self.get_makefile()
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
+        makefile = self.get_makefile()
+        tags = self._makefile_tags(makefile)
+        if self.uid not in tags:
+            LOGGER.warning("Unable to verify compiler compatibility of TAU makefile '%s'.\n\n"
+                           "This might be OK, but it is your responsibility to know that TAU was configured "
+                           "correctly for your experiment. Compiler incompatibility may cause your experiment "
+                           "to crash or produce invalid data.  If you're unsure, use --tau=download to allow "
+                           "TAU Commander to manage your TAU configurations.", makefile)
+        env['TAU_MAKEFILE'] = makefile
         return list(set(opts)), env
 
 
@@ -1120,11 +1136,16 @@ class TauInstallation(Installation):
                             (self.source_inst == 'never' and self.compiler_inst == 'never'))
         if use_tau_exec:
             tau_exec_opts = opts
-            tags = self.get_tags()
+            makefile = self.get_makefile()
+            tags = self._makefile_tags(makefile)
             if not self.mpi_support:
                 tags.add('serial')
-            if self.opencl_support:
-                tags.add('cupti')
+            if self.uid not in tags:
+                LOGGER.warning("Unable to verify runtime compatibility of TAU makefile '%s'.\n\n"
+                               "This might be OK, but it is your responsibility to know that TAU was configured "
+                               "correctly for your experiment. Runtime incompatibility may cause your experiment "
+                               "to crash or produce invalid data.  If you're unsure, use --tau=download to allow "
+                               "TAU Commander to manage your TAU configurations.", makefile)
             tau_exec = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts
             cmd = launcher_cmd + tau_exec + application_cmd
         else:
