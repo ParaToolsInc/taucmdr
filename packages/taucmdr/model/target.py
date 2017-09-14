@@ -257,28 +257,6 @@ def attributes():
                          'metavar': '<command>'},
             'rebuild_required': True
         },
-        'mpi_include_path': {
-            'type': 'array',
-            'description': 'paths to search for MPI header files when building MPI applications',
-            'argparse': {'flags': ('--mpi-include-path',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>'},
-            'compat': {bool: (Target.require(MPI_CC.keyword),
-                              Target.require(MPI_CXX.keyword),
-                              Target.require(MPI_FC.keyword))},
-            'rebuild_required': True
-        },
-        'mpi_library_path': {
-            'type': 'array',
-            'description': 'paths to search for MPI library files when building MPI applications',
-            'argparse': {'flags': ('--mpi-library-path',),
-                         'group': 'Message Passing Interface (MPI)',
-                         'metavar': '<path>'},
-            'compat': {bool: (Target.require(MPI_CC.keyword),
-                              Target.require(MPI_CXX.keyword),
-                              Target.require(MPI_FC.keyword))},
-            'rebuild_required': True
-        },
         'mpi_libraries': {
             'type': 'array',
             'description': 'libraries to link to when building MPI applications',
@@ -315,22 +293,6 @@ def attributes():
             'argparse': {'flags': ('--shmem-fc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'rebuild_required': True
-        },
-        'shmem_include_path': {
-            'type': 'array',
-            'description': 'paths to search for SHMEM header files when building SHMEM applications',
-            'argparse': {'flags': ('--shmem-include-path',),
-                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<path>'},
-            'rebuild_required': True
-        },
-        'shmem_library_path': {
-            'type': 'array',
-            'description': 'paths to search for SHMEM library files when building SHMEM applications',
-            'argparse': {'flags': ('--shmem-library-path',),
-                         'group': 'Symmetric Hierarchical Memory (SHMEM)',
-                         'metavar': '<path>'},
             'rebuild_required': True
         },
         'shmem_libraries': {

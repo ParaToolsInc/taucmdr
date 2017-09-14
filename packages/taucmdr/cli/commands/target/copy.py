@@ -27,8 +27,92 @@
 #
 """``target copy`` subcommand."""
 
+from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CopyCommand
+from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
 from taucmdr.model.target import Target
+from taucmdr.model.compiler import Compiler
+from taucmdr.cf.compiler import InstalledCompilerFamily
+from taucmdr.cf.compiler.host import HOST_COMPILERS
+from taucmdr.cf.compiler.mpi import MPI_COMPILERS
+from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 
 
-COMMAND = CopyCommand(Target, __name__)
+class TargetCopyCommand(CopyCommand):
+    """```target copy``` subcommand."""
+
+    @staticmethod
+    def _compiler_flag_action_call(family_attr):
+        def call(self, parser, namespace, value, *args, **kwargs):
+            try:
+                delattr(namespace, family_attr)
+            except AttributeError:
+                pass
+            return self.__action_call__(parser, namespace, value, *args, **kwargs)
+        return call
+
+    @staticmethod
+    def _family_flag_action(kbase, family_attr):
+        class Action(arguments.Action):
+            # pylint: disable=too-few-public-methods
+            def __call__(self, parser, namespace, value, *args, **kwargs):
+                try:
+                    delattr(namespace, family_attr)
+                except AttributeError:
+                    pass
+                family = InstalledCompilerFamily(kbase.families[value])
+                for comp in family:
+                    setattr(namespace, comp.info.role.keyword, comp.absolute_path)
+        return Action
+
+    def _configure_argument_group(self, group, kbase, family_flag, family_attr):
+        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case.
+        keyword = kbase.keyword
+        if keyword.upper() != keyword:
+            keyword = keyword.lower()
+        group.add_argument(family_flag,
+                           help=("select all %(kw)s compilers automatically from the given family, "
+                                 "ignored if at least one %(kw)s compiler is specified") % {'kw': keyword},
+                           metavar='<family>',
+                           dest=family_attr,
+                           default=arguments.SUPPRESS,
+                           choices=kbase.family_names(),
+                           action=TargetCopyCommand._family_flag_action(kbase, family_attr))
+
+        # Monkey-patch default actions for compiler arguments
+        # pylint: disable=protected-access
+        for role in kbase.roles.itervalues():
+            action = next(act for act in group._actions if act.dest == role.keyword)
+            action.__action_call__ = action.__call__
+            action.__call__ = TargetCopyCommand._compiler_flag_action_call(family_attr)
+
+    def _construct_parser(self):
+        parser = super(TargetCopyCommand, self)._construct_parser()
+        group = parser.add_argument_group('host arguments')
+        self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
+
+        group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family')
+
+        group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
+        self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')
+        return parser
+
+    def main(self, argv):
+        args = self._parse_args(argv)
+        store = arguments.parse_storage_flag(args)[0]
+        compilers = target_create_cmd.parse_compiler_flags(args)
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
+        for keyword, comp in compilers.iteritems():
+            self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
+            record = Compiler.controller(store).register(comp)
+            data[comp.info.role.keyword] = record.eid
+        key_attr = self.model.key_attribute
+        try:
+            data[key_attr] = getattr(args, 'copy_%s' % key_attr)
+        except AttributeError:
+            pass
+        key = getattr(args, key_attr)
+        return self._copy_record(store, data, key)
+
+COMMAND = TargetCopyCommand(Target, __name__)

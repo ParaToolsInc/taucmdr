@@ -33,7 +33,7 @@ The OTF2 library  provides an interface to write and read trace data.
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 
-REPOS = {None: 'http://www.vi-hps.org/upload/packages/otf2/otf2-2.1-rc2.tar.gz'}
+REPOS = {None: 'http://tau.uoregon.edu/otf2.tgz'}
 
 LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
 

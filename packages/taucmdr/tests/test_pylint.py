@@ -33,7 +33,7 @@ Asserts that pylint score doesn't drop below minimum.
 import os
 import sys
 import subprocess
-from taucmdr import TAU_HOME
+from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
 
@@ -41,7 +41,7 @@ class PylintTest(tests.TestCase):
     """Runs Pylint to make sure the code scores at least 9.0"""
        
     def run_pylint(self, *args):
-        cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAU_HOME, "pylintrc")]
+        cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
         cmd.extend(args)
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -59,7 +59,7 @@ class PylintTest(tests.TestCase):
         self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % str(version))
     
     def test_pylint(self):
-        stdout, stderr = self.run_pylint(os.path.join(TAU_HOME, "packages", "taucmdr"))
+        stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
         self.assertFalse(stderr)
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])

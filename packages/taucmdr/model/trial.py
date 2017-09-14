@@ -35,8 +35,8 @@ the performance data.
 import os
 import glob
 import errno
-import fasteners
 from datetime import datetime
+import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
@@ -129,11 +129,12 @@ class TrialController(Controller):
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
         env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
         try:
             self.update({'phase': 'running'}, trial.eid)
-            retval = trial.execute_command(expr, cmd, cwd, env)
+            retval = trial.queue_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
             raise
@@ -312,6 +313,40 @@ class Trial(Model):
             raise InternalError("Unhandled trace format '%s'" % trace_fmt)
         return data
 
+    def queue_command(self, expr, cmd, cwd, env):
+        """Execute a command as part of an experiment trial.
+
+        Creates a new subprocess for the command and checks for TAU data files
+        when the subprocess exits.
+
+        Args:
+            expr (Experiment): Experiment data.
+            cmd (str): Command to profile, with command line arguments.
+            cwd (str): Working directory to perform trial in.
+            env (dict): Environment variables to set before performing the trial.
+
+        Returns:
+            int: Subprocess return code.
+        """
+        cmd_str = ' '.join(cmd)
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
+                              if (key.startswith('TAU_') or 
+                                  key.startswith('SCOREP_') or 
+                                  key in ('PROFILEDIR', 'TRACEDIR')))
+        LOGGER.info('\n'.join(tau_env_opts))
+        LOGGER.info(cmd_str)
+        try:
+            retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
+        except OSError as err:
+            target = expr.populate('target')
+            errno_hint = {errno.EPERM: "Check filesystem permissions",
+                          errno.ENOENT: "Check paths and command line arguments",
+                          errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
+            raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+        if retval:
+            LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
+        return retval
+
     def execute_command(self, expr, cmd, cwd, env):
         """Execute a command as part of an experiment trial.
 
@@ -342,7 +377,7 @@ class Trial(Model):
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
-        
+
         measurement = expr.populate('measurement')
         profiles = []
         for pat in 'profile.*.*.*', 'MULTI__*/profile.*.*.*', 'tauprofile.xml', '*.cubex':

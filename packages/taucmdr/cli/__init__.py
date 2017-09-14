@@ -42,14 +42,15 @@ a subclass of :any:`AbstractCommand`.
 
 import os
 import sys
-from taucmdr import TAU_SCRIPT, EXIT_FAILURE
+from types import ModuleType
+from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 
 
 LOGGER = logger.get_logger(__name__)
 
-SCRIPT_COMMAND = os.path.basename(TAU_SCRIPT)
+SCRIPT_COMMAND = os.path.basename(TAUCMDR_SCRIPT)
 
 COMMANDS_PACKAGE_NAME = __name__ + '.commands'
 
@@ -156,7 +157,7 @@ def command_from_module_name(module_name):
         str: A string that identifies the command.
     """
     if module_name == '__main__':
-        return os.path.basename(TAU_SCRIPT)
+        return os.path.basename(TAUCMDR_SCRIPT)
     else:
         return ' '.join(_command_as_list(module_name))
 
@@ -207,7 +208,12 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
     commands = sorted((i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'))
     for _, topcmd in commands:
         for _, mod in topcmd.iteritems():
-            all_commands.append(mod['__module__'].__name__)
+            if isinstance(mod, dict):
+                all_commands.append(mod['__module__'].__name__)
+            elif isinstance(mod, ModuleType):
+                all_commands.append(mod.__name__)
+            else:
+                raise InternalError("%s is an invalid module." %mod)
     return all_commands
 
 def find_command(cmd):

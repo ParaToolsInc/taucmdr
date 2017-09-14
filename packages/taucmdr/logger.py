@@ -48,7 +48,7 @@ import logging
 from logging import handlers
 from datetime import datetime
 from termcolor import termcolor
-from taucmdr import USER_PREFIX, __version__ as TAUCMDR_VERSION
+from taucmdr import USER_PREFIX, TAUCMDR_VERSION
 
 
 def get_terminal_size():

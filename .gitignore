@@ -83,8 +83,10 @@ benchmarks
 
 # Python packaging files
 # general things to ignore
+/VERSION
 /build
 /dist
+/taucmdr-*
 packages/*.sh
 packages/*.tgz
 packages/*.tar.*

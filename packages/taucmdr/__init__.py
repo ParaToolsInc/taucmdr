@@ -28,14 +28,17 @@
 """TAU Commander package initialization.
 
 The first line of this file is the first thing to be executed whenever TAU Commander
-is invoked in any way. This module establishes global constants (as few as possible)
-and checks the Python version.  It must be kept as short and simple as possible.
+is invoked in any way. This module establishes global constants and checks the Python version.  
+It should be as short and simple.
 """
 
 import os
 import sys
 
-__version__ = "1.1.2"
+__version__ = "0.0.0"
+"""str: TAU Commander Version"""
+
+TAUCMDR_VERSION = __version__
 """str: TAU Commander Version"""
 
 EXIT_FAILURE = -100
@@ -70,22 +73,22 @@ Please install the required Python version or contact %s for support.
 """ % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
-TAU_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__', 
-                                                           os.path.join(os.path.dirname(__file__), '..', '..'))))
+TAUCMDR_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__', 
+                                                               os.path.join(os.path.dirname(__file__), '..', '..'))))
 """str: Absolute path to the top-level TAU Commander directory.
 
 This directory contains at least `bin`, `docs`, and `packages` directories and is the root
 for system-level package installation paths. **Do not** change it once it is set.
 """
 
-TAU_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__', 'tau')
+TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__', sys.argv[0] or 'tau')
 """str: Script that launched TAU Commander.
 
 Mainly used for help messages. **Do not** change it once it is set.
 """
 
 SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__', 
-                                                                os.path.join(TAU_HOME, 'system'))))
+                                                                os.path.join(TAUCMDR_HOME, 'system'))))
 """str: System-level TAU Commander files."""
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__', 
@@ -120,8 +123,8 @@ def version_banner():
            "Python Impl.   : %(pyimpl)s\n"
            "PYTHONPATH     : %(pythonpath)s\n")
     data = {"url": TAUCMDR_URL,
-            "prefix": TAU_HOME,
-            "version": __version__,
+            "prefix": TAUCMDR_HOME,
+            "version": TAUCMDR_VERSION,
             "timestamp": str(datetime.now()),
             "hostname": socket.gethostname(),
             "platform": platform.platform(),
