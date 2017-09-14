@@ -30,5 +30,11 @@
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.trial import Trial
 
+HELP_PAGE="""
+TAU Commander trials 
+ 
+A trial is created by running the binary with tau prefix. That is: tau ./a.out or tau mpirun -np # ./a.out <args> The binary a.out will be executed and the TAU Commander specified data will be collected.  This completes a trial.   
+"""
+
 COMMAND = RootCommand(Trial, __name__, group="configuration",
-                      summary_fmt="Create and manage experiment trials.")
+                      summary_fmt="Create and manage experiment trials.", help_page_fmt=HELP_PAGE)

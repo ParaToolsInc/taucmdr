@@ -30,5 +30,19 @@
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.experiment import Experiment
 
+HELP_PAGE = """
+TAU Commander Experiments:
+An experiment is defined by: a target, an application, a measurement. Create experiments by entering: 
+ 
+tau select <profile_name> <target_name> <measurement_name> 
+ 
+If the target, application, or measurement name can be implied then it may be omitted.  For example, if you have only one target and only one application in your project then only the measurement name must be specified: 
+ 
+tau select my_profile 
+ 
+The select command will name the new experiment based on the names of the selected objects.  You may rename the new experiment with the tau experiment edit command, or take full control of experiment creation by explicitly specifying each parameter: 
+ 
+tau experiment create <experiment_name> --application <application_name> --measurement <measurement_name> --target <target_name>    The entities experiment, application and measurement must already be defined.
+"""
 
-COMMAND = RootCommand(Experiment, __name__, summary_fmt="Create and manage experiments.", group="configuration")
+COMMAND = RootCommand(Experiment, __name__, group="configuration", help_page_fmt=HELP_PAGE)
