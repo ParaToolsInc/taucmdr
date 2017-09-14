@@ -131,12 +131,13 @@ class ProjectController(Controller):
         else:
             return selected
 
-    def connect(self, token):
+    def connect(self, token, db_name=None):
         self.storage['api_token'] = token
-        LOGGER.info("Connected project to TAU Enterprise with API key %s", token)
+        self.storage['db_name'] = db_name
+        LOGGER.info("Connected project to TAU Enterprise with API key %s, database name %s", (token, db_name))
 
-    def connect_with_password(self, username, password):
-        self.connect(ENTERPRISE_STORAGE.get_token_for_user(ENTERPRISE_URL, username, password))
+    def connect_with_password(self, username, password, db_name=None):
+        self.connect(ENTERPRISE_STORAGE.get_token_for_user(ENTERPRISE_URL, username, password), db_name=db_name)
 
     def disconnect(self):
         del self.storage['api_token']
@@ -199,6 +200,10 @@ class Project(Model):
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
+
+    @classmethod
+    def enterprise_controller(cls):
+        return cls.controller(storage=ENTERPRISE_STORAGE)
     
     @classmethod
     def selected(cls, storage=PROJECT_STORAGE):
@@ -206,7 +211,7 @@ class Project(Model):
 
     @classmethod
     def connected(cls, storage=PROJECT_STORAGE):
-        return cls.__controller__(cls, storage).selected()
+        return cls.__controller__(cls, storage).connected()
     
     @property
     def prefix(self):

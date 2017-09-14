@@ -45,17 +45,21 @@ class EnterpriseConnectCommand(AbstractCommand):
                             help="A pre-existing API key to use in place of the password.",
                             metavar='<key>',
                             default=None)
+        parser.add_argument('--db',
+                            help="The name of the remote database to use",
+                            metavar='<db>',
+                            default=None)
         return parser
 
     def main(self, argv):
         args = self._parse_args(argv)
         proj_ctrl = Project.controller()
         if args.key is not None:
-            proj_ctrl.connect(args.key)
+            proj_ctrl.connect(args.key, db_name=args.db)
         else:
             username = args.username
             password = getpass.getpass()
-            proj_ctrl.connect_with_password(username, password)
+            proj_ctrl.connect_with_password(username, password, db_name=args.db)
         return EXIT_SUCCESS
 
 
