@@ -527,6 +527,23 @@ def get_command_output(cmd, cwd=None, env=None):
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 
+def page_output(output_string):
+    """Pipe string to a pager.
+
+    If PAGER is an environment then use that as pager, otherwise
+    use `less`.
+
+    Args:
+        output_string (str): String to put output.
+
+    """
+    try:
+        pager_cmd = os.environ['PAGER'].split(' ')
+    except KeyError:
+        pager_cmd = ['less', '-F', '-R', '-S', '-X', '-K']
+    p = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
+    p.communicate(output_string)
+
 
 def human_size(num, suffix='B'):
     """Converts a byte count to human readable units.
