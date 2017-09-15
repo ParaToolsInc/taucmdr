@@ -96,6 +96,25 @@ class Controller(object):
         """
         return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
 
+    def search_hash(self, digests):
+        """Returns records which match the hash or partial hash.
+
+        Args:
+            digest: One or more partial hex digests, of a hash of the record(s) to find.
+            If partial, provide rightmost digits.
+
+        Returns:
+            list: Models for records that match the provided hash
+        """
+        records = self.all()
+        # TODO For remote database this computation needs to happen on the server
+        if not isinstance(digests, list):
+            digests = [digests]
+        results = []
+        for digest in digests:
+            results.extend([record for record in records if record.hash_digest()[-len(digest):] == digest])
+        return results
+
     def match(self, field, regex=None, test=None):
         """Return records that have a field matching a regular expression or test function.
         

@@ -27,6 +27,8 @@
 #
 """TODO: FIXME: Docs"""
 
+import hashlib
+import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
 from taucmdr.cf.storage import StorageRecord
@@ -579,3 +581,37 @@ class Model(StorageRecord):
                 if (callable(value) and value(attr_value)) or attr_value == value: 
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
+
+    def hash_digest(self):
+        """Construct a hash to identify this object.
+
+        The hash is based on those attributes of the model that have an entry of
+        'hashed': True, which are those attributes for which changing the attribute
+        would effectively change the identity of the model object. For example,
+        changing the trials that are part of an experiment does not change the identity of
+        the experiment, so it is not hashed. However, the reverse is not true: the
+        experiment of which a trial is a part _does_ form part of the trial's identity,
+        so the experiment attribute of a trial _is_ hashed.
+
+        Returns:
+            (str): Hex digest of a hash over field-value pairs for hashable
+            attributes of the model.
+        """
+        def hash_item(value, hasher):
+            if isinstance(value, Model):
+                hasher.update(value.hash_digest())
+            elif isinstance(value, list):
+                for entry in value:
+                    hash_item(entry, hasher)
+            else:
+                hasher.update(str(value))
+
+        all_elements = self.populate(defaults=True)
+        attrs = self.attributes
+        hasher = hashlib.sha1()
+        hasher.update(self.name)
+        for field, value in six.iteritems(all_elements):
+            if field in attrs and 'hashed' in attrs[field] and attrs[field]['hashed'] is True:
+                hasher.update(field)
+                hash_item(value, hasher)
+        return hasher.hexdigest()

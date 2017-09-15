@@ -47,47 +47,56 @@ def attributes():
         'uid': {
             'type': 'string',
             'required': True,
-            'description': "compiler unique identifier"
+            'description': "compiler unique identifier",
+            'hashed': True
         },
         'path': {
             'type': 'string',
             'required': True,
-            'description': "absolute path to the compiler command"
+            'description': "absolute path to the compiler command",
+            'hashed': True
         },
         'family': {
             'type': 'string',
             'required': True,
-            'description': "compiler's family name"
+            'description': "compiler's family name",
+            'hashed': True
         },
         'role': {
             'type': 'string',
             'required': True,
-            'description': "role this command plays in the compiler family, e.g. CXX or MPI_CC"
+            'description': "role this command plays in the compiler family, e.g. CXX or MPI_CC",
+            'hashed': True
         },
         'wrapped': {
             'model': Compiler,
             'required': False,
-            'description': "compiler wrapped by this compiler"
+            'description': "compiler wrapped by this compiler",
+            'hashed': True
         },
         'include_path': {
             'type': 'array',
             'required': False,
-            'description': "extra paths to search for include files when compiling with this compiler"
+            'description': "extra paths to search for include files when compiling with this compiler",
+            'hashed': True
         },
         'library_path': {
             'type': 'array',
             'required': False,
-            'description': "extra paths to search for libraries when compiling with this compiler"
+            'description': "extra paths to search for libraries when compiling with this compiler",
+            'hashed': True
         },
         'compiler_flags': {
             'type': 'array',
             'required': False,
-            'description': "extra flags to use when compiling with this compiler"
+            'description': "extra flags to use when compiling with this compiler",
+            'hashed': True
         },
         'libraries': {
             'type': 'array',
             'required': False,
-            'description': "extra libraries to link when compiling with this compiler"
+            'description': "extra libraries to link when compiling with this compiler",
+            'hashed': True
         }
     }
 

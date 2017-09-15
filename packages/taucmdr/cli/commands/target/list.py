@@ -35,7 +35,8 @@ from taucmdr.model.target import Target
 from taucmdr.model.compiler import Compiler
 
 
-DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
+DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10},
+                     {'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch', 'value': 'host_arch'},
                      {'header': 'Host Compilers', 'function': 

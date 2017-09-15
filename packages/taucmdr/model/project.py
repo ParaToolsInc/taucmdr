@@ -55,30 +55,36 @@ def attributes():
             'type': 'string',
             'unique': True,
             'description': 'project name',
+            'hashed': True
         },
         'targets': {
             'collection': Target,
             'via': 'projects',
-            'description': 'targets used by this project'
+            'description': 'targets used by this project',
+            'hashed': False
         },
         'applications': {
             'collection': Application,
             'via': 'projects',
-            'description': 'applications used by this project'
+            'description': 'applications used by this project',
+            'hashed': False
         },
         'measurements': {
             'collection': Measurement,
             'via': 'projects',
-            'description': 'measurements used by this project'
+            'description': 'measurements used by this project',
+            'hashed': False
         },
         'experiments': {
             'collection': Experiment,
             'via': 'project',
-            'description': 'experiments formed from this project'
+            'description': 'experiments formed from this project',
+            'hashed': False
         },
         'experiment': {
             'model': Experiment,
             'description': 'the current experiment',
+            'hashed': False
         },
         'force_tau_options': {
             'type': 'array',
@@ -86,7 +92,8 @@ def attributes():
             'rebuild_on_change': True,
             'argparse': {'flags': ('--force-tau-options',),
                          'metavar': '<option>'},
-            'compat': {True: Project.discourage('force_tau_options')}
+            'compat': {True: Project.discourage('force_tau_options')},
+            'hashed': True
         }
     }
 

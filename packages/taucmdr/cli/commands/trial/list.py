@@ -35,7 +35,8 @@ from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
 
 
-DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
+DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10},
+                     {'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'Description', 'value': 'description'},

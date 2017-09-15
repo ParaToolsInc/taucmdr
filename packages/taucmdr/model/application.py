@@ -53,34 +53,39 @@ def attributes():
         'projects': {
             'collection': Project,
             'via': 'applications',
-            'description': 'projects using this application'
+            'description': 'projects using this application',
+            'hashed': False
         },
         'name': {
             'primary_key': True,
             'type': 'string',
             'description': 'application configuration name',
-            'unique': True
+            'unique': True,
+            'hashed': True
         },
         'openmp': {
             'type': 'boolean',
             'description': 'application uses OpenMP',
             'default': False,
             'argparse': {'flags': ('--openmp',)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'pthreads': {
             'type': 'boolean',
             'description': 'application uses pthreads',
             'default': False,
             'argparse': {'flags': ('--pthreads',)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'tbb': {
             'type': 'boolean',
             'description': 'application uses Thread Building Blocks (TBB)',
             'default': False,
             'argparse': {'flags': ('--tbb',)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'mpi': {
             'type': 'boolean',
@@ -88,7 +93,8 @@ def attributes():
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
             'compat': {True: Measurement.require('mpi', True)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'cuda': {
             'type': 'boolean',
@@ -96,7 +102,8 @@ def attributes():
             'description': 'application uses NVIDIA CUDA',
             'argparse': {'flags': ('--cuda',)},
             'compat': {True: Target.require('cuda_toolkit')},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'opencl': {
             'type': 'boolean',
@@ -105,21 +112,24 @@ def attributes():
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
                               Measurement.encourage('opencl', True))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'shmem': {
             'type': 'boolean',
             'default': False,
             'description': 'application uses SHMEM',
             'argparse': {'flags': ('--shmem',)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'mpc': {
             'type': 'boolean',
             'default': False,
             'description': 'application uses MPC',
             'argparse': {'flags': ('--mpc',)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'select_file': {
             'type': 'string',
@@ -127,7 +137,8 @@ def attributes():
             'argparse': {'flags': ('--select-file',),
                          'metavar': 'path'},
             'compat': {True: Measurement.exclude('source_inst', 'never')},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'linkage': {
             'type': 'string',
@@ -137,7 +148,8 @@ def attributes():
                          'metavar': '<linkage>',
                          'choices': ('static', 'dynamic')},
             'compat': {'static': Target.exclude('host_os', DARWIN)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
     }
 

@@ -57,42 +57,49 @@ def attributes():
             'type': 'string',
             'description': 'human-readable experiment name',
             'unique': True,
+            'hashed': True
         },
         'project': {
             'model': Project,
             'required': True,
             'description': "Project this experiment belongs to",
-            'unique': True
+            'unique': True,
+            'hashed': False
         },
         'target': {
             'model': Target,
             'required': True,
             'description': "The experiment's hardware/software configuration",
             'argparse': {'flags': ('--target',),
-                         'metavar': '<name>'}
+                         'metavar': '<name>'},
+            'hashed': True
         },
         'application': {
             'model': Application,
             'required': True,
             'description': "Application this experiment uses",
             'argparse': {'flags': ('--application',),
-                         'metavar': '<name>'}
+                         'metavar': '<name>'},
+            'hashed': True
         },
         'measurement': {
             'model': Measurement,
             'required': True,
             'description': "Measurement parameters for this experiment",
             'argparse': {'flags': ('--measurement',),
-                         'metavar': '<name>'}
+                         'metavar': '<name>'},
+            'hashed': True
         },
         'trials': {
             'collection': Trial,
             'via': 'experiment',
-            'description': "Trials of this experiment"
+            'description': "Trials of this experiment",
+            'hashed': False
         },
         'tau_makefile': {
             'type': 'string',
-            'description': 'TAU Makefile used during this experiment, if any.'
+            'description': 'TAU Makefile used during this experiment, if any.',
+            'hashed': True
         }
     }
 

@@ -78,13 +78,15 @@ def attributes():
         'projects': {
             'collection': Project,
             'via': 'measurements',
-            'description': "projects using this measurement"
+            'description': "projects using this measurement",
+            'hashed': False
         },
         'name': {
             'primary_key': True,
             'type': 'string',
             'unique': True,
             'description': "measurement configuration name",
+            'hashed': True
         },
         'profile': {
             'type': 'string',
@@ -100,6 +102,7 @@ def attributes():
                                  Application.require('mpi', True),
                                  Measurement.require('mpi', True)),
                        'merged': _merged_profile_compat},
+            'hashed': True
         },
         'trace': {
             'type': 'string',
@@ -112,7 +115,8 @@ def attributes():
                          'choices':('slog2', 'otf2', 'none'),
                          'const': 'otf2'},
             'compat': {'otf2': Target.exclude('libotf2_source', None),
-                       lambda x: x != 'none': _discourage_callpath}
+                       lambda x: x != 'none': _discourage_callpath},
+            'hashed': True
         },
         'sample': {
             'type': 'boolean',
@@ -124,7 +128,8 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN))}
+                              Target.exclude('host_os', DARWIN))},
+            'hashed': True
         },
         'source_inst': {
             'type': 'string',
@@ -137,7 +142,8 @@ def attributes():
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
             'compat': {'automatic': Target.exclude('pdt_source', None)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'compiler_inst': {
             'type': 'string',
@@ -155,7 +161,8 @@ def attributes():
                         Target.require('libunwind_source'),
                         Target.exclude('libunwind_source', None),
                         Target.exclude('host_os', DARWIN))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'link_only': {
             'type': 'boolean',
@@ -163,7 +170,8 @@ def attributes():
             'description': "don't instrument, only link the TAU library to the application",
             'argparse': {'flags': ('--link-only',),
                          'group': 'instrumentation'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'mpi': {
             'type': 'boolean',
@@ -174,7 +182,8 @@ def attributes():
                        (Target.require(MPI_CC.keyword),
                         Target.require(MPI_CXX.keyword),
                         Target.require(MPI_FC.keyword))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'openmp': {
             'type': 'string',
@@ -187,7 +196,8 @@ def attributes():
                        (Application.require('openmp', True),
                         Measurement.discourage('source_inst', 'never')),
                        'ompt': Application.require('openmp', True)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'cuda': {
             'type': 'boolean',
@@ -195,6 +205,7 @@ def attributes():
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
             'compat': {True: Target.require('cuda_toolkit')},
+            'hashed': True
         },
         'shmem': {
             'type': 'boolean',
@@ -205,7 +216,8 @@ def attributes():
                        (Target.require(SHMEM_CC.keyword),
                         Target.require(SHMEM_CXX.keyword),
                         Target.require(SHMEM_FC.keyword))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'opencl': {
             'type': 'boolean',
@@ -214,6 +226,7 @@ def attributes():
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda'),
                               Application.require('opencl'))},
+            'hashed': True
         },
         'callpath': {
             'type': 'integer',
@@ -223,13 +236,15 @@ def attributes():
                          'group': 'data',
                          'metavar': 'depth',
                          'nargs': '?',
-                         'const': 100}
+                         'const': 100},
+            'hashed': True
         },
         'io': {
             'type': 'boolean',
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',)},
+            'hashed': True
         },
         'heap_usage': {
             'type': 'boolean',
@@ -237,6 +252,7 @@ def attributes():
             'description': 'measure heap memory usage',
             'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory'},
+            'hashed': True
         },
         'memory_alloc': {
             'type': 'boolean',
@@ -244,6 +260,7 @@ def attributes():
             'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
+            'hashed': True
         },
         'metrics': {
             'type': 'array',
@@ -255,7 +272,8 @@ def attributes():
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
                        (Target.require('papi_source'), 
                         Target.exclude('papi_source', None))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'keep_inst_files': {
             'type': 'boolean',
@@ -263,7 +281,8 @@ def attributes():
             'description': "don't remove instrumented files after compilation",
             'argparse': {'flags': ('--keep-inst-files',),
                          'group': 'instrumentation'},
-            'compat': {True: Measurement.exclude('source_inst', 'never')}
+            'compat': {True: Measurement.exclude('source_inst', 'never')},
+            'hashed': True
         },
         'reuse_inst_files': {
             'type': 'boolean',
@@ -271,19 +290,22 @@ def attributes():
             'description': 'reuse and preserve instrumented files after compilation',
             'argparse': {'flags': ('--reuse-inst-files',),
                          'group': 'instrumentation'},
-            'compat': {True: Measurement.exclude('source_inst', 'never')}
+            'compat': {True: Measurement.exclude('source_inst', 'never')},
+            'hashed': True
         },
         'comm_matrix': {
             'type': 'boolean',
             'default': False,
             'description': 'record the point-to-point communication matrix',
-            'argparse': {'flags': ('--comm-matrix',)}
+            'argparse': {'flags': ('--comm-matrix',)},
+            'hashed': True
         },
         'throttle': {
             'type': 'boolean',
             'default': True,
             'description': 'throttle lightweight events to reduce overhead',
             'argparse': {'flags': ('--throttle',)},
+            'hashed': True
         },
         'throttle_per_call': {
             'type': 'integer',
@@ -293,6 +315,7 @@ def attributes():
                          'metavar': 'us',
                          'nargs': '?',
                          'const': 10},
+            'hashed': True
         },
         'throttle_num_calls': {
             'type': 'integer',
@@ -302,12 +325,14 @@ def attributes():
                          'metavar': 'count',
                          'nargs': '?',
                          'const': 100000},
+            'hashed': True
         },
         'metadata_merge': {
             'type': 'boolean',
             'default': True,
             'description': 'merge metadata of TAU profiles',
             'argparse': {'flags': ('--metadata-merge',)},
+            'hashed': True
         },
         'callsite': {
             'type': 'boolean',
@@ -318,7 +343,8 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN))}
+                              Target.exclude('host_os', DARWIN))},
+            'hashed': True
         },
     }
 

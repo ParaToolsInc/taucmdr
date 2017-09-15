@@ -168,9 +168,17 @@ class DeleteCommand(AbstractCliView):
     def _delete_record(self, store, key):
         key_attr = self.model.key_attribute
         ctrl = self.model.controller(store)
-        if not ctrl.exists({key_attr: key}):
-            self.parser.error("No %s-level %s with %s='%s'." % (store.name, self.model_name, key_attr, key))
-        ctrl.delete({key_attr: key})
+        records = ctrl.search({key_attr: key})
+        if not records:
+            records = ctrl.search_hash(key)
+            if not records:
+                self.parser.error("No %s-level %s with %s='%s'." % (store.name, self.model_name, key_attr, key))
+            if len(records) > 1:
+                matches = [record.hash_digest() for record in records]
+                self.parser.error("Ambiguous hash %s for %s at %s-level: matches %s" %
+                                  (key, self.model_name, store.name, matches))
+        eids_to_delete = [record.eid for record in records]
+        ctrl.delete(eids_to_delete)
         self.logger.info("Deleted %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
     
@@ -211,9 +219,22 @@ class EditCommand(AbstractCliView):
     def _update_record(self, store, data, key):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
-        if not ctrl.exists({key_attr: key}):
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
-        ctrl.update(data, {key_attr: key})
+        used_hash = False
+        records = ctrl.search({key_attr: key})
+        if not records:
+            records = ctrl.search_hash(key)
+            used_hash = True
+            if not records:
+                self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+            if len(records) > 1:
+                matches = [record.hash_digest() for record in records]
+                self.parser.error("Ambiguous hash %s for %s at %s-level: matches %s" %
+                                  (key, self.model_name, store.name, matches))
+        eids_to_update = [record.eid for record in records]
+        if used_hash and data[key_attr] == key:
+            del data[key_attr]
+        print(data)
+        ctrl.update(data, eids_to_update)
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
 
@@ -284,6 +305,8 @@ class ListCommand(AbstractCliView):
                     cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
                 elif 'function' in col:
                     cell = col['function'](populated)
+                elif 'hash' in col:
+                    cell = record.hash_digest()[-col['hash']:]
                 else:
                     raise InternalError("Invalid column definition: %s" % col)
                 row.append(cell)
@@ -347,7 +370,7 @@ class ListCommand(AbstractCliView):
             table.set_cols_align(['r', 'c', 'l', 'l'])
             table.set_deco(Texttable.HEADER | Texttable.VLINES)
             table.add_rows(rows)
-            retval.append(util.hline(populated[self.model.key_attribute], 'cyan'))
+            retval.append(util.hline("%s %s" % (populated[self.model.key_attribute], record.hash_digest()), 'cyan'))
             retval.extend([table.draw(), ''])
         return retval
 
@@ -443,9 +466,13 @@ class ListCommand(AbstractCliView):
             if len(keys) == 1:
                 records = ctrl.search({key_attr: keys[0]})
                 if not records:
-                    self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[0]))
+                    records = ctrl.search_hash(keys[0])
+                    if not records:
+                        self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[0]))
             else:
                 records = ctrl.search([{key_attr: key} for key in keys])
+                if not records:
+                    records = ctrl.search_hash(keys)
                 for i, record in enumerate(records):
                     if not record:
                         self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[i]))
@@ -527,8 +554,10 @@ class CopyCommand(CreateCommand):
         key_attr = self.model.key_attribute
         matching = ctrl.search({key_attr: key})
         if not matching:
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
-        elif len(matching) > 1:
+            matching = ctrl.search_hash(key)
+            if not matching:
+                self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+        if len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" % 
                                 (ctrl.storage.name, self.model_name, key_attr, key))
         else:

@@ -29,8 +29,7 @@
 Backend for storing data in TAU Enterprise.
 
 This currently means storing key-value pairs and database records accessed
-through a REST API backed by MongoDB and files in Ceph through RADOSGW, an
-Amazon S3 API compatible object store.
+through a REST API backed by MongoDB and files in Mongo GridFS.
 """
                                 
 import os

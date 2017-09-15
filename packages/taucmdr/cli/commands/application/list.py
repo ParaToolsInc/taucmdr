@@ -31,7 +31,8 @@ from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.application import Application
 
 
-DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
+DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10},
+                     {'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Linkage', 'value': 'linkage'},
                      {'header': 'OpenMP', 'yesno': 'openmp'},
                      {'header': 'Pthreads', 'yesno': 'pthreads'},

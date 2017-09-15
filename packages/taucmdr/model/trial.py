@@ -56,53 +56,64 @@ def attributes():
             'primary_key': True,
             'type': 'integer',
             'required': True,
-            'description': 'trial number'
+            'description': 'trial number',
+            'hashed': True
         },
         'experiment': {
             'model': Experiment,
             'required': True,
-            'description': "this trial's experiment"
+            'description': "this trial's experiment",
+            'hashed': True
         },
         'command': {
             'type': 'string',
             'required': True,
-            'description': "command line executed when performing the trial"
+            'description': "command line executed when performing the trial",
+            'hashed': True
         },
         'cwd': {
             'type': 'string',
             'required': True,
             'description': "directory the trial was performed in",
+            'hashed': True
         },
         'environment': {
             'type': 'string',
             'required': True,
-            'description': "shell environment the trial was performed in"
+            'description': "shell environment the trial was performed in",
+            'hashed': True
         },
         'begin_time': {
             'type': 'datetime',
-            'description': "date and time the trial began"
+            'description': "date and time the trial began",
+            'hashed': True
         },
         'end_time': {
             'type': 'datetime',
-            'description': "date and time the trial ended"
+            'description': "date and time the trial ended",
+            'hashed': True
         },
         'return_code': {
             'type': 'integer',
-            'description': "return code of the command executed when performing the trial"
+            'description': "return code of the command executed when performing the trial",
+            'hashed': True
         },
         'data_size': {
             'type': 'integer',
-            'description': "the size in bytes of the trial data"
+            'description': "the size in bytes of the trial data",
+            'hashed': True
         },
         'description': {
             'type': 'string',
             'argparse': {'flags': ('--description',),
                          'metavar': '<text>'},
-            'description': "description of this trial"
+            'description': "description of this trial",
+            'hashed': True
         },
         'phase': {
             'type': 'string',
-            'description': "phase of trial"
+            'description': "phase of trial",
+            'hashed': True
         },
     }
 

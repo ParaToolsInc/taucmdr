@@ -156,13 +156,15 @@ def attributes():
         'projects': {
             'collection': Project,
             'via': 'targets',
-            'description': 'projects using this target'
+            'description': 'projects using this target',
+            'hashed': False
         },
         'name': {
             'primary_key': True,
             'type': 'string',
             'unique': True,
             'description': 'target configuration name',
+            'hashed': True
         },
         'host_os': {
             'type': 'string',
@@ -173,7 +175,8 @@ def attributes():
                          'group': 'host',
                          'metavar': '<os>',
                          'choices': OperatingSystem.keys()},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'host_arch': {
             'type': 'string',
@@ -192,7 +195,8 @@ def attributes():
                         Target.require(MPI_CC.keyword, knc_intel_mpi_only),
                         Target.require(MPI_CXX.keyword, knc_intel_mpi_only),
                         Target.require(MPI_FC.keyword, knc_intel_mpi_only))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         CC.keyword: {
             'model': Compiler,
@@ -201,7 +205,8 @@ def attributes():
             'argparse': {'flags': ('--cc',),
                          'group': 'host',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         CXX.keyword: {
             'model': Compiler,
@@ -210,7 +215,8 @@ def attributes():
             'argparse': {'flags': ('--cxx',),
                          'group': 'host',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         FC.keyword: {
             'model': Compiler,
@@ -219,7 +225,8 @@ def attributes():
             'argparse': {'flags': ('--fc',),
                          'group': 'host',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         UPC.keyword: {
             'model': Compiler,
@@ -228,7 +235,8 @@ def attributes():
             'argparse': {'flags': ('--upc',),
                          'group': 'Universal Parallel C',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         MPI_CC.keyword: {
             'model': Compiler,
@@ -237,7 +245,8 @@ def attributes():
             'argparse': {'flags': ('--mpi-cc',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         MPI_CXX.keyword: {
             'model': Compiler,
@@ -246,7 +255,8 @@ def attributes():
             'argparse': {'flags': ('--mpi-cxx',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         MPI_FC.keyword: {
             'model': Compiler,
@@ -255,7 +265,8 @@ def attributes():
             'argparse': {'flags': ('--mpi-fc',),
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'mpi_libraries': {
             'type': 'array',
@@ -266,7 +277,8 @@ def attributes():
             'compat': {bool: (Target.require(MPI_CC.keyword),
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         SHMEM_CC.keyword: {
             'model': Compiler,
@@ -275,7 +287,8 @@ def attributes():
             'argparse': {'flags': ('--shmem-cc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         SHMEM_CXX.keyword: {
             'model': Compiler,
@@ -284,7 +297,8 @@ def attributes():
             'argparse': {'flags': ('--shmem-cxx',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         SHMEM_FC.keyword: {
             'model': Compiler,
@@ -293,7 +307,8 @@ def attributes():
             'argparse': {'flags': ('--shmem-fc',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'shmem_libraries': {
             'type': 'array',
@@ -301,7 +316,8 @@ def attributes():
             'argparse': {'flags': ('--shmem-libraries',),
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<flag>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         CUDA_CXX.keyword: {
             'model': Compiler,
@@ -310,7 +326,8 @@ def attributes():
             'argparse': {'flags': ('--cuda-cxx',),
                          'group': 'CUDA',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         CUDA_FC.keyword: {
             'model': Compiler,
@@ -319,7 +336,8 @@ def attributes():
             'argparse': {'flags': ('--cuda-fc',),
                          'group': 'CUDA',
                          'metavar': '<command>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },  
         'cuda_toolkit': {
             'type': 'string',
@@ -329,7 +347,8 @@ def attributes():
                          'group': 'CUDA',
                          'metavar': '<path>',
                          'action': ParsePackagePathAction},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'tau_source': {
             'type': 'string',
@@ -340,7 +359,8 @@ def attributes():
                          'metavar': '(<path>|<url>|download|nightly)',
                          'action': ParsePackagePathAction},
             'compat': {True: Target.require('tau_source')},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'pdt_source': {
             'type': 'string',
@@ -350,7 +370,8 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'binutils_source': {
             'type': 'string',
@@ -361,7 +382,8 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'libunwind_source': {
             'type': 'string',
@@ -372,7 +394,8 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'papi_source': {
             'type': 'string',
@@ -383,7 +406,8 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'scorep_source': {
             'type': 'string',
@@ -397,7 +421,8 @@ def attributes():
                                                    Target.require(CC.keyword),
                                                    Target.require(CXX.keyword),
                                                    Target.require(FC.keyword))},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'ompt_source': {
             'type': 'string',
@@ -407,7 +432,8 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'libotf2_source': {
             'type': 'string',
@@ -417,14 +443,16 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
             'argparse': {'flags': ('--from-tau-makefile',),
                          'metavar': '<path>'},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'hashed': True
         }
     }
 
