@@ -103,12 +103,13 @@ class HelpCommand(AbstractCommand):
                  cmd_obj.usage,
                  "", util.hline("Help: " + command),
                  cmd_obj.help_page]
-        print '\n'.join(parts)
+        util.page_output('\n'.join(parts))
         return EXIT_SUCCESS
 
     @staticmethod
     def exit_with_fullhelp():
         """Show a recursive help page for all commands and exit."""
+        help_output = ''
         commands = cli.get_all_commands()
         for cmd_name in commands:
             name = cli.command_from_module_name(cmd_name)
@@ -119,7 +120,8 @@ class HelpCommand(AbstractCommand):
                      cmd_obj.usage,
                      "", util.hline("Help: " + command),
                      cmd_obj.help_page]
-            print '\n'.join(parts)
+            help_output += '\n'.join(parts)
+        util.page_output(help_output)
         return EXIT_SUCCESS
 
     def _construct_parser(self):
