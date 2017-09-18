@@ -113,6 +113,7 @@ class Model(StorageRecord):
     def __init__(self, record):
         super(Model, self).__init__(record.storage, record.eid, record.element)
         self._populated = None
+        self._hash = None
     
     def __setitem__(self, key, value):
         raise InternalError("Use controller(storage).update() to alter records")
@@ -606,6 +607,8 @@ class Model(StorageRecord):
             else:
                 hasher.update(str(value))
 
+        if self._hash is not None:
+            return self._hash
         all_elements = self.populate(defaults=True)
         attrs = self.attributes
         hasher = hashlib.sha1()
@@ -614,4 +617,5 @@ class Model(StorageRecord):
             if field in attrs and 'hashed' in attrs[field] and attrs[field]['hashed'] is True:
                 hasher.update(field)
                 hash_item(value, hasher)
-        return hasher.hexdigest()
+        self._hash = hasher.hexdigest()
+        return self._hash

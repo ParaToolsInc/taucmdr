@@ -641,42 +641,41 @@ class PushCommand(AbstractCliView):
                     records = ctrl.search_hash(keys)
         return records
 
-    def _locate_records_to_push(self, base_records, direction = 'down', already_found = None):
+    def _locate_records_to_push(self, base_records, direction = 'down', visited = None):
         # From the anchor record we need to push those records which are:
-        #   - Down from the anchor record, and all records down from those
+        #   - Down from the anchor record, and all records down AND up from those
         #   - Up from the anchor record, and all records up from those
+        if visited is None:
+            visited = set()
         records_to_push = []
-        if not isinstance(base_records, list):
-            base_records = [base_records]
-        if already_found is None:
-            already_found = []
         for base_record in base_records:
-            print("base record: {}".format(base_record))
+            if base_record.hash_digest() in visited:
+                continue
+            visited.add(base_record.hash_digest())
             full_record = base_record.populate()
             attrs = base_record.attributes
-            direct_down = []
-            direct_up = []
-            indirect_down = []
-            indirect_up = []
-            for field, value in six.iteritems(full_record):
-                if field in attrs and 'direction' in attrs[field]:
-                    if attrs[field]['direction'] == 'down':
-                        if value not in already_found:
-                            direct_down.append(value)
-                    elif attrs[field]['direction'] == 'up':
-                        if value not in already_found:
-                            direct_up.append(value)
-            # Search down from here if necessary
-            if direction == 'down':
-                for down in direct_down:
-                    indirect_down.extend(self._locate_records_to_push(down, direction='down', already_found=base_records))
-            for up in direct_up:
-                indirect_up.extend(self._locate_records_to_push(up, direction='up', already_found=base_records))
-            records_to_push.extend(indirect_down)
-            records_to_push.extend(direct_down)
-            records_to_push.append([base_record])
-            records_to_push.extend(direct_up)
-            records_to_push.extend(indirect_up)
+            down = []
+            up = []
+            for field, values in six.iteritems(full_record):
+                if not isinstance(values, list):
+                    values = [values]
+                for value in values:
+                    if field in attrs and 'direction' in attrs[field]:
+                        if value.hash_digest() in visited:
+                            continue
+                        if direction == 'down' and attrs[field]['direction'] == 'down':
+                            down.append(value)
+                        elif attrs[field]['direction'] == 'up':
+                            up.append(value)
+            rec_down = []
+            rec_up = []
+            for d in down:
+                rec_down.extend(self._locate_records_to_push([d], direction='down', visited=visited))
+            for u in up:
+                rec_up.extend(self._locate_records_to_push([u], direction='up', visited=visited))
+            records_to_push.extend(rec_up)
+            records_to_push.append(base_record)
+            records_to_push.extend(rec_down)
         return records_to_push
 
     def _push_records(self, storage_levels, keys, mode):
@@ -698,6 +697,9 @@ class PushCommand(AbstractCliView):
 
         records_to_push = self._locate_records_to_push(base_records)
 
+        if mode == 'dryrun':
+            for record in records_to_push:
+                self.logger.info("Would push %s %s", record.name, record.hash_digest())
 
         return EXIT_SUCCESS
 

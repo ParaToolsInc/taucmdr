@@ -25,9 +25,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``trial push`` subcommand."""
+"""``project push`` subcommand."""
 
 from taucmdr.cli.cli_view import PushCommand
-from taucmdr.model.trial import Trial
+from taucmdr.model.project import Project
 
-COMMAND = PushCommand(Trial, __name__)
+COMMAND = PushCommand(Project, __name__)
