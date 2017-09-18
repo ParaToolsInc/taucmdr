@@ -31,7 +31,8 @@ Backend for storing data in TAU Enterprise.
 This currently means storing key-value pairs and database records accessed
 through a REST API backed by MongoDB and files in Mongo GridFS.
 """
-                                
+
+import base64
 import os
 import json
 import requests
@@ -68,8 +69,8 @@ class _TauEnterpriseJsonRecord(StorageRecord):
         super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element)
 
     def __str__(self):
-        return json.dumps({k: (v.element if type(v) is _TauEnterpriseJsonRecord else v)
-                           for k,v in self.element.iteritems()})
+        return json.dumps({k: (v.element if isinstance(v, _TauEnterpriseJsonRecord) else v)
+                           for k, v in self.element.iteritems()})
 
     def __repr__(self):
         return str(self)
@@ -87,11 +88,10 @@ class _TauEnterpriseDatabase(object):
     @classmethod
     def get_token_for_user(cls, endpoint, username, password):
         url = "{}/token".format(endpoint)
-        r = requests.post(url, json.dumps({'username': username, 'password': password}),
+        request = requests.post(url, json.dumps({'username': username, 'password': password}),
                           headers={'Content-Type': 'application/json'}, verify=False)
-        r.raise_for_status()
-        return r.json()['token']
-
+        request.raise_for_status()
+        return request.json()['token']
 
     def __init__(self, endpoint, db_name, token=None, storage=None):
         self.db_name = db_name
@@ -302,6 +302,26 @@ class _TauEnterpriseTable(object):
         request = self.session.delete(self.endpoint)
         request.raise_for_status()
 
+    def put_file(self, name, data, linked_id=None):
+        files = {'file': (name, data, 'application/octet-stream')}
+        form_data = {'name': name}
+        if linked_id is not None:
+            form_data['trial'] = linked_id
+        request = self.session.post(self.endpoint, data=form_data, files=files)
+        request.raise_for_status()
+        return _TauEnterpriseJsonRecord(self.database.storage, form_data, eid=request.json()['_id'])
+
+    def get_file(self, keys=None, eid=None):
+        if eid is not None:
+            record = [self.get(eid=eid)]
+        elif keys is not None:
+            record = self.search(keys)
+        else:
+            record = []
+        if len(record) > 0:
+            return record[0]['name'], base64.b64decode(record[0]['file'])
+        else:
+            return None
 
 class TauEnterpriseStorage(AbstractStorage):
     """A remote storage system accessed through a REST API.
@@ -725,3 +745,41 @@ class TauEnterpriseStorage(AbstractStorage):
             bool: True if remote, False if local
         """
         return True
+
+    def put_file(self, name, path, linked_id=None, table_name=None):
+        """Uploads the contents of a file to the database.
+
+        Args:
+            name (str): Name of the file to be created in the database.
+            path (str): Path to the file on the local filesystem
+            linked_id (str): ObjectId of the associated remote object.
+            table_name (str): Name of the table to operate on. See :any:`AbstractDatabase.table`.
+
+
+        Returns:
+            Record: the new record.
+        """
+        table = self.table(table_name)
+        with open(path, 'rb') as file_data:
+            return table.put_file(name, file_data, linked_id=linked_id)
+
+    def get_file(self, keys, path, table_name=None):
+        """Downloads the contents of a file from the database.
+
+        Args:
+            keys: Fields or element identifiers to match.
+            path (str): Path to the file to be created on the local filesystem
+            table_name (str): Name of the table to operate on. See :any:`AbstractDatabase.table`.
+        """
+        table = self.table(table_name)
+        if isinstance(keys, self.Record.eid_type):
+            element = table.get_file(eid=keys)
+        elif isinstance(keys, dict):
+            element = table.get_file(keys=keys)
+        else:
+            raise ValueError(keys)
+        if element is None:
+            raise StorageError("Unable to retrieve remote file %s in %s" % (keys, table_name))
+        with open(path, 'wb') as file_handle:
+            file_handle.write(element[1])
+

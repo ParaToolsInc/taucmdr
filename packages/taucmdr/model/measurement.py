@@ -79,7 +79,8 @@ def attributes():
             'collection': Project,
             'via': 'measurements',
             'description': "projects using this measurement",
-            'hashed': False
+            'hashed': False,
+            'direction': 'up'
         },
         'name': {
             'primary_key': True,

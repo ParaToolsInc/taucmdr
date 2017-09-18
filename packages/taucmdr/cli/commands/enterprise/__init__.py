@@ -39,7 +39,7 @@ class TauEnterpriseRootCommand(AbstractCommand):
         if not summary_fmt:
             summary_fmt = "Manage TAU Enterprise credentials and data"
         super(TauEnterpriseRootCommand, self).__init__(module_name, format_fields=None, summary_fmt=summary_fmt,
-                                          help_page_fmt=help_page_fmt, group=group)
+                                                       help_page_fmt=help_page_fmt, group=group)
 
     def _construct_parser(self):
         usage = "%s <subcommand> [arguments]" % self.command

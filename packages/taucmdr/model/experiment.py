@@ -64,7 +64,8 @@ def attributes():
             'required': True,
             'description': "Project this experiment belongs to",
             'unique': True,
-            'hashed': False
+            'hashed': False,
+            'direction': 'up'
         },
         'target': {
             'model': Target,
@@ -72,7 +73,8 @@ def attributes():
             'description': "The experiment's hardware/software configuration",
             'argparse': {'flags': ('--target',),
                          'metavar': '<name>'},
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'application': {
             'model': Application,
@@ -80,7 +82,8 @@ def attributes():
             'description': "Application this experiment uses",
             'argparse': {'flags': ('--application',),
                          'metavar': '<name>'},
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'measurement': {
             'model': Measurement,
@@ -88,13 +91,15 @@ def attributes():
             'description': "Measurement parameters for this experiment",
             'argparse': {'flags': ('--measurement',),
                          'metavar': '<name>'},
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'trials': {
             'collection': Trial,
             'via': 'experiment',
             'description': "Trials of this experiment",
-            'hashed': False
+            'hashed': False,
+            'direction': 'down'
         },
         'tau_makefile': {
             'type': 'string',

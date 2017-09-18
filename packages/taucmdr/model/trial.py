@@ -57,13 +57,14 @@ def attributes():
             'type': 'integer',
             'required': True,
             'description': 'trial number',
-            'hashed': True
+            'hashed': False
         },
         'experiment': {
             'model': Experiment,
             'required': True,
             'description': "this trial's experiment",
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'command': {
             'type': 'string',

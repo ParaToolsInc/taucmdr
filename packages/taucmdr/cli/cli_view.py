@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-17 ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,9 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
+from __future__ import print_function
+
+import six
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
@@ -439,7 +442,7 @@ class ListCommand(AbstractCliView):
                 parts.extend(self._count_records(user_ctl))
             if not project:
                 parts.extend(self._count_records(project_ctl))
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
         
     def main(self, argv):
@@ -578,3 +581,129 @@ class CopyCommand(CreateCommand):
         key = getattr(args, key_attr)
         return self._copy_record(store, data, key)
 
+
+class PushCommand(AbstractCliView):
+    """Base class for the `push` subcommand of command line views."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('summary_fmt', 'Push %(model_name)s configurations to TAU Enterprise.')
+        super(PushCommand, self).__init__(*args, **kwargs)
+        key_attr = self.model.key_attribute
+        self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
+
+    def _construct_parser(self):
+        key_str = self.model_name + '_' + self.model.key_attribute
+        usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" %
+                      {'command': self.command, 'key_str': key_str})
+        parser = arguments.get_parser(prog=self.command,
+                                      usage=usage_head,
+                                      description=self.summary)
+        parser.add_argument('keys',
+                            help=("Push %(model_name)ss with the given %(key_attr)ss" % self._format_fields),
+                            metavar=key_str,
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        mode_dest = 'mode'
+        mode_group = parser.add_mutually_exclusive_group()
+        mode_group.add_argument('-f', '--force',
+                                help="force changes to be pushed even if existing remote objects change",
+                                const='force', action='store_const', dest=mode_dest,
+                                default=arguments.SUPPRESS)
+        mode_group.add_argument('-n', '--dry-run',
+                                help="show the data that would be pushed, but don't actually push",
+                                const='dryrun', action='store_const', dest=mode_dest,
+                                default=arguments.SUPPRESS)
+        if self.include_storage_flag:
+            arguments.add_storage_flag(parser, "push", self.model_name, plural=True, exclusive=False)
+        return parser
+
+    def _find_records(self, ctrl, keys):
+        key_attr = self.model.key_attribute
+        if len(keys) == 1:
+            records = ctrl.search({key_attr: keys[0]})
+            if not records:
+                try:
+                    int_keys = [int(key) for key in keys]
+                    records = ctrl.search({key_attr: int_keys[0]})
+                    if not records:
+                        records = ctrl.search_hash(keys[0])
+                except ValueError:
+                    records = ctrl.search_hash(keys[0])
+        else:
+            records = ctrl.search([{key_attr: key} for key in keys])
+            if not records:
+                try:
+                    int_keys = [int(key) for key in keys]
+                    records = ctrl.search([{key_attr: int_key} for int_key in int_keys])
+                    if not records:
+                        records = ctrl.search_hash(keys)
+                except ValueError:
+                    records = ctrl.search_hash(keys)
+        return records
+
+    def _locate_records_to_push(self, base_records, direction = 'down', already_found = None):
+        # From the anchor record we need to push those records which are:
+        #   - Down from the anchor record, and all records down from those
+        #   - Up from the anchor record, and all records up from those
+        records_to_push = []
+        if not isinstance(base_records, list):
+            base_records = [base_records]
+        if already_found is None:
+            already_found = []
+        for base_record in base_records:
+            print("base record: {}".format(base_record))
+            full_record = base_record.populate()
+            attrs = base_record.attributes
+            direct_down = []
+            direct_up = []
+            indirect_down = []
+            indirect_up = []
+            for field, value in six.iteritems(full_record):
+                if field in attrs and 'direction' in attrs[field]:
+                    if attrs[field]['direction'] == 'down':
+                        if value not in already_found:
+                            direct_down.append(value)
+                    elif attrs[field]['direction'] == 'up':
+                        if value not in already_found:
+                            direct_up.append(value)
+            # Search down from here if necessary
+            if direction == 'down':
+                for down in direct_down:
+                    indirect_down.extend(self._locate_records_to_push(down, direction='down', already_found=base_records))
+            for up in direct_up:
+                indirect_up.extend(self._locate_records_to_push(up, direction='up', already_found=base_records))
+            records_to_push.extend(indirect_down)
+            records_to_push.extend(direct_down)
+            records_to_push.append([base_record])
+            records_to_push.extend(direct_up)
+            records_to_push.extend(indirect_up)
+        return records_to_push
+
+    def _push_records(self, storage_levels, keys, mode):
+        project_ctl = self.model.controller(PROJECT_STORAGE)
+        user_ctl = self.model.controller(USER_STORAGE)
+        system_ctl = self.model.controller(SYSTEM_STORAGE)
+
+        system = SYSTEM_STORAGE.name in storage_levels
+        user = USER_STORAGE.name in storage_levels
+        project = PROJECT_STORAGE.name in storage_levels or not (user or system)
+
+        base_records = []
+        if system:
+            base_records.extend(self._find_records(system_ctl, keys))
+        if user:
+            base_records.extend(self._find_records(user_ctl, keys))
+        if project:
+            base_records.extend(self._find_records(project_ctl, keys))
+
+        records_to_push = self._locate_records_to_push(base_records)
+
+
+        return EXIT_SUCCESS
+
+    def main(self, argv):
+        args = self._parse_args(argv)
+        keys = getattr(args, 'keys', None)
+        mode = getattr(args, 'mode', None) or 'none'
+        storage_levels = arguments.parse_storage_flag(args)
+        return self._push_records(storage_levels, keys, mode)

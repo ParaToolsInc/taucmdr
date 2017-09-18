@@ -84,6 +84,8 @@ class TrialListCommand(ListCommand):
                     cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
                 elif 'function' in col:
                     cell = col['function'](populated)
+                elif 'hash' in col:
+                    cell = record.hash_digest()[-col['hash']:]
                 else:
                     raise InternalError("Invalid column definition: %s" % col)
                 row.append(cell)

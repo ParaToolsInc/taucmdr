@@ -72,13 +72,14 @@ def attributes():
             'model': Compiler,
             'required': False,
             'description': "compiler wrapped by this compiler",
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'include_path': {
             'type': 'array',
             'required': False,
             'description': "extra paths to search for include files when compiling with this compiler",
-            'hashed': True
+            'hashed': True,
         },
         'library_path': {
             'type': 'array',

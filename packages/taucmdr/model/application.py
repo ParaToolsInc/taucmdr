@@ -54,7 +54,8 @@ def attributes():
             'collection': Project,
             'via': 'applications',
             'description': 'projects using this application',
-            'hashed': False
+            'hashed': False,
+            'direction': 'up'
         },
         'name': {
             'primary_key': True,

@@ -61,30 +61,35 @@ def attributes():
             'collection': Target,
             'via': 'projects',
             'description': 'targets used by this project',
-            'hashed': False
+            'hashed': False,
+            'direction': 'down'
         },
         'applications': {
             'collection': Application,
             'via': 'projects',
             'description': 'applications used by this project',
-            'hashed': False
+            'hashed': False,
+            'direction': 'down'
         },
         'measurements': {
             'collection': Measurement,
             'via': 'projects',
             'description': 'measurements used by this project',
-            'hashed': False
+            'hashed': False,
+            'direction': 'down'
         },
         'experiments': {
             'collection': Experiment,
             'via': 'project',
             'description': 'experiments formed from this project',
-            'hashed': False
+            'hashed': False,
+            'direction': 'down'
         },
         'experiment': {
             'model': Experiment,
             'description': 'the current experiment',
-            'hashed': False
+            'hashed': False,
+            'direction': 'down'
         },
         'force_tau_options': {
             'type': 'array',
@@ -141,7 +146,7 @@ class ProjectController(Controller):
     def connect(self, token, db_name=None):
         self.storage['api_token'] = token
         self.storage['db_name'] = db_name
-        LOGGER.info("Connected project to TAU Enterprise with API key %s, database name %s", (token, db_name))
+        LOGGER.info("Connected project to TAU Enterprise with API key %s, database name %s", token, db_name)
 
     def connect_with_password(self, username, password, db_name=None):
         self.connect(ENTERPRISE_STORAGE.get_token_for_user(ENTERPRISE_URL, username, password), db_name=db_name)

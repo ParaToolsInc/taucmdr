@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2017, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,28 +25,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``project select`` subcommand."""
+"""``experiment push`` subcommand."""
 
-import getpass
-from taucmdr import EXIT_SUCCESS
-from taucmdr.cli import arguments
-from taucmdr.model.project import Project
-from taucmdr.cli.command import AbstractCommand
+from taucmdr.cli.cli_view import PushCommand
+from taucmdr.model.experiment import Experiment
 
-
-class EnterpriseDisconnectCommand(AbstractCommand):
-    """``enterprise disconnect`` subcommand."""
-
-    def _construct_parser(self):
-        usage = "%s" % self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        return parser
-
-    def main(self, argv):
-        self._parse_args(argv)
-        proj_ctrl = Project.controller()
-        proj_ctrl.disconnect()
-
-
-COMMAND = EnterpriseDisconnectCommand(__name__,
-                                      summary_fmt=("Disconnect the current project from TAU Enterprise storage."))
+COMMAND = PushCommand(Experiment, __name__)

@@ -157,7 +157,8 @@ def attributes():
             'collection': Project,
             'via': 'targets',
             'description': 'projects using this target',
-            'hashed': False
+            'hashed': False,
+            'direction': 'up'
         },
         'name': {
             'primary_key': True,
@@ -206,7 +207,8 @@ def attributes():
                          'group': 'host',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         CXX.keyword: {
             'model': Compiler,
@@ -216,7 +218,8 @@ def attributes():
                          'group': 'host',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         FC.keyword: {
             'model': Compiler,
@@ -226,7 +229,8 @@ def attributes():
                          'group': 'host',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         UPC.keyword: {
             'model': Compiler,
@@ -236,7 +240,8 @@ def attributes():
                          'group': 'Universal Parallel C',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         MPI_CC.keyword: {
             'model': Compiler,
@@ -246,7 +251,8 @@ def attributes():
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         MPI_CXX.keyword: {
             'model': Compiler,
@@ -256,7 +262,8 @@ def attributes():
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         MPI_FC.keyword: {
             'model': Compiler,
@@ -266,7 +273,8 @@ def attributes():
                          'group': 'Message Passing Interface (MPI)',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'mpi_libraries': {
             'type': 'array',
@@ -278,7 +286,7 @@ def attributes():
                               Target.require(MPI_CXX.keyword),
                               Target.require(MPI_FC.keyword))},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
         },
         SHMEM_CC.keyword: {
             'model': Compiler,
@@ -288,7 +296,8 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         SHMEM_CXX.keyword: {
             'model': Compiler,
@@ -298,7 +307,8 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         SHMEM_FC.keyword: {
             'model': Compiler,
@@ -308,7 +318,8 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         'shmem_libraries': {
             'type': 'array',
@@ -317,7 +328,7 @@ def attributes():
                          'group': 'Symmetric Hierarchical Memory (SHMEM)',
                          'metavar': '<flag>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
         },
         CUDA_CXX.keyword: {
             'model': Compiler,
@@ -327,7 +338,8 @@ def attributes():
                          'group': 'CUDA',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },
         CUDA_FC.keyword: {
             'model': Compiler,
@@ -337,7 +349,8 @@ def attributes():
                          'group': 'CUDA',
                          'metavar': '<command>'},
             'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'direction': 'up'
         },  
         'cuda_toolkit': {
             'type': 'string',
