@@ -35,7 +35,7 @@ from taucmdr.model.target import Target
 from taucmdr.model.compiler import Compiler
 
 
-DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10},
+DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10, 'dtype': 't'},
                      {'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch', 'value': 'host_arch'},

@@ -45,7 +45,7 @@ class ProjectListCommand(ListCommand):
     def __init__(self):
         def _name_list(attr):
             return lambda x: ', '.join([p['name'] for p in x[attr]])
-        dashboard_columns = [{'header': 'Hash', 'hash': 10},
+        dashboard_columns = [{'header': 'Hash', 'hash': 10, 'dtype': 't'},
                              {'header': 'Name', 'value': 'name', 'align': 'r'},
                              {'header': 'Targets', 'function': _name_list('targets')},
                              {'header': 'Applications', 'function': _name_list('applications')},

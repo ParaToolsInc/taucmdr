@@ -31,10 +31,12 @@ from taucmdr import util
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.experiment import Experiment
 
+
 def data_size(expr):
     return util.human_size(sum(int(trial.get('data_size', 0)) for trial in expr['trials']))
 
-DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10},
+
+DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10, 'dtype': 't'},
                      {'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Trials', 'function': lambda x: len(x['trials'])},
                      {'header': 'Data Size', 'function': data_size},

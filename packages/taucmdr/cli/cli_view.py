@@ -318,6 +318,7 @@ class ListCommand(AbstractCliView):
             rows.append(row)
         table = Texttable(logger.LINE_WIDTH)
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
+        table.set_cols_dtype([col.get('dtype', 'a') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '']
     
