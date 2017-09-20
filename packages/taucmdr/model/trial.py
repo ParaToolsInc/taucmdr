@@ -32,11 +32,14 @@ record completely describes the hardware and software environment that produced
 the performance data.
 """
 
+from __future__ import print_function
 import os
+import tarfile
 import glob
 import errno
 from datetime import datetime
 import fasteners
+import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
@@ -239,6 +242,33 @@ class TrialController(Controller):
             return self._perform_bluegene(expr, trial, cmd, cwd, env)
         else:
             return self._perform_interactive(expr, trial, cmd, cwd, env)
+
+    def push_to_remote(self, record, remote_storage, eid_map):
+        remote_eid, already_present = super(TrialController, self).push_to_remote(record, remote_storage, eid_map)
+        if already_present:
+            return remote_eid, already_present
+        data_files = record.get_data_files()
+        paths_to_upload = []
+        temp_files = []
+        hash_digest = record.hash_digest()
+        for kind, data_file in six.iteritems(data_files):
+            if os.path.isdir(data_file):
+                tar_path = os.path.join(data_file, "..", "%s-%s.tar" % (hash_digest, kind))
+                with tarfile.open(tar_path, mode="w") as tar:
+                    tar.add(data_file)
+                paths_to_upload.append(tar_path)
+                temp_files.append(tar_path)
+            else:
+                paths_to_upload.append(data_file)
+
+        for path in paths_to_upload:
+            remote_storage.put_file(os.path.basename(path), path, linked_id=remote_eid, table_name='file')
+            LOGGER.info("Uploaded file %s for trial %s." % (path, hash_digest))
+
+        for temp_file in temp_files:
+            os.remove(temp_file)
+
+        return remote_eid, already_present
 
 
 class Trial(Model):

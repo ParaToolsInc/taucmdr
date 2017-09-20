@@ -9,7 +9,7 @@ CC = tau mpicc
 MPI_CFLAGS = -DTAU_MPI
 SUFFIX=.mpi
 else
-CC = tau gcc
+CC = tau cc
 MPI_CFLAGS = 
 SUFFIX=
 endif

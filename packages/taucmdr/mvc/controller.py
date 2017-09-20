@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """TODO: FIXME: Docs"""
-
+import six
 from taucmdr import logger
 from taucmdr.error import InternalError, UniqueAttributeError, ModelError
 
@@ -355,6 +355,38 @@ class Controller(object):
             database.remove(keys, table_name=self.model.name)
             for model in changing:
                 model.on_delete()
+
+    def push_to_remote(self, record, remote_storage, eid_map):
+        LOGGER.debug("Will attempt to push %s %s to server.", record.name, record.hash_digest())
+        # First, check if this record is already on the server.
+        remote_record = remote_storage.search_hash(record.hash_digest(), table_name=self.model.name)
+        if remote_record:
+            if len(remote_record) > 1:
+                raise InternalError("Multiple matches for hash %s on server!" % record.hash_digest())
+            LOGGER.debug("Record %s %s already exists on server.", record.name, record.hash_digest())
+            return remote_record[0].eid, True
+        full_record = record.populate()
+        attrs = record.attributes
+        data_for_server = {}
+        for field, value in six.iteritems(full_record):
+            if field in attrs and 'direction' in attrs[field]:
+                # Strip out any 'down' references
+                if attrs[field]['direction'] == 'down':
+                    data_for_server[field] = []
+                # Replace any up references with eid to remote record
+                elif attrs[field]['direction'] == 'up':
+                    if isinstance(value, list):
+                        data_for_server[field] = [eid_map[ref.hash_digest()] for ref in value]
+                    else:
+                        data_for_server[field] = eid_map[value.hash_digest()]
+                else:
+                    raise InternalError("Invalid direction %s for model %s" % (attrs[field]['direction'], record.name))
+            else:
+                data_for_server[field] = value
+        data_for_server['_hash'] = record.hash_digest()
+        new_remote_record = remote_storage.insert(data_for_server, table_name=record.name, propagate=True)
+        LOGGER.debug("Inserted new remote record as %s." % new_remote_record.eid)
+        return new_remote_record.eid, False
 
     @staticmethod
     def import_records(data):

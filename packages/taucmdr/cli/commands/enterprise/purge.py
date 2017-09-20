@@ -25,42 +25,31 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``enterprise connect`` subcommand."""
+"""``enterprise purge`` subcommand."""
 
 import getpass
-from taucmdr import EXIT_SUCCESS
+from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
+from taucmdr.cf.storage.levels import ENTERPRISE_STORAGE
 from taucmdr.cli import arguments
 from taucmdr.model.project import Project
 from taucmdr.cli.command import AbstractCommand
 
 
-class EnterpriseConnectCommand(AbstractCommand):
-    """``enterprise connect`` subcommand."""
+class EnterprisePurgeCommand(AbstractCommand):
+    """``enterprise purge`` subcommand."""
 
     def _construct_parser(self):
-        usage = "%s <username> [arguments]" % self.command
+        usage = "%s" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('username', help="TAU Enterprise username", metavar='<username>')
-        parser.add_argument('--key',
-                            help="A pre-existing API key to use in place of the password.",
-                            metavar='<key>',
-                            default=None)
-        parser.add_argument('--db',
-                            help="The name of the remote database to use",
-                            metavar='<db>',
-                            default=None)
         return parser
 
     def main(self, argv):
-        args = self._parse_args(argv)
-        proj_ctrl = Project.controller()
-        if args.key is not None:
-            proj_ctrl.connect(args.key, db_name=args.db)
-        else:
-            username = args.username
-            password = getpass.getpass()
-            proj_ctrl.connect_with_password(username, password, db_name=args.db)
+        self._parse_args(argv)
+        token, db_name = Project.connected()
+        ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
+        ENTERPRISE_STORAGE.purge_all_tables()
         return EXIT_SUCCESS
 
 
-COMMAND = EnterpriseConnectCommand(__name__, summary_fmt=("Connect the current project to TAU Enterprise storage."))
+COMMAND = EnterprisePurgeCommand(__name__,
+                                      summary_fmt="Delete every record in every table in the remote database.")

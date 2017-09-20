@@ -33,12 +33,13 @@ See http://en.wikipedia.org/wiki/Model-view-controller
 from __future__ import print_function
 
 import six
+from taucmdr.model.trial import Trial
 from texttable import Texttable
-from taucmdr import EXIT_SUCCESS
+from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
 from taucmdr import logger, util, cli
 from taucmdr.error import UniqueAttributeError, InternalError, ModelError, ProjectSelectionError
 from taucmdr.cf.storage import StorageError
-from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE
+from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, ENTERPRISE_STORAGE
 from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
@@ -700,6 +701,21 @@ class PushCommand(AbstractCliView):
         if mode == 'dryrun':
             for record in records_to_push:
                 self.logger.info("Would push %s %s", record.name, record.hash_digest())
+            return EXIT_SUCCESS
+
+        token, db_name = Project.connected()
+        ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
+
+        eid_map = {}
+        with ENTERPRISE_STORAGE as database:
+            for record in records_to_push:
+                remote_eid, already_present  = record.controller(record.storage).push_to_remote(record, database,
+                                                                                                eid_map)
+                eid_map[record.hash_digest()] = remote_eid
+                if already_present:
+                    self.logger.info("Skipped %s %s, already uploaded.", record.name, record.hash_digest())
+                else:
+                    self.logger.info("Pushed %s %s to server.", record.name, record.hash_digest())
 
         return EXIT_SUCCESS
 

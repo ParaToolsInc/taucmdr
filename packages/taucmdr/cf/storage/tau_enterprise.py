@@ -122,7 +122,7 @@ class _TauEnterpriseDatabase(object):
         request.raise_for_status()
         response = request.json()
         if '_links' in response and 'child' in response['_links']:
-            return [table['href'] for table in response['_links']['child']]
+            return [table['href'] for table in response['_links']['child'] if table['href'] != 'transaction']
         else:
             return []
 
@@ -233,6 +233,15 @@ class _TauEnterpriseTable(object):
             return [self._to_record(result, populate) for result in response['_items']]
         else:
             return []
+
+    def search_hash(self, digests):
+        if not isinstance(digests, list):
+            digests = [digests]
+        results = []
+        for digest in digests:
+            cond = {'_hash': {'$regex': '{}$'.format(digest), '$options': 'm'}}
+            results.extend(self.search(cond))
+        return results
 
     def _get(self, keys=None, eid=None, match_any=False, delete=False, populate=None, propagate=False):
         if match_any and keys is not None:
@@ -552,6 +561,16 @@ class TauEnterpriseStorage(AbstractStorage):
         else:
             raise ValueError(keys)
 
+    def search_hash(self, digests, table_name=None):
+        """Find records by their hash digest.
+
+        Args:
+            digests: One or more complete or partial hash hex digests
+            table_name (str): Name of the table to operate on. See :any:`AbstractDatabase.table`.
+        """
+        table = self.table(table_name)
+        return table.search_hash(digests)
+
     def search_inside(self, field, value, table_name=None):
         """Find multiple records such that a field either equals a value, or is a collection which contains that value.
 
@@ -590,7 +609,6 @@ class TauEnterpriseStorage(AbstractStorage):
             ValueError: Invalid value for `keys`.
         """
         raise NotImplementedError
-
 
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.
@@ -730,13 +748,17 @@ class TauEnterpriseStorage(AbstractStorage):
             raise ValueError(keys)
 
     def purge(self, table_name=None):
-        """Delete all records.
+        """Delete all records in the specififed table.
 
         Args:
             table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
         """
         table = self.table(table_name)
         table.purge()
+
+    def purge_all_tables(self):
+        """Delete all records in every table."""
+        self._database.purge()
 
     def is_remote(self):
         """Indicates whether this storage class represents a remote connection

@@ -25,7 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``project select`` subcommand."""
+"""``enterprise disconnect`` subcommand."""
 
 import getpass
 from taucmdr import EXIT_SUCCESS
@@ -49,4 +49,4 @@ class EnterpriseDisconnectCommand(AbstractCommand):
 
 
 COMMAND = EnterpriseDisconnectCommand(__name__,
-                                      summary_fmt=("Disconnect the current project from TAU Enterprise storage."))
+                                      summary_fmt="Disconnect the current project from TAU Enterprise storage.")

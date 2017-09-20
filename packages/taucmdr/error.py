@@ -191,6 +191,11 @@ class ExperimentSelectionError(ConfigurationError):
 
 class NotConnectedError(ConfigurationError):
     """Indicates an error due to a nonexistent remote connection."""
+    def __init__(self, value, *hints):
+        from taucmdr.cli.commands.enterprise.connect import COMMAND as connect_command
+        if not hints:
+            hints = ("Use `%s` to connect to a TAU Enterprise database." % connect_command,)
+        super(NotConnectedError, self).__init__(value, *hints)
 
 class AuthenticationError(ConfigurationError):
     """Indicates that the authentication attempt was unsuccessful"""

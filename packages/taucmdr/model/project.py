@@ -145,8 +145,8 @@ class ProjectController(Controller):
 
     def connect(self, token, db_name=None):
         self.storage['api_token'] = token
-        self.storage['db_name'] = db_name
-        LOGGER.info("Connected project to TAU Enterprise with API key %s, database name %s", token, db_name)
+        self.storage['db_name'] = db_name or 'default'
+        LOGGER.info("Connected project to TAU Enterprise, database name %s", db_name)
 
     def connect_with_password(self, username, password, db_name=None):
         self.connect(ENTERPRISE_STORAGE.get_token_for_user(ENTERPRISE_URL, username, password), db_name=db_name)
@@ -157,12 +157,13 @@ class ProjectController(Controller):
     def connected(self):
         try:
             token = self.storage['api_token']
+            db_name = self.storage['db_name']
             if not token:
                 raise KeyError
         except KeyError:
             raise NotConnectedError("Project not connected to remote storage")
         else:
-            return token
+            return token, db_name
 
 
 class Project(Model):
