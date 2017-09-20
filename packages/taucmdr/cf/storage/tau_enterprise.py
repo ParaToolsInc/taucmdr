@@ -171,6 +171,15 @@ class _TauEnterpriseDatabase(object):
         """
         return self.table('transaction').remove(eid=transaction_id)
 
+    def commit_transaction(self, transaction_id):
+        """Commits a transaction previously started with :any:`_TauEnterpriseDatabase.start_transaction`.
+
+        After this call, the transaction ID is invalid and must not be used again.
+
+        Args:
+            transaction_id (str): The ID of the transaction to commit.
+        """
+        return self.table('transaction').remove(eid=transaction_id, commit=True)
 
 
 class _TauEnterpriseTable(object):
@@ -220,6 +229,13 @@ class _TauEnterpriseTable(object):
         else:
             return "&propagate=true"
 
+    @staticmethod
+    def _commit_query(commit):
+        if not commit:
+            return ""
+        else:
+            return "&commit=true"
+
     def search(self, cond, match_any=False, populate=None):
         if cond is None:
             cond = {}
@@ -243,17 +259,18 @@ class _TauEnterpriseTable(object):
             results.extend(self.search(cond))
         return results
 
-    def _get(self, keys=None, eid=None, match_any=False, delete=False, populate=None, propagate=False):
+    def _get(self, keys=None, eid=None, match_any=False, delete=False, populate=None, propagate=False, commit=False):
         if match_any and keys is not None:
             keys = self._query_to_match_any(keys)
         if eid is not None:
-            url = "{}/{}?{}{}".format(self.endpoint, eid, self._embed_query(populate), self._prop_query(propagate))
+            url = "{}/{}?{}{}{}".format(self.endpoint, eid, self._embed_query(populate), self._prop_query(propagate),
+                                        self._commit_query(commit))
         elif isinstance(keys, dict):
-            url = "{}/?where={}&{}{}".format(self.endpoint, json.dumps(keys), self._embed_query(populate),
-                                             self._prop_query(propagate))
+            url = "{}/?where={}&{}{}{}".format(self.endpoint, json.dumps(keys), self._embed_query(populate),
+                                             self._prop_query(propagate), self._commit_query(commit))
         elif isinstance(keys, six.string_types):
-            url = "{}/?where={}&{}{}".format(self.endpoint, keys, self._embed_query(populate),
-                                             self._prop_query(propagate))
+            url = "{}/?where={}&{}{}{}".format(self.endpoint, keys, self._embed_query(populate),
+                                             self._prop_query(propagate), self._commit_query(commit))
         else:
             return None
         if delete:
@@ -279,8 +296,8 @@ class _TauEnterpriseTable(object):
     def get(self, keys=None, eid=None, match_any=False, populate=None):
         return self._get(keys=keys, eid=eid, match_any=match_any, populate=populate)
 
-    def remove(self, keys=None, eid=None, match_any=False, propagate=False):
-        return self._get(keys=keys, eid=eid, match_any=match_any, delete=True, propagate=propagate)
+    def remove(self, keys=None, eid=None, match_any=False, propagate=False, commit=False):
+        return self._get(keys=keys, eid=eid, match_any=match_any, delete=True, propagate=propagate, commit=commit)
 
     def count(self, cond, match_any=False):
         if cond is None:
@@ -331,6 +348,7 @@ class _TauEnterpriseTable(object):
             return record[0]['name'], base64.b64decode(record[0]['file'])
         else:
             return None
+
 
 class TauEnterpriseStorage(AbstractStorage):
     """A remote storage system accessed through a REST API.
@@ -388,8 +406,18 @@ class TauEnterpriseStorage(AbstractStorage):
         for item in self.search():
             yield item['key'], item['value']
 
+    def is_writable(self):
+        """Check if the storage filesystem is writable."""
+        self.connect_filesystem()
+        if self._prefix is None:
+            return False
+        else:
+            return os.access(self.prefix, os.W_OK)
+
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
+        if self._prefix is None:
+            return
         if not os.path.isdir(self._prefix):
             try:
                 util.mkdirp(self._prefix)
@@ -464,6 +492,8 @@ class TauEnterpriseStorage(AbstractStorage):
         if self._transaction_count == 0:
             if ex_type:
                 self._database.revert_transaction(self._transaction_id)
+            else:
+                self._database.commit_transaction(self._transaction_id)
             self._transaction_id = None
         return False
 

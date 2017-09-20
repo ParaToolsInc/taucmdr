@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2017, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,27 +27,38 @@
 #
 """``enterprise purge`` subcommand."""
 
-import getpass
-from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
+from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL, logger
 from taucmdr.cf.storage.levels import ENTERPRISE_STORAGE
 from taucmdr.cli import arguments
 from taucmdr.model.project import Project
 from taucmdr.cli.command import AbstractCommand
 
+LOGGER = logger.get_logger(__name__)
 
 class EnterprisePurgeCommand(AbstractCommand):
     """``enterprise purge`` subcommand."""
 
     def _construct_parser(self):
-        usage = "%s" % self.command
+        usage = "%s --force" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        mode_dest = 'mode'
+        mode_group = parser.add_mutually_exclusive_group()
+        mode_group.add_argument('-f', '--force',
+                                help="force changes to be pushed even if existing remote objects change",
+                                const='force', action='store_const', dest=mode_dest,
+                                default=arguments.SUPPRESS)
         return parser
 
     def main(self, argv):
-        self._parse_args(argv)
-        token, db_name = Project.connected()
-        ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
-        ENTERPRISE_STORAGE.purge_all_tables()
+        args = self._parse_args(argv)
+        mode = getattr(args, 'mode', None) or 'none'
+        if mode != 'force':
+            self.parser.error("Specify --force to purge tables.")
+        else:
+            token, db_name = Project.connected()
+            ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
+            ENTERPRISE_STORAGE.purge_all_tables()
+            LOGGER.info("Tables in %s purged." % db_name)
         return EXIT_SUCCESS
 
 

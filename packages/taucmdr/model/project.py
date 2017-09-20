@@ -165,6 +165,11 @@ class ProjectController(Controller):
         else:
             return token, db_name
 
+    def push_to_remote(self, record, remote_storage, eid_map):
+        remote_eid, already_present = super(ProjectController, self).push_to_remote(record, remote_storage, eid_map)
+        remote_storage['selected_project'] = remote_eid
+        return remote_eid, already_present
+
 
 class Project(Model):
     """Project data controller."""

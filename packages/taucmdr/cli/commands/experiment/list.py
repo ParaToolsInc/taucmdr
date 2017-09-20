@@ -43,4 +43,5 @@ DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10},
                      {'header': 'Measurement', 'function': lambda x: x['measurement']['name']},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
-COMMAND = ListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)
+COMMAND = ListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=True,
+                      enterprise_only=True)

@@ -263,6 +263,7 @@ class ListCommand(AbstractCliView):
         default_style = kwargs.pop('default_style', 'dashboard')
         dashboard_columns = kwargs.pop('dashboard_columns', None)
         title_fmt = kwargs.pop('title_fmt', "%(model_name)s Configurations (%(storage_path)s)")
+        self.storage_enterprise_only = kwargs.pop('enterprise_only', False)
         super(ListCommand, self).__init__(*args, **kwargs)
         key_attr = self.model.key_attribute
         self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
@@ -405,7 +406,8 @@ class ListCommand(AbstractCliView):
                                  const='long', action='store_const', dest=style_dest, 
                                  default=arguments.SUPPRESS)
         if self.include_storage_flag:
-            arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False)
+            arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False,
+                                       enterprise_only=self.storage_enterprise_only)
         return parser
     
     def _list_records(self, storage_levels, keys, style):
@@ -423,10 +425,11 @@ class ListCommand(AbstractCliView):
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
         system_ctl = self.model.controller(SYSTEM_STORAGE)
-        
+
         system = SYSTEM_STORAGE.name in storage_levels
         user = USER_STORAGE.name in storage_levels
-        project = PROJECT_STORAGE.name in storage_levels or not (user or system)
+        enterprise = ENTERPRISE_STORAGE.name in storage_levels
+        project = PROJECT_STORAGE.name in storage_levels or not (user or system or enterprise)
 
         parts = []
         if system:
@@ -435,6 +438,11 @@ class ListCommand(AbstractCliView):
             parts.extend(self._format_records(user_ctl, style, keys))
         if project:
             parts.extend(self._format_records(project_ctl, style, keys))
+        if enterprise:
+            token, db_name = Project.connected()
+            ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
+            enterprise_ctl = self.model.controller(ENTERPRISE_STORAGE)
+            parts.extend(self._format_records(enterprise_ctl, style, keys))
         if style == 'dashboard':
             # Show record counts (not the records themselves) for other storage levels
             if not system:
@@ -450,7 +458,7 @@ class ListCommand(AbstractCliView):
         args = self._parse_args(argv)
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
-        storage_levels = arguments.parse_storage_flag(args)
+        storage_levels = [level.name for level in arguments.parse_storage_flag(args)]
         return self._list_records(storage_levels, keys, style)
     
     def _retrieve_records(self, ctrl, keys):

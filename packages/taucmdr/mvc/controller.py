@@ -106,13 +106,17 @@ class Controller(object):
         Returns:
             list: Models for records that match the provided hash
         """
+        # If this controller is backed by remote storage, have the remote server
+        # do the hash lookup for performance reasons
+        if self.storage.is_remote():
+            return [self.model(record) for record in self.storage.search_hash(digests, table_name=self.model.name)]
         records = self.all()
-        # TODO For remote database this computation needs to happen on the server
         if not isinstance(digests, list):
             digests = [digests]
         results = []
         for digest in digests:
-            results.extend([record for record in records if record.hash_digest()[-len(digest):] == digest])
+            if isinstance(digest, six.string_types):
+                results.extend([record for record in records if record.hash_digest()[-len(digest):] == digest])
         return results
 
     def match(self, field, regex=None, test=None):

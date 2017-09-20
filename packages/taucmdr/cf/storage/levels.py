@@ -58,7 +58,7 @@ PROJECT_STORAGE = ProjectStorage()
 ENTERPRISE_STORAGE = TauEnterpriseStorage('enterprise', None)
 """Remote TAU Enterprise data storage."""
 
-ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
+ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE, ENTERPRISE_STORAGE)
 """All storage levels in their preferred order."""
 
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
