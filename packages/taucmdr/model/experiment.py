@@ -119,11 +119,11 @@ class ExperimentController(Controller):
         try:
             keys = dict(keys)
             self._restrict_project(keys)
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in keys:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         return super(ExperimentController, self).one(keys)
     
@@ -131,11 +131,11 @@ class ExperimentController(Controller):
         try:
             keys = dict()
             keys['project'] = Project.controller(self.storage).selected().eid
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in keys:
                     key['project'] = Project.controller(self.storage).selected().eid
-            except TypeError:
+            except (TypeError, ValueError):
                 keys = None
         return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
 
@@ -147,7 +147,7 @@ class ExperimentController(Controller):
             try:
                 for key in keys:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         return super(ExperimentController, self).search(keys)
 
@@ -155,11 +155,11 @@ class ExperimentController(Controller):
         try:
             keys = dict(keys)
             self._restrict_project(keys)
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in keys:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         return super(ExperimentController, self).exists(keys)
 
@@ -167,11 +167,11 @@ class ExperimentController(Controller):
         try:
             data = dict(data)
             self._restrict_project(data)
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in data:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         self._restrict_project(data)
         data = self.model.validate(data)
@@ -195,11 +195,11 @@ class ExperimentController(Controller):
         try:
             keys = dict(keys)
             self._restrict_project(keys)
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in keys:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         return super(ExperimentController, self).update(data, keys)
 
@@ -207,11 +207,11 @@ class ExperimentController(Controller):
         try:
             keys = dict(keys)
             self._restrict_project(keys)
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in keys:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         return super(ExperimentController, self).unset(fields, keys)
 
@@ -249,13 +249,14 @@ class ExperimentController(Controller):
         try:
             keys = dict(keys)
             self._restrict_project(keys)
-        except TypeError:
+        except (TypeError, ValueError):
             try:
                 for key in keys:
                     self._restrict_project(key)
-            except TypeError:
+            except (TypeError, ValueError):
                 pass
         return super(ExperimentController, self).export_records(keys, eids)
+
 
 class Experiment(Model):
     """Experiment data model."""

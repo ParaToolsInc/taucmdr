@@ -42,6 +42,7 @@ DASHBOARD_COLUMNS = [{'header': 'Hash', 'hash': 10, 'dtype': 't'},
                      {'header': 'Description', 'value': 'description'},
                      {'header': 'Status', 'value': 'phase'}]
 
+
 class TrialListCommand(ListCommand):
     """``trial list`` subcommand."""
     
@@ -72,6 +73,7 @@ class TrialListCommand(ListCommand):
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
         for record in records:
+            print(record.get_data_files())
             populated = record.populate()
             row = []
             for col in self.dashboard_columns:
@@ -94,6 +96,7 @@ class TrialListCommand(ListCommand):
         table.set_cols_align([col.get('align', 'c') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '', subtitle, '']
+
 
 COMMAND = TrialListCommand(Trial, __name__, dashboard_columns=DASHBOARD_COLUMNS,
                            summary_fmt="Show trial data.")

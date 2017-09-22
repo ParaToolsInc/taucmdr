@@ -651,43 +651,6 @@ class PushCommand(AbstractCliView):
                     records = ctrl.search_hash(keys)
         return records
 
-    def _locate_records_to_push(self, base_records, direction = 'down', visited = None):
-        # From the anchor record we need to push those records which are:
-        #   - Down from the anchor record, and all records down AND up from those
-        #   - Up from the anchor record, and all records up from those
-        if visited is None:
-            visited = set()
-        records_to_push = []
-        for base_record in base_records:
-            if base_record.hash_digest() in visited:
-                continue
-            visited.add(base_record.hash_digest())
-            full_record = base_record.populate()
-            attrs = base_record.attributes
-            down = []
-            up = []
-            for field, values in six.iteritems(full_record):
-                if not isinstance(values, list):
-                    values = [values]
-                for value in values:
-                    if field in attrs and 'direction' in attrs[field]:
-                        if value.hash_digest() in visited:
-                            continue
-                        if direction == 'down' and attrs[field]['direction'] == 'down':
-                            down.append(value)
-                        elif attrs[field]['direction'] == 'up':
-                            up.append(value)
-            rec_down = []
-            rec_up = []
-            for d in down:
-                rec_down.extend(self._locate_records_to_push([d], direction='down', visited=visited))
-            for u in up:
-                rec_up.extend(self._locate_records_to_push([u], direction='up', visited=visited))
-            records_to_push.extend(rec_up)
-            records_to_push.append(base_record)
-            records_to_push.extend(rec_down)
-        return records_to_push
-
     def _push_records(self, storage_levels, keys, mode):
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
@@ -705,7 +668,7 @@ class PushCommand(AbstractCliView):
         if project:
             base_records.extend(self._find_records(project_ctl, keys))
 
-        records_to_push = self._locate_records_to_push(base_records)
+        records_to_push = project_ctl.traverse_records(base_records)
 
         if mode == 'dryrun':
             for record in records_to_push:
@@ -718,8 +681,8 @@ class PushCommand(AbstractCliView):
         eid_map = {}
         with ENTERPRISE_STORAGE as database:
             for record in records_to_push:
-                remote_eid, already_present  = record.controller(record.storage).push_to_remote(record, database,
-                                                                                                eid_map)
+                remote_eid, already_present  = record.controller(record.storage).transport_record(record, database,
+                                                                                                  eid_map, 'push')
                 eid_map[record.hash_digest()] = remote_eid
                 if already_present:
                     self.logger.info("Skipped %s %s, already uploaded.", record.name, record.hash_digest())
@@ -734,3 +697,108 @@ class PushCommand(AbstractCliView):
         mode = getattr(args, 'mode', None) or 'none'
         storage_levels = arguments.parse_storage_flag(args)
         return self._push_records(storage_levels, keys, mode)
+
+
+class PullCommand(AbstractCliView):
+    """Base class for the `pull` subcommand of command line views."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('summary_fmt', 'Pull %(model_name)s configurations from TAU Enterprise.')
+        super(PullCommand, self).__init__(*args, **kwargs)
+        key_attr = self.model.key_attribute
+        self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
+
+    def _construct_parser(self):
+        key_str = self.model_name + '_' + self.model.key_attribute
+        usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" %
+                      {'command': self.command, 'key_str': key_str})
+        parser = arguments.get_parser(prog=self.command,
+                                      usage=usage_head,
+                                      description=self.summary)
+        parser.add_argument('keys',
+                            help=("Pull %(model_name)ss with the given %(key_attr)ss" % self._format_fields),
+                            metavar=key_str,
+                            nargs='+',
+                            default=arguments.SUPPRESS)
+        mode_dest = 'mode'
+        mode_group = parser.add_mutually_exclusive_group()
+        mode_group.add_argument('-f', '--force',
+                                help="force changes to be pulled even if existing local objects change",
+                                const='force', action='store_const', dest=mode_dest,
+                                default=arguments.SUPPRESS)
+        mode_group.add_argument('-n', '--dry-run',
+                                help="show the data that would be pushed, but don't actually push",
+                                const='dryrun', action='store_const', dest=mode_dest,
+                                default=arguments.SUPPRESS)
+        if self.include_storage_flag:
+            arguments.add_storage_flag(parser, "pull", self.model_name, plural=True, exclusive=True)
+        return parser
+
+    def _find_records(self, ctrl, keys):
+        key_attr = self.model.key_attribute
+        if len(keys) == 1:
+            records = ctrl.search({key_attr: keys[0]})
+            if not records:
+                try:
+                    int_keys = [int(key) for key in keys]
+                    records = ctrl.search({key_attr: int_keys[0]})
+                    if not records:
+                        records = ctrl.search_hash(keys[0])
+                except ValueError:
+                    records = ctrl.search_hash(keys[0])
+        else:
+            records = ctrl.search([{key_attr: key} for key in keys])
+            if not records:
+                try:
+                    int_keys = [int(key) for key in keys]
+                    records = ctrl.search([{key_attr: int_key} for int_key in int_keys])
+                    if not records:
+                        records = ctrl.search_hash(keys)
+                except ValueError:
+                    records = ctrl.search_hash(keys)
+        return records
+
+    def _pull_records(self, storage_level, keys, mode):
+        print("Should pull %s" % keys)
+
+        token, db_name = Project.connected()
+        ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
+        enterprise_ctl = self.model.controller(ENTERPRISE_STORAGE)
+        base_records = self._find_records(enterprise_ctl, keys)
+        print(base_records)
+        records_to_pull = enterprise_ctl.traverse_records(base_records)
+
+        if mode == 'dryrun':
+            for record in records_to_pull:
+                self.logger.info("Would pull %s %s", record.name, record.hash_digest())
+            return EXIT_SUCCESS
+
+        if SYSTEM_STORAGE.name in storage_level:
+            local_storage = SYSTEM_STORAGE
+        elif USER_STORAGE.name in storage_level:
+            local_storage = USER_STORAGE
+        else:
+            local_storage = PROJECT_STORAGE
+
+        eid_map = {}
+        for record in records_to_pull:
+            local_ctl = record.controller(local_storage)
+            remote_eid, already_present = record.controller(ENTERPRISE_STORAGE).\
+                transport_record(record, local_ctl, eid_map, 'pull')
+            eid_map[record.hash_digest()] = remote_eid
+            if already_present:
+                self.logger.info("Skipped %s %s, already present in %s.", record.name,
+                                 record.hash_digest(), local_storage.name)
+            else:
+                self.logger.info("Pulled %s %s to %s.", record.name, record.hash_digest(), local_storage.name)
+
+        return EXIT_SUCCESS
+
+    def main(self, argv):
+        args = self._parse_args(argv)
+        keys = getattr(args, 'keys', None)
+        mode = getattr(args, 'mode', None) or 'none'
+        storage_level = arguments.parse_storage_flag(args)
+        if ENTERPRISE_STORAGE.name in storage_level:
+            self.parser.error("Can't pull from Enterprise to Enterprise.")
+        return self._pull_records(storage_level, keys, mode)

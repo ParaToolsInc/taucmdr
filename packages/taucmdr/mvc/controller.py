@@ -360,15 +360,58 @@ class Controller(object):
             for model in changing:
                 model.on_delete()
 
-    def push_to_remote(self, record, remote_storage, eid_map):
-        LOGGER.debug("Will attempt to push %s %s to server.", record.name, record.hash_digest())
-        # First, check if this record is already on the server.
-        remote_record = remote_storage.search_hash(record.hash_digest(), table_name=self.model.name)
+    def traverse_records(self, base_records, direction = 'down', visited = None):
+        # From the anchor record we need to push those records which are:
+        #   - Down from the anchor record, and all records down AND up from those
+        #   - Up from the anchor record, and all records up from those
+        if visited is None:
+            visited = set()
+        records_to_push = []
+        for base_record in base_records:
+            if base_record.hash_digest() in visited:
+                continue
+            visited.add(base_record.hash_digest())
+            full_record = base_record.populate()
+            attrs = base_record.attributes
+            down = []
+            up = []
+            for field, values in six.iteritems(full_record):
+                if not isinstance(values, list):
+                    values = [values]
+                for value in values:
+                    if field in attrs and 'direction' in attrs[field]:
+                        if value is None or value.hash_digest() in visited:
+                            continue
+                        if direction == 'down' and attrs[field]['direction'] == 'down':
+                            down.append(value)
+                        elif attrs[field]['direction'] == 'up':
+                            up.append(value)
+            rec_down = []
+            rec_up = []
+            for d in down:
+                rec_down.extend(self.traverse_records([d], direction='down', visited=visited))
+            for u in up:
+                rec_up.extend(self.traverse_records([u], direction='up', visited=visited))
+            records_to_push.extend(rec_up)
+            records_to_push.append(base_record)
+            records_to_push.extend(rec_down)
+        return records_to_push
+
+    def transport_record(self, record, destination, eid_map, mode):
+        LOGGER.debug("Will attempt to transport %s %s to %s.", record.name, record.hash_digest(), destination.name)
+        # First, check if this record is already at the destination.
+        if destination.is_remote():
+            remote_record = destination.search_hash(record.hash_digest(), table_name=self.model.name)
+        else:
+            remote_record = destination.search_hash(record.hash_digest())
         if remote_record:
             if len(remote_record) > 1:
-                raise InternalError("Multiple matches for hash %s on server!" % record.hash_digest())
-            LOGGER.debug("Record %s %s already exists on server.", record.name, record.hash_digest())
+                raise InternalError("Multiple matches for hash %s on %s!" % record.hash_digest(),
+                                    destination.name)
+            LOGGER.debug("Record %s %s already exists on %s.", record.name, record.hash_digest(),
+                         destination.name)
             return remote_record[0].eid, True
+
         full_record = record.populate()
         attrs = record.attributes
         data_for_server = {}
@@ -387,9 +430,14 @@ class Controller(object):
                     raise InternalError("Invalid direction %s for model %s" % (attrs[field]['direction'], record.name))
             else:
                 data_for_server[field] = value
-        data_for_server['_hash'] = record.hash_digest()
-        new_remote_record = remote_storage.insert(data_for_server, table_name=record.name, propagate=True)
-        LOGGER.debug("Inserted new remote record as %s." % new_remote_record.eid)
+        if destination.is_remote():
+            # If the destination is remote, for performance reasons we do association on the server
+            # rather than through the local controller.
+            data_for_server['_hash'] = record.hash_digest()
+            new_remote_record = destination.insert(data_for_server, table_name=record.name, propagate=True)
+        else:
+            new_remote_record = destination.create(data_for_server)
+        LOGGER.debug("Inserted new record in %s as %s." % (destination.name, new_remote_record.eid))
         return new_remote_record.eid, False
 
     @staticmethod
@@ -503,3 +551,10 @@ class Controller(object):
                         foreign_model.controller(database).delete(key)
                     else:
                         database.update({via: updated}, key, table_name=foreign_model.name)
+
+    @property
+    def name(self):
+        return self.storage.name
+
+    def is_remote(self):
+        return self.storage.is_remote()

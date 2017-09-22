@@ -86,7 +86,6 @@ class ModelMeta(type):
             return cls._key_attribute
 
 
-
 class Model(StorageRecord):
     """The "M" in `MVC`_.
 
@@ -598,6 +597,7 @@ class Model(StorageRecord):
             (str): Hex digest of a hash over field-value pairs for hashable
             attributes of the model.
         """
+
         def hash_item(value, hasher):
             if isinstance(value, Model):
                 hasher.update(value.hash_digest())
@@ -613,7 +613,7 @@ class Model(StorageRecord):
         attrs = self.attributes
         hasher = hashlib.sha1()
         hasher.update(self.name)
-        for field, value in six.iteritems(all_elements):
+        for field, value in sorted(six.iteritems(all_elements)):
             if field in attrs and 'hashed' in attrs[field] and attrs[field]['hashed'] is True:
                 hasher.update(field)
                 hash_item(value, hasher)

@@ -243,30 +243,44 @@ class TrialController(Controller):
         else:
             return self._perform_interactive(expr, trial, cmd, cwd, env)
 
-    def push_to_remote(self, record, remote_storage, eid_map):
-        remote_eid, already_present = super(TrialController, self).push_to_remote(record, remote_storage, eid_map)
+    def transport_record(self, record, destination, eid_map, mode):
+        remote_eid, already_present = super(TrialController, self).transport_record(record, destination, eid_map, mode)
         if already_present:
             return remote_eid, already_present
-        data_files = record.get_data_files()
-        paths_to_upload = []
-        temp_files = []
-        hash_digest = record.hash_digest()
-        for kind, data_file in six.iteritems(data_files):
-            if os.path.isdir(data_file):
-                tar_path = os.path.join(data_file, "..", "%s-%s.tar" % (hash_digest, kind))
-                with tarfile.open(tar_path, mode="w") as tar:
-                    tar.add(data_file)
-                paths_to_upload.append(tar_path)
-                temp_files.append(tar_path)
-            else:
-                paths_to_upload.append(data_file)
+        if mode == 'push':
+            data_files = record.get_data_files()
+            paths_to_upload = []
+            temp_files = []
+            hash_digest = record.hash_digest()
+            for kind, data_file in six.iteritems(data_files):
+                if os.path.isdir(data_file):
+                    tar_path = os.path.join(data_file, "..", "%s-%s.tar" % (hash_digest, kind))
+                    with tarfile.open(tar_path, mode="w") as tar:
+                        cwd = os.getcwd()
+                        os.chdir(os.path.join(data_file, ".."))
+                        tar.add(os.path.join(".", os.path.basename(data_file)))
+                        os.chdir(cwd)
+                    paths_to_upload.append(tar_path)
+                    temp_files.append(tar_path)
+                else:
+                    paths_to_upload.append(data_file)
 
-        for path in paths_to_upload:
-            remote_storage.put_file(os.path.basename(path), path, linked_id=remote_eid, table_name='file')
-            LOGGER.info("Uploaded file %s for trial %s." % (path, hash_digest))
+            for path in paths_to_upload:
+                destination.put_file(os.path.basename(path), path, linked_id=remote_eid, table_name='file')
+                LOGGER.info("Uploaded file %s for trial %s." % (path, hash_digest))
 
-        for temp_file in temp_files:
-            os.remove(temp_file)
+            for temp_file in temp_files:
+                os.remove(temp_file)
+        elif mode == 'pull':
+            local_record = destination.one(remote_eid)
+            prefix = local_record.prefix
+            files = record.storage.get_file({'trial': record.eid}, prefix, table_name='file')
+            for file in files:
+                if file.endswith('tar'):
+                    tar_path = os.path.join(prefix, file)
+                    with tarfile.open(tar_path, mode="r") as tar:
+                        tar.extractall(path=os.path.join(prefix, ".."))
+                    os.remove(tar_path)
 
         return remote_eid, already_present
 

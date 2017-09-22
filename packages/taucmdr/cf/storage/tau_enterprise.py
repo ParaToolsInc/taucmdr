@@ -65,8 +65,9 @@ class TauEnterpriseStorageError(StorageError):
 class _TauEnterpriseJsonRecord(StorageRecord):
     eid_type = unicode
 
-    def __init__(self, database, element, eid=None):
+    def __init__(self, database, element, eid=None, hash=None):
         super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element)
+        self.server_hash = hash
 
     def __str__(self):
         return json.dumps({k: (v.element if isinstance(v, _TauEnterpriseJsonRecord) else v)
@@ -207,7 +208,8 @@ class _TauEnterpriseTable(object):
                 record[populated_field] = self._to_record(record[populated_field], None)
         return _TauEnterpriseJsonRecord(self.database.storage,
                                         {k: v for k, v in record.iteritems() if not k.startswith('_')},
-                                        eid=record['_id'] if '_id' in record else None)
+                                        eid=record['_id'] if '_id' in record else None,
+                                        hash=record['_hash'] if '_hash' in record else None)
 
     @staticmethod
     def _query_to_match_any(cond):
@@ -339,15 +341,17 @@ class _TauEnterpriseTable(object):
 
     def get_file(self, keys=None, eid=None):
         if eid is not None:
-            record = [self.get(eid=eid)]
+            records = [self.get(eid=eid)]
         elif keys is not None:
-            record = self.search(keys)
+            records = self.search(keys)
         else:
-            record = []
-        if len(record) > 0:
-            return record[0]['name'], base64.b64decode(record[0]['file'])
-        else:
+            records = []
+        result = []
+        if not records:
             return None
+        for record in records:
+            result.append((record['name'], base64.b64decode(record['file'])))
+        return result
 
 
 class TauEnterpriseStorage(AbstractStorage):
@@ -818,7 +822,7 @@ class TauEnterpriseStorage(AbstractStorage):
             return table.put_file(name, file_data, linked_id=linked_id)
 
     def get_file(self, keys, path, table_name=None):
-        """Downloads the contents of a file from the database.
+        """Downloads the contents of a file or files from the database.
 
         Args:
             keys: Fields or element identifiers to match.
@@ -834,6 +838,10 @@ class TauEnterpriseStorage(AbstractStorage):
             raise ValueError(keys)
         if element is None:
             raise StorageError("Unable to retrieve remote file %s in %s" % (keys, table_name))
-        with open(path, 'wb') as file_handle:
-            file_handle.write(element[1])
-
+        names = []
+        for record in element:
+            full_path = os.path.join(path, record[0])
+            with open(full_path, 'wb') as file_handle:
+                file_handle.write(record[1])
+            names.append(record[0])
+        return names

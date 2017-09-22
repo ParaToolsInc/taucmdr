@@ -410,4 +410,6 @@ class Measurement(Model):
             selected = Project.selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
+        if not selected:
+            return False
         return selected['measurement'] == self.eid

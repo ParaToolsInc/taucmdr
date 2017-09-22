@@ -490,7 +490,8 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         group.add_argument(*flags, **options)
     return parser
 
-def add_storage_flag(parser, action, object_name, plural=False, exclusive=True, enterprise_only=True):
+
+def add_storage_flag(parser, action, object_name, plural=False, exclusive=True, enterprise_only=False):
     """Add flag to indicate target storage container.
     
     Args:
@@ -516,6 +517,7 @@ def add_storage_flag(parser, action, object_name, plural=False, exclusive=True, 
                         nargs=nargs, 
                         choices=choices,
                         default=[_DEFAULT_STORAGE_LEVEL])
+
 
 def parse_storage_flag(args):
     try:

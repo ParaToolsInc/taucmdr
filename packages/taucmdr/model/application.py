@@ -201,6 +201,8 @@ class Application(Model):
             selected = Project.selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
+        if not selected:
+            return False
         return selected['application'] == self.eid
 
     def check_compiler(self, compilers):

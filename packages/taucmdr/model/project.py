@@ -146,7 +146,7 @@ class ProjectController(Controller):
     def connect(self, token, db_name=None):
         self.storage['api_token'] = token
         self.storage['db_name'] = db_name or 'default'
-        LOGGER.info("Connected project to TAU Enterprise, database name %s", db_name)
+        LOGGER.info("Connected project to TAU Enterprise, database name %s", db_name or 'default')
 
     def connect_with_password(self, username, password, db_name=None):
         self.connect(ENTERPRISE_STORAGE.get_token_for_user(ENTERPRISE_URL, username, password), db_name=db_name)
@@ -165,9 +165,13 @@ class ProjectController(Controller):
         else:
             return token, db_name
 
-    def push_to_remote(self, record, remote_storage, eid_map):
-        remote_eid, already_present = super(ProjectController, self).push_to_remote(record, remote_storage, eid_map)
-        remote_storage['selected_project'] = remote_eid
+    def transport_record(self, record, destination, eid_map, mode):
+        remote_eid, already_present = super(ProjectController, self).\
+            transport_record(record, destination, eid_map, mode)
+        if mode == 'push':
+            destination['selected_project'] = remote_eid
+        elif mode == 'pull':
+            destination.storage['selected_project'] = remote_eid
         return remote_eid, already_present
 
 

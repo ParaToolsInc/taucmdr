@@ -521,6 +521,8 @@ class Target(Model):
             selected = Project.selected().experiment()
         except (ProjectSelectionError, ExperimentSelectionError):
             return False
+        if not selected:
+            return False
         return selected['target'] == self.eid
 
     def architecture(self):
