@@ -594,7 +594,7 @@ class TauInstallation(Installation):
                     '-bfd=%s' % binutils.install_prefix if binutils else None,
                     '-unwind=%s' % libunwind.install_prefix if libunwind else None,
                    ] if flag]
-            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
             return
 
@@ -698,7 +698,7 @@ class TauInstallation(Installation):
         
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU configure failed')
 
     def make_install(self):
@@ -711,7 +711,7 @@ class TauInstallation(Installation):
         """
         cmd = ['make', 'install'] + parallel_make_flags()
         LOGGER.info('Compiling and installing TAU...')
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU compilation/installation failed')
 
     def install(self, force_reinstall=False):
