@@ -171,6 +171,9 @@ class InitializeCommand(AbstractCommand):
         measurement_names = []
         measurement_args = ['--%s=True' % attr for attr in ('cuda', 'mpi', 'opencl', 'shmem')
                             if getattr(application_args, attr, False)]
+        _, unknown = measurement_create_cmd.parser.parse_known_args([target_name] + argv)
+        measurement_argv = [arg for arg in argv if arg not in unknown]
+        measurement_args.extend(measurement_argv)
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'
             _safe_execute(measurement_create_cmd, 
