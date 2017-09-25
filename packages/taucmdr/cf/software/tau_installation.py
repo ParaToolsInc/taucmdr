@@ -1261,6 +1261,7 @@ class TauInstallation(Installation):
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Trace file '%s' does not exist" % path)
+            path = os.path.abspath(path)
             cwd = os.path.dirname(path)
             retval += util.create_subprocess([os.path.join(self.bin_path, 'jumpshot'), path], 
                                              cwd=cwd, env=env, stdout=False)
@@ -1277,6 +1278,7 @@ class TauInstallation(Installation):
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Trace file '%s' does not exist" % path)
+            path = os.path.abspath(path)
             cwd = os.path.dirname(path)
             evt_files = glob.glob(os.path.join(cwd, 'traces/*.evt'))
             def_files = glob.glob(os.path.join(cwd, 'traces/*.def'))
