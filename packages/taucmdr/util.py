@@ -530,7 +530,7 @@ def page_output(output_string):
     """
     output_string = unidecode(output_string.decode('utf-8'))
     if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
-        print output_string
+        print(output_string, end="")
     else:
         pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
         proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
