@@ -347,14 +347,20 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
+        self._uses_pdt = (self.source_inst == 'automatic' or self.shmem_support)
+        self._uses_binutils = (self.target_os is not DARWIN)
+        self._uses_libunwind = (self.target_os is not DARWIN)
+        self._uses_papi = bool(len([met for met in self.metrics if 'PAPI' in met]))
+        self._uses_scorep = (self.profile == 'cubex')
+        self._uses_ompt = (self.measure_openmp == 'ompt')
+        self._uses_libotf2 = (self.trace == 'otf2')
         if forced_makefile is None:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
-                uses_pkg = getattr(self, '_uses_'+pkg)
-                if uses_pkg():
+                if getattr(self, '_uses_'+pkg):
                     self.add_dependency(pkg, sources)
-            if self._uses_scorep():
+            if self._uses_scorep:
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
-                                    self._uses_binutils(), self._uses_libunwind(), self._uses_papi(), self._uses_pdt())
+                                    self._uses_binutils, self._uses_libunwind, self._uses_papi, self._uses_pdt)
         else:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
                 if sources[pkg]:
@@ -395,8 +401,7 @@ class TauInstallation(Installation):
         uid_parts.extend(sorted(comp.uid for comp in six.itervalues(self.compilers)))
         # TAU changes if any dependencies change.
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
-            uses_pkg = getattr(self, '_uses_'+pkg)
-            if uses_pkg():
+            if getattr(self, '_uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         return uid_parts
     
@@ -417,32 +422,10 @@ class TauInstallation(Installation):
         self.bin_path = os.path.join(arch_path, 'bin')
         self.lib_path = os.path.join(arch_path, 'lib')
 
-    def _uses_pdt(self):
-        # TAU uses PDT to generate the SHMEM wrapper libraries, so PDT is required for SHMEM support
-        return self.source_inst == 'automatic' or self.shmem_support
-
-    def _uses_binutils(self):
-        return self.target_os is not DARWIN
-
-    def _uses_libunwind(self):
-        return self.target_os is not DARWIN
-
-    def _uses_papi(self):
-        return bool(len([met for met in self.metrics if 'PAPI' in met]))
-
-    def _uses_scorep(self):
-        return self.profile == 'cubex'
-
-    def _uses_ompt(self):
-        return self.measure_openmp == 'ompt'
-
-    def _uses_libotf2(self):
-        return self.trace == 'otf2'
-
     def verify(self):
         super(TauInstallation, self).verify()
         # Check PAPI metrics for compatibility
-        if self._uses_papi():
+        if self._uses_papi:
             self.dependencies['papi'].check_metrics(self.metrics)
         # Check for TAU libraries
         tau_makefile = self.get_makefile()
@@ -456,7 +439,7 @@ class TauInstallation(Installation):
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         def check(pkg):
-            if getattr(self, '_uses_'+pkg)():
+            if getattr(self, '_uses_'+pkg):
                 pkg_src = self._all_sources.get(pkg)
                 if pkg_src:
                     return pkg_src != 'download'
@@ -792,11 +775,11 @@ class TauInstallation(Installation):
             tags.add(self._compiler_tags()[cxx_compiler.info.family])
         except KeyError:
             pass
-        if self._uses_pdt():
+        if self._uses_pdt:
             tags.add('pdt')
-        if self._uses_papi():
+        if self._uses_papi:
             tags.add('papi')
-        if self._uses_scorep():
+        if self._uses_scorep:
             tags.add('scorep')
         if self.pthreads_support:
             tags.add('pthread')
@@ -842,7 +825,7 @@ class TauInstallation(Installation):
             tags.add('opari')
             tags.add('ompt')
             tags.add('gomp')
-        if not self._uses_scorep():
+        if not self._uses_scorep:
             tags.add('scorep')
         if not self.shmem_support:
             tags.add('shmem')
