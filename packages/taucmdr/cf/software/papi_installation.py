@@ -111,6 +111,7 @@ class PapiInstallation(AutotoolsInstallation):
         papi_metrics = self.parse_metrics(metrics)
         if not papi_metrics:
             return
+        self.install()
         event_chooser_cmd = os.path.join(self.bin_path, 'papi_event_chooser')
         cmd = [event_chooser_cmd, 'PRESET'] + papi_metrics
         try:
