@@ -38,10 +38,11 @@ import json
 import requests
 import six
 from taucmdr import logger, util
-from taucmdr.error import AuthenticationError
+from taucmdr.error import AuthenticationError, InternalError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
+
 
 class TauEnterpriseStorageError(StorageError):
     """Indicates that the database connection has not been initialized."""
@@ -62,16 +63,21 @@ class TauEnterpriseStorageError(StorageError):
         self.table_name = table_name
 
 
+class _TauEnterpriseJsonRecordEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, _TauEnterpriseJsonRecord):
+            return obj.element
+        return super(_TauEnterpriseJsonRecordEncoder, self).default(obj)
+
+
 class _TauEnterpriseJsonRecord(StorageRecord):
     eid_type = unicode
 
-    def __init__(self, database, element, eid=None, hash=None):
-        super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element)
-        self.server_hash = hash
+    def __init__(self, database, element, eid=None, hash_digest=None):
+        super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element, hash_digest=hash_digest)
 
     def __str__(self):
-        return json.dumps({k: (v.element if isinstance(v, _TauEnterpriseJsonRecord) else v)
-                           for k, v in self.element.iteritems()})
+        return json.dumps(self.element, cls=_TauEnterpriseJsonRecordEncoder)
 
     def __repr__(self):
         return str(self)
@@ -201,15 +207,21 @@ class _TauEnterpriseTable(object):
         self.session = database.session
 
     def _to_record(self, record, populate):
-        """Removes server-produced metadata from query results"""
+        """Removes server-produced metadata from query results and converts to a record"""
         # Convert each server-side-populated field to a record
-        for populated_field in populate if populate else []:
-            if populated_field in record:
-                record[populated_field] = self._to_record(record[populated_field], None)
-        return _TauEnterpriseJsonRecord(self.database.storage,
-                                        {k: v for k, v in record.iteritems() if not k.startswith('_')},
-                                        eid=record['_id'] if '_id' in record else None,
-                                        hash=record['_hash'] if '_hash' in record else None)
+        if isinstance(record, list):
+            result = [self._to_record(subrecord, None) for subrecord in record]
+        elif isinstance(record, dict):
+            for populated_field in populate if populate else []:
+                if populated_field in record:
+                    record[populated_field] = self._to_record(record[populated_field], None)
+            result = _TauEnterpriseJsonRecord(self.database.storage,
+                                              {k: v for k, v in record.iteritems() if not k.startswith('_')},
+                                              eid=record['_id'] if '_id' in record else None,
+                                              hash_digest=record['_hash'] if '_hash' in record else None)
+        else:
+            result = record
+        return result
 
     @staticmethod
     def _query_to_match_any(cond):

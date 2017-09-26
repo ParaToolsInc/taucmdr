@@ -43,12 +43,11 @@ from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 LOGGER = logger.get_logger(__name__)
 
 
-
 class _JsonRecord(StorageRecord):
     eid_type = int
     
-    def __init__(self, database, element, eid=None):
-        super(_JsonRecord, self).__init__(database, eid or element.eid, element)
+    def __init__(self, database, element, eid=None, hash_digest=None):
+        super(_JsonRecord, self).__init__(database, eid or element.eid, element, hash_digest=None)
 
     def __str__(self):
         return json.dumps(self.element)

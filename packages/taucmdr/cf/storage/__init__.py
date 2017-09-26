@@ -57,10 +57,11 @@ class StorageRecord(object):
     """
     eid_type = str
 
-    def __init__(self, storage, eid, element):
+    def __init__(self, storage, eid, element, hash_digest=None):
         self.storage = storage
         self.eid = eid
         self.element = element
+        self._hash = hash_digest
 
     def __getitem__(self, key):
         return self.element[key]

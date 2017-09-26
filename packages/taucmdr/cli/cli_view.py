@@ -336,7 +336,10 @@ class ListCommand(AbstractCliView):
         elif 'model' in attrs:
             foreign_model = attrs['model']
             try:
-                val = str(val[foreign_model.key_attribute])
+                if val is None:
+                    val = str(val)
+                else:
+                    val = str(val[foreign_model.key_attribute])
             except (AttributeError, ModelError):
                 val = str(val)
         elif 'type' in attrs:

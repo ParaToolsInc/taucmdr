@@ -110,10 +110,10 @@ class Model(StorageRecord):
     key_attribute = None
     
     def __init__(self, record):
-        super(Model, self).__init__(record.storage, record.eid, record.element)
+        # pylint: disable=protected-access
+        super(Model, self).__init__(record.storage, record.eid, record.element, hash_digest=record._hash)
         self._populated = None
-        self._hash = None
-    
+
     def __setitem__(self, key, value):
         raise InternalError("Use controller(storage).update() to alter records")
  
@@ -598,14 +598,14 @@ class Model(StorageRecord):
             attributes of the model.
         """
 
-        def hash_item(value, hasher):
-            if isinstance(value, Model):
-                hasher.update(value.hash_digest())
-            elif isinstance(value, list):
-                for entry in value:
-                    hash_item(entry, hasher)
+        def hash_item(item_value, item_hasher):
+            if isinstance(item_value, Model):
+                item_hasher.update(item_value.hash_digest())
+            elif isinstance(item_value, list):
+                for entry in item_value:
+                    hash_item(entry, item_hasher)
             else:
-                hasher.update(str(value))
+                item_hasher.update(str(item_value))
 
         if self._hash is not None:
             return self._hash

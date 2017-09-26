@@ -28,6 +28,7 @@
 """TODO: FIXME: Docs"""
 import six
 from taucmdr import logger
+from taucmdr.cf.storage import StorageRecord
 from taucmdr.error import InternalError, UniqueAttributeError, ModelError
 
 LOGGER = logger.get_logger(__name__)
@@ -176,7 +177,36 @@ class Controller(object):
             return self._populate_attribute(model, attribute, defaults)
         else:
             LOGGER.debug("Populating %s(%s)", model.name, model.eid)
+            if self.storage.is_remote():
+                return self._populate_remote(model, defaults=defaults)
             return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
+
+    def _populate_remote(self, model, defaults=None):
+        to_populate = []
+        for key, props in six.iteritems(model.attributes):
+            if 'model' in props or 'collection' in props:
+                to_populate.append(key)
+        # Populate fields server-side
+        populated = dict(self.storage.get(model.eid, table_name=model.name, populate=to_populate))
+        # Then convert the returned raw records to their corresponding models
+        for key in to_populate:
+            if not key in populated:
+                continue
+            prop = model.attributes[key]
+            foreign = prop['model'] if 'model' in prop else prop['collection']
+            value = populated[key]
+            if isinstance(value, StorageRecord):
+                value = foreign(value)
+            elif isinstance(value, list):
+                value = [foreign(e) for e in value]
+            populated[key] = value
+        # And add defaults for any missing fields
+        if defaults:
+            for key, props in six.iteritems(model.attributes):
+                if key not in populated:
+                    if 'default' in props:
+                        populated[key] = props['default']
+        return populated
 
     def _populate_attribute(self, model, attr, defaults):
         try:
