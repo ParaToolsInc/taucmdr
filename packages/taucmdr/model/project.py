@@ -191,8 +191,8 @@ class Project(Model):
             # We only care about changes to experiment
             return
         if old_value and new_value:
-            new_expr = Experiment.controller().one(new_value)
-            old_expr = Experiment.controller().one(old_value)
+            new_expr = Experiment.controller(storage=self.storage).one(new_value)
+            old_expr = Experiment.controller(storage=self.storage).one(old_value)
             for model_attr in 'target', 'application', 'measurement':
                 if old_expr[model_attr] != new_expr[model_attr]:
                     new_model = new_expr.populate(model_attr)

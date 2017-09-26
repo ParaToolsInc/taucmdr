@@ -270,7 +270,7 @@ class Experiment(Model):
         return cls.__controller__(cls, storage)
 
     @classmethod
-    def select(cls, name):
+    def select(cls, name, storage=PROJECT_STORAGE):
         """Changes the selected experiment in the current project.
         
         Raises:
@@ -279,11 +279,13 @@ class Experiment(Model):
         Args:
             name (str): Name of the experiment to select.
         """
-        proj_ctrl = Project.controller()
+        proj_ctrl = Project.controller(storage=storage)
         proj = proj_ctrl.selected()
-        expr_ctrl = cls.controller()
+        expr_ctrl = cls.controller(storage=storage)
         data = {"name": name, "project": proj.eid}
         matching = expr_ctrl.search(data)
+        if not matching:
+            matching = expr_ctrl.search_hash(name)
         if not matching:
             raise ExperimentSelectionError("There is no experiment named '%s' in project '%s'." % (name, proj['name']))
         elif len(matching) > 1:

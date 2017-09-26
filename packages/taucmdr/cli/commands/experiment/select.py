@@ -27,10 +27,12 @@
 #
 """``experiment select`` subcommand."""
 
-from taucmdr import EXIT_SUCCESS
+from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, ENTERPRISE_STORAGE
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.experiment import Experiment
+from taucmdr.model.project import Project
 
 
 class ExperimentSelectCommand(AbstractCommand):
@@ -40,12 +42,20 @@ class ExperimentSelectCommand(AbstractCommand):
         usage = "%s <experiment_name>" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('name', help="Experiment name", metavar='<experiment_name>')
+        arguments.add_storage_flag(parser, "select", "Experiment", plural=False, exclusive=True, enterprise_only=True)
         return parser
         
     def main(self, argv):
         args = self._parse_args(argv)
         name = args.name
-        Experiment.select(name)
+        storage_level = arguments.parse_storage_flag(args)[0].name
+        if storage_level == PROJECT_STORAGE.name:
+            storage = PROJECT_STORAGE
+        elif storage_level == ENTERPRISE_STORAGE.name:
+            token, db_name = Project.connected()
+            ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
+            storage = ENTERPRISE_STORAGE
+        Experiment.select(name, storage=storage)
         self.logger.info("Selected experiment '%s'.", name)
         rebuild_required = Experiment.rebuild_required()
         if rebuild_required: 
