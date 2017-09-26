@@ -427,23 +427,41 @@ class Controller(object):
             records_to_push.extend(rec_down)
         return records_to_push
 
-    def transport_record(self, record, destination, eid_map, mode):
-        LOGGER.debug("Will attempt to transport %s %s to %s.", record.name, record.hash_digest(), destination.name)
+    def transport_record(self, src_record, destination, eid_map, mode, proj=None):
+        LOGGER.debug("Will attempt to transport %s %s to %s.", src_record.name, src_record.hash_digest(), destination.name)
         # First, check if this record is already at the destination.
         if destination.is_remote():
-            remote_record = destination.search_hash(record.hash_digest(), table_name=self.model.name)
+            dest_record = destination.search_hash(src_record.hash_digest(), table_name=self.model.name)
         else:
-            remote_record = destination.search_hash(record.hash_digest())
-        if remote_record:
-            if len(remote_record) > 1:
-                raise InternalError("Multiple matches for hash %s on %s!" % record.hash_digest(),
+            dest_record = destination.search_hash(src_record.hash_digest())
+        if dest_record:
+            if len(dest_record) > 1:
+                raise InternalError("Multiple matches for hash %s on %s!" % src_record.hash_digest(),
                                     destination.name)
-            LOGGER.debug("Record %s %s already exists on %s.", record.name, record.hash_digest(),
-                         destination.name)
-            return remote_record[0].eid, True
+            LOGGER.debug("Record %s eid=%s hash=%s already exists in %s as eid=%s.", src_record.name, src_record.eid,
+                         src_record.hash_digest(), destination.name, dest_record[0].eid)
+            # Update the destination record with any missing up-references from the source record
+            full_record = src_record.populate()
+            changes = {}
+            for field, value in six.iteritems(full_record):
+                if isinstance(value, list) and 'direction' in src_record.attributes[field] and \
+                   src_record.attributes[field]['direction'] == 'up':
+                    new_value = set([eid_map[v.hash_digest()] for v in value])
+                    new_value.update(set(dest_record[0][field]))
+                    if set(dest_record[0][field]) != new_value:
+                        changes[field] = list(new_value)
+            if changes:
+                LOGGER.debug("Destination record %s[%s] needs updates: %s" %
+                             (self.model.name, dest_record[0].eid, changes))
+                if destination.is_remote():
+                    destination.update(changes, dest_record[0].eid, table_name=self.model.name, propagate=True)
+                else:
+                    destination.update(changes, dest_record[0].eid)
+                LOGGER.info("Updated %s %s." % (self.model.name, dest_record[0].hash_digest()))
+            return dest_record[0].eid, True
 
-        full_record = record.populate()
-        attrs = record.attributes
+        full_record = src_record.populate()
+        attrs = src_record.attributes
         data_for_server = {}
         for field, value in six.iteritems(full_record):
             if field in attrs and 'direction' in attrs[field]:
@@ -457,15 +475,18 @@ class Controller(object):
                     else:
                         data_for_server[field] = eid_map[value.hash_digest()]
                 else:
-                    raise InternalError("Invalid direction %s for model %s" % (attrs[field]['direction'], record.name))
+                    raise InternalError("Invalid direction %s for model %s" % (attrs[field]['direction'], src_record.name))
             else:
                 data_for_server[field] = value
         if destination.is_remote():
             # If the destination is remote, for performance reasons we do association on the server
             # rather than through the local controller.
-            data_for_server['_hash'] = record.hash_digest()
-            new_remote_record = destination.insert(data_for_server, table_name=record.name, propagate=True)
+            data_for_server['_hash'] = src_record.hash_digest()
+            new_remote_record = destination.insert(data_for_server, table_name=src_record.name, propagate=True)
         else:
+            # If pulling into an existing project, add it to projects refs
+            if mode == 'pull' and proj is not None and 'projects' in data_for_server:
+                data_for_server['projects'].append(proj.eid)
             new_remote_record = destination.create(data_for_server)
         LOGGER.debug("Inserted new record in %s as %s." % (destination.name, new_remote_record.eid))
         return new_remote_record.eid, False

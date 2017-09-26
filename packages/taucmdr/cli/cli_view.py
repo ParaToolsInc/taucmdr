@@ -616,10 +616,6 @@ class PushCommand(AbstractCliView):
                             default=arguments.SUPPRESS)
         mode_dest = 'mode'
         mode_group = parser.add_mutually_exclusive_group()
-        mode_group.add_argument('-f', '--force',
-                                help="force changes to be pushed even if existing remote objects change",
-                                const='force', action='store_const', dest=mode_dest,
-                                default=arguments.SUPPRESS)
         mode_group.add_argument('-n', '--dry-run',
                                 help="show the data that would be pushed, but don't actually push",
                                 const='dryrun', action='store_const', dest=mode_dest,
@@ -723,13 +719,13 @@ class PullCommand(AbstractCliView):
                             default=arguments.SUPPRESS)
         mode_dest = 'mode'
         mode_group = parser.add_mutually_exclusive_group()
-        mode_group.add_argument('-f', '--force',
-                                help="force changes to be pulled even if existing local objects change",
-                                const='force', action='store_const', dest=mode_dest,
-                                default=arguments.SUPPRESS)
         mode_group.add_argument('-n', '--dry-run',
-                                help="show the data that would be pushed, but don't actually push",
+                                help="Show the data that would be pushed, but don't actually push",
                                 const='dryrun', action='store_const', dest=mode_dest,
+                                default=arguments.SUPPRESS)
+        mode_group.add_argument('-p', '--project',
+                                help="Pull objects into the current project",
+                                const='project', action='store_const', dest=mode_dest,
                                 default=arguments.SUPPRESS)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "pull", self.model_name, plural=True, exclusive=True)
@@ -781,17 +777,24 @@ class PullCommand(AbstractCliView):
         else:
             local_storage = PROJECT_STORAGE
 
+        proj = None
+        if mode == 'project':
+            proj = Project.selected()
+
         eid_map = {}
         for record in records_to_pull:
             local_ctl = record.controller(local_storage)
             remote_eid, already_present = record.controller(ENTERPRISE_STORAGE).\
-                transport_record(record, local_ctl, eid_map, 'pull')
+                transport_record(record, local_ctl, eid_map, 'pull', proj)
             eid_map[record.hash_digest()] = remote_eid
             if already_present:
                 self.logger.info("Skipped %s %s, already present in %s.", record.name,
                                  record.hash_digest(), local_storage.name)
             else:
                 self.logger.info("Pulled %s %s to %s.", record.name, record.hash_digest(), local_storage.name)
+
+        if proj is not None:
+            Project.controller().select(proj)
 
         return EXIT_SUCCESS
 

@@ -243,17 +243,21 @@ class TrialController(Controller):
         else:
             return self._perform_interactive(expr, trial, cmd, cwd, env)
 
-    def transport_record(self, record, destination, eid_map, mode):
-        remote_eid, already_present = super(TrialController, self).transport_record(record, destination, eid_map, mode)
+    def transport_record(self, src_record, destination, eid_map, mode, proj=None):
+        remote_eid, already_present = super(TrialController, self).transport_record(src_record, destination,
+                                                                                    eid_map, mode, proj)
         if already_present:
             return remote_eid, already_present
         if mode == 'push':
-            data_files = record.get_data_files()
+            data_files = src_record.get_data_files()
             paths_to_upload = []
             temp_files = []
-            hash_digest = record.hash_digest()
+            hash_digest = src_record.hash_digest()
             for kind, data_file in six.iteritems(data_files):
-                if os.path.isdir(data_file):
+                if os.path.isdir(data_file) or kind == 'otf2':
+                    # otf2 trace data file entries point to the anchor file rather than the directory
+                    if kind == 'otf2':
+                        data_file = os.path.dirname(data_file)
                     tar_path = os.path.join(data_file, "..", "%s-%s.tar" % (hash_digest, kind))
                     with tarfile.open(tar_path, mode="w") as tar:
                         cwd = os.getcwd()
@@ -274,10 +278,10 @@ class TrialController(Controller):
         elif mode == 'pull':
             local_record = destination.one(remote_eid)
             prefix = local_record.prefix
-            files = record.storage.get_file({'trial': record.eid}, prefix, table_name='file')
-            for file in files:
-                if file.endswith('tar'):
-                    tar_path = os.path.join(prefix, file)
+            files = src_record.storage.get_file({'trial': src_record.eid}, prefix, table_name='file')
+            for f in files:
+                if f.endswith('tar'):
+                    tar_path = os.path.join(prefix, f)
                     with tarfile.open(tar_path, mode="r") as tar:
                         tar.extractall(path=os.path.join(prefix, ".."))
                     os.remove(tar_path)

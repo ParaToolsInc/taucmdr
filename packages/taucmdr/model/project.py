@@ -165,9 +165,9 @@ class ProjectController(Controller):
         else:
             return token, db_name
 
-    def transport_record(self, record, destination, eid_map, mode):
+    def transport_record(self, src_record, destination, eid_map, mode, proj=None):
         remote_eid, already_present = super(ProjectController, self).\
-            transport_record(record, destination, eid_map, mode)
+            transport_record(src_record, destination, eid_map, mode, proj)
         if mode == 'push':
             destination['selected_project'] = remote_eid
         elif mode == 'pull':
