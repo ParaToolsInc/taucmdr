@@ -187,11 +187,11 @@ class Installation(object):
             self.src = self._lookup_target_os_list(repos)
         else:
             self.src = src
-        self.include_path = None
-        self.bin_path = None
-        self.lib_path = None
         self._src_prefix = None
         self._install_prefix = None
+        self._include_subdir = 'include'
+        self._bin_subdir = 'bin'
+        self._lib_subdir = 'lib'
         self._uid = None
 
     def uid_items(self):
@@ -241,17 +241,22 @@ class Installation(object):
     def _set_install_prefix(self, value):
         assert value is not None
         self._install_prefix = value
-        self.include_path = os.path.join(value, 'include')
-        self.bin_path = os.path.join(value, 'bin')
-        self.lib_path = os.path.join(value, 'lib')
 
     @property
     def install_prefix(self):
         return self._get_install_prefix()
     
-    @install_prefix.setter
-    def install_prefix(self, value):
-        self._set_install_prefix(value)
+    @property
+    def include_path(self):
+        return os.path.join(self._get_install_prefix(), self._include_subdir)
+    
+    @property
+    def bin_path(self):
+        return os.path.join(self._get_install_prefix(), self._bin_subdir)
+    
+    @property
+    def lib_path(self):
+        return os.path.join(self._get_install_prefix(), self._lib_subdir)
     
     def _lookup_target_os_list(self, dct):
         if not dct:

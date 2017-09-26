@@ -62,21 +62,33 @@ REPOS = {None: 'http://tau.uoregon.edu/tau.tgz'}
 
 NIGHTLY = 'http://fs.paratools.com/tau-nightly.tgz'
 
+DATA_TOOLS = ['jumpshot',
+              'paraprof',
+              'perfdmf_configure',
+              'perfdmf_createapp',
+              'perfdmf_createexp',
+              'perfdmfdb.py',
+              'perfdmf_loadtrial',
+              'perfexplorer',
+              'perfexplorer_configure',
+              'pprof',
+              'slog2print',
+              'tau2slog2',
+              'taudb_configure',
+              'taudb_install_cert',
+              'taudb_keygen',
+              'taudb_loadtrial',
+              'tau_ebs2otf.pl',
+              'tau_ebs_process.pl',
+              'tau_merge',
+              'tau_multimerge',
+              'tau_treemerge.pl',
+              'tau_treemerge.pl']
+
 COMMANDS = {None:
-            ['jumpshot',
-             'paraprof',
-             'perfdmf_configure',
-             'perfdmf_createapp',
-             'perfdmf_createexp',
-             'perfdmfdb.py',
-             'perfdmf_loadtrial',
-             'perfexplorer',
-             'perfexplorer_configure',
-             'phaseconvert',
-             'pprof',
+            DATA_TOOLS + 
+            ['phaseconvert',
              'ppscript',
-             'slog2print',
-             'tau2slog2',
              'tau_analyze',
              'taucc',
              'tau_cc.sh',
@@ -85,12 +97,6 @@ COMMANDS = {None:
              'tau_convert',
              'taucxx',
              'tau_cxx.sh',
-             'taudb_configure',
-             'taudb_install_cert',
-             'taudb_keygen',
-             'taudb_loadtrial',
-             'tau_ebs2otf.pl',
-             'tau_ebs_process.pl',
              'tauex',
              'tau_exec',
              'tau_f77.sh',
@@ -102,19 +108,15 @@ COMMANDS = {None:
              'tau_java',
              'tau_javamax.sh',
              'tau_macro.sh',
-             'tau_merge',
-             'tau_multimerge',
              'tau_pebil_rewrite',
              'tau_reduce',
              'tau_rewrite',
              'tau_selectfile',
              'tau_show_libs',
              'tau_throttle.sh',
-             'tau_treemerge.pl',
              'tauupc',
              'tau_upc.sh',
-             'tau_user_setup.sh',
-             'trace2profile']}
+             'tau_user_setup.sh']}
 
 HEADERS = {None: ['Profile/Profiler.h', 'Profile/TAU.h']}
 
@@ -302,6 +304,9 @@ class TauInstallation(Installation):
         if self.src == 'nightly':
             self.src = NIGHTLY
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
+        # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
+        self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
+        self._lib_subdir = os.path.join(self.tau_magic.name, 'lib')
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
         self.minimal_configuration = minimal_configuration
         self.application_linkage = application_linkage
@@ -416,13 +421,6 @@ class TauInstallation(Installation):
             self._install_tag = util.archive_toplevel(self.acquire_source())
             return self._install_tag
     
-    def _set_install_prefix(self, value):
-        # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
-        super(TauInstallation, self)._set_install_prefix(value)
-        arch_path = os.path.join(self.install_prefix, self.tau_magic.name)
-        self.bin_path = os.path.join(arch_path, 'bin')
-        self.lib_path = os.path.join(arch_path, 'lib')
-
     def verify(self):
         super(TauInstallation, self).verify()
         # Check PAPI metrics for compatibility
@@ -440,8 +438,6 @@ class TauInstallation(Installation):
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         def check(pkg):
-            x = getattr(self, '_uses_'+pkg)
-            print '_uses_%s=%s' % (pkg, x)
             if getattr(self, '_uses_'+pkg):
                 pkg_src = self._all_sources.get(pkg)
                 if pkg_src:
@@ -735,6 +731,8 @@ class TauInstallation(Installation):
                                        "Allow TAU Commander to manage your TAU configurations",
                                        "Check for earlier error or warning messages",
                                        "Ask your system administrator to build the missing TAU configuration")
+        # Check dependencies after verifying TAU instead of before in case 
+        # we're using an unmanaged TAU or forced makefile. 
         for pkg in self.dependencies.itervalues():
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
@@ -1281,6 +1279,15 @@ class TauInstallation(Installation):
                 raise ConfigurationError("Too many trace files, use vampirserver to view.")
             retval += util.create_subprocess(['vampir', path], cwd=cwd, env=env)
         return retval
+    
+    def _prep_data_analysis_tools(self):
+        """Checks that data analysis tools are installed, or installs them if needed."""
+        if not glob.glob(os.path.join(self.lib_path, 'Makefile.tau*')):
+            return self.install()
+        for cmd in DATA_TOOLS:
+            path = os.path.join(self.bin_path, cmd)
+            if not (os.path.exists(path) and os.access(path, os.X_OK)):
+                return self.install()
 
     def show_data_files(self, dataset, profile_tools=None, trace_tools=None):
         """Displays profile and trace data.
@@ -1295,7 +1302,7 @@ class TauInstallation(Installation):
         Raises:
             ConfigurationError: An error occurred while displaying a data file.
         """
-        self.install()
+        self._prep_data_analysis_tools()
         _, env = self.runtime_config()
         for fmt, paths in six.iteritems(dataset):
             if self.is_profile_format(fmt):
@@ -1330,7 +1337,7 @@ class TauInstallation(Installation):
             src (str): Directory containing TAU profiles to convert to PPK format.
             remove_existing (bool): If True, delete ``dest`` before writing it.
         """
-        self.install()
+        self._prep_data_analysis_tools()
         _, env = self.runtime_config()
         self._check_java()
         if remove_existing and os.path.exists(dest):
@@ -1350,7 +1357,7 @@ class TauInstallation(Installation):
         Args: 
             prefix (str): Path to the directory containing *.trc and *.edf files.
         """
-        self.install()
+        self._prep_data_analysis_tools()
         trc_files = glob.glob(os.path.join(prefix, '*.trc'))
         edf_files = glob.glob(os.path.join(prefix, '*.edf'))
         if not trc_files:
@@ -1376,7 +1383,7 @@ class TauInstallation(Installation):
             edf (str): Path to the edf file.
             slog2 (str): Path to the slog2 file to create.
         """
-        self.install()
+        self._prep_data_analysis_tools()
         LOGGER.info("Converting TAU trace files to SLOG2 format...")
         cmd = [os.path.join(self.bin_path, 'tau2slog2'), trc, edf, '-o', slog2]
         if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
