@@ -414,27 +414,44 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
                 os.chdir(oldcwd)
 
 
-def file_accessible(filepath, mode='r'):
-    """Check if a file is accessable.
+def path_accessible(path, mode='r'):
+    """Check if a file or directory is accessable.
+    
+    Files are checked by attempting to open them with the given mode.
+    Directories are checked by testing their access bits only, which may fail for 
+    some filesystems which may have permissions semantics beyond the usual POSIX 
+    permission-bit model. We'll fix this if it becomes a problem. 
     
     Args:
-        filepath (str): Path to file to check.
+        path (str): Path to file or directory to check.
         mode (str): File access mode to test, e.g. 'r' or 'rw'
     
     Returns:
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
-    handle = None
-    try:
-        handle = open(filepath, mode)
-    except:     # pylint: disable=bare-except
-        return False
+    assert mode and set(mode) <= set(('r', 'w'))
+    if os.path.isdir(path):
+        modebits = 0
+        if 'r' in mode:
+            modebits |= os.R_OK
+        if 'w' in mode:
+            modebits |= os.W_OK | os.X_OK
+        return os.access(path, modebits)
     else:
-        return True
-    finally:
-        if handle:
-            handle.close()
-    return False
+        handle = None
+        try:
+            handle = open(path, mode)
+        except IOError as err:
+            if err.errno == errno.EACCES:
+                return False
+            # Some other error, not permissions
+            raise
+        else:
+            return True
+        finally:
+            if handle:
+                handle.close()
+        return False
 
 @contextmanager
 def _null_context():

@@ -169,7 +169,7 @@ class LocalFileStorage(AbstractStorage):
             except IOError as err:
                 raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err),
                                    "Check that you have `write` access")
-            if not util.file_accessible(dbfile):
+            if not util.path_accessible(dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % dbfile,
                                    "Check that you have `read` access")
             LOGGER.debug("Initialized %s database '%s'", self.name, dbfile)

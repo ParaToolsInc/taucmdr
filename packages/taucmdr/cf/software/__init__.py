@@ -36,8 +36,8 @@ class SoftwarePackageError(ConfigurationError):
 
     message_fmt = ("%(value)s\n"
                    "\n"
-                   "%(hints)s"
-                   "Please check the selected configuration or send '%(logfile)s' to  %(contact)s for assistance.")
+                   "%(hints)s\n"
+                   "Please check the selected experiment or send '%(logfile)s' to %(contact)s for assistance.")
 
 def get_installation(name):
     module_name = name + '_installation'

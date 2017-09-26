@@ -78,7 +78,7 @@ class TargetCreateCommand(CreateCommand):
         # Parsing a TAU Makefile is a really hairy operation, so let's lift the limits
         # pylint: disable=too-many-statements,too-many-locals
         makefile = args.forced_makefile
-        if not util.file_accessible(makefile):
+        if not util.path_accessible(makefile):
             self.parser.error("Invalid TAU makefile: %s" % makefile)
         tau_arch_name = os.path.basename(os.path.dirname(os.path.dirname(makefile)))
         matches = [arch for arch in TauMagic.all() if arch.name == tau_arch_name]

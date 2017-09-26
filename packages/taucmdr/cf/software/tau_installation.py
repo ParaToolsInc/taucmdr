@@ -300,6 +300,7 @@ class TauInstallation(Installation):
                                               sources, target_arch, target_os, compilers, 
                                               REPOS, COMMANDS, None, None)
         self._tau_makefile = None
+        self._install_tag = None
         self._all_sources = sources
         if self.src == 'nightly':
             self.src = NIGHTLY
@@ -414,20 +415,11 @@ class TauInstallation(Installation):
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
-        try:
-            return self._install_tag
-        except AttributeError:
-            # pylint: disable=attribute-defined-outside-init
+        if self._install_tag is None:
             self._install_tag = util.archive_toplevel(self.acquire_source())
-            return self._install_tag
+        return self._install_tag
     
-    def verify(self):
-        super(TauInstallation, self).verify()
-        # Check PAPI metrics for compatibility
-        if self._uses_papi:
-            self.dependencies['papi'].check_metrics(self.metrics)
-        # Check for TAU libraries
-        tau_makefile = self.get_makefile()
+    def _verify_tau_libs(self, tau_makefile):
         makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau", "")
         static_lib = "libtau%s.*" % makefile_tags
         shared_lib = "libTAUsh%s.*" % makefile_tags
@@ -436,19 +428,14 @@ class TauInstallation(Installation):
                 break
         else:
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
-        # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
-        def check(pkg):
-            if getattr(self, '_uses_'+pkg):
-                pkg_src = self._all_sources.get(pkg)
-                if pkg_src:
-                    return pkg_src != 'download'
-            return False
+        
+    def _verify_dependency_paths(self, tau_makefile):
         with open(tau_makefile, 'r') as fin:
             for line in fin:
                 if line.startswith('#'):
                     continue
                 elif 'BFDINCLUDE=' in line:
-                    if check('binutils'):
+                    if self._uses_binutils:
                         binutils = self.dependencies['binutils']
                         bfd_inc = line.split('=')[1].strip().strip("-I")
                         if binutils.include_path != bfd_inc:
@@ -456,7 +443,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("BFDINCLUDE in '%s' is not '%s'" % 
                                                        (tau_makefile, binutils.include_path))
                 elif 'UNWIND_INC=' in line:
-                    if check('libunwind'): 
+                    if self._uses_libunwind: 
                         libunwind = self.dependencies['libunwind']
                         libunwind_inc = line.split('=')[1].strip().strip("-I")
                         if libunwind.include_path != libunwind_inc:
@@ -464,7 +451,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("UNWIND_INC in '%s' is not '%s'" % 
                                                        (tau_makefile, libunwind.include_path))
                 elif 'PAPIDIR=' in line:
-                    if check('papi'):
+                    if self._uses_papi:
                         papi = self.dependencies['papi']
                         papi_dir = line.split('=')[1].strip()
                         if papi.install_prefix != papi_dir:
@@ -472,7 +459,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("PAPI_DIR in '%s' is not '%s'" % 
                                                        (tau_makefile, papi.install_prefix))
                 elif 'SCOREPDIR=' in line:
-                    if check('scorep'):
+                    if self._uses_scorep:
                         scorep = self.dependencies['scorep']
                         scorep_dir = line.split('=')[1].strip()
                         if scorep.install_prefix != scorep_dir:
@@ -480,31 +467,40 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("SCOREPDIR in '%s' is not '%s'" % 
                                                        (tau_makefile, scorep.install_prefix))
                 elif 'OTFINC=' in line:
-                    if self._uses_libotf2 and line.strip() == 'OTFINC=':
-                        raise SoftwarePackageError("libotf2 not specified in '%s'" % tau_makefile)                        
-                    if check('libotf2'):
+                    if self._uses_libotf2:
                         libotf2 = self.dependencies['libotf2']
                         libotf2_dir = line.split('=')[1].strip().strip("-I")
                         if libotf2.include_path != libotf2_dir:
                             LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
                             raise SoftwarePackageError("OTFINC in '%s' is not '%s'" % 
                                                        (tau_makefile, libotf2.include_path))
-        # Check for iowrapper libraries and link options
+    
+    def _verify_iowrapper(self, tau_makefile):
+        # Replace right-most occurance of 'Makefile.tau' with 'shared'
+        tagged_shared_dir = 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
+        for shared_dir in tagged_shared_dir, 'shared':
+            iowrap_libs = glob.glob(os.path.join(shared_dir, 'libTAU-iowrap*'))
+            if iowrap_libs:
+                break
+        else:
+            raise SoftwarePackageError("TAU I/O wrapper libraries not found in '%s'" % shared_dir)
+        LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
+        io_wrapper_dir = os.path.join(self.lib_path, 'wrappers', 'io_wrapper')
+        iowrap_link_options = os.path.join(io_wrapper_dir, 'link_options.tau')
+        if not os.path.exists(iowrap_link_options):
+            raise SoftwarePackageError("TAU I/O wrapper link options not found in '%s'" % io_wrapper_dir)
+        LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
+    
+    def verify(self):
+        super(TauInstallation, self).verify()
+        if self._uses_papi:
+            self.dependencies['papi'].check_metrics(self.metrics)
+        tau_makefile = self.get_makefile()
+        self._verify_tau_libs(tau_makefile)
+        if not (self.unmanaged or os.path.islink(self.install_prefix)):
+            self._verify_dependency_paths(tau_makefile)
         if self.io_inst:
-            # Replace right-most occurance of 'Makefile.tau' with 'shared'
-            tagged_shared_dir = 'shared'.join(self.get_makefile().rsplit('Makefile.tau', 1))
-            for shared_dir in tagged_shared_dir, 'shared':
-                iowrap_libs = glob.glob(os.path.join(shared_dir, 'libTAU-iowrap*'))
-                if iowrap_libs:
-                    break
-            else:
-                raise SoftwarePackageError("TAU I/O wrapper libraries not found in '%s'" % shared_dir)
-            LOGGER.debug("Found iowrap shared libraries: %s", iowrap_libs)
-            io_wrapper_dir = os.path.join(self.lib_path, 'wrappers', 'io_wrapper')
-            iowrap_link_options = os.path.join(io_wrapper_dir, 'link_options.tau')
-            if not os.path.exists(iowrap_link_options):
-                raise SoftwarePackageError("TAU I/O wrapper link options not found in '%s'" % io_wrapper_dir)
-            LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
+            self._verify_iowrapper(tau_makefile)
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
     def _select_flags(self, header, libglobs, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
@@ -715,22 +711,23 @@ class TauInstallation(Installation):
             forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
             self._set_install_prefix(forced_install_prefix)
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
-            return 
-        if not self.src or not force_reinstall:
+            return
+        unmanaged_hints = ["Allow TAU Commander to manage your TAU configurations",
+                           "Check for earlier error or warning messages",
+                           "Ask your system administrator to build any missing TAU configurations mentioned above"]
+        if self.unmanaged or not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                if not self.src:
+                if self.unmanaged:
                     raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
-                                               "is invalid: %s" % (self.title, self.install_prefix, err),
-                                               "Specify source code path or URL to enable package reinstallation.")
+                                               "is invalid:\n\n    %s" % (self.title, self.install_prefix, err),
+                                               *unmanaged_hints)
                 elif not force_reinstall:
-                    LOGGER.info(err)
-        if os.path.isdir(self.src) and not os.access(self.src, os.W_OK | os.X_OK):
-            raise SoftwarePackageError("Unable to configure TAU: '%s' is not writable." % self.src,
-                                       "Allow TAU Commander to manage your TAU configurations",
-                                       "Check for earlier error or warning messages",
-                                       "Ask your system administrator to build the missing TAU configuration")
+                    LOGGER.info("TAU must be reconfigured: %s", err)
+        if self.unmanaged and not util.path_accessible(self.src, 'w'):
+            raise SoftwarePackageError("Unable to configure TAU: '%s' is not writable." % self.install_prefix,
+                                       *unmanaged_hints)
         # Check dependencies after verifying TAU instead of before in case 
         # we're using an unmanaged TAU or forced makefile. 
         for pkg in self.dependencies.itervalues():
@@ -744,8 +741,16 @@ class TauInstallation(Installation):
                 self._src_prefix = self.install_prefix
                 self.installation_sequence()
                 self.set_group()
+            except SoftwarePackageError as err:
+                if not util.path_accessible(self.install_prefix, 'w'):
+                    err.value += ": the TAU installation at '%s' is not writable" % self.install_prefix
+                    err.hints = ["Grant write permission on '%s'" % self.install_prefix] + unmanaged_hints + err.hints
+                    parent_prefix = os.path.dirname(self.install_prefix)
+                    if util.path_accessible(parent_prefix, 'w'):
+                        err.value += " (but the parent directory is)"
+                raise err
             except Exception as err:
-                LOGGER.info("%s installation failed: %s ", self.title, err)
+                LOGGER.info("%s installation failed: %s", self.title, err)
                 raise
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
@@ -754,7 +759,8 @@ class TauInstallation(Installation):
     def installation_sequence(self):
         self.configure()
         self.make_install()
-        # Rebuild makefile cache on next call to get_makefile() since a new, possibly better makefile is now available
+        # Rebuild makefile cache on next call to get_makefile() 
+        # since a new, possibly better makefile is now available
         self._tau_makefile = None
 
     def _compiler_tags(self):
