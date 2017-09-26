@@ -92,7 +92,8 @@ SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTE
 """str: System-level TAU Commander files."""
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__', 
-                                                              os.path.join(os.path.expanduser('~'), '.local', '.tau'))))
+                                                              os.path.join(os.path.expanduser('~'), 
+                                                                           '.local', 'taucmdr'))))
 """str: User-level TAU Commander files."""
 
 PROJECT_DIR = '.tau'
