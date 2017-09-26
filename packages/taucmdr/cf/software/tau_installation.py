@@ -353,6 +353,7 @@ class TauInstallation(Installation):
         self._uses_scorep = (self.profile == 'cubex')
         self._uses_ompt = (self.measure_openmp == 'ompt')
         self._uses_libotf2 = (self.trace == 'otf2')
+        self._uses_cuda = (self.cuda_prefix and (self.cuda_support or self.opencl_support))
         if forced_makefile is None:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
                 if getattr(self, '_uses_'+pkg):
@@ -642,7 +643,7 @@ class TauInstallation(Installation):
                   '-mpiinc=%s' % mpiinc if mpiinc else None,
                   '-mpilib=%s' % mpilib if mpilib else None,
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else None,
-                  '-cuda=%s' % self.cuda_prefix if self.cuda_prefix else None,
+                  '-cuda=%s' % self.cuda_prefix if self._uses_cuda else None,
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else None,
                   '-shmem' if self.shmem_support else None,
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
