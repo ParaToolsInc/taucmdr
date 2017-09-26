@@ -1123,6 +1123,12 @@ class TauInstallation(Installation):
                             self.tbb_support or
                             self.pthreads_support or
                             (self.source_inst == 'never' and self.compiler_inst == 'never'))
+        # Per Sameer's request, shim in site-specific flags.  
+        # These should be specified in a taucmdr module or similar.
+        try:
+            launcher_cmd.extend(os.environ['__TAUCMDR_LAUNCHER_ARGS__'].split(' '))
+        except KeyError:
+            pass
         if use_tau_exec:
             tau_exec_opts = opts
             makefile = self.get_makefile()
