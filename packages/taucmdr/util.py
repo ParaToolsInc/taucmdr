@@ -52,6 +52,7 @@ from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
 from termcolor import termcolor
+from unidecode import unidecode
 from taucmdr import logger
 from taucmdr.error import InternalError
 from taucmdr.progress import ProgressIndicator, progress_spinner
@@ -516,6 +517,7 @@ def get_command_output(cmd, cwd=None, env=None):
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 
+
 def page_output(output_string):
     """Pipe string to a pager.
 
@@ -526,12 +528,13 @@ def page_output(output_string):
         output_string (str): String to put output.
 
     """
-    try:
-        pager_cmd = os.environ['PAGER'].split(' ')
-    except KeyError:
-        pager_cmd = ['less', '-F', '-R', '-S', '-X', '-K']
-    p = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
-    p.communicate(output_string)
+    output_string = unidecode(output_string.decode('utf-8'))
+    if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
+        print output_string
+    else:
+        pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
+        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
+        proc.communicate(output_string)
 
 
 def human_size(num, suffix='B'):
