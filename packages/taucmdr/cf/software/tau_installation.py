@@ -720,8 +720,6 @@ class TauInstallation(Installation):
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
             return 
         if not self.src or not force_reinstall:
-            for pkg in self.dependencies.itervalues():
-                pkg.install(force_reinstall)
             try:
                 return self.verify()
             except SoftwarePackageError as err:
@@ -736,6 +734,8 @@ class TauInstallation(Installation):
                                        "Allow TAU Commander to manage your TAU configurations",
                                        "Check for earlier error or warning messages",
                                        "Ask your system administrator to build the missing TAU configuration")
+        for pkg in self.dependencies.itervalues():
+            pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         with new_os_environ(), util.umask(002):
             try:
