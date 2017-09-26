@@ -38,7 +38,7 @@ import json
 import requests
 import six
 from taucmdr import logger, util
-from taucmdr.error import AuthenticationError, InternalError
+from taucmdr.error import AuthenticationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
@@ -64,6 +64,9 @@ class TauEnterpriseStorageError(StorageError):
 
 
 class _TauEnterpriseJsonRecordEncoder(json.JSONEncoder):
+    # Disabling this pylint check because it erroneously triggers on overrides in
+    # JSONEncoder; see https://github.com/PyCQA/pylint/issues/414
+    # pylint: disable=method-hidden
     def default(self, obj):
         if isinstance(obj, _TauEnterpriseJsonRecord):
             return obj.element
@@ -96,7 +99,7 @@ class _TauEnterpriseDatabase(object):
     def get_token_for_user(cls, endpoint, username, password):
         url = "{}/token".format(endpoint)
         request = requests.post(url, json.dumps({'username': username, 'password': password}),
-                          headers={'Content-Type': 'application/json'}, verify=False)
+                                headers={'Content-Type': 'application/json'}, verify=False)
         request.raise_for_status()
         return request.json()['token']
 
@@ -281,10 +284,10 @@ class _TauEnterpriseTable(object):
                                         self._commit_query(commit))
         elif isinstance(keys, dict):
             url = "{}/?where={}&{}{}{}".format(self.endpoint, json.dumps(keys), self._embed_query(populate),
-                                             self._prop_query(propagate), self._commit_query(commit))
+                                               self._prop_query(propagate), self._commit_query(commit))
         elif isinstance(keys, six.string_types):
             url = "{}/?where={}&{}{}{}".format(self.endpoint, keys, self._embed_query(populate),
-                                             self._prop_query(propagate), self._commit_query(commit))
+                                               self._prop_query(propagate), self._commit_query(commit))
         else:
             return None
         if delete:

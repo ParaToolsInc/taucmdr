@@ -32,8 +32,6 @@ See http://en.wikipedia.org/wiki/Model-view-controller
 
 from __future__ import print_function
 
-import six
-from taucmdr.model.trial import Trial
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
 from taucmdr import logger, util, cli
@@ -684,7 +682,7 @@ class PushCommand(AbstractCliView):
         eid_map = {}
         with ENTERPRISE_STORAGE as database:
             for record in records_to_push:
-                remote_eid, already_present  = record.controller(record.storage).transport_record(record, database,
+                remote_eid, already_present = record.controller(record.storage).transport_record(record, database,
                                                                                                   eid_map, 'push')
                 eid_map[record.hash_digest()] = remote_eid
                 if already_present:
