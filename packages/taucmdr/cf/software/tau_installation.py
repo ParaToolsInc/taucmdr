@@ -440,6 +440,8 @@ class TauInstallation(Installation):
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
         # Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.
         def check(pkg):
+            x = getattr(self, '_uses_'+pkg)
+            print '_uses_%s=%s' % (pkg, x)
             if getattr(self, '_uses_'+pkg):
                 pkg_src = self._all_sources.get(pkg)
                 if pkg_src:
@@ -482,6 +484,8 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("SCOREPDIR in '%s' is not '%s'" % 
                                                        (tau_makefile, scorep.install_prefix))
                 elif 'OTFINC=' in line:
+                    if self._uses_libotf2 and line.strip() == 'OTFINC=':
+                        raise SoftwarePackageError("libotf2 not specified in '%s'" % tau_makefile)                        
                     if check('libotf2'):
                         libotf2 = self.dependencies['libotf2']
                         libotf2_dir = line.split('=')[1].strip().strip("-I")
