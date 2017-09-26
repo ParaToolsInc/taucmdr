@@ -190,8 +190,6 @@ class ExperimentSelectionError(ConfigurationError):
         super(ExperimentSelectionError, self).__init__(value, *hints)
 
 
-
-
 def excepthook(etype, value, tb):
     """Exception handler for any uncaught exception (except SystemExit).
     
