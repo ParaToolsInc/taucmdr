@@ -3,35 +3,98 @@ Contains the :class:`database <tinydb.database.TinyDB>` and
 :class:`tables <tinydb.database.Table>` implementation.
 """
 import warnings
-from tinydb import JSONStorage
-from tinydb.utils import LRUCache
+
+from . import JSONStorage
+from .utils import LRUCache, iteritems, itervalues
 
 
-class Element(dict):
-
+class Document(dict):
     """
-    Represents an element stored in the database.
+    Represents a document stored in the database.
 
-    This is a transparent proxy for database elements. It exists
-    to provide a way to access an element's id via ``el.eid``.
+    This is a transparent proxy for database records. It exists
+    to provide a way to access an record's id via ``el.doc_id``.
     """
+    def __init__(self, value, doc_id, **kwargs):
+        super(Document, self).__init__(**kwargs)
 
-    def __init__(self, value=None, eid=None, **kwargs):
-        super(Element, self).__init__(**kwargs)
+        self.update(value)
+        self.doc_id = doc_id
 
-        if value is not None:
-            self.update(value)
-            self.eid = eid
+    @property
+    def eid(self):
+        warnings.warn('eid has been renamed to doc_id', DeprecationWarning)
+        return self.doc_id
+
+
+Element = Document
+
+
+def _get_doc_id(doc_id, eid):
+    if eid is not None:
+        if doc_id is not None:
+            raise TypeError('cannot pass both eid and doc_id')
+
+        warnings.warn('eid has been renamed to doc_ids', DeprecationWarning)
+        return eid
+    else:
+        return doc_id
+
+
+def _get_doc_ids(doc_ids, eids):
+    if eids is not None:
+        if doc_ids is not None:
+            raise TypeError('cannot pass both eids and doc_ids')
+
+        warnings.warn('eids has been renamed to doc_ids', DeprecationWarning)
+        return eids
+    else:
+        return doc_ids
+
+
+class StorageProxy(object):
+    def __init__(self, storage, table_name):
+        self._storage = storage
+        self._table_name = table_name
+
+    def read(self):
+        try:
+            raw_data = (self._storage.read() or {})[self._table_name]
+        except KeyError:
+            self.write({})
+            return {}
+
+        data = {}
+        for key, val in iteritems(raw_data):
+            doc_id = int(key)
+            data[doc_id] = Element(val, doc_id)
+
+        return data
+
+    def write(self, values):
+        data = self._storage.read() or {}
+        data[self._table_name] = values
+        self._storage.write(data)
+
+    def purge_table(self):
+        try:
+            data = self._storage.read() or {}
+            del data[self._table_name]
+            self._storage.write(data)
+        except KeyError:
+            pass
 
 
 class TinyDB(object):
-
     """
     The main class of TinyDB.
 
     Gives access to the database, provides methods to insert/search/remove
     and getting tables.
     """
+
+    DEFAULT_TABLE = '_default'
+    DEFAULT_STORAGE = JSONStorage
 
     def __init__(self, *args, **kwargs):
         """
@@ -43,14 +106,22 @@ class TinyDB(object):
         :param storage: The class of the storage to use. Will be initialized
                         with ``args`` and ``kwargs``.
         """
-        storage = kwargs.pop('storage', JSONStorage)
+
+        storage = kwargs.pop('storage', self.DEFAULT_STORAGE)
+        table = kwargs.pop('default_table', self.DEFAULT_TABLE)
+
+        # Prepare the storage
         #: :type: Storage
         self._storage = storage(*args, **kwargs)
 
-        self._table_cache = {}
-        self._table = self.table('_default')
+        self._opened = True
 
-    def table(self, name='_default', smart_cache=False, **options):
+        # Prepare the default table
+
+        self._table_cache = {}
+        self._table = self.table(table)
+
+    def table(self, name=DEFAULT_TABLE, **options):
         """
         Get access to a specific table.
 
@@ -59,30 +130,19 @@ class TinyDB(object):
 
         :param name: The name of the table.
         :type name: str
-        :param smart_cache: Use a smarter query caching.
-                            See :class:`tinydb.database.SmartCacheTable`
         :param cache_size: How many query results to cache.
         """
 
         if name in self._table_cache:
             return self._table_cache[name]
 
-        if smart_cache:
-            warnings.warn('Passing the smart_cache argument is deprecated. '
-                          'Please set the table class to use via '
-                          '`db.table_class = SmartCacheTable` or '
-                          '`TinyDB.table_class = SmartCacheTable` instead.',
-                          DeprecationWarning)
-
-        # If smart_cache is set, use SmartCacheTable to retain backwards
-        # compatibility
-        table_class = SmartCacheTable if smart_cache else self.table_class
-        table = table_class(name, self, **options)
+        table = self.table_class(StorageProxy(self._storage, name), name,
+                                 **options)
 
         self._table_cache[name] = table
 
-        if not getattr(self._storage, 'readonly', False) and name not in self._read():
-            self._write({}, name)
+        # table._read will create an empty table in the storage, if necessary
+        table._read()
 
         return table
 
@@ -93,85 +153,43 @@ class TinyDB(object):
         :returns: a set of table names
         :rtype: set[str]
         """
-        return set(self._read().keys())
+
+        return set(self._storage.read())
 
     def purge_tables(self):
         """
         Purge all tables from the database. **CANNOT BE REVERSED!**
         """
-        self._write({})
+
+        self._storage.write({})
         self._table_cache.clear()
 
-    def _read(self, table=None):
+    def purge_table(self, name):
         """
-        Reading access to the backend.
+        Purge a specific table from the database. **CANNOT BE REVERSED!**
 
-        :param table: The table, we want to read, or None to read the 'all
-        tables' dict.
-        :type table: str or None
-        :returns: all values
-        :rtype: dict
+        :param name: The name of the table.
+        :type name: str
         """
+        if name in self._table_cache:
+            del self._table_cache[name]
 
-        if table is not None:
-            # Read specific table
-            try:
-                return self._read()[table]
-            except (KeyError, TypeError):
-                return {}
+        proxy = StorageProxy(self._storage, name)
+        proxy.purge_table()
 
-        # Read all tables
-        try:
-            return self._storage.read()
-        except ValueError:
-            return {}
-
-    def _write(self, values, table=None):
+    def close(self):
         """
-        Writing access to the backend.
-
-        :param table: The table, we want to write, or None to write the 'all
-        tables' dict.
-        :type table: str or None
-        :param values: the new values to write
-        :type values: list | dict
+        Close the database.
         """
-
-        if table is not None:
-            # Write specific table
-            data = self._read()
-            data[table] = values
-
-            self._write(data)
-            return
-
-        # Write all tables
-        self._storage.write(values)
-
-    # Methods that are executed on the default table
-    # Because magic methods are not handlet by __getattr__ we need to forward
-    # them manually here
-
-    def __len__(self):
-        """
-        Get the total number of elements in the DB.
-
-        >>> len(db)
-        0
-        """
-        return len(self._table)
+        self._opened = False
+        self._storage.close()
 
     def __enter__(self):
-        """
-        See :meth:`.Table.__enter__`
-        """
-        return self._table.__enter__()
+        return self
 
     def __exit__(self, *args):
-        """
-        See :meth:`.Table.__exit__`
-        """
-        return self._table.__exit__(*args)
+        if self._opened:
+            self.close()
 
     def __getattr__(self, name):
         """
@@ -179,69 +197,117 @@ class TinyDB(object):
         """
         return getattr(self._table, name)
 
+    # Methods that are executed on the default table
+    # Because magic methods are not handlet by __getattr__ we need to forward
+    # them manually here
+
+    def __len__(self):
+        """
+        Get the total number of documents in the default table.
+
+        >>> db = TinyDB('db.json')
+        >>> len(db)
+        0
+        """
+        return len(self._table)
+
+    def __iter__(self):
+        """
+        Iter over all documents from default table.
+        """
+        return self._table.__iter__()
+
 
 class Table(object):
-
     """
     Represents a single TinyDB Table.
     """
 
-    def __init__(self, name, db, cache_size=10):
+    def __init__(self, storage, name, cache_size=10):
         """
         Get access to a table.
 
-        :param name: The name of the table.
-        :type name: str
-        :param db: The parent database.
-        :type db: tinydb.database.TinyDB
+        :param storage: Access to the storage
+        :type storage: StorageProxy
+        :param name: The table name
         :param cache_size: Maximum size of query cache.
         """
 
-        self.name = name
-        self._db = db
+        self._storage = storage
+        self._name = name
         self._query_cache = LRUCache(capacity=cache_size)
 
-        old_ids = self._read().keys()
-        if old_ids:
-            self._last_id = max(i for i in old_ids)
+        data = self._read()
+        if data:
+            self._last_id = max(i for i in data)
         else:
             self._last_id = 0
 
-    def process_elements(self, func, cond=None, eids=None):
+    @property
+    def name(self):
         """
-        Helper function for processing all elements specified by condition
+        Get the table name.
+        """
+        return self._name
+
+    def process_elements(self, func, cond=None, doc_ids=None, eids=None):
+        """
+        Helper function for processing all documents specified by condition
         or IDs.
 
-        A repeating pattern in TinyDB is to run some code on all elements
+        A repeating pattern in TinyDB is to run some code on all documents
         that match a condition or are specified by their ID. This is
         implemented in this function.
         The function passed as ``func`` has to be a callable. It's first
         argument will be the data currently in the database. It's second
-        argument is the element ID of the currently processed element.
+        argument is the document ID of the currently processed document.
 
         See: :meth:`~.update`, :meth:`.remove`
 
-        :param func: the function to execute on every included element.
+        :param func: the function to execute on every included document.
                      first argument: all data
                      second argument: the current eid
-        :param cond: elements to use
-        :param eids: elements to use
+        :param cond: query that matches documents to use, or
+        :param doc_ids: list of document IDs to use
+        :param doc_ids: list of document IDs to use (deprecated)
+        :returns: the document IDs that were affected during processed
         """
 
+        doc_ids = _get_doc_ids(doc_ids, eids)
         data = self._read()
 
-        if eids is not None:
-            # Processed element specified by id
-            for eid in eids:
-                func(data, eid)
+        if doc_ids is not None:
+            # Processed document specified by id
+            for doc_id in doc_ids:
+                func(data, doc_id)
 
+        elif cond is not None:
+            # Collect affected doc_ids
+            doc_ids = []
+
+            # Processed documents specified by condition
+            for doc_id in list(data):
+                if cond(data[doc_id]):
+                    func(data, doc_id)
+                    doc_ids.append(doc_id)
         else:
-            # Processed elements specified by condition
-            for eid in list(data):
-                if cond(data[eid]):
-                    func(data, eid)
+            # Processed documents
+            doc_ids = list(data)
+
+            for doc_id in doc_ids:
+                func(data, doc_id)
 
         self._write(data)
+
+        return doc_ids
+
+    def clear_cache(self):
+        """
+        Clear the query cache.
+
+        A simple helper that clears the internal query cache.
+        """
+        self._query_cache.clear()
 
     def _get_next_id(self):
         """
@@ -261,13 +327,7 @@ class Table(object):
         :rtype: dict
         """
 
-        raw_data = self._db._read(self.name)
-        data = {}
-        for key in list(raw_data):
-            eid = int(key)
-            data[eid] = Element(raw_data[key], eid)
-
-        return data
+        return self._storage.read()
 
     def _write(self, values):
         """
@@ -278,85 +338,124 @@ class Table(object):
         """
 
         self._query_cache.clear()
-        self._db._write(values, self.name)
+        self._storage.write(values)
 
     def __len__(self):
         """
-        Get the total number of elements in the table.
+        Get the total number of documents in the table.
         """
         return len(self._read())
 
     def all(self):
         """
-        Get all elements stored in the table.
+        Get all documents stored in the table.
 
-        :returns: a list with all elements.
+        :returns: a list with all documents.
         :rtype: list[Element]
         """
 
-        return list(self._read().values())
+        return list(itervalues(self._read()))
 
-    def insert(self, element):
+    def __iter__(self):
         """
-        Insert a new element into the table.
+        Iter over all documents stored in the table.
 
-        :param element: the element to insert
-        :returns: the inserted element's ID
+        :returns: an iterator over all documents.
+        :rtype: listiterator[Element]
         """
 
-        eid = self._get_next_id()
+        for value in itervalues(self._read()):
+            yield value
+
+    def insert(self, document):
+        """
+        Insert a new document into the table.
+
+        :param document: the document to insert
+        :returns: the inserted document's ID
+        """
+
+        doc_id = self._get_next_id()
+
+        if not isinstance(document, dict):
+            raise ValueError('Document is not a dictionary')
 
         data = self._read()
-        data[eid] = element
+        data[doc_id] = document
         self._write(data)
 
-        return eid
+        return doc_id
 
-    def insert_multiple(self, elements):
+    def insert_multiple(self, documents):
         """
-        Insert multiple elements into the table.
+        Insert multiple documents into the table.
 
-        :param elements: a list of elements to insert
-        :returns: a list containing the inserted elements' IDs
+        :param documents: a list of documents to insert
+        :returns: a list containing the inserted documents' IDs
         """
 
-        return [self.insert(element) for element in elements]
+        doc_ids = []
+        data = self._read()
 
-    def remove(self, cond=None, eids=None):
+        for doc in documents:
+            doc_id = self._get_next_id()
+            doc_ids.append(doc_id)
+
+            data[doc_id] = doc
+
+        self._write(data)
+
+        return doc_ids
+
+    def remove(self, cond=None, doc_ids=None, eids=None):
         """
-        Remove all matching elements.
+        Remove all matching documents.
 
         :param cond: the condition to check against
         :type cond: query
-        :param eids: a list of element IDs
-        :type eids: list
+        :param doc_ids: a list of document IDs
+        :type doc_ids: list
+        :returns: a list containing the removed document's ID
         """
+        doc_ids = _get_doc_ids(doc_ids, eids)
 
-        self.process_elements(lambda data, eid: data.pop(eid), cond, eids)
+        if cond is None and doc_ids is None:
+            raise RuntimeError('Use purge() to remove all documents')
 
-    def update(self, fields, cond=None, eids=None):
+        return self.process_elements(
+            lambda data, doc_id: data.pop(doc_id),
+            cond, doc_ids
+        )
+
+    def update(self, fields, cond=None, doc_ids=None, eids=None):
         """
-        Update all matching elements to have a given set of fields.
+        Update all matching documents to have a given set of fields.
 
-        :param fields: the fields that the matching elements will have
-                       or a method that will update the elements
-        :type fields: dict | (dict, int) -> None
-        :param cond: which elements to update
+        :param fields: the fields that the matching documents will have
+                       or a method that will update the documents
+        :type fields: dict | dict -> None
+        :param cond: which documents to update
         :type cond: query
-        :param eids: a list of element IDs
-        :type eids: list
+        :param doc_ids: a list of document IDs
+        :type doc_ids: list
+        :returns: a list containing the updated document's ID
         """
+        doc_ids = _get_doc_ids(doc_ids, eids)
 
         if callable(fields):
-            _update = lambda data, eid: fields(data[eid])
+            return self.process_elements(
+                lambda data, doc_id: fields(data[doc_id]),
+                cond, doc_ids
+            )
         else:
-            _update = lambda data, eid: data[eid].update(fields)
-
-        self.process_elements(_update, cond, eids)
+            return self.process_elements(
+                lambda data, doc_id: data[doc_id].update(fields),
+                cond, doc_ids
+            )
 
     def purge(self):
         """
-        Purge the table by removing all elements.
+        Purge the table by removing all documents.
         """
 
         self._write({})
@@ -364,53 +463,54 @@ class Table(object):
 
     def search(self, cond):
         """
-        Search for all elements matching a 'where' cond.
+        Search for all documents matching a 'where' cond.
 
         :param cond: the condition to check against
         :type cond: Query
 
-        :returns: list of matching elements
+        :returns: list of matching documents
         :rtype: list[Element]
         """
 
         if cond in self._query_cache:
-            return self._query_cache[cond]
+            return self._query_cache[cond][:]
 
-        elements = [e for e in self.all() if cond(e)]
-        self._query_cache[cond] = elements
+        docs = [doc for doc in self.all() if cond(doc)]
+        self._query_cache[cond] = docs
 
-        return elements
+        return docs[:]
 
-    def get(self, cond=None, eid=None):
+    def get(self, cond=None, doc_id=None, eid=None):
         """
-        Get exactly one element specified by a query or and ID.
+        Get exactly one document specified by a query or and ID.
 
-        Returns ``None`` if the element doesn't exist
+        Returns ``None`` if the document doesn't exist
 
         :param cond: the condition to check against
         :type cond: Query
 
-        :param eid: the element's ID
+        :param doc_id: the document's ID
 
-        :returns: the element or None
+        :returns: the document or None
         :rtype: Element | None
         """
+        doc_id = _get_doc_id(doc_id, eid)
 
         # Cannot use process_elements here because we want to return a
-        # specific element
+        # specific document
 
-        if eid is not None:
-            # Element specified by ID
-            return self._read().get(eid, None)
+        if doc_id is not None:
+            # Document specified by ID
+            return self._read().get(doc_id, None)
 
-        # Element specified by condition
-        elements = self.search(cond)
-        if elements:
-            return elements[0]
+        # Document specified by condition
+        for doc in self.all():
+            if cond(doc):
+                return doc
 
     def count(self, cond):
         """
-        Count the elements matching a condition.
+        Count the documents matching a condition.
 
         :param cond: the condition use
         :type cond: Query
@@ -418,126 +518,26 @@ class Table(object):
 
         return len(self.search(cond))
 
-    def contains(self, cond=None, eids=None):
+    def contains(self, cond=None, doc_ids=None, eids=None):
         """
-        Check wether the database contains an element matching a condition or
+        Check wether the database contains a document matching a condition or
         an ID.
 
-        If ``eids`` is set, it checks if the db contains an element with one
+        If ``eids`` is set, it checks if the db contains a document with one
         of the specified.
 
         :param cond: the condition use
         :type cond: Query
-        :param eids: the element IDs to look for
+        :param doc_ids: the document IDs to look for
         """
+        doc_ids = _get_doc_ids(doc_ids, eids)
 
-        if eids is not None:
-            # Elements specified by ID
-            return any(self.get(eid=eid) for eid in eids)
+        if doc_ids is not None:
+            # Documents specified by ID
+            return any(self.get(doc_id=doc_id) for doc_id in doc_ids)
 
-        # Element specified by condition
-        return self.count(cond) > 0
-
-    def __enter__(self):
-        """
-        Allow the database to be used as a context manager.
-
-        :return: the table instance
-        """
-
-        return self
-
-    def __exit__(self, *args):
-        """
-        Try to close the storage after being used as a context manager.
-        """
-
-        _ = args
-        self._db._storage.close()
-
-    close = __exit__
-
-
-class SmartCacheTable(Table):
-
-    """
-    A Table with a smarter query cache.
-
-    Provides the same methods as :class:`~tinydb.database.Table`.
-
-    The query cache gets updated on insert/update/remove. Useful when in cases
-    where many searches are done but data isn't changed often.
-    """
-
-    def _write(self, values):
-        # Just write data, don't clear the query cache
-        self._db._write(values, self.name)
-
-    def insert(self, element):
-        # See Table.insert
-
-        # Insert element
-        eid = super(SmartCacheTable, self).insert(element)
-
-        # Update query cache
-        for query in self._query_cache:
-            results = self._query_cache[query]
-            if query(element):
-                results.append(element)
-
-        return eid
-
-    def update(self, fields, cond=None, eids=None):
-        # See Table.update
-
-        if callable(fields):
-            _update = lambda data, eid: fields(data[eid])
-        else:
-            _update = lambda data, eid: data[eid].update(fields)
-
-        def process(data, eid):
-            old_value = data[eid].copy()
-
-            # Update element
-            _update(data, eid)
-            new_value = data[eid]
-
-            # Update query cache
-            for query in self._query_cache:
-                results = self._query_cache[query]
-                if query(old_value):
-                    # Remove old value from cache
-                    results.remove(old_value)
-
-                elif query(new_value):
-                    # Add new value to cache
-                    results.append(new_value)
-
-        self.process_elements(process, cond, eids)
-
-    def remove(self, cond=None, eids=None):
-        # See Table.remove
-
-        def process(data, eid):
-            # Update query cache
-            for query in self._query_cache:
-                results = self._query_cache[query]
-                try:
-                    results.remove(data[eid])
-                except ValueError:
-                    pass
-
-            # Remove element
-            data.pop(eid)
-
-        self.process_elements(process, cond, eids)
-
-    def purge(self):
-        # See Table.purge
-
-        super(SmartCacheTable, self).purge()
-        self._query_cache.clear()  # Query cache got invalid
-
+        # Document specified by condition
+        return self.get(cond) is not None
 
 # Set the default table class
 TinyDB.table_class = Table

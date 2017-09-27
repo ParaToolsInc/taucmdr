@@ -5,7 +5,9 @@ implementations.
 
 from abc import ABCMeta, abstractmethod
 import os
-from tinydb.utils import with_metaclass
+
+from .utils import with_metaclass
+
 
 try:
     import ujson as json
@@ -13,13 +15,17 @@ except ImportError:
     import json
 
 
-def touch(fname, times=None):
+def touch(fname, create_dirs):
+    if create_dirs:
+        base_dir = os.path.dirname(fname)
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
+
     with open(fname, 'a'):
-        os.utime(fname, times)
+        os.utime(fname, None)
 
 
 class Storage(with_metaclass(ABCMeta, object)):
-
     """
     The abstract base class for all Storages.
 
@@ -36,12 +42,12 @@ class Storage(with_metaclass(ABCMeta, object)):
         Read the last stored state.
 
         Any kind of deserialization should go here.
-        Raise ``ValueError`` here to indicate that the storage is empty.
+        Return ``None`` here to indicate that the storage is empty.
 
         :rtype: dict
         """
 
-        raise NotImplementedError('To be overriden!')
+        raise NotImplementedError('To be overridden!')
 
     @abstractmethod
     def write(self, data):
@@ -54,7 +60,7 @@ class Storage(with_metaclass(ABCMeta, object)):
         :type data: dict
         """
 
-        raise NotImplementedError('To be overriden!')
+        raise NotImplementedError('To be overridden!')
 
     def close(self):
         """
@@ -65,12 +71,11 @@ class Storage(with_metaclass(ABCMeta, object)):
 
 
 class JSONStorage(Storage):
-
     """
     Store the data in a JSON file.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, create_dirs=False, **kwargs):
         """
         Create a new instance.
 
@@ -81,37 +86,37 @@ class JSONStorage(Storage):
         """
 
         super(JSONStorage, self).__init__()
-        touch(path)  # Create file if not exists
-        self.path = path
+        touch(path, create_dirs=create_dirs)  # Create file if not exists
+        self.kwargs = kwargs
         self._handle = open(path, 'r+')
 
     def close(self):
-        try:
-            self._handle.close()
-        except AttributeError:
-            pass
-
-    def __del__(self):
-        self.close()
+        self._handle.close()
 
     def read(self):
-        self._handle.seek(0)
-        return json.load(self._handle)
+        # Get the file size
+        self._handle.seek(0, os.SEEK_END)
+        size = self._handle.tell()
+
+        if not size:
+            # File is empty
+            return None
+        else:
+            self._handle.seek(0)
+            return json.load(self._handle)
 
     def write(self, data):
         self._handle.seek(0)
-        json.dump(data, self._handle)
+        serialized = json.dumps(data, **self.kwargs)
+        self._handle.write(serialized)
         self._handle.flush()
         self._handle.truncate()
 
 
 class MemoryStorage(Storage):
-
     """
     Store the data as JSON in memory.
     """
-
-    memory = None
 
     def __init__(self):
         """
@@ -119,10 +124,9 @@ class MemoryStorage(Storage):
         """
 
         super(MemoryStorage, self).__init__()
+        self.memory = None
 
     def read(self):
-        if self.memory is None:
-            raise ValueError
         return self.memory
 
     def write(self, data):
