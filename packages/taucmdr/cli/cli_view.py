@@ -35,7 +35,7 @@ from __future__ import print_function
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
 from taucmdr import logger, util, cli
-from taucmdr.error import UniqueAttributeError, InternalError, ModelError, ProjectSelectionError
+from taucmdr.error import UniqueAttributeError, InternalError, ModelError, ProjectSelectionError, ConfigurationError
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STORAGE, ENTERPRISE_STORAGE
 from taucmdr.model.project import Project
@@ -52,9 +52,10 @@ class AbstractCliView(AbstractCommand):
         controller (class): The controller class for this view's data.
         model_name (str): The lower-case name of the model.
     """
+
     # pylint: disable=abstract-method
 
-    def __init__(self, model, module_name, 
+    def __init__(self, model, module_name,
                  summary_fmt=None, help_page_fmt=None, group=None, include_storage_flag=True):
         self.model = model
         self.model_name = self.model.name.lower()
@@ -62,23 +63,23 @@ class AbstractCliView(AbstractCommand):
         if not summary_fmt:
             summary_fmt = "Create and manage %(model_name)s configurations."
         self.include_storage_flag = include_storage_flag
-        super(AbstractCliView, self).__init__(module_name, format_fields=format_fields, summary_fmt=summary_fmt, 
+        super(AbstractCliView, self).__init__(module_name, format_fields=format_fields, summary_fmt=summary_fmt,
                                               help_page_fmt=help_page_fmt, group=group)
 
 
 class RootCommand(AbstractCliView):
     """A command with subcommands for actions."""
-    
+
     def _construct_parser(self):
         usage = "%s <subcommand> [arguments]" % self.command
         epilog = ['', cli.commands_description(self.module_name), '',
                   "See '%s <subcommand> --help' for more information on <subcommand>." % self.command]
-        parser = arguments.get_parser(prog=self.command, usage=usage, 
+        parser = arguments.get_parser(prog=self.command, usage=usage,
                                       description=self.summary, epilog='\n'.join(epilog))
-        parser.add_argument('subcommand', 
+        parser.add_argument('subcommand',
                             help="See 'subcommands' below",
                             metavar='<subcommand>')
-        parser.add_argument('options', 
+        parser.add_argument('options',
                             help="Arguments to be passed to <subcommand>",
                             metavar='[arguments]',
                             nargs=arguments.REMAINDER)
@@ -87,8 +88,8 @@ class RootCommand(AbstractCliView):
     def main(self, argv):
         args = self._parse_args(argv)
         return cli.execute_command([args.subcommand], args.options, self.module_name)
-    
-    
+
+
 class CreateCommand(AbstractCliView):
     """Base class for the `create` command of command line views."""
 
@@ -105,7 +106,7 @@ class CreateCommand(AbstractCliView):
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "create", self.model_name)
         return parser
-    
+
     def _create_record(self, store, data):
         """Create the model record.
         
@@ -131,7 +132,7 @@ class CreateCommand(AbstractCliView):
             try:
                 proj = Project.selected()
             except ProjectSelectionError:
-                self.logger.info("Created a new %s '%s'. Use `%s` to add the new %s to a project.", 
+                self.logger.info("Created a new %s '%s'. Use `%s` to add the new %s to a project.",
                                  self.model_name, key, project_edit_cmd, self.model_name)
             else:
                 project_edit_cmd.main([proj['name'], '--add', key])
@@ -145,16 +146,17 @@ class CreateCommand(AbstractCliView):
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         return self._create_record(store, data)
 
+
 class DeleteCommand(AbstractCliView):
     """Base class for the `delete` subcommand of command line views."""
-    
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Delete %(model_name)s configurations.")
         super(DeleteCommand, self).__init__(*args, **kwargs)
-        
+
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)
         epilog = util.color_text("WARNING: THIS OPERATION IS NOT REVERSABLE!", 'yellow', attrs=['bold'])
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
@@ -183,7 +185,7 @@ class DeleteCommand(AbstractCliView):
         ctrl.delete(eids_to_delete)
         self.logger.info("Deleted %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
-    
+
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
@@ -193,15 +195,15 @@ class DeleteCommand(AbstractCliView):
 
 class EditCommand(AbstractCliView):
     """Base class for the `edit` subcommand of command line views."""
-    
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Modify %(model_name)s configurations.")
         self.include_new_key_flag = kwargs.pop('include_new_key_flag', True)
         super(EditCommand, self).__init__(*args, **kwargs)
-        
+
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)       
+        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -211,7 +213,7 @@ class EditCommand(AbstractCliView):
             group = parser.add_argument_group('%s arguments' % self.model_name)
             group.add_argument('--new-%s' % key_attr,
                                help="change the configuration's %s" % key_attr,
-                               metavar='<new_%s>' % key_attr, 
+                               metavar='<new_%s>' % key_attr,
                                dest='new_key',
                                default=arguments.SUPPRESS)
         if self.include_storage_flag:
@@ -255,7 +257,7 @@ class EditCommand(AbstractCliView):
 
 class ListCommand(AbstractCliView):
     """Base class for the `list` subcommand of command line views."""
-    
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Show %(model_name)s configuration data.")
         default_style = kwargs.pop('default_style', 'dashboard')
@@ -291,7 +293,7 @@ class ListCommand(AbstractCliView):
             str: Record data in dashboard format.
         """
         self.logger.debug("Dashboard format")
-        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(),
                                              'storage_path': records[0].storage}, 'cyan')
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
@@ -319,7 +321,7 @@ class ListCommand(AbstractCliView):
         table.set_cols_dtype([col.get('dtype', 'a') for col in self.dashboard_columns])
         table.add_rows(rows)
         return [title, table.draw(), '']
-    
+
     def _format_long_item(self, key, val):
         attrs = self.model.attributes[key]
         if 'collection' in attrs:
@@ -364,7 +366,7 @@ class ListCommand(AbstractCliView):
             str: Record data in long format.
         """
         self.logger.debug("Long format")
-        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
+        title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(),
                                              'storage_path': records[0].storage}, 'cyan')
         retval = [title]
         for record in records:
@@ -383,35 +385,35 @@ class ListCommand(AbstractCliView):
 
     def _construct_parser(self):
         key_str = self.model_name + '_' + self.model.key_attribute
-        usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" % 
+        usage_head = ("%(command)s [%(key_str)s] [%(key_str)s] ... [arguments]" %
                       {'command': self.command, 'key_str': key_str})
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage_head,
                                       description=self.summary)
-        parser.add_argument('keys', 
+        parser.add_argument('keys',
                             help=("Show only %(model_name)ss with the given %(key_attr)ss" % self._format_fields),
                             metavar=key_str,
                             nargs='*',
                             default=arguments.SUPPRESS)
         style_dest = 'style'
         style_group = parser.add_mutually_exclusive_group()
-        style_group.add_argument('-s', '--short', 
+        style_group.add_argument('-s', '--short',
                                  help="show minimal %(model_name)s data" % self._format_fields,
-                                 const='short', action='store_const', dest=style_dest, 
+                                 const='short', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
-        style_group.add_argument('-d', '--dashboard', 
+        style_group.add_argument('-d', '--dashboard',
                                  help="show %(model_name)s data in a fancy dasboard" % self._format_fields,
-                                 const='dashboard', action='store_const', dest=style_dest, 
+                                 const='dashboard', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
-        style_group.add_argument('-l', '--long', 
+        style_group.add_argument('-l', '--long',
                                  help="show all %(model_name)s data in a list" % self._format_fields,
-                                 const='long', action='store_const', dest=style_dest, 
+                                 const='long', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False,
                                        enterprise_only=self.storage_enterprise_only)
         return parser
-    
+
     def _list_records(self, storage_levels, keys, style):
         """Shows record data via `print`.
         
@@ -423,7 +425,7 @@ class ListCommand(AbstractCliView):
         Returns:
             int: :any:`EXIT_SUCCESS` if successful.
         """
-            
+
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
         system_ctl = self.model.controller(SYSTEM_STORAGE)
@@ -455,14 +457,14 @@ class ListCommand(AbstractCliView):
                 parts.extend(self._count_records(project_ctl))
         print('\n'.join(parts))
         return EXIT_SUCCESS
-        
+
     def main(self, argv):
         args = self._parse_args(argv)
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = [level.name for level in arguments.parse_storage_flag(args)]
         return self._list_records(storage_levels, keys, style)
-    
+
     def _retrieve_records(self, ctrl, keys):
         """Retrieve modeled data from the controller.
         
@@ -512,7 +514,7 @@ class ListCommand(AbstractCliView):
         if not records:
             parts = ["No %ss." % self.model_name]
         else:
-            formatter = getattr(self, style+'_format')
+            formatter = getattr(self, style + '_format')
             parts = formatter(records)
         return parts
 
@@ -530,25 +532,25 @@ class ListCommand(AbstractCliView):
         fields = dict(self._format_fields, count=count, level=level, level_flag=arguments.STORAGE_LEVEL_FLAG)
         if count == 1:
             return ["There is 1 %(level)s %(model_name)s."
-                    " Type `%(command)s -%(level_flag)s %(level)s` to list it." % fields] 
+                    " Type `%(command)s -%(level_flag)s %(level)s` to list it." % fields]
         elif count > 1:
             return ["There are %(count)d %(level)s %(model_name)ss."
-                    " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields] 
+                    " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields]
         else:
-            #return ["There are no %(level)s %(model_name)ss." % fields]
-            return [] 
+            # return ["There are no %(level)s %(model_name)ss." % fields]
+            return []
 
 
 class CopyCommand(CreateCommand):
     """Base class for the `copy` subcommand of command line views."""
-    
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Copy and modify %(model_name)s configurations.")
         super(CopyCommand, self).__init__(*args, **kwargs)
-        
+
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = ("%s <%s_%s> <copy_%s> [arguments]" % (self.command, self.model_name, key_attr, key_attr))       
+        usage = ("%s <%s_%s> <copy_%s> [arguments]" % (self.command, self.model_name, key_attr, key_attr))
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -572,7 +574,7 @@ class CopyCommand(CreateCommand):
             if not matching:
                 self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
         if len(matching) > 1:
-            raise InternalError("More than one %s-level %s with %s='%s' exists!" % 
+            raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
         else:
             found = matching[0]
@@ -665,6 +667,9 @@ class PushCommand(AbstractCliView):
         if project:
             base_records.extend(self._find_records(project_ctl, keys))
 
+        if not base_records:
+            self.parser.error("No %s matching %s found." % (self.model.name, keys))
+
         records_to_push = project_ctl.traverse_records(base_records)
 
         if mode == 'dryrun':
@@ -679,7 +684,7 @@ class PushCommand(AbstractCliView):
         with ENTERPRISE_STORAGE as database:
             for record in records_to_push:
                 remote_eid, already_present = record.controller(record.storage).transport_record(record, database,
-                                                                                                  eid_map, 'push')
+                                                                                                 eid_map, 'push')
                 eid_map[record.hash_digest()] = remote_eid
                 if already_present:
                     self.logger.info("Skipped %s %s, already uploaded.", record.name, record.hash_digest())
@@ -762,6 +767,8 @@ class PullCommand(AbstractCliView):
         ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
         enterprise_ctl = self.model.controller(ENTERPRISE_STORAGE)
         base_records = self._find_records(enterprise_ctl, keys)
+        if not base_records:
+            self.parser.error("No %s matching %s found." % (self.model.name, keys))
         print(base_records)
         records_to_pull = enterprise_ctl.traverse_records(base_records)
 
@@ -785,14 +792,19 @@ class PullCommand(AbstractCliView):
             eid_map = {}
             for record in records_to_pull:
                 local_ctl = record.controller(storage)
-                remote_eid, already_present = record.controller(ENTERPRISE_STORAGE).\
-                    transport_record(record, local_ctl, eid_map, 'pull', proj)
-                eid_map[record.hash_digest()] = remote_eid
-                if already_present:
-                    self.logger.info("Skipped %s %s, already present in %s.", record.name,
-                                     record.hash_digest(), local_storage.name)
-                else:
-                    self.logger.info("Pulled %s %s to %s.", record.name, record.hash_digest(), local_storage.name)
+                try:
+                    remote_eid, already_present = record.controller(ENTERPRISE_STORAGE). \
+                        transport_record(record, local_ctl, eid_map, 'pull', proj)
+                    eid_map[record.hash_digest()] = remote_eid
+                    if already_present:
+                        self.logger.info("Skipped %s %s, already present in %s.", record.name,
+                                         record.hash_digest(), local_storage.name)
+                    else:
+                        self.logger.info("Pulled %s %s to %s.", record.name, record.hash_digest(), local_storage.name)
+                except UniqueAttributeError as e:
+                    raise ConfigurationError("Unable to pull %s %s because an existing record "
+                                             "with the same primary key %s already exists." %
+                                             (record.name, record.hash_digest(), e.unique))
 
         if proj is not None:
             Project.controller().select(proj)

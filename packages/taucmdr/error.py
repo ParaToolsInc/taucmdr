@@ -151,11 +151,13 @@ class UniqueAttributeError(ModelError):
             model (Model): Data model.
             unique (dict): Dictionary of unique attributes in the data model.  
         """
+        self.unique = unique
         super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
 
 
 class ImmutableRecordError(ConfigurationError):
     """Indicates that a data record cannot be modified.""" 
+
 
 class IncompatibleRecordError(ConfigurationError):
     """Indicates that a pair of data records are incompatible.""" 
@@ -189,6 +191,7 @@ class ExperimentSelectionError(ConfigurationError):
                      "Use `%s` to see available project configurations." % project_list_cmd)    
         super(ExperimentSelectionError, self).__init__(value, *hints)
 
+
 class NotConnectedError(ConfigurationError):
     """Indicates an error due to a nonexistent remote connection."""
     def __init__(self, value, *hints):
@@ -196,6 +199,7 @@ class NotConnectedError(ConfigurationError):
         if not hints:
             hints = ("Use `%s` to connect to a TAU Enterprise database." % connect_command,)
         super(NotConnectedError, self).__init__(value, *hints)
+
 
 class AuthenticationError(ConfigurationError):
     """Indicates that the authentication attempt was unsuccessful"""
@@ -227,5 +231,6 @@ def excepthook(etype, value, tb):
                                            'backtrace': backtrace}
             LOGGER.critical(message)
             sys.exit(EXIT_FAILURE)
+
 
 sys.excepthook = excepthook

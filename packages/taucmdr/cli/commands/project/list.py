@@ -98,6 +98,8 @@ class ProjectListCommand(ListCommand):
                                     proj['name'], ' '.join(proj['force_tau_options']))
             try:
                 expr = proj.experiment()
+                if expr is None:
+                    raise ExperimentSelectionError("No experiment configured.")
             except ExperimentSelectionError:
                 print (util.color_text('No selected experiment: ', 'red') + 
                        'Use `%s` to create or select an experiment.' % select_cmd)
@@ -105,6 +107,7 @@ class ProjectListCommand(ListCommand):
                 print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
 
         return retval
+
 
 COMMAND = ProjectListCommand()
 

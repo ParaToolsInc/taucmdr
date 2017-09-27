@@ -46,6 +46,7 @@ class EnterpriseDisconnectCommand(AbstractCommand):
         self._parse_args(argv)
         proj_ctrl = Project.controller()
         proj_ctrl.disconnect()
+        return EXIT_SUCCESS
 
 
 COMMAND = EnterpriseDisconnectCommand(__name__,
