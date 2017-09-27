@@ -781,17 +781,18 @@ class PullCommand(AbstractCliView):
         if mode == 'project':
             proj = Project.selected()
 
-        eid_map = {}
-        for record in records_to_pull:
-            local_ctl = record.controller(local_storage)
-            remote_eid, already_present = record.controller(ENTERPRISE_STORAGE).\
-                transport_record(record, local_ctl, eid_map, 'pull', proj)
-            eid_map[record.hash_digest()] = remote_eid
-            if already_present:
-                self.logger.info("Skipped %s %s, already present in %s.", record.name,
-                                 record.hash_digest(), local_storage.name)
-            else:
-                self.logger.info("Pulled %s %s to %s.", record.name, record.hash_digest(), local_storage.name)
+        with local_storage as storage:
+            eid_map = {}
+            for record in records_to_pull:
+                local_ctl = record.controller(storage)
+                remote_eid, already_present = record.controller(ENTERPRISE_STORAGE).\
+                    transport_record(record, local_ctl, eid_map, 'pull', proj)
+                eid_map[record.hash_digest()] = remote_eid
+                if already_present:
+                    self.logger.info("Skipped %s %s, already present in %s.", record.name,
+                                     record.hash_digest(), local_storage.name)
+                else:
+                    self.logger.info("Pulled %s %s to %s.", record.name, record.hash_digest(), local_storage.name)
 
         if proj is not None:
             Project.controller().select(proj)
