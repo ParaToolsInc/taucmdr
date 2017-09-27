@@ -884,7 +884,10 @@ class TauInstallation(Installation):
         makefile = self._match_makefile(config_tags)
         if not makefile: 
             LOGGER.debug("No TAU makefile exactly matches tags '%s'", config_tags)
-            # No TAU configuration built with the required UID tag is available.
+            if not self.unmanaged:
+                # This is a managed TAU installation so we can build it.
+                raise SoftwarePackageError("TAU Makefile not found for tags '%s' in '%s'" %
+                                           (', '.join(config_tags), self.install_prefix))
             # Ignore UID and try again in case the TAU configuration was built manually without a UID.
             # Warn the user that it's on them to know that the makefile is correct.
             config_tags.remove(self.uid)
