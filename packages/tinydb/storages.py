@@ -88,10 +88,14 @@ class JSONStorage(Storage):
         super(JSONStorage, self).__init__()
         touch(path, create_dirs=create_dirs)  # Create file if not exists
         self.kwargs = kwargs
+        self.path = path
         self._handle = open(path, 'r+')
 
     def close(self):
-        self._handle.close()
+        try:
+            self._handle.close()
+        except AttributeError:
+            pass
 
     def read(self):
         # Get the file size

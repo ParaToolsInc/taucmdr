@@ -61,7 +61,8 @@ class StorageProxy(object):
         try:
             raw_data = (self._storage.read() or {})[self._table_name]
         except KeyError:
-            self.write({})
+            if not getattr(self._storage, 'readonly', False):
+                self.write({})
             return {}
 
         data = {}
