@@ -32,5 +32,16 @@ from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.project import Project
 
 
-COMMAND = RootCommand(Project, __name__, group="configuration")
+HELP_PAGE = """
+TAU Commander Project commands:
+ 
+Create a new project: Tau init –project <new_project_name>or Tau project create 
+<project_name> To list projects in directory: Tau project list To select a 
+specific project Tau project select <project_name> To copy a project: 
+Tau project copy <project_name> <new_project_name> 
+[optional – specify measurements, applications, and targets] 
+""" 
+ 
+
+COMMAND = RootCommand(Project, __name__, group="configuration", help_page_fmt=HELP_PAGE)
 

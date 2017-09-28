@@ -110,7 +110,7 @@ class ConfigurationError(Error):
                    "\n"
                    "%(hints)s\n"
                    "TAU cannot proceed with the given inputs.\n" 
-                   "Please check the selected configuration for errors or contact %(contact)s for assistance.")
+                   "Please check the configuration for errors or contact %(contact)s for assistance.")
 
     def __init__(self, value, *hints):
         """Initialize the Error instance.
@@ -188,8 +188,6 @@ class ExperimentSelectionError(ConfigurationError):
                      "Use `%s` to see current project configuration." % dashboard_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)    
         super(ExperimentSelectionError, self).__init__(value, *hints)
-
-
 
 
 def excepthook(etype, value, tb):

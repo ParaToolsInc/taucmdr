@@ -336,7 +336,7 @@ class ParsePackagePathAction(argparse.Action):
         except TypeError:
             if not util.is_url(value):
                 value = os.path.abspath(os.path.expanduser(value))
-                if not (os.path.isdir(value) or util.file_accessible(value)):
+                if not (os.path.isdir(value) or util.path_accessible(value)):
                     raise argparse.ArgumentError(self, "Keyword, valid path, or URL required: %s" % value)
         else:
             value = value.lower() if value_as_bool else None

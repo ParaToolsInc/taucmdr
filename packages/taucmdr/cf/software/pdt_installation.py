@@ -159,14 +159,11 @@ class PdtInstallation(AutotoolsInstallation):
         super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
                                               compilers, REPOS, COMMANDS, None, None)
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
-        self._retry_verify = True
-        
-    def _set_install_prefix(self, value):
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
-        super(PdtInstallation, self)._set_install_prefix(value)
-        arch_path = os.path.join(self.install_prefix, self.tau_magic.name)
-        self.bin_path = os.path.join(arch_path, 'bin')
-        self.lib_path = os.path.join(arch_path, 'lib')
+        self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
+        self._lib_subdir = os.path.join(self.tau_magic.name, 'lib')
+        # Work around brokenness in edg4x-rose installer
+        self._retry_verify = True
 
     def _configure_edg4x_rose(self):
         LOGGER.info('edg4x-rose parser configuration failed.  Retrying...')

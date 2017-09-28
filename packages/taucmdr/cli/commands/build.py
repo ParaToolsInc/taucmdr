@@ -33,6 +33,21 @@ from taucmdr.cli.command import AbstractCommand
 from taucmdr.cf.compiler import Knowledgebase
 from taucmdr.model.project import Project
 
+HELP_PAGE = """
+After configuring TAU Commander and placing the bin directory in your path 
+build with “tau” prefixes. This would be something like “tau cc” or “tau f77”, 
+“tau mpicxx”, . . .  Edit the Makefile to use compilers with “tau” prefixes.  
+Changing the selected experiment typically will require that you rebuild your 
+application binaries – depending on what changes.  TAU Commander will remind 
+you to rebuild your binary executable. 
+
+The list of compilers suported by TAU Commander is in the list above this help 
+section.
+ 
+To selectively control instrumentation for files or routines that are part of 
+the binary to be analyzed, see the select-file options in the TAU Commander 
+Applications section. 
+"""
 
 class BuildCommand(AbstractCommand):
     """``build`` subcommand."""
@@ -70,4 +85,4 @@ class BuildCommand(AbstractCommand):
         return expr.managed_build(args.cmd, args.cmd_args)
 
 
-COMMAND = BuildCommand(__name__, summary_fmt="Instrument programs during compilation and/or linking.")
+COMMAND = BuildCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Instrument programs during compilation and/or linking.")

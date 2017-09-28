@@ -45,11 +45,11 @@ import gzip
 import tempfile
 import urlparse
 import hashlib
-from collections import deque
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
 from termcolor import termcolor
+from unidecode import unidecode
 from taucmdr import logger
 from taucmdr.error import InternalError
 from taucmdr.progress import ProgressIndicator, progress_spinner
@@ -411,34 +411,51 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
                 os.chdir(oldcwd)
 
 
-def file_accessible(filepath, mode='r'):
-    """Check if a file is accessable.
+def path_accessible(path, mode='r'):
+    """Check if a file or directory is accessable.
+    
+    Files are checked by attempting to open them with the given mode.
+    Directories are checked by testing their access bits only, which may fail for 
+    some filesystems which may have permissions semantics beyond the usual POSIX 
+    permission-bit model. We'll fix this if it becomes a problem. 
     
     Args:
-        filepath (str): Path to file to check.
+        path (str): Path to file or directory to check.
         mode (str): File access mode to test, e.g. 'r' or 'rw'
     
     Returns:
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
-    handle = None
-    try:
-        handle = open(filepath, mode)
-    except:     # pylint: disable=bare-except
-        return False
+    assert mode and set(mode) <= set(('r', 'w'))
+    if os.path.isdir(path):
+        modebits = 0
+        if 'r' in mode:
+            modebits |= os.R_OK
+        if 'w' in mode:
+            modebits |= os.W_OK | os.X_OK
+        return os.access(path, modebits)
     else:
-        return True
-    finally:
-        if handle:
-            handle.close()
-    return False
+        handle = None
+        try:
+            handle = open(path, mode)
+        except IOError as err:
+            if err.errno == errno.EACCES:
+                return False
+            # Some other error, not permissions
+            raise
+        else:
+            return True
+        finally:
+            if handle:
+                handle.close()
+        return False
 
 @contextmanager
 def _null_context():
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=False):
+def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False):
     """Create a subprocess.
     
     See :any:`subprocess.Popen`.
@@ -449,9 +466,6 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         env (dict): Environment variables to set or unset before launching cmd.
         stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
         log (bool): If True send subprocess stdout and stderr to the debug log.
-        error_buf (bool): If True, stdout is not already being sent, and return value is
-                          non-zero then send last 100 lines of subprocess stdout and stderr
-                          to this processes' stdout.
         
     Returns:
         int: Subprocess return code.
@@ -468,8 +482,6 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
     context = progress_spinner if show_progress else _null_context
     with context():
-        if error_buf:
-            buf = deque(maxlen=100)
         proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
@@ -480,14 +492,9 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
                     LOGGER.debug(line[:-1])
                 if stdout:
                     print line,
-                if error_buf:
-                    buf.append(line)
         proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
-    if retval and error_buf and not stdout:
-        for line in buf:
-            print line,
     return retval
 
 
@@ -523,6 +530,25 @@ def get_command_output(cmd, cwd=None, env=None):
     LOGGER.debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
+
+
+def page_output(output_string):
+    """Pipe string to a pager.
+
+    If PAGER is an environment then use that as pager, otherwise
+    use `less`.
+
+    Args:
+        output_string (str): String to put output.
+
+    """
+    output_string = unidecode(output_string.decode('utf-8'))
+    if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
+        print output_string
+    else:
+        pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
+        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
+        proc.communicate(output_string)
 
 
 def human_size(num, suffix='B'):

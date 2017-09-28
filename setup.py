@@ -214,6 +214,7 @@ class Test(TestCommand):
         self.user_sandbox = False
     
     def run_tests(self):
+        os.environ['__TAUCMDR_DISABLE_PAGER__'] = '1'
         if self.system_sandbox:
             tmp_system_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix

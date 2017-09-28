@@ -30,5 +30,33 @@
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.target import Target
 
+HELP_PAGE = """
+TAU Commander Target:
 
-COMMAND = RootCommand(Target, __name__, group="configuration")
+The Target settings define the environment including: the host architecture, 
+compiler family and instaled software libraries.
+
+Creating new targets:
+Enter: tau target create <new_target_name>
+
+Copying a TAU Commander Target:
+Enter: tau target copy <existing_target_name> <new_target_name>
+The new target has the same properties as the original existing target.
+
+Editing a TAU Commander Target:
+Enter: tau target edit <target_name> --<target_property> <property setting>
+
+The atarget name can be changed with –new-name as shown below:
+tau target edit <target_name> <new_target_name>
+
+Delete a TAU Commander Target:
+Enter: tau target delete <target_name>
+
+List TAU Commander Target in a project:
+Enter: tau target list
+tau target list –l (long description)
+tau target list –s (short description)
+"""
+
+
+COMMAND = RootCommand(Target, __name__, group="configuration", help_page_fmt=HELP_PAGE)
