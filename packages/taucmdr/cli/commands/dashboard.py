@@ -26,6 +26,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """``dashboard`` subcommand."""
+from __future__ import print_function
+
 
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import ProjectSelectionError
@@ -57,7 +59,7 @@ class DashboardCommand(AbstractCommand):
         args = self._parse_args(argv)
         subargs = ['--' + args.style]
         proj_ctrl = Project.controller()
-        print
+        print()
         try:
             proj = proj_ctrl.selected()
         except ProjectSelectionError as err:

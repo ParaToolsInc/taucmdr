@@ -28,6 +28,7 @@
 """TODO: FIXME: Docs"""
 
 import hashlib
+
 import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
@@ -77,7 +78,7 @@ class ModelMeta(type):
         try:
             return cls._key_attribute
         except AttributeError:
-            for attr, props in cls.attributes.iteritems():
+            for attr, props in six.iteritems(cls.attributes):
                 if 'primary_key' in props:
                     cls._key_attribute = attr
                     break
@@ -181,7 +182,7 @@ class Model(StorageRecord):
     @classmethod
     def _construct_relationships(cls):
         primary_key = None
-        for attr, props in cls.attributes.iteritems():
+        for attr, props in six.iteritems(cls.attributes):
             model_attr_name = cls.name + "." + attr
             if 'collection' in props and 'via' not in props:
                 raise ModelError(cls, "%s: collection does not define 'via'" % model_attr_name)
@@ -189,7 +190,7 @@ class Model(StorageRecord):
                 raise ModelError(cls, "%s: defines 'via' property but not 'model' or 'collection'" % model_attr_name)
             if not isinstance(props.get('unique', False), bool):
                 raise ModelError(cls, "%s: invalid value for 'unique'" % model_attr_name)
-            if not isinstance(props.get('description', ''), basestring):
+            if not isinstance(props.get('description', ''), six.string_types):
                 raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
             if props.get('primary_key', False):
                 if primary_key is not None:
@@ -256,7 +257,7 @@ class Model(StorageRecord):
             if key not in cls.attributes:
                 raise ModelError(cls, "no attribute named '%s'" % key)
         validated = {}
-        for attr, props in cls.attributes.iteritems():
+        for attr, props in six.iteritems(cls.attributes):
             # Check required fields and defaults
             try:
                 validated[attr] = data[attr]
@@ -568,7 +569,7 @@ class Model(StorageRecord):
             the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
-        for attr, props in self.attributes.iteritems():
+        for attr, props in six.iteritems(self.attributes):
             try:
                 compat = props['compat']
             except KeyError:
@@ -577,7 +578,7 @@ class Model(StorageRecord):
                 attr_value = self[attr]
             except KeyError:
                 continue
-            for value, conditions in compat.iteritems():
+            for value, conditions in six.iteritems(compat):
                 if (callable(value) and value(attr_value)) or attr_value == value: 
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)

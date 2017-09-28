@@ -28,6 +28,7 @@
 """Software installation management."""
 
 import os
+import six
 import multiprocessing
 from subprocess import CalledProcessError
 from contextlib import contextmanager
@@ -161,8 +162,8 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(name, basestring)
-        assert isinstance(title, basestring)
+        assert isinstance(name, six.string_types)
+        assert isinstance(title, six.string_types)
         assert isinstance(sources, dict)
         assert isinstance(target_arch, Architecture)
         assert isinstance(target_os, OperatingSystem)
@@ -171,6 +172,12 @@ class Installation(object):
         assert isinstance(commands, dict) or commands is None
         assert isinstance(libraries, dict) or libraries is None
         assert isinstance(headers, dict) or headers is None
+        self._src_prefix = None
+        self._install_prefix = None
+        self._include_subdir = 'include'
+        self._bin_subdir = 'bin'
+        self._lib_subdir = 'lib'
+        self._uid = None
         self.dependencies = {}
         self.name = name
         self.title = title
@@ -185,12 +192,7 @@ class Installation(object):
             self.src = self._lookup_target_os_list(repos)
         else:
             self.src = src
-        self.include_path = None
-        self.bin_path = None
-        self.lib_path = None
-        self._src_prefix = None
-        self._install_prefix = None
-        self._uid = None
+        self.unmanaged = os.path.isdir(self.src)
 
     def uid_items(self):
         """List items affecting this installation's UID.
@@ -216,7 +218,7 @@ class Installation(object):
     
     def _get_install_prefix(self):
         if not self._install_prefix:
-            if os.path.isdir(self.src):
+            if self.unmanaged:
                 self._set_install_prefix(self.src)
             else:
                 tag = self._get_install_tag()
@@ -239,17 +241,22 @@ class Installation(object):
     def _set_install_prefix(self, value):
         assert value is not None
         self._install_prefix = value
-        self.include_path = os.path.join(value, 'include')
-        self.bin_path = os.path.join(value, 'bin')
-        self.lib_path = os.path.join(value, 'lib')
 
     @property
     def install_prefix(self):
         return self._get_install_prefix()
     
-    @install_prefix.setter
-    def install_prefix(self, value):
-        self._set_install_prefix(value)
+    @property
+    def include_path(self):
+        return os.path.join(self._get_install_prefix(), self._include_subdir)
+    
+    @property
+    def bin_path(self):
+        return os.path.join(self._get_install_prefix(), self._bin_subdir)
+    
+    @property
+    def lib_path(self):
+        return os.path.join(self._get_install_prefix(), self._lib_subdir)
     
     def _lookup_target_os_list(self, dct):
         if not dct:
@@ -302,7 +309,7 @@ class Installation(object):
         """
         if not self.src:
             raise ConfigurationError("No source code provided for %s" % self.title)
-        if os.path.isdir(self.src):
+        if self.unmanaged:
             return self.src
         archive_file = os.path.basename(self.src)
         if reuse_archive:
@@ -370,14 +377,14 @@ class Installation(object):
                 raise SoftwarePackageError("'%s' exists but is not executable" % path)
         for lib in self.verify_libraries:
             path = os.path.join(self.lib_path, lib)
-            if not util.file_accessible(path):
+            if not util.path_accessible(path):
                 # Some systems (e.g. SuSE) append the machine bitwidth to the library path
                 path = os.path.join(self.lib_path+'64', lib)
-                if not util.file_accessible(path):
+                if not util.path_accessible(path):
                     raise SoftwarePackageError("'%s' is not accessible" % path)
         for header in self.verify_headers:
             path = os.path.join(self.include_path, header)
-            if not util.file_accessible(path):
+            if not util.path_accessible(path):
                 raise SoftwarePackageError("'%s' is not accessible" % path)
         LOGGER.debug("%s installation at '%s' is valid", self.name, self.install_prefix)
         
@@ -406,13 +413,13 @@ class Installation(object):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
-        if os.path.isdir(self.src) or not force_reinstall:
+        if self.unmanaged or not force_reinstall:
             try:
                 return self.verify()
             except SoftwarePackageError as err:
-                if os.path.isdir(self.src):
+                if self.unmanaged:
                     raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
                                                "is invalid: %s" % (self.title, self.install_prefix, err),
                                                "Specify source code path or URL to enable package reinstallation.")
@@ -422,7 +429,7 @@ class Installation(object):
         if os.path.isdir(self.install_prefix):
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-        with new_os_environ(), util.umask(002):
+        with new_os_environ(), util.umask(0o002):
             try:
                 self._src_prefix = self._prepare_src()
                 self.installation_sequence()
@@ -520,7 +527,7 @@ class MakeInstallation(Installation):
         LOGGER.info("Compiling %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             cmd = ['make'] + flags
-            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 util.add_error_stack(self._src_prefix)
                 raise SoftwarePackageError('%s compilation failed' % self.title)
 
@@ -539,7 +546,7 @@ class MakeInstallation(Installation):
         LOGGER.info("Installing %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             cmd = ['make', 'install'] + flags
-            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 util.add_error_stack(self._src_prefix)
                 raise SoftwarePackageError('%s installation failed' % self.title)
         # Some systems use lib64 instead of lib
@@ -573,7 +580,7 @@ class AutotoolsInstallation(MakeInstallation):
         LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
         cmd = ['./configure', '--prefix=%s' % self.install_prefix] + flags
         LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('%s configure failed' % self.title)   
     
@@ -581,7 +588,7 @@ class AutotoolsInstallation(MakeInstallation):
         self.configure([])
         self.make([])
         self.make_install([])
-    
+
 
 class CMakeInstallation(MakeInstallation):
     """Base class for installations that follow the CMake installation process.
@@ -619,12 +626,12 @@ class CMakeInstallation(MakeInstallation):
             
         Raises:
             SoftwarePackageError: Configuration failed.
-	"""
+    """
         assert self._src_prefix
         cmake = self._get_cmake()
         cmd = [cmake, '-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('CMake failed for %s' %self.title)
     

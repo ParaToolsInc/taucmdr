@@ -27,6 +27,8 @@
 #
 """``measurement list`` subcommand."""
 
+from __future__ import print_function
+
 from taucmdr import util
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
@@ -92,7 +94,7 @@ class ProjectListCommand(ListCommand):
                     cmd.main([record[primary_key] for record in records] + style_args)
                 else:
                     label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
-                    print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
+                    print("%s.  Use `%s` to view available %s.\n" % (label, cmd, prop))
             if proj.get('force_tau_options', False):
                 self.logger.warning("Project '%s' will add '%s' to TAU_OPTIONS without error checking.", 
                                     proj['name'], ' '.join(proj['force_tau_options']))
@@ -104,7 +106,7 @@ class ProjectListCommand(ListCommand):
                 print (util.color_text('No selected experiment: ', 'red') + 
                        'Use `%s` to create or select an experiment.' % select_cmd)
             else:
-                print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
+                print(util.color_text("Selected Experiment: ", 'cyan') + expr['name'])
 
         return retval
 

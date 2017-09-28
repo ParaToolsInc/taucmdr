@@ -34,6 +34,8 @@ both the database and the key/value store.
 
 import os
 import json
+
+import six
 import tinydb
 from tinydb import operations
 from taucmdr import logger, util
@@ -166,7 +168,7 @@ class LocalFileStorage(AbstractStorage):
             except IOError as err:
                 raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err),
                                    "Check that you have `write` access")
-            if not util.file_accessible(dbfile):
+            if not util.path_accessible(dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % dbfile,
                                    "Check that you have `read` access")
             LOGGER.debug("Initialized %s database '%s'", self.name, dbfile)
@@ -221,7 +223,7 @@ class LocalFileStorage(AbstractStorage):
         def _or(lhs, rhs): 
             return lhs | rhs
         join = _or if match_any else _and
-        itr = keys.iteritems()
+        itr = six.iteritems(keys)
         key, val = itr.next()
         query = (tinydb.where(key) == val)
         for key, value in itr:

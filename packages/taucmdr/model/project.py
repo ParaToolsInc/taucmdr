@@ -34,6 +34,8 @@ some performance data (profiles, traces, etc.).
 """
 
 import os
+
+import six
 from taucmdr import logger, ENTERPRISE_URL
 from taucmdr.error import InternalError, ProjectSelectionError, ExperimentSelectionError, NotConnectedError
 from taucmdr.mvc.model import Model
@@ -197,7 +199,7 @@ class Project(Model):
                 if old_expr[model_attr] != new_expr[model_attr]:
                     new_model = new_expr.populate(model_attr)
                     old_model = old_expr.populate(model_attr)
-                    for attr, props in new_model.attributes.iteritems():
+                    for attr, props in six.iteritems(new_model.attributes):
                         if props.get('rebuild_required'):
                             new_value = new_model.get(attr, None)
                             old_value = old_model.get(attr, None)

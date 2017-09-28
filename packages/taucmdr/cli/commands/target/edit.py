@@ -26,7 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """``target edit`` subcommand."""
-
+import six
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
@@ -83,7 +83,7 @@ class TargetEditCommand(EditCommand):
 
         # Monkey-patch default actions for compiler arguments
         # pylint: disable=protected-access
-        for role in kbase.roles.itervalues():
+        for role in six.itervalues(kbase.roles):
             action = next(act for act in group._actions if act.dest == role.keyword)
             action.__action_call__ = action.__call__
             action.__call__ = TargetEditCommand._compiler_flag_action_call(family_attr)
@@ -123,7 +123,7 @@ class TargetEditCommand(EditCommand):
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
         
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        for keyword, comp in compilers.iteritems():
+        for keyword, comp in six.iteritems(compilers):
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid

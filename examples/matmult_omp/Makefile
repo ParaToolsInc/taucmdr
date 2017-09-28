@@ -1,34 +1,18 @@
-#****************************************************************************
-#*                      TAU Performance System (R)                          *
-#*                      http://tau.uoregon.edu                              *
-#****************************************************************************
-#*    Copyright 2008                                                       **
-#*    Department of Computer and Information Science, University of Oregon **
-#*    Juelich Supercomputing Center, NIC, Germany                          ** 
-#*    Advanced Computing Laboratory, Los Alamos National Laboratory        **
-#****************************************************************************
-# Use gmake to build matmult
+F90 = tau mpif90
+FFLAGS = -O -g
+LIBS= -fopenmp
 
-.SUFFIXES : .f90
+SRC = matmult.f90
+OBJ = $(SRC:.f90=.o)
 
-TAU_MAKEFILE ?=../../include/Makefile
-include $(TAU_MAKEFILE)
-F90=TAU_MAKEFILE=$(TAU_MAKEFILE) tau_f90.sh
 
-LIBS= 
-INCLUDE=
-OBJS= matmult.o
-OMP_FLAG= -openmp
+matmult: $(OBJ)
+	$(F90) $(FFLAGS) $(OBJ) -o matmult $(LIBS)
 
-matmult: $(OBJS)
-	$(F90) $(OBJS) -o matmult $(LIBS)
-
-.f90.o: 
+%.o: %.f90
 	echo "Building $@ from $<"
-	$(F90) $(OMP_FLAG) -c $(INCLUDE) $< -o $@
+	$(F90) $(FFLAGS) -c $< -o $@
 
 clean:
-	/bin/rm -f matmult.o matmult *.pdb profile.* *.inst.* *.continue.*
+	rm -f $(OBJ) matmult
 
-#intel compiler use -fpp for preprocessing + compiling
-#mpiifort matmult.f90 -fpp -DUSE_OPENMP -o matmult_omp -openmp

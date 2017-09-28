@@ -34,6 +34,7 @@ The selected experiment will be used for application compilation and trial visua
 
 import os
 import fasteners
+import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
 from taucmdr.error import ExperimentSelectionError, UniqueAttributeError
@@ -171,16 +172,16 @@ class ExperimentController(Controller):
             try:
                 for key in data:
                     self._restrict_project(key)
-            except (TypeError, ValueError):
+            except TypeError:
                 pass
         self._restrict_project(data)
         data = self.model.validate(data)
-        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
+        unique = {attr: data[attr] for attr, props in six.iteritems(self.model.attributes) if 'unique' in props}
         if unique and self.storage.contains(unique, match_any=False, table_name=self.model.name):
             raise UniqueAttributeError(self.model, unique)
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
-            for attr, foreign in self.model.associations.iteritems():
+            for attr, foreign in six.iteritems(self.model.associations):
                 if 'model' or 'collection' in self.model.attributes[attr]:
                     affected = record.get(attr, None)
                     if affected:
@@ -221,7 +222,7 @@ class ExperimentController(Controller):
             removed_data = []
             changing = self.search(keys)
             for model in changing:
-                for attr, foreign in model.associations.iteritems():
+                for attr, foreign in six.iteritems(model.associations):
                     foreign_model, via = foreign
                     affected_keys = model.get(attr, None)
                     if affected_keys:
@@ -306,7 +307,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, basestring):
+            elif isinstance(val, six.string_types):
                 return "'%s'" % val
             else:
                 return str(val)
@@ -315,7 +316,7 @@ class Experiment(Model):
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
-            for attr, change in changed.iteritems():
+            for attr, change in six.iteritems(changed):
                 old, new = (_fmt(x) for x in change)
                 if old is None:
                     parts.append("  - %s is now set to %s" % (attr, new))

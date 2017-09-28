@@ -30,6 +30,8 @@
 Handles system manipulation and status tasks, e.g. subprocess management or file creation.
 """
 
+from __future__ import print_function
+
 import re
 import os
 import sys
@@ -43,13 +45,17 @@ import pkgutil
 import tarfile
 import gzip
 import tempfile
-import urlparse
 import hashlib
 from collections import deque
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
 from termcolor import termcolor
+from unidecode import unidecode
+
+import six
+# pylint doesn't realize that the fake modules in six.moves can be imported
+import six.moves.urllib.parse as urlparse # pylint: disable=import-error
 from taucmdr import logger
 from taucmdr.error import InternalError
 from taucmdr.progress import ProgressIndicator, progress_spinner
@@ -146,7 +152,7 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """
     if not os.path.exists(path):
         return
-    for i in xrange(attempts-1):
+    for i in six.moves.xrange(attempts-1):
         try:
             return shutil.rmtree(path)
         except Exception as err:        # pylint: disable=broad-except
@@ -184,7 +190,7 @@ def which(program, use_cached=True):
     """
     if not program:
         return None
-    assert isinstance(program, basestring)
+    assert isinstance(program, six.string_types)
     if use_cached:
         try:
             return _WHICH_CACHE[program]
@@ -411,27 +417,44 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
                 os.chdir(oldcwd)
 
 
-def file_accessible(filepath, mode='r'):
-    """Check if a file is accessable.
+def path_accessible(path, mode='r'):
+    """Check if a file or directory is accessable.
+    
+    Files are checked by attempting to open them with the given mode.
+    Directories are checked by testing their access bits only, which may fail for 
+    some filesystems which may have permissions semantics beyond the usual POSIX 
+    permission-bit model. We'll fix this if it becomes a problem. 
     
     Args:
-        filepath (str): Path to file to check.
+        path (str): Path to file or directory to check.
         mode (str): File access mode to test, e.g. 'r' or 'rw'
     
     Returns:
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
-    handle = None
-    try:
-        handle = open(filepath, mode)
-    except:     # pylint: disable=bare-except
-        return False
+    assert mode and set(mode) <= set(('r', 'w'))
+    if os.path.isdir(path):
+        modebits = 0
+        if 'r' in mode:
+            modebits |= os.R_OK
+        if 'w' in mode:
+            modebits |= os.W_OK | os.X_OK
+        return os.access(path, modebits)
     else:
-        return True
-    finally:
-        if handle:
-            handle.close()
-    return False
+        handle = None
+        try:
+            handle = open(path, mode)
+        except IOError as err:
+            if err.errno == errno.EACCES:
+                return False
+            # Some other error, not permissions
+            raise
+        else:
+            return True
+        finally:
+            if handle:
+                handle.close()
+        return False
 
 @contextmanager
 def _null_context():
@@ -458,7 +481,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     """
     subproc_env = dict(os.environ)
     if env: 
-        for key, val in env.iteritems():
+        for key, val in six.iteritems(env):
             if val is None:
                 subproc_env.pop(key, None)
                 LOGGER.debug("unset %s", key)
@@ -479,15 +502,13 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
                 if log:
                     LOGGER.debug(line[:-1])
                 if stdout:
-                    print line,
-                if error_buf:
-                    buf.append(line)
+                    print(line, end="")
         proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     if retval and error_buf and not stdout:
         for line in buf:
-            print line,
+            print(line, end = "")
     return retval
 
 
@@ -524,6 +545,7 @@ def get_command_output(cmd, cwd=None, env=None):
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 
+
 def page_output(output_string):
     """Pipe string to a pager.
 
@@ -534,12 +556,13 @@ def page_output(output_string):
         output_string (str): String to put output.
 
     """
-    try:
-        pager_cmd = os.environ['PAGER'].split(' ')
-    except KeyError:
-        pager_cmd = ['less', '-F', '-R', '-S', '-X', '-K']
-    p = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
-    p.communicate(output_string)
+    output_string = unidecode(output_string.decode('utf-8'))
+    if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
+        print(output_string, end="")
+    else:
+        pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
+        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
+        proc.communicate(output_string)
 
 
 def human_size(num, suffix='B'):
@@ -586,7 +609,7 @@ def parse_bool(value, additional_true=None, additional_false=None):
         true_values.extend(additional_true)
     if additional_false:
         false_values.extend(additional_false)
-    if isinstance(value, basestring):
+    if isinstance(value, six.string_types):
         value = value.lower()
         if value in true_values:
             return True

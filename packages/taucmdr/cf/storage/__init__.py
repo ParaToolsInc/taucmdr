@@ -36,6 +36,8 @@ The key/value store is accessed via the `[]` operator, i.e. treat the storage ob
 
 
 from abc import ABCMeta, abstractmethod
+
+import six
 from taucmdr.error import Error
 
 
@@ -82,13 +84,13 @@ class StorageRecord(object):
         return self.element.keys()
     
     def iteritems(self):
-        return self.element.iteritems()
+        return six.iteritems(self.element)
     
     def iterkeys(self):
-        return self.element.iterkeys()
+        return six.iterkeys(self.element)
  
     def itervalues(self):
-        return self.element.itervalues()
+        return six.itervalues(self.element)
  
     def __len__(self):
         return len(self.element)

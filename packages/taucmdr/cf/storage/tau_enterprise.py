@@ -219,7 +219,7 @@ class _TauEnterpriseTable(object):
                 if populated_field in record:
                     record[populated_field] = self._to_record(record[populated_field], None)
             result = _TauEnterpriseJsonRecord(self.database.storage,
-                                              {k: v for k, v in record.iteritems() if not k.startswith('_')},
+                                              {k: v for k, v in six.iteritems(record) if not k.startswith('_')},
                                               eid=record['_id'] if '_id' in record else None,
                                               hash_digest=record['_hash'] if '_hash' in record else None)
         else:
@@ -229,7 +229,7 @@ class _TauEnterpriseTable(object):
     @staticmethod
     def _query_to_match_any(cond):
         """Converts a query in the form of a dict from match-all form to match-any form"""
-        return {'$or': [{k: v} for k, v in cond.iteritems()]}
+        return {'$or': [{k: v} for k, v in six.iteritems(cond)]}
 
     @staticmethod
     def _embed_query(cond):

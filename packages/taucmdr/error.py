@@ -110,7 +110,7 @@ class ConfigurationError(Error):
                    "\n"
                    "%(hints)s\n"
                    "TAU cannot proceed with the given inputs.\n" 
-                   "Please check the selected configuration for errors or contact %(contact)s for assistance.")
+                   "Please check the configuration for errors or contact %(contact)s for assistance.")
 
     def __init__(self, value, *hints):
         """Initialize the Error instance.

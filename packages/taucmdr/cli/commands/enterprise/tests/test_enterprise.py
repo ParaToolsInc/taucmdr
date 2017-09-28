@@ -188,7 +188,7 @@ class TauEnterpriseCLITests(tests.TestCase):
         self.assertIn('tau', files, "No profile file entry in trial")
         profile_path = os.path.join(files['tau'], 'profile.0.0.0')
         self.assertTrue(os.path.exists(profile_path), "No profile file")
-        with file(profile_path, 'r') as f:
+        with open(profile_path, 'r') as f:
             contents_pushed = f.read()
         self.assertTrue(contents_pushed, "Profile file empty")
         self.destroy_project_storage()
@@ -205,6 +205,6 @@ class TauEnterpriseCLITests(tests.TestCase):
         self.assertIn('tau', files, "No profile file entry in pulled trial")
         profile_path = os.path.join(files['tau'], 'profile.0.0.0')
         self.assertTrue(os.path.exists(profile_path), 'No profile file in pulled trial')
-        with file(profile_path, 'r') as f:
+        with open(profile_path, 'r') as f:
             contents_pulled = f.read()
         self.assertEqual(contents_pushed, contents_pulled, "Pushed and pulled profile files not equal")

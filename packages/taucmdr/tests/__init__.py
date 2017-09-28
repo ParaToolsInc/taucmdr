@@ -27,6 +27,7 @@
 #
 """Unit test initializations and utility functions."""
 
+from __future__ import print_function
 import os
 import sys
 import shutil
@@ -35,9 +36,9 @@ import tempfile
 import unittest
 import warnings
 try:
-    from cStringIO import StringIO
+    from six.moves.cStringIO import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from six import StringIO
 from unittest import skipIf, skipUnless
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
@@ -266,7 +267,7 @@ class TestRunner(unittest.TextTestRunner):
     def run(self, test):
         result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
-            print "WARNING: %s" % item
+            print("WARNING: %s" % item)
         if result.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE

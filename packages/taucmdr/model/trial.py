@@ -38,8 +38,9 @@ import tarfile
 import glob
 import errno
 from datetime import datetime
-import fasteners
+
 import six
+import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
@@ -119,6 +120,10 @@ def attributes():
             'description': "phase of trial",
             'hashed': True
         },
+        'phase': {
+            'type': 'string',
+            'description': "phase of trial"
+        },
     }
 
 
@@ -140,10 +145,10 @@ class TrialController(Controller):
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
         # Move TAU environment parameters to the command line
         env_parts = {}
-        for key, val in env.iteritems():
+        for key, val in six.iteritems(env):
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        env_str = ':'.join(['%s=%s' % item for item in six.iteritems(env_parts)])
         cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
@@ -390,8 +395,8 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
-                              if (key.startswith('TAU_') or 
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
+                              if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or 
                                   key in ('PROFILEDIR', 'TRACEDIR')))
         LOGGER.info('\n'.join(tau_env_opts))
@@ -424,7 +429,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or 
                                   key.startswith('SCOREP_') or 
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -493,7 +498,7 @@ class Trial(Model):
             raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in data.iteritems(): 
+        for fmt, path in six.iteritems(data):
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.minimal()
@@ -512,7 +517,7 @@ class Trial(Model):
             elif fmt == 'otf2':
                 export_file = os.path.join(dest, stem+'.tgz')
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
-                items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
+                items = [os.path.join(trial_dir, item) for item in ('traces', 'traces.def', 'traces.otf2')]
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)

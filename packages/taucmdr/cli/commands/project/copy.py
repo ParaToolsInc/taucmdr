@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """``project copy`` subcommand."""
+from __future__ import print_function
 
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
@@ -121,7 +122,7 @@ class ProjectCopyCommand(CopyCommand):
             data['applications'] = [model.eid for model in applications]
         if measurements: 
             data['measurements'] = [model.eid for model in measurements]
-        
+
         return self._copy_record(PROJECT_STORAGE, data, key)
 
 

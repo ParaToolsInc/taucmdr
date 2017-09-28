@@ -36,6 +36,8 @@ specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
 import os
+
+import six
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.cf.compiler.host import HOST_COMPILERS
@@ -111,7 +113,7 @@ def attributes():
             'default': False,
             'description': 'application uses OpenCL',
             'argparse': {'flags': ('--opencl',)},
-            'compat': {True: (Target.require('cuda'),
+            'compat': {True: (Target.require('cuda_toolkit'),
                               Measurement.encourage('opencl', True))},
             'rebuild_required': True,
             'hashed': True
@@ -190,7 +192,7 @@ class Application(Model):
                                          "Delete experiment '%s' and try again." % expr['name'])
         self._check_select_file()
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 if self.attributes[attr].get('rebuild_required'):
                     self.controller(self.storage).push_to_topic('rebuild_required', {attr: change})
 

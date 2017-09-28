@@ -37,6 +37,8 @@ compilers are installed then there will target configurations for each compiler 
 
 import os
 import glob
+
+import six
 import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, IncompatibleRecordError 
@@ -351,7 +353,7 @@ def attributes():
             'rebuild_required': True,
             'hashed': True,
             'direction': 'up'
-        },  
+        },
         'cuda_toolkit': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
@@ -459,6 +461,16 @@ def attributes():
             'rebuild_required': True,
             'hashed': True
         },
+        'libotf2_source': {
+            'type': 'string',
+            'description': 'path or URL to libotf2 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--otf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
@@ -503,7 +515,7 @@ class Target(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 props = self.attributes[attr] 
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
@@ -658,8 +670,9 @@ class Target(Model):
         assert event_type == "PRESET" or event_type == "NATIVE"
         if not self.get('papi_source'):
             return []
-        from HTMLParser import HTMLParser
-        
+        # PyLint doesn't realize that the fake modules in six.moves can be imported
+        import six.moves.html_parser as HTMLParser # pylint: disable=import-error
+
         metrics = []
         html_parser = HTMLParser()
         papi = self.get_installation('papi')

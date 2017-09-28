@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """Test functions.
 
 Functions used for unit tests of edit.py.
@@ -66,7 +68,7 @@ class EditTest(tests.TestCase):
         # Check that 'force-tau-options' is now a list containing the expected options in the project record
         proj1 = proj_ctrl.one({'name': 'proj1'})
         self.assertIsNotNone(proj1)
-        print proj1
+        print(proj1)
         self.assertListEqual(proj1['force_tau_options'], [tau_options])
         
     def test_wrongname(self):
