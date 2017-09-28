@@ -3,8 +3,9 @@
 !************************************************************************
 
 program main
-  use mpi
   implicit none
+
+  include 'mpif.h'
 
   integer, parameter :: MATSIZE = 1000
   integer, parameter :: MASTER = 0

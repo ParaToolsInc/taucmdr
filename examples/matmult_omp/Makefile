@@ -1,8 +1,8 @@
-F90 = mpiifort
-FFLAGS = -O -g -traceback
-LIBS= -qopenmp
+F90 = tau mpif90
+FFLAGS = -O -g
+LIBS= -fopenmp
 
-SRC = $(wildcard *.f90)
+SRC = matmult.f90
 OBJ = $(SRC:.f90=.o)
 
 
