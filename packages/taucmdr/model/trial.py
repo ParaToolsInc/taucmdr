@@ -285,6 +285,7 @@ class TrialController(Controller):
                     with tarfile.open(tar_path, mode="r") as tar:
                         tar.extractall(path=os.path.join(prefix, ".."))
                     os.remove(tar_path)
+                LOGGER.info("Downloaded file %s for trial %s." % (f, remote_eid))
 
         return remote_eid, already_present
 

@@ -31,18 +31,26 @@ Functions used for unit tests of TAU Enterprise CLI commands.
 """
 import unittest
 import uuid
+
+import os
 import requests
 from requests.packages import urllib3
 from taucmdr import tests, ENTERPRISE_URL
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase, TauEnterpriseStorage
 from taucmdr.cli.commands.enterprise.connect import COMMAND as connect_cmd
 from taucmdr.cli.commands.enterprise.disconnect import COMMAND as disconnect_cmd
 from taucmdr.cli.commands.enterprise.purge import COMMAND as purge_cmd
 from taucmdr.cli.commands.project.push import COMMAND as proj_push_cmd
 from taucmdr.cli.commands.project.pull import COMMAND as proj_pull_cmd
+from taucmdr.cli.commands.trial.push import COMMAND as trial_push_cmd
+from taucmdr.cli.commands.trial.pull import COMMAND as trial_pull_cmd
 from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
+from taucmdr.cf.compiler.host import CC
+from taucmdr.cli.commands.trial.create import COMMAND as create_cmd
 from taucmdr.error import NotConnectedError
 from taucmdr.model.project import Project
+from taucmdr.model.trial import Trial
 
 _TEST_USER_NAME = "tautest"
 _TEST_USER_TOKEN = "7905233407184ba9a6602cdaef7907a9"
@@ -156,3 +164,47 @@ class TauEnterpriseCLITests(tests.TestCase):
         self.test_purge()
         stdout, stderr = self.assertNotCommandReturnValue(0, proj_push_cmd, ['proj2'])
         self.assertIn('No Project matching', stderr)
+
+    def test_file_push(self):
+        self.test_push()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
+        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        self.assertTrue(trial, "No trial found after run")
+        files = trial.get_data_files()
+        self.assertIn('tau', files, "No profile file entry in trial")
+        profile_path = os.path.join(files['tau'], 'profile.0.0.0')
+        self.assertTrue(os.path.exists(profile_path), "No profile file")
+        stdout, stderr = self.assertCommandReturnValue(0, trial_push_cmd, ['0'])
+        self.assertIn('Uploaded file', stdout)
+        self.assertIn(files['tau'], stdout)
+        self.assertIn('Pushed Trial', stdout)
+
+    def test_file_pull(self):
+        self.test_file_push()
+        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        self.assertTrue(trial, "No trial found after run")
+        files = trial.get_data_files()
+        self.assertIn('tau', files, "No profile file entry in trial")
+        profile_path = os.path.join(files['tau'], 'profile.0.0.0')
+        self.assertTrue(os.path.exists(profile_path), "No profile file")
+        with file(profile_path, 'r') as f:
+            contents_pushed = f.read()
+        self.assertTrue(contents_pushed, "Profile file empty")
+        self.destroy_project_storage()
+        self.assertCommandReturnValue(0, initialize_cmd, ['--bare'])
+        self.assertCommandReturnValue(0, connect_cmd, [_TEST_USER_NAME, '--key',
+                                                       _TEST_USER_TOKEN, '--db', self.db_name])
+        self.assertFalse(os.path.exists(profile_path))
+        stdout, stderr = self.assertCommandReturnValue(0, trial_pull_cmd, ['0'])
+        self.assertIn('Downloaded file', stdout)
+        self.assertIn('Pulled Trial', stdout)
+        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        self.assertTrue(trial, "No trial after pull of trial")
+        files = trial.get_data_files()
+        self.assertIn('tau', files, "No profile file entry in pulled trial")
+        profile_path = os.path.join(files['tau'], 'profile.0.0.0')
+        self.assertTrue(os.path.exists(profile_path), 'No profile file in pulled trial')
+        with file(profile_path, 'r') as f:
+            contents_pulled = f.read()
+        self.assertEqual(contents_pushed, contents_pulled, "Pushed and pulled profile files not equal")
