@@ -37,6 +37,8 @@ import logging
 import itertools
 from contextlib import contextmanager
 from datetime import datetime
+
+import six
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
 
@@ -59,8 +61,8 @@ def _proc_stat_cpu_load_average():
     if prev and cur:
         prev_idle = prev['idle'] + prev['iowait']
         cur_idle = cur['idle'] + cur['iowait']
-        prev_total = sum(prev.itervalues())
-        cur_total = sum(cur.itervalues())
+        prev_total = sum(six.itervalues(prev))
+        cur_total = sum(six.itervalues(cur))
         diff_total = cur_total - prev_total
         diff_idle = cur_idle - prev_idle
         _proc_stat_cpu_load_average.prev = cur

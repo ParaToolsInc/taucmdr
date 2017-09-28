@@ -105,7 +105,7 @@ def get(key=None, storage=None):
             items = {}
             for storage in reversed(ORDERED_LEVELS):
                 try:
-                    items.update(storage.iteritems())
+                    items.update(six.iteritems(storage))
                 except StorageError:
                     # Storage hasn't been initialized yet
                     continue
@@ -220,7 +220,7 @@ def default_config(config_file=None):
                     config_file_comment("System-level %s configuration defaults.\n\n"
                                         "New target configurations will use these values as the default"
                                         " if no better value is available.\n" % model.name.lower(), box=True)
-        for attr, props in sorted(model.attributes.iteritems()):
+        for attr, props in sorted(six.iteritems(model.attributes)):
             if attr not in config[model.name] and 'primary_key' not in props and 'collection' not in props: 
                 config[model.name][attr] = props.get('default', '')
                 config[model.name].comments[attr] = config_file_comment(props.get('description', ''))
@@ -243,7 +243,7 @@ def import_from_file(filepath, storage):
         raise IOError("%s is not accessible" % filepath)
     config = ConfigObj(filepath)
     for section in config.sections:
-        for key, val in config[section].iteritems():
+        for key, val in six.iteritems(config[section]):
             if val:
                 put('%s.%s' % (section, key), parse_config_string(val), storage)
 

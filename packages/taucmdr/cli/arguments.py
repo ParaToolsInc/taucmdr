@@ -34,6 +34,8 @@ import os
 import argparse
 import textwrap
 from operator import attrgetter
+
+import six
 from taucmdr import logger, util
 from taucmdr.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
 
@@ -435,7 +437,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
                                         epilog=epilog,
                                         formatter_class=ArgparseHelpFormatter)
     groups = {}
-    for attr, props in model.attributes.iteritems():
+    for attr, props in six.iteritems(model.attributes):
         try:
             options = dict(props['argparse'])
         except KeyError:

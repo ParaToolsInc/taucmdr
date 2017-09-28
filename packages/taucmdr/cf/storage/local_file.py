@@ -34,6 +34,8 @@ both the database and the key/value store.
 
 import os
 import json
+
+import six
 import tinydb
 from tinydb import operations
 from taucmdr import logger, util
@@ -222,7 +224,7 @@ class LocalFileStorage(AbstractStorage):
         def _or(lhs, rhs): 
             return lhs | rhs
         join = _or if match_any else _and
-        itr = keys.iteritems()
+        itr = six.iteritems(keys)
         key, val = itr.next()
         query = (tinydb.where(key) == val)
         for key, value in itr:

@@ -29,7 +29,7 @@
 
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
-
+import six
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
@@ -340,7 +340,7 @@ class ListCommand(AbstractCliView):
         for record in records:
             rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
             populated = record.populate()
-            for key, val in sorted(populated.iteritems()):
+            for key, val in sorted(six.iteritems(populated)):
                 if key != self.model.key_attribute:
                     rows.append(self._format_long_item(key, val))
             table = Texttable(logger.LINE_WIDTH)

@@ -37,6 +37,8 @@ compilers are installed then there will target configurations for each compiler 
 
 import os
 import glob
+
+import six
 from taucmdr import logger, util
 from taucmdr.error import InternalError, ConfigurationError, IncompatibleRecordError 
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
@@ -453,7 +455,7 @@ class Target(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 props = self.attributes[attr] 
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
@@ -608,7 +610,7 @@ class Target(Model):
         assert event_type == "PRESET" or event_type == "NATIVE"
         if not self.get('papi_source'):
             return []
-        from HTMLParser import HTMLParser
+        import six.moves.html_parser as HTMLParser
         
         metrics = []
         html_parser = HTMLParser()

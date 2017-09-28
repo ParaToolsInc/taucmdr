@@ -36,6 +36,8 @@ import os
 import glob
 import errno
 from datetime import datetime
+
+import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
@@ -119,10 +121,10 @@ class TrialController(Controller):
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
         # Move TAU environment parameters to the command line
         env_parts = {}
-        for key, val in env.iteritems():
+        for key, val in six.iteritems(env):
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        env_str = ':'.join(['%s=%s' % item for item in six.iteritems(env_parts)])
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
         try:
@@ -314,7 +316,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or 
                                   key.startswith('SCOREP_') or 
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -383,7 +385,7 @@ class Trial(Model):
             raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in data.iteritems(): 
+        for fmt, path in six.iteritems(data):
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.minimal()

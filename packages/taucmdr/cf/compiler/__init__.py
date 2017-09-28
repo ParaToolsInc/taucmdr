@@ -83,7 +83,7 @@ class Knowledgebase(object):
         self.description = description
         self._families = {}
         self._roles = {}
-        for key, val in kwargs.iteritems():
+        for key, val in six.iteritems(kwargs):
             language, envars = val
             if isinstance(envars, six.string_types):
                 envars = (envars,) 
@@ -124,7 +124,7 @@ class Knowledgebase(object):
         from taucmdr.cf.platforms import HOST_TAU_MAGIC
         preferred = HOST_TAU_MAGIC.preferred_families[self]
         yield preferred
-        for family in self._families.itervalues():
+        for family in six.itervalues(self._families):
             if family is not preferred:
                 yield family
 
@@ -146,7 +146,7 @@ class Knowledgebase(object):
             _CompilerFamily: The new compiler family object.
         """
         members = {}
-        for key, role in self._roles.iteritems():
+        for key, role in six.iteritems(self._roles):
             try:
                 member_arg = kwargs.pop(key)
             except KeyError:
@@ -225,7 +225,7 @@ class _CompilerFamily(TrackedInstance):
         self.link_library_flags = link_library_flags or ['-l']
         self.show_wrapper_flags = show_wrapper_flags or []
         self.members = {}
-        for role, commands in members.iteritems():
+        for role, commands in six.iteritems(members):
             self.members[role] = [_CompilerInfo(self, cmd, role) for cmd in commands]
             
     def installation(self):
@@ -314,7 +314,7 @@ class _CompilerInfo(TrackedInstance):
         if command and family and role:
             return [info for info in family.members.get(role, []) if info.command == command]
         elif command and family:
-            return [info for info_list in family.members.itervalues() for info in info_list if info.command == command]
+            return [info for info_list in six.itervalues(family.members) for info in info_list if info.command == command]
         elif command and role:
             return [info for info in cls.all() if info.role is role and info.command == command]
         elif family and role:
@@ -322,7 +322,7 @@ class _CompilerInfo(TrackedInstance):
         elif command:
             return [info for info in cls.all() if info.command == command]
         elif family:
-            return [info for info_list in family.members.itervalues() for info in info_list]
+            return [info for info_list in six.itervalues(family.members) for info in info_list]
         elif role:
             return [info for info in cls.all() if info.role is role]
         else:
@@ -671,7 +671,7 @@ class InstalledCompilerFamily(object):
         self.family = family
         self.members = {}
         LOGGER.debug("Detecting %s compiler installation", family.name)
-        for role, info_list in family.members.iteritems():
+        for role, info_list in six.iteritems(family.members):
             for info in info_list:
                 absolute_path = util.which(info.command)
                 if absolute_path:
@@ -712,7 +712,7 @@ class InstalledCompilerFamily(object):
 
     def __iter__(self):
         """Yield one InstalledCompiler for each role filled by any compiler in this installation."""
-        for role in self.family.kbase.roles.itervalues():
+        for role in six.itervalues(self.family.kbase.roles):
             try:
                 yield self.members[role][0]
             except (KeyError, IndexError):
@@ -747,16 +747,16 @@ class InstalledCompilerSet(KeyedRecord):
         return self.members[key]
 
     def iterkeys(self):
-        return self.members.iterkeys()
+        return six.iterkeys(self.members)
     
     def itervalues(self):
-        return self.members.itervalues()
+        return six.itervalues(self.members)
 
     def iteritems(self):
-        return self.members.iteritems()
+        return six.iteritems(self.members)
 
     def _add_members(self, **kwargs):
-        for key, val in kwargs.iteritems():
+        for key, val in six.iteritems(kwargs):
             assert isinstance(val, InstalledCompiler)
             role = Knowledgebase.find_role(key)
             self.members[role] = val
@@ -765,7 +765,7 @@ class InstalledCompilerSet(KeyedRecord):
         """Build a modified copy of this object."""
         # pylint: disable=protected-access 
         uid_parts = [self.uid, str(sorted(kwargs))]
-        compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
+        compilers = {role.keyword: comp for role, comp in six.iteritems(self.members)}
         modified = InstalledCompilerSet(util.calculate_uid(uid_parts), **compilers)
         modified._add_members(**kwargs)
         return modified

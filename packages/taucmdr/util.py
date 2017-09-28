@@ -46,7 +46,7 @@ import tarfile
 import gzip
 import six
 import tempfile
-import urlparse
+from six.moves.urllib.parse import urlparse
 import hashlib
 from contextlib import contextmanager
 from zipimport import zipimporter
@@ -454,7 +454,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         subproc_env = None
     else:
         subproc_env = dict(os.environ)
-        for key, val in env.iteritems():
+        for key, val in six.iteritems(env):
             if val is None:
                 subproc_env.pop(key, None)
                 LOGGER.debug("unset %s", key)

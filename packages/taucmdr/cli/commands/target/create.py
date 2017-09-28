@@ -29,6 +29,8 @@
 
 import os
 from collections import Counter
+
+import six
 from taucmdr import util
 from taucmdr.error import ConfigurationError
 from taucmdr.cli import arguments
@@ -203,7 +205,7 @@ class TargetCreateCommand(CreateCommand):
 
     def _configure_argument_group(self, group, kbase, family_flag, family_attr, hint):
         # Check environment variables for default compilers.
-        compilers = {role: self._get_compiler_from_env(role) for role in kbase.roles.itervalues()}
+        compilers = {role: self._get_compiler_from_env(role) for role in six.itervalues(kbase.roles)}
         # Use the result of previous compiler detection to find compilers not specified in the environment
         if hint:
             try:
@@ -216,11 +218,11 @@ class TargetCreateCommand(CreateCommand):
                 # e.g. Intel doesn't have SHMEM compilers.
                 pass
             else:
-                for role, comp in compilers.iteritems():
+                for role, comp in six.iteritems(compilers):
                     if comp is None:
                         compilers[role] = family[role]
-        sibling = next((comp for comp in compilers.itervalues() if comp is not None), None)
-        for role, comp in compilers.iteritems():
+        sibling = next((comp for comp in six.itervalues(compilers) if comp is not None), None)
+        for role, comp in six.iteritems(compilers):
             if not comp:
                 if sibling:
                     # If some compilers found, but not all, then use compiler
@@ -230,7 +232,7 @@ class TargetCreateCommand(CreateCommand):
                     # No environment variables specify compiler defaults so use model defaults.
                     compilers[role] = self._get_compiler_from_defaults(kbase, role)
         # Use the majority family as the default compiler family.
-        family_count = Counter(comp.info.family for comp in compilers.itervalues() if comp is not None)
+        family_count = Counter(comp.info.family for comp in six.itervalues(compilers) if comp is not None)
         try:
             family_default = family_count.most_common()[0][0].name
         except IndexError:
@@ -249,7 +251,7 @@ class TargetCreateCommand(CreateCommand):
                            action=TargetCreateCommand._family_flag_action(kbase, family_attr))
         # Monkey-patch default actions for compiler arguments
         # pylint: disable=protected-access
-        for role, comp in compilers.iteritems():
+        for role, comp in six.iteritems(compilers):
             action = next(act for act in group._actions if act.dest == role.keyword)
             action.default = comp.absolute_path if comp else arguments.SUPPRESS
             action.__action_call__ = action.__call__
@@ -296,7 +298,7 @@ class TargetCreateCommand(CreateCommand):
         """
         compilers = {}
         for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS:
-            for role in kbase.roles.itervalues():
+            for role in six.itervalues(kbase.roles):
                 try:
                     command = getattr(args, role.keyword)
                 except AttributeError:
@@ -313,7 +315,7 @@ class TargetCreateCommand(CreateCommand):
         compilers = self.parse_compiler_flags(args)
 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        for comp in compilers.itervalues():
+        for comp in six.itervalues(compilers):
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
 

@@ -566,7 +566,7 @@ class AutotoolsInstallation(MakeInstallation):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
         if os.path.isdir(self.src) or not force_reinstall:
             try:
@@ -685,7 +685,7 @@ class CMakeInstallation(MakeInstallation):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
         if os.path.isdir(self.src) or not force_reinstall:
             try:

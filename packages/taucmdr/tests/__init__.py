@@ -36,9 +36,9 @@ import tempfile
 import unittest
 import warnings
 try:
-    from cStringIO import StringIO
+    from six.moves.cStringIO import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from six import StringIO
 from unittest import skipIf, skipUnless
 from taucmdr import logger, TAU_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError

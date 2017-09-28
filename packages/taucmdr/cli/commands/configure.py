@@ -27,6 +27,8 @@
 #
 from __future__ import print_function
 
+import six
+
 """``configure`` subcommand."""
 
 from taucmdr import EXIT_SUCCESS
@@ -86,7 +88,7 @@ class ConfigureCommand(AbstractCommand):
             return EXIT_SUCCESS
         
         if not hasattr(args, 'key'):
-            for key, val in sorted(configuration.get(storage=storage).iteritems()):
+            for key, val in sorted(six.iteritems(configuration.get(storage=storage))):
                 print('%s : %r' % (key, val))
         elif not (hasattr(args, 'value') or hasattr(args, 'unset')):
             try:

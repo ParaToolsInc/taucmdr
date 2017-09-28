@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """TAU Common Framework (CF) common objects."""
+import six
 
 
 class TrackedInstance(object):
@@ -162,7 +163,7 @@ class KeyedRecord(object):
     @classmethod
     def all(cls):
         """Iterate over class instances."""
-        for instance in cls.__instances__.itervalues():
+        for instance in six.itervalues(cls.__instances__):
             yield instance
     
     @classmethod

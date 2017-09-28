@@ -32,7 +32,7 @@ we wish to perform.  It is often the case that we do not wish to gather all
 the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
-
+import six
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -359,7 +359,7 @@ class Measurement(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 if self.attributes[attr].get('rebuild_required'):
                     if attr == 'metrics':
                         old_value, new_value = change

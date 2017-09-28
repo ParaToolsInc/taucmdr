@@ -42,6 +42,8 @@ a subclass of :any:`AbstractCommand`.
 
 import os
 import sys
+
+import six
 from taucmdr import TAU_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
@@ -171,7 +173,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
         str: Help string describing all commands found at or below `root`.
     """
     groups = {}
-    commands = sorted([i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'])
+    commands = sorted([i for i in six.iteritems(_get_commands(package_name)) if i[0] != '__module__'])
     for cmd, topcmd in commands:
         module = topcmd['__module__']
         try:
@@ -184,7 +186,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
         groups.setdefault(group, []).append('  %s  %s' % (name, descr))
 
     parts = []
-    for group, members in groups.iteritems():
+    for group, members in six.iteritems(groups):
         if group:
             title = util.color_text(group.title() + ' Subcommands:', attrs=['bold'])
         else:
@@ -204,9 +206,9 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
         list: List of modules corresponding to all commands and subcommands.
     """
     all_commands = []
-    commands = sorted((i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'))
+    commands = sorted((i for i in six.iteritems(_get_commands(package_name)) if i[0] != '__module__'))
     for _, topcmd in commands:
-        for _, mod in topcmd.iteritems():
+        for _, mod in six.iteritems(topcmd):
             all_commands.append(mod['__module__'].__name__)
     return all_commands
 
@@ -231,7 +233,7 @@ def find_command(cmd):
         try:
             matches = [(car, d[car])]
         except KeyError:
-            matches = [i for i in d.iteritems() if i[0].startswith(car)]
+            matches = [i for i in six.iteritems(d) if i[0].startswith(car)]
         if len(matches) == 1:
             return [matches[0][0]] + _resolve(cdr, matches[0][1])
         elif len(matches) == 0:

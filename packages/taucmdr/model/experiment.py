@@ -148,7 +148,7 @@ class Experiment(Model):
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
-            for attr, change in changed.iteritems():
+            for attr, change in six.iteritems(changed):
                 old, new = (_fmt(x) for x in change)
                 if old is None:
                     parts.append("  - %s is now set to %s" % (attr, new))

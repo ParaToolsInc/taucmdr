@@ -377,7 +377,7 @@ class TauInstallation(Installation):
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        uid_parts.extend(sorted(comp.uid for comp in six.itervalues(self.compilers)))
         # TAU changes if any dependencies change.
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt':
             uses_pkg = getattr(self, '_uses_'+pkg)
@@ -695,12 +695,12 @@ class TauInstallation(Installation):
         if self.forced_makefile:
             forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
             self._set_install_prefix(forced_install_prefix)
-            for pkg in self.dependencies.itervalues():
+            for pkg in six.itervalues(self.dependencies):
                 pkg.install(force_reinstall=False)
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
             return 
         if not self.src or not force_reinstall:
-            for pkg in self.dependencies.itervalues():
+            for pkg in six.itervalues(self.dependencies):
                 pkg.install(force_reinstall)
             try:
                 return self.verify()
@@ -792,7 +792,7 @@ class TauInstallation(Installation):
         # On non-Cray systems, exclude tags from incompatible compilers.
         compiler_tags = self._compiler_tags() if self.tau_magic.operating_system is not CRAY_CNL else {}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
-        tags.update(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
+        tags.update(tag for tag in six.itervalues(compiler_tags) if tag != compiler_tag)
         if not self.mpi_support:
             tags.add('mpi')
         if self.measure_openmp == 'ignore':
@@ -870,11 +870,11 @@ class TauInstallation(Installation):
             dict: `env` without TAU environment variables.
         """
         is_tau_var = lambda x: x.startswith('TAU_') or x.startswith('SCOREP_') or x in ('PROFILEDIR', 'TRACEDIR')
-        dirt = {key: val for key, val in env.iteritems() if is_tau_var(key)}
+        dirt = {key: val for key, val in six.iteritems(env) if is_tau_var(key)}
         if dirt:
             LOGGER.info("\nIgnoring TAU environment variables set in user's environment:\n%s\n",
-                        '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
-        return dict([item for item in env.iteritems() if item[0] not in dirt])
+                        '\n'.join(["%s=%s" % item for item in six.iteritems(dirt)]))
+        return dict([item for item in six.iteritems(env) if item[0] not in dirt])
 
     def compiletime_config(self, opts=None, env=None):
         """Configures environment for compilation with TAU.
@@ -891,7 +891,7 @@ class TauInstallation(Installation):
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             opts, env = pkg.compiletime_config(opts, env)
         try:
             tau_opts = set(env['TAU_OPTIONS'].split(' '))
@@ -1042,7 +1042,7 @@ class TauInstallation(Installation):
         opts, env = self.compiletime_config()
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
-        tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
+        tau_env_opts = sorted('%s=%s' % item for item in six.iteritems(env) if item[0].startswith('TAU_'))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
@@ -1236,7 +1236,7 @@ class TauInstallation(Installation):
         """
         self.install()
         _, env = self.runtime_config()
-        for fmt, paths in dataset.iteritems():
+        for fmt, paths in six.iteritems(dataset):
             if self.is_profile_format(fmt):
                 tools = profile_tools if profile_tools is not None else PROFILE_ANALYSIS_TOOLS
             elif self.is_trace_format(fmt):
