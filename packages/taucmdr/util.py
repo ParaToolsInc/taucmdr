@@ -46,7 +46,8 @@ import tarfile
 import gzip
 import six
 import tempfile
-from six.moves.urllib.parse import urlparse
+# PyLint doesn't realize that the fake modules in six.moves can be imported
+import six.moves.urllib.parse as urlparse # pylint: disable=import-error
 import hashlib
 from contextlib import contextmanager
 from zipimport import zipimporter

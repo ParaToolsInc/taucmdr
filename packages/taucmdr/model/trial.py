@@ -331,7 +331,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or 
                                   key.startswith('SCOREP_') or 
                                   key in ('PROFILEDIR', 'TRACEDIR')))

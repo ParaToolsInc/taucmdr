@@ -164,12 +164,12 @@ class ExperimentController(Controller):
                 pass
         self._restrict_project(data)
         data = self.model.validate(data)
-        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
+        unique = {attr: data[attr] for attr, props in six.iteritems(self.model.attributes) if 'unique' in props}
         if unique and self.storage.contains(unique, match_any=False, table_name=self.model.name):
             raise UniqueAttributeError(self.model, unique)
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
-            for attr, foreign in self.model.associations.iteritems():
+            for attr, foreign in six.iteritems(self.model.associations):
                 if 'model' or 'collection' in self.model.attributes[attr]:
                     affected = record.get(attr, None)
                     if affected:
@@ -210,7 +210,7 @@ class ExperimentController(Controller):
             removed_data = []
             changing = self.search(keys)
             for model in changing:
-                for attr, foreign in model.associations.iteritems():
+                for attr, foreign in six.iteritems(model.associations):
                     foreign_model, via = foreign
                     affected_keys = model.get(attr, None)
                     if affected_keys:

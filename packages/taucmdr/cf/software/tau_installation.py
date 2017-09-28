@@ -730,10 +730,10 @@ class TauInstallation(Installation):
                                        *unmanaged_hints)
         # Check dependencies after verifying TAU instead of before in case 
         # we're using an unmanaged TAU or forced makefile. 
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
-        with new_os_environ(), util.umask(002):
+        with new_os_environ(), util.umask(0o002):
             try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):

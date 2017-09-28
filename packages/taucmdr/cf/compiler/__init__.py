@@ -704,7 +704,7 @@ class InstalledCompiler(object):
                                                     'taucmdr_script': TAUCMDR_SCRIPT,
                                                     'command': self.command}
             fout.write(wrapper)
-        os.chmod(script_file, os.stat(script_file).st_mode | 0111)
+        os.chmod(script_file, os.stat(script_file).st_mode | 0o0111)
 
 
 class InstalledCompilerFamily(object):

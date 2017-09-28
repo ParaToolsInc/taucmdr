@@ -617,8 +617,9 @@ class Target(Model):
         assert event_type == "PRESET" or event_type == "NATIVE"
         if not self.get('papi_source'):
             return []
-        import six.moves.html_parser as HTMLParser
-        
+        # PyLint doesn't realize that the fake modules in six.moves can be imported
+        import six.moves.html_parser as HTMLParser # pylint: disable=import-error
+
         metrics = []
         html_parser = HTMLParser()
         papi = self.get_installation('papi')
