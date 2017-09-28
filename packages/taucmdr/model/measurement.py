@@ -212,7 +212,7 @@ def attributes():
             'default': False,
             'description': 'measure OpenCL events',
             'argparse': {'flags': ('--opencl',)},
-            'compat': {True: (Target.require('cuda'),
+            'compat': {True: (Target.require('cuda_toolkit'),
                               Application.require('opencl'))},
         },
         'callpath': {
