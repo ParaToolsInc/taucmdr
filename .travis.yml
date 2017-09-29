@@ -19,6 +19,7 @@ env:
     - INSTALLDIR="$HOME/taucmdr-test"
     - __TAUCMDR_PROGRESS_BARS__="minimal"
     - __TAUCMDR_PROFILE_TAUCMDR__="stdout"
+    - ANACONDA_VERSION="4.4.0"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
@@ -39,9 +40,10 @@ before_install:
 install:
   - make install INSTALLDIR="$INSTALLDIR" || (tail -1000 "$HOME/.tau/debug_log" && false)
   - export PATH="$INSTALLDIR/conda/bin:$PATH"
+  - export PATH="$INSTALLDIR/anaconda-$ANACONDA_VERSION/bin:$PATH"
   - which python
   - which pip
-  - pip install --prefix "$INSTALLDIR/conda" -r requirements.txt
+  - pip install --prefix "$INSTALLDIR/anaconda-$ANACONDA_VERSION" -r requirements.txt
 
 # Use travis_wait to extend the expected runtime of the command.
 script:

@@ -504,6 +504,10 @@ class Experiment(Model):
         proj = self.populate('project')
         return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
 
+    @property
+    def num_trials(self):
+        return len(self.populate('trials'))
+
     def trials(self, trial_numbers=None):
         """Get a list of modeled trial records.
 
@@ -520,8 +524,8 @@ class Experiment(Model):
             ConfigurationError: Invalid trial number or no trials in selected experiment.
         """
         if trial_numbers:
+            trials = []
             for num in trial_numbers:
-                trials = []
                 found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
                 if not found:
                     raise ConfigurationError("Experiment '%s' has no trial with number %s" % (self.name, num))

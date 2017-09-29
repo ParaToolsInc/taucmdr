@@ -84,51 +84,47 @@ else
   endif
 endif
 
-# Miniconda configuration
-USE_MINICONDA = true
+# Anaconda configuration
+USE_ANACONDA = true
 ifeq ($(HOST_OS),Darwin)
 ifeq ($(HOST_ARCH),i386)
-  USE_MINICONDA = false
+  USE_ANACONDA = false
 endif
 endif
 ifeq ($(HOST_OS),Darwin)
-  CONDA_OS = MacOSX
-else 
+  ANACONDA_OS = MacOSX
+else
   ifeq ($(HOST_OS),Linux)
-    CONDA_OS = Linux
+    ANACONDA_OS = Linux
   else
-    USE_MINICONDA = false
+    USE_ANACONDA = false
   endif
 endif
 ifeq ($(HOST_ARCH),x86_64)
-  CONDA_ARCH = x86_64
-else 
+  ANACONDA_ARCH = x86_64
+else
   ifeq ($(HOST_ARCH),i386)
-    CONDA_ARCH = x86
+    ANACONDA_ARCH = x86
   else
-    ifeq ($(HOST_ARCH),ppc64le)
-      CONDA_ARCH = ppc64le
-    else
-      USE_MINICONDA = false
-    endif
+    USE_ANACONDA = false
   endif
 endif
-CONDA_VERSION = latest
-CONDA_REPO = https://repo.continuum.io/miniconda
-CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
-CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
-CONDA_SRC = system/src/$(CONDA_PKG)
-CONDA_DEST = $(INSTALLDIR)/conda
-CONDA = $(CONDA_DEST)/bin/python
+ANACONDA_VERSION = 4.4.0
+ANACONDA_REPO = https://repo.continuum.io/archive
+ANACONDA_PKG = Anaconda2-$(ANACONDA_VERSION)-$(ANACONDA_OS)-$(ANACONDA_ARCH).sh
+ANACONDA_URL = $(ANACONDA_REPO)/$(ANACONDA_PKG)
+ANACONDA_SRC = packages/$(ANACONDA_PKG)
+ANACONDA_DEST = $(INSTALLDIR)/anaconda-$(ANACONDA_VERSION)
+ANACONDA_PYTHON = $(ANACONDA_DEST)/bin/python
+CONDA = $(ANACONDA_DEST)/bin/conda
 
-ifeq ($(USE_MINICONDA),true)
-  PYTHON_EXE = $(CONDA)
-  PYTHON_FLAGS = -EO
+ifeq ($(USE_ANACONDA),true)
+  PYTHON_EXE = $(ANACONDA_PYTHON)
+  PYTHON_FLAGS = -E
 else
-  $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
-  CONDA_SRC = 
+  $(warning WARNING: There are no anaconda packages for this system: $(OS), $(ARCH).)
   PYTHON_EXE = $(shell which python)
-  PYTHON_FLAGS = -O
+  PYTHON_FLAGS =
   ifeq ($(PYTHON_EXE),)
     $(error python not found in PATH.)
   else
@@ -147,7 +143,7 @@ help:
 	@echo
 	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)]"
 	@echo "-------------------------------------------------------------------------------"
-	
+
 build: python_check
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
@@ -158,10 +154,10 @@ install: build
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
-	@echo "Hooray! TAU Commander is installed!" 
+	@echo "Hooray! TAU Commander is installed!"
 	@echo
 	@echo "INSTALLDIR=\"$(INSTALLDIR)\""
-	@echo 
+	@echo
 	@echo "What's next?"
 	@echo
 	@echo "TAU Commander will automatically generate new TAU configurations for each new"
@@ -177,22 +173,28 @@ install: build
 	@echo
 	@echo "In short:"
 	@echo "  If you are a sysadmin then go run \"INSTALLDIR/system/configure\"."
-	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH and get to work." 
+	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH and get to work."
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
-python_check: $(PYTHON_EXE)
+python_check: $(PYTHON_EXE) jupyterlab-install
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
-	
+
 python_download: $(CONDA_SRC)
 
-$(CONDA): $(CONDA_SRC)
-	$(ECHO)bash $< -b -p $(CONDA_DEST)
-	$(ECHO)touch $(CONDA_DEST)/bin/*
+$(CONDA): $(ANACONDA_PYTHON)
 
-$(CONDA_SRC):
-	$(ECHO)$(MKDIR) `dirname "$(CONDA_SRC)"`
-	$(call download,$(CONDA_URL),$(CONDA_SRC))
+$(ANACONDA_PYTHON): $(ANACONDA_SRC)
+	$(ECHO)bash $< -b -p $(ANACONDA_DEST)
+	$(ECHO)touch $(ANACONDA_DEST)/bin/*
 
-clean: 
+$(ANACONDA_SRC):
+	$(ECHO)$(MKDIR) $(BUILDDIR)
+	$(call download,$(ANACONDA_URL),$(ANACONDA_SRC))
+
+jupyterlab-install: $(CONDA)
+	$(ECHO)$(CONDA) list -f jupyterlab | grep -q jupyterlab 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab
+
+
+clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION

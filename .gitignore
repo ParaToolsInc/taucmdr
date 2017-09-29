@@ -104,6 +104,6 @@ __pycache__/
 id_rsa_Travis2GH
 id_rsa_Travis2GH.pub
 
-# Jupyter stuff
-.ipynb*
-*.ipynb
+# Jupyter files
+*.ipynb*
+

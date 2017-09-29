@@ -301,7 +301,7 @@ class Trial(Model):
     __attributes__ = attributes
 
     __controller__ = TrialController
-    
+        
     @property
     def prefix(self):
         experiment = self.populate('experiment')
@@ -341,6 +341,26 @@ class Trial(Model):
                 os.remove(path)
                 count += 1
                 progress_bar.update(count)
+
+    def get_data(self):
+        data_files = self.get_data_files()
+        tau_profile_prefix = data_files.get('tau')
+        tau_trace_prefix = data_files.get('otf2')
+        if not tau_profile_prefix and not tau_trace_prefix:
+            raise InternalError('Sorry, this only works with tau profiles at the moment...')
+        if tau_profile_prefix:
+            from taucmdr.data.tauprofile import TauProfile
+            data = {}
+            for path, _, files in os.walk(tau_profile_prefix):
+                for profile_file in files:
+                    profile = TauProfile.parse(os.path.join(path, profile_file), self['number'])
+                    node_data = data.setdefault(profile.node, {})
+                    context_data = node_data.setdefault(profile.context, {})
+                    context_data[profile.thread] = profile
+        if tau_trace_prefix:
+            from taucmdr.data.tautrace import TauTrace
+            data = TauTrace.parse(tau_trace_prefix, self['number'])
+        return data
 
     def get_data_files(self):
         """Return paths to the trial's data files or directories maped by data type. 

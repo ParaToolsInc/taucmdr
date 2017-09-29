@@ -30,7 +30,12 @@
 The OTF2 library  provides an interface to write and read trace data.
 """
 
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.software import SoftwarePackageError
+from taucmdr.cf.platforms import DARWIN, HOST_ARCH, HOST_OS
+from taucmdr.cf.compiler.host import CC, CXX, GNU, APPLE_LLVM
+from taucmdr.cf.compiler import InstalledCompilerSet
 
 
 REPOS = {None: 'http://tau.uoregon.edu/otf2.tgz'}
@@ -44,6 +49,23 @@ class Libotf2Installation(AutotoolsInstallation):
     """Encapsulates a libotf2 installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources, 
+        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
+    @classmethod
+    def minimal(cls):
+        """Creates a minimal LibOTF2 configuration for working with legacy data analysis tools.
+        Returns:
+            Libotf2Installation: Object handle for the LibOTF2 installation.
+        """
+        sources = {'libotf2': 'download'}
+        target_arch = HOST_ARCH
+        target_os = HOST_OS
+        target_family = APPLE_LLVM if HOST_OS is DARWIN else GNU
+        try:
+            target_compilers = target_family.installation()
+        except ConfigurationError:
+            raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
+        compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
+        inst = cls(sources, target_arch, target_os, compilers)
+        return inst
