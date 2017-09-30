@@ -139,6 +139,15 @@ class LocalFileStorage(AbstractStorage):
     def iteritems(self):
         for item in self.search():
             yield item['key'], item['value']
+
+    def keys(self):
+        return self.search().keys()
+
+    def values(self):
+        return self.search().values()
+
+    def items(self):
+        return self.search().items()
     
     def is_writable(self):
         """Check if the storage filesystem is writable."""
@@ -224,7 +233,7 @@ class LocalFileStorage(AbstractStorage):
             return lhs | rhs
         join = _or if match_any else _and
         itr = six.iteritems(keys)
-        key, val = itr.next()
+        key, val = six.next(itr)
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))

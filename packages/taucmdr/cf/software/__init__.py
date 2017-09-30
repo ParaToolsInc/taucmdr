@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """Software managment common objects."""
+import sys
 
 from taucmdr import util
 from taucmdr.error import ConfigurationError
@@ -42,5 +43,9 @@ class SoftwarePackageError(ConfigurationError):
 def get_installation(name):
     module_name = name + '_installation'
     cls_name = util.camelcase(module_name)
-    pkg = __import__(__name__+'.'+module_name, globals(), locals(), [cls_name], -1)
+    if sys.version_info[0] > 2:
+        level = 0
+    else:
+        level = -1
+    pkg = __import__(__name__+'.'+module_name, globals(), locals(), [cls_name], level)
     return getattr(pkg, cls_name)

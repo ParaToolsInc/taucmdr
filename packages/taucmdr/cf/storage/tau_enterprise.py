@@ -74,7 +74,7 @@ class _TauEnterpriseJsonRecordEncoder(json.JSONEncoder):
 
 
 class _TauEnterpriseJsonRecord(StorageRecord):
-    eid_type = unicode
+    eid_type = six.text_type
 
     def __init__(self, database, element, eid=None, hash_digest=None):
         super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element, hash_digest=hash_digest)
@@ -424,6 +424,15 @@ class TauEnterpriseStorage(AbstractStorage):
     def iteritems(self):
         for item in self.search():
             yield item['key'], item['value']
+
+    def keys(self):
+        return self.search().keys()
+
+    def values(self):
+        return self.search().values()
+
+    def items(self):
+        return self.search().items()
 
     def is_writable(self):
         """Check if the storage filesystem is writable."""

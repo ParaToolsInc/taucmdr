@@ -19,7 +19,7 @@
 import logging
 import time
 
-from monotonic import monotonic as now  # noqa
+from fasteners.monotonic import monotonic as now  # noqa
 
 # log level for low-level debugging
 BLATHER = 5

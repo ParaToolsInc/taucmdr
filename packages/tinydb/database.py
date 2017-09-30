@@ -23,7 +23,7 @@ class Document(dict):
 
     @property
     def eid(self):
-        warnings.warn('eid has been renamed to doc_id', DeprecationWarning)
+        #warnings.warn('eid has been renamed to doc_id', DeprecationWarning)
         return self.doc_id
 
 
@@ -35,7 +35,7 @@ def _get_doc_id(doc_id, eid):
         if doc_id is not None:
             raise TypeError('cannot pass both eid and doc_id')
 
-        warnings.warn('eid has been renamed to doc_ids', DeprecationWarning)
+        #warnings.warn('eid has been renamed to doc_ids', DeprecationWarning)
         return eid
     else:
         return doc_id
@@ -46,7 +46,7 @@ def _get_doc_ids(doc_ids, eids):
         if doc_ids is not None:
             raise TypeError('cannot pass both eids and doc_ids')
 
-        warnings.warn('eids has been renamed to doc_ids', DeprecationWarning)
+        #warnings.warn('eids has been renamed to doc_ids', DeprecationWarning)
         return eids
     else:
         return doc_ids

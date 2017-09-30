@@ -87,7 +87,7 @@ class ModelMeta(type):
             return cls._key_attribute
 
 
-class Model(StorageRecord):
+class Model(six.with_metaclass(ModelMeta, StorageRecord)):
     """The "M" in `MVC`_.
 
     Attributes:
@@ -99,8 +99,7 @@ class Model(StorageRecord):
         
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
-    
-    __metaclass__ = ModelMeta
+
     __controller__ = Controller
     __attributes__ = NotImplemented
     
@@ -599,24 +598,29 @@ class Model(StorageRecord):
             attributes of the model.
         """
 
+        def convert_item(item):
+            if isinstance(item, six.text_type):
+                return item.encode()
+            return item
+
         def hash_item(item_value, item_hasher):
             if isinstance(item_value, Model):
-                item_hasher.update(item_value.hash_digest())
+                item_hasher.update(convert_item(item_value.hash_digest()))
             elif isinstance(item_value, list):
                 for entry in item_value:
                     hash_item(entry, item_hasher)
             else:
-                item_hasher.update(str(item_value))
+                item_hasher.update(convert_item(str(item_value)))
 
         if self._hash is not None:
             return self._hash
         all_elements = self.populate(defaults=True)
         attrs = self.attributes
         hasher = hashlib.sha1()
-        hasher.update(self.name)
+        hasher.update(convert_item(self.name))
         for field, value in sorted(six.iteritems(all_elements)):
             if field in attrs and 'hashed' in attrs[field] and attrs[field]['hashed'] is True:
-                hasher.update(field)
+                hasher.update(convert_item(field))
                 hash_item(value, hasher)
         self._hash = hasher.hexdigest()
         return self._hash

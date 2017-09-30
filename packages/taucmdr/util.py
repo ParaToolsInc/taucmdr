@@ -96,6 +96,8 @@ def calculate_uid(parts):
     """
     uid = hashlib.sha1()
     for part in parts:
+        if isinstance(part, six.text_type):
+            part = part.encode('utf-8')
         uid.update(part)
     digest = uid.hexdigest()
     LOGGER.debug("UID: (%s): %s", digest, parts)
@@ -540,6 +542,8 @@ def get_command_output(cmd, cwd=None, env=None):
         LOGGER.debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
     stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    if isinstance(stdout, six.binary_type):
+        stdout = stdout.decode('utf-8')
     get_command_output.cache[key] = stdout
     LOGGER.debug(stdout)
     LOGGER.debug("%s returned 0", cmd)

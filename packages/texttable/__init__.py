@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # texttable - module for creating simple ASCII tables
 # Copyright (C) 2003-2015 Gerome Fournier <jef(at)foutaise.org>
 #
@@ -25,14 +23,15 @@ Example:
     table = Texttable()
     table.set_cols_align(["l", "r", "c"])
     table.set_cols_valign(["t", "m", "b"])
-    table.add_rows([["Name", "Age", "Nickname"], 
+    table.add_rows([["Name", "Age", "Nickname"],
                     ["Mr\\nXavier\\nHuon", 32, "Xav'"],
-                    ["Mr\\nBaptiste\\nClement", 1, "Baby"]])
+                    ["Mr\\nBaptiste\\nClement", 1, "Baby"],
+                    ["Mme\\nLouise\\nBourgeau", 28, "Lou\\n\\nLoue"]])
     print table.draw() + "\\n"
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
-    table.set_cols_dtype(['t',  # text 
+    table.set_cols_dtype(['t',  # text
                           'f',  # float (decimal)
                           'e',  # float (exponent)
                           'i',  # integer
@@ -58,6 +57,10 @@ Result:
     | Baptiste |   1 |          |
     | Clement  |     |   Baby   |
     +----------+-----+----------+
+    | Mme      |     |   Lou    |
+    | Louise   |  28 |          |
+    | Bourgeau |     |   Loue   |
+    +----------+-----+----------+
 
     text   float       exp      int     auto
     ===========================================
@@ -67,11 +70,13 @@ Result:
     mnop   0.023    5.000e+78   92    1.280e+22
 """
 
+from __future__ import division
+
 __all__ = ["Texttable", "ArraySizeError"]
 
 __author__ = 'Gerome Fournier <jef(at)foutaise.org>'
 __license__ = 'LGPL'
-__version__ = '0.8.2'
+__version__ = '0.9.1'
 __credits__ = """\
 Jeff Kowalczyk:
     - textwrap improved import
@@ -91,16 +96,22 @@ Brian Peterson:
 
 Frank Sachsenheim:
     - add Python 2/3-compatibility
+
+Maximilian Hils:
+    - fix minor bug for Python 3 compatibility
+
+frinkelpi:
+    - preserve empty lines
 """
 
 import sys
 import string
-from termcolor import termcolor
+import unicodedata
 
 try:
-    if sys.version >= '2.3':
+    if sys.version_info >= (2, 3):
         import textwrap
-    elif sys.version >= '2.2':
+    elif sys.version_info >= (2, 2):
         from optparse import textwrap
     else:
         from optik import textwrap
@@ -108,27 +119,47 @@ except ImportError:
     sys.stderr.write("Can't import textwrap module!\n")
     raise
 
-if sys.version >= '2.7':
+if sys.version_info >= (2, 7):
     from functools import reduce
+
+if sys.version_info >= (3, 0):
+    unicode_type = str
+    bytes_type = bytes
+else:
+    unicode_type = unicode
+    bytes_type = str
+
+
+def obj2unicode(obj):
+    """Return a unicode representation of a python object
+    """
+    if isinstance(obj, unicode_type):
+        return obj
+    elif isinstance(obj, bytes_type):
+        try:
+            return unicode_type(obj, 'utf-8')
+        except UnicodeDecodeError as strerror:
+            sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (obj, strerror))
+            return unicode_type(obj, 'utf-8', 'replace')
+    else:
+        return unicode_type(obj)
 
 
 def len(iterable):
     """Redefining len here so it will be able to work with non-ASCII characters
     """
-    if not isinstance(iterable, str):
-        return iterable.__len__()
-
-    try:
-        if sys.version >= '3.0':
-            return len(str)
+    if isinstance(iterable, bytes_type) or isinstance(iterable, unicode_type):
+        unicode_data = obj2unicode(iterable)
+        if hasattr(unicodedata, 'east_asian_width'):
+            w = unicodedata.east_asian_width
+            return sum([w(c) in 'WF' and 2 or 0 if unicodedata.combining(c) else 1 for c in unicode_data])
         else:
-            return len(unicode(iterable, 'utf'))
-    except:
+            return unicode_data.__len__()
+    else:
         return iterable.__len__()
 
 
 class ArraySizeError(Exception):
-
     """Exception raised when specified rows don't fit the required size
     """
 
@@ -175,7 +206,7 @@ class Texttable:
         self._header = []
         self._rows = []
 
-    def set_chars(self, array, char_color='white'):
+    def set_chars(self, array):
         """Set the characters used to draw lines between rows and columns
 
         - the array should contain 4 fields:
@@ -189,7 +220,7 @@ class Texttable:
 
         if len(array) != 4:
             raise ArraySizeError("array should contain 4 characters")
-        array = [termcolor.colored(x[:1], char_color) for x in [str(s) for s in array]]
+        array = [ x[:1] for x in [ str(s) for s in array ] ]
         (self._char_horiz, self._char_vert,
             self._char_corner, self._char_header) = array
 
@@ -291,7 +322,7 @@ class Texttable:
         """
 
         self._check_row_size(array)
-        self._header = list(map(str, array))
+        self._header = list(map(obj2unicode, array))
 
     def add_row(self, array):
         """Add a row in the rows stack
@@ -359,13 +390,13 @@ class Texttable:
     def _str(self, i, x):
         """Handles string formatting of cell data
 
-            i - index of the cell datatype in self._dtype 
+            i - index of the cell datatype in self._dtype
             x - cell data to format
         """
         try:
             f = float(x)
         except:
-            return str(x)
+            return obj2unicode(x)
 
         n = self._precision
         dtype = self._dtype[i]
@@ -377,7 +408,7 @@ class Texttable:
         elif dtype == 'e':
             return '%.*e' % (n, f)
         elif dtype == 't':
-            return str(x)
+            return obj2unicode(x)
         else:
             if f - round(f) == 0:
                 if abs(f) > 1e8:
@@ -397,8 +428,8 @@ class Texttable:
         if not self._row_size:
             self._row_size = len(array)
         elif self._row_size != len(array):
-            raise ArraySizeError("array should contain %d elements"
-                                 % self._row_size)
+            raise ArraySizeError("array should contain %d elements" \
+                % self._row_size)
 
     def _has_vlines(self):
         """Return a boolean, if vlines are required or not
@@ -447,13 +478,13 @@ class Texttable:
             horiz = self._char_header
         # compute cell separator
         s = "%s%s%s" % (horiz, [horiz, self._char_corner][self._has_vlines()],
-                        horiz)
+            horiz)
         # build the line
         l = s.join([horiz * n for n in self._width])
         # add border if needed
         if self._has_border():
             l = "%s%s%s%s%s\n" % (self._char_corner, horiz, l, horiz,
-                                  self._char_corner)
+                self._char_corner)
         else:
             l += "\n"
         return l
@@ -473,7 +504,7 @@ class Texttable:
             for part, i in zip(parts, list(range(1, len(parts) + 1))):
                 length = length + len(part)
                 if i < len(parts):
-                    length = (length / 8 + 1) * 8
+                    length = (length//8 + 1) * 8
             maxi = max(maxi, length)
         return maxi
 
@@ -489,18 +520,32 @@ class Texttable:
             return
         maxi = []
         if self._header:
-            maxi = [self._len_cell(x) for x in self._header]
+            maxi = [ self._len_cell(x) for x in self._header ]
         for row in self._rows:
-            for cell, i in zip(row, list(range(len(row)))):
+            for cell,i in zip(row, list(range(len(row)))):
                 try:
                     maxi[i] = max(maxi[i], self._len_cell(cell))
                 except (TypeError, IndexError):
                     maxi.append(self._len_cell(cell))
-        items = len(maxi)
-        length = reduce(lambda x, y: x + y, maxi)
-        if self._max_width and length + items * 3 + 1 > self._max_width:
-            maxi = [(self._max_width - items * 3 - 1) / items
-                    for n in range(items)]
+
+        ncols = len(maxi)
+        content_width = sum(maxi)
+        deco_width = 3*(ncols-1) + [0,4][self._has_border()]
+        if self._max_width and (content_width + deco_width) > self._max_width:
+            """ content too wide to fit the expected max_width
+            let's recompute maximum cell width for each cell
+            """
+            if self._max_width < (ncols + deco_width):
+                raise ValueError('max_width too low to render data')
+            available_width = self._max_width - deco_width
+            newmaxi = [0] * ncols
+            i = 0
+            while available_width > 0:
+                if newmaxi[i] < maxi[i]:
+                    newmaxi[i] += 1
+                    available_width -= 1
+                i = (i + 1) % ncols
+            maxi = newmaxi
         self._width = maxi
 
     def _check_align(self):
@@ -531,17 +576,16 @@ class Texttable:
                 fill = width - len(cell_line)
                 if isheader:
                     align = "c"
-                    cell_line = termcolor.colored(cell_line, attrs=["bold"])
                 if align == "r":
-                    out += "%s " % (fill * space + cell_line)
+                    out += fill * space + cell_line
                 elif align == "c":
-                    out += "%s " % (int(fill / 2) * space + cell_line
-                                    + int(fill / 2 + fill % 2) * space)
+                    out += (int(fill/2) * space + cell_line \
+                            + int(fill/2 + fill%2) * space)
                 else:
-                    out += "%s " % (cell_line + fill * space)
+                    out += cell_line + fill * space
                 if length < len(line):
-                    out += "%s " % [space, self._char_vert][self._has_vlines()]
-            out += "%s\n" % ['', self._char_vert][self._has_border()]
+                    out += " %s " % [space, self._char_vert][self._has_vlines()]
+            out += "%s\n" % ['', space + self._char_vert][self._has_border()]
         return out
 
     def _splitit(self, line, isheader):
@@ -555,19 +599,10 @@ class Texttable:
         for cell, width in zip(line, self._width):
             array = []
             for c in cell.split('\n'):
-                try:
-                    if sys.version >= '3.0':
-                        c = str(c)
-                    else:
-                        c = unicode(c, 'utf')
-                except UnicodeDecodeError as strerror:
-                    sys.stderr.write(
-                        "UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
-                    if sys.version >= '3.0':
-                        c = str(c, 'utf', 'replace')
-                    else:
-                        c = unicode(c, 'utf', 'replace')
-                array.extend(textwrap.wrap(c, width))
+                if c.strip() == "":
+                    array.append("")
+                else:
+                    array.extend(textwrap.wrap(c, width))
             line_wrapped.append(array)
         max_cell_lines = reduce(max, list(map(len, line_wrapped)))
         for cell, valign in zip(line_wrapped, self._valign):
@@ -590,7 +625,8 @@ if __name__ == '__main__':
     table.set_cols_valign(["t", "m", "b"])
     table.add_rows([["Name", "Age", "Nickname"],
                     ["Mr\nXavier\nHuon", 32, "Xav'"],
-                    ["Mr\nBaptiste\nClement", 1, "Baby"]])
+                    ["Mr\nBaptiste\nClement", 1, "Baby"],
+                    ["Mme\nLouise\nBourgeau", 28, "Lou\n \nLoue"]])
     print(table.draw() + "\n")
 
     table = Texttable()
@@ -599,12 +635,11 @@ if __name__ == '__main__':
                           'f',  # float (decimal)
                           'e',  # float (exponent)
                           'i',  # integer
-                          'a'])  # automatic
+                          'a']) # automatic
     table.set_cols_align(["l", "r", "r", "r", "l"])
     table.add_rows([["text",    "float", "exp", "int", "auto"],
                     ["abcd",    "67",    654,   89,    128.001],
-                    ["efghijk", 67.5434, .654,  89.6,
-                        12800000000000000000000.00023],
+                    ["efghijk", 67.5434, .654,  89.6,  12800000000000000000000.00023],
                     ["lmn",     5e-78,   5e-78, 89.4,  .000000000000128],
                     ["opqrstu", .023,    5e+78, 92.,   12800000000000000000000]])
     print(table.draw())
