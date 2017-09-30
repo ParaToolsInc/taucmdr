@@ -56,21 +56,23 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
-REQUIRED_PYTHON_VERSION = (2, 7)
+REQUIRED_PYTHON_2_VERSION = (2, 7)
+REQUIRED_PYTHON_3_VERSION = (3, 6)
 """tuple: Required Python version for TAU Comamnder.
 
 A tuple of at least (MAJOR, MINOR) directly comparible to :any:`sys.version_info`
 """
 
-if sys.version_info[0:2] != REQUIRED_PYTHON_VERSION:
+if sys.version_info[0:2] != REQUIRED_PYTHON_2_VERSION and sys.version_info[0:2] != REQUIRED_PYTHON_3_VERSION:
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
-    EXPECTED = '.'.join([str(x) for x in REQUIRED_PYTHON_VERSION])
+    EXPECTED_2 = '.'.join([str(x) for x in REQUIRED_PYTHON_2_VERSION])
+    EXPECTED_3 = '.'.join([str(x) for x in REQUIRED_PYTHON_3_VERSION])
     sys.stderr.write("""%s
 %s
 %s
-Your Python version is %s but Python %s is required.
+Your Python version is %s but Python %s or %s is required.
 Please install the required Python version or contact %s for support.
-""" % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
+""" % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED_2, EXPECTED_3, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
 TAUCMDR_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__', 

@@ -26,6 +26,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """TAU Commander command line program entry point.
 
 Just patches through to tau.cli.commands.__main__
@@ -56,8 +58,9 @@ if __name__ == '__main__':
                     prof.print_stats(sort="tottime")
                 else:
                     prof.dump_stats(profile_taucmdr)
-                    print "Profile written to '%s'" % profile_taucmdr
-                    print "Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr
+                    print("Profile written to '%s'" % profile_taucmdr)
+                    print("Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr)
+
 
     here = os.path.realpath(os.path.dirname(__file__))
     os.environ['__TAUCMDR_HOME__'] = os.path.join(here, '..')

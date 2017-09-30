@@ -29,6 +29,8 @@
 import os
 import sys
 
+import six
+
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, '..', 'packages'))
 
@@ -47,7 +49,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 def _translate_arg(flag, arg):
-    if isinstance(arg, basestring):
+    if isinstance(arg, six.string_types):
         return [flag, arg]
     if isinstance(arg, bool):
         return ['%s=%s' % (flag, arg)]
@@ -61,7 +63,7 @@ def _translate_arg(flag, arg):
 def _initialize_project(args):
     PROJECT_STORAGE.destroy()
     argv = []
-    for key, val in sorted(vars(args).iteritems()):
+    for key, val in sorted(six.iteritems(vars(args))):
         for action in initialize_cmd.parser._actions:
             if key == action.dest:
                 argv.extend(_translate_arg(action.option_strings[0], val))
