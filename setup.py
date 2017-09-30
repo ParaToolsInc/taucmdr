@@ -25,6 +25,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
+
 """TAU Commander packaging.
 
 Program entry point for all activities related to packaging.  Distributions,
@@ -123,7 +125,7 @@ except ImportError:
         def finalize_options(self):
             pass 
         def run(self):
-            print "Sphinx must be installed to generate developer documentation."
+            print("Sphinx must be installed to generate developer documentation.")
             sys.exit(-1)
 
 else:
@@ -218,11 +220,11 @@ class Test(TestCommand):
         if self.system_sandbox:
             tmp_system_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix
-            print "Sandboxing system storage: %s" % tmp_system_prefix
+            print("Sandboxing system storage: %s" % tmp_system_prefix)
         if self.user_sandbox:
             tmp_user_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix
-            print "Sandboxing user storage: %s" % tmp_user_prefix
+            print("Sandboxing user storage: %s" % tmp_user_prefix)
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
@@ -299,24 +301,24 @@ class Release(SDistCommand):
         from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
         if self.all:
             if self.web or self.target_arch or self.target_os:
-                print '--all must not be used with any other arguments'
+                print('--all must not be used with any other arguments')
                 sys.exit(-1)
         if self.web:
             if self.all or self.target_arch or self.target_os:
-                print '--web must not be used with any other arguments'
+                print('--web must not be used with any other arguments')
                 sys.exit(-1)
         else: 
             try:
                 self.target_arch = Architecture.find(self.target_arch or str(HOST_ARCH))
             except KeyError:
-                print 'Invalid architecture: %s' % self.target_arch
-                print 'Known architectures: %s' % Architecture.keys()
+                print('Invalid architecture: %s' % self.target_arch)
+                print('Known architectures: %s' % Architecture.keys())
                 sys.exit(-1)
             try:
                 self.target_os = OperatingSystem.find(self.target_os or str(HOST_OS))
             except KeyError:
-                print 'Invalid operating system: %s' % self.target_os
-                print 'Known operating system: %s' % OperatingSystem.keys()
+                print('Invalid operating system: %s' % self.target_os)
+                print('Known operating system: %s' % OperatingSystem.keys())
                 sys.exit(-1)
     
     def _software_packages(self):
@@ -329,7 +331,7 @@ class Release(SDistCommand):
 
     def _download(self, pkg):
         from taucmdr import util
-        print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
+        print("Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os))
         module_name = pkg + '_installation'
         repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)), 
                                    globals(), locals(), ['REPOS'], -1), 'REPOS')
@@ -368,7 +370,7 @@ class Release(SDistCommand):
     def _build_web_release(self):
         SDistCommand.run(self)
         for path in self.archive_files:
-            print "Wrote '%s'" % path
+            print("Wrote '%s'" % path)
 
     def _build_target_release(self):
         self._download_python()
@@ -381,8 +383,8 @@ class Release(SDistCommand):
             dest = '-'.join([dist_name, str(self.target_os), str(self.target_arch)]) + ext
             dest = os.path.join(self.dist_dir, dest)
             shutil.move(src, dest)
-            print "Wrote '%s'" % dest
-            
+            print("Wrote '%s'" % dest)
+
     def _list_all(self):
         from taucmdr.cf.platforms import TauMagic
         targets = set()
@@ -390,7 +392,7 @@ class Release(SDistCommand):
             target = magic.architecture, magic.operating_system
             if target not in targets:
                 targets.add(target)
-                print '(%s, %s)' % (str(target[0]), str(target[1]))
+                print('(%s, %s)' % (str(target[0]), str(target[1])))
 
     def run(self):
         from taucmdr import util
@@ -440,7 +442,7 @@ def _data_files():
             try:
                 filelist.process_template_line(line)
             except (DistutilsTemplateError, ValueError) as err:
-                print "%s, line %d: %s" % (template.filename, template.current_line, err)
+                print("%s, line %d: %s" % (template.filename, template.current_line, err))
     finally:
         template.close()
     excluded = ['Makefile', 'VERSION', 'MANIFEST.in', '*Miniconda*']
