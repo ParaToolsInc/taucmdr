@@ -430,7 +430,7 @@ class InstalledCompilerCreator(type):
         return instance
 
 
-class InstalledCompiler(object):
+class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
     """Information about an installed compiler command.
     
     There are relatively few well known compilers, but a potentially infinite
@@ -450,8 +450,6 @@ class InstalledCompiler(object):
         compiler_flags (list): Additional flags used when compiling with the wrapped compiler.
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
-    
-    __metaclass__ = InstalledCompilerCreator
     
     __instances__ = {}
 
@@ -812,6 +810,15 @@ class InstalledCompilerSet(KeyedRecord):
 
     def iteritems(self):
         return six.iteritems(self.members)
+
+    def keys(self):
+        return self.members.keys()
+
+    def values(self):
+        return self.members.values()
+
+    def items(self):
+        return self.members.items()
 
     def _add_members(self, **kwargs):
         for key, val in six.iteritems(kwargs):

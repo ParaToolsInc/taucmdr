@@ -191,13 +191,13 @@ class ProgressIndicator(object):
         self._line_reset()
         self._line_append("%0.1f seconds " % tdelta.total_seconds())        
         if (not self.show_cpu and not show_bar) or (self._line_remaining < 40):
-            self._line_append('[%s]' % self._spinner.next())
+            self._line_append('[%s]' % six.next(self._spinner))
             self._line_flush()
         else:
             if self.show_cpu:
                 cpu_load = min(load_average(), 1.0)
                 self._line_append("[CPU: %0.1f " % (100*cpu_load))
-                width = (self._line_remaining/4) if show_bar else (self._line_remaining-2)
+                width = (self._line_remaining//4) if show_bar else (self._line_remaining-2)
                 self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
                 self._line_append("]")
             if show_bar:

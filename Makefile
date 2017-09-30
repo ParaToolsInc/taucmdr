@@ -194,5 +194,5 @@ $(CONDA_SRC):
 	$(ECHO)$(MKDIR) `dirname "$(CONDA_SRC)"`
 	$(call download,$(CONDA_URL),$(CONDA_SRC))
 
-clean: 
+clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION

@@ -97,7 +97,7 @@ def tmpfs_prefix():
                 continue
             # Check execute privilages some distros mount tmpfs with the noexec option.
             try:
-                with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:
+                with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False, mode='w+') as tmp_file:
                     tmp_path = tmp_file.name
                     tmp_file.write("#!/bin/sh\nexit 0")
                 os.chmod(tmp_path, S_IRUSR | S_IWUSR | S_IEXEC)

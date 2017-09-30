@@ -75,7 +75,7 @@ def get_terminal_size():
         if not dims:
             dims = default_width, default_height
     try:
-        dims = map(int, dims)
+        dims = list(map(int, dims))
     except ValueError:
         dims = default_width, default_height
     width = dims[0] if dims[0] >= 10 else default_width

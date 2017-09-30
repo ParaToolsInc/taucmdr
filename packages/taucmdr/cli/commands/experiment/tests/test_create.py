@@ -29,7 +29,7 @@
 
 Functions used for unit tests of create.py.
 """
-#pylint: disable=missing-docstring 
+# pylint: disable=missing-docstring
 
 from taucmdr import tests, util
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -40,8 +40,8 @@ from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
 from taucmdr.cli.commands.project.edit import COMMAND as project_edit_cmd
 from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
 
+
 class CreateTest(tests.TestCase):
-    
     @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_pgi(self):
         self.reset_project_storage()
@@ -54,7 +54,7 @@ class CreateTest(tests.TestCase):
         argv = ['exp2', '--target', 'test_targ', '--application', 'app1', '--measurement', 'meas_PGI']
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
-        
+
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['-h'])
@@ -90,20 +90,21 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, application_create_cmd, ['test_app', '--openmp', 'T'])
         self.assertIn("Added application 'test_app' to project configuration", stdout)
-	self.assertFalse(stderr)
-	stdout, sterr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_ompt', '--openmp', 'ompt'])
-	self.assertIn("Added measurement 'meas_ompt' to project configuration", stdout)
-	self.assertFalse(stderr)
-	argv = ['exp2', '--target', 'targ1', '--application', 'test_app', '--measurement', 'meas_ompt']
-	_, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
-	self.assertFalse(stderr)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_ompt', '--openmp', 'ompt'])
+        self.assertIn("Added measurement 'meas_ompt' to project configuration", stdout)
+        self.assertFalse(stderr)
+        argv = ['exp2', '--target', 'targ1', '--application', 'test_app', '--measurement', 'meas_ompt']
+        _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertFalse(stderr)
 
     def test_new_project(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, project_create_cmd, ['test_proj'])
         self.assertIn("Created a new project named 'test_proj'", stdout)
         self.assertFalse(stderr)
-        stdout, stderr = self.assertCommandReturnValue(0, project_edit_cmd, ['test_proj', '--add-measurements', 'profile', 'sample'])
+        stdout, stderr = self.assertCommandReturnValue(0, project_edit_cmd,
+                                                       ['test_proj', '--add-measurements', 'profile', 'sample'])
         self.assertIn("Added measurement 'profile' to project configuration", stdout)
         self.assertIn("Added measurement 'sample' to project configuration", stdout)
         self.assertFalse(stderr)

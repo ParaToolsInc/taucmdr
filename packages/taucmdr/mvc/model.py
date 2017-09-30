@@ -85,8 +85,7 @@ class ModelMeta(type):
             return cls._key_attribute
 
 
-
-class Model(StorageRecord):
+class Model(six.with_metaclass(ModelMeta, StorageRecord)):
     """The "M" in `MVC`_.
 
     Attributes:
@@ -98,8 +97,7 @@ class Model(StorageRecord):
         
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
-    
-    __metaclass__ = ModelMeta
+
     __controller__ = Controller
     __attributes__ = NotImplemented
     

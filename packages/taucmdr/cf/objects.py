@@ -67,7 +67,7 @@ class TrackedInstance(object):
     
     def __new__(cls, *args, **kwargs):
         """Ensure that __instances__ is set and track new instances."""
-        instance = object.__new__(cls, *args, **kwargs)
+        instance = object.__new__(cls)
         if "__instances__" not in cls.__dict__:
             cls.__instances__ = set()
         cls.__instances__.add(instance)
@@ -115,7 +115,7 @@ class KeyedRecordCreator(type):
         return instance
 
 
-class KeyedRecord(object):
+class KeyedRecord(six.with_metaclass(KeyedRecordCreator, object)):
     """Data record with a unique key.
     
     Subclasses must declare a ``__key__`` member defining the attribute to be used as the key.
@@ -149,13 +149,14 @@ class KeyedRecord(object):
     # Some members of this class are set by the metaclass __new__ method. 
     # pylint: disable=no-member
     
-    __metaclass__ = KeyedRecordCreator
-    
     def __str__(self):
         return str(getattr(self, self.__key__))
 
     def __eq__(self, other):
         return self is other
+
+    def __hash__(self):
+        return hash(self.__key__)
     
     def __len__(self):
         return len(getattr(self, self.__key__))

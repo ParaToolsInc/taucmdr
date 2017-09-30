@@ -81,6 +81,9 @@ class StorageRecord(object):
 
     def keys(self):
         return self.element.keys()
+
+    def values(self):
+        return self.element.values()
     
     def iteritems(self):
         return six.iteritems(self.element)
@@ -101,7 +104,7 @@ class StorageRecord(object):
         return repr(self.element)
 
 
-class AbstractStorage(object):
+class AbstractStorage(six.with_metaclass(ABCMeta, object)):
     """Abstract base class for storage containers.
     
     A storage container provides a record database, a persistent filesystem, and a key/value store.
@@ -115,8 +118,6 @@ class AbstractStorage(object):
         database (str): Database object implementing :any:`AbstractDatabase`. 
     """
 
-    __metaclass__ = ABCMeta
-    
     Record = StorageRecord
 
     def __init__(self, name):
