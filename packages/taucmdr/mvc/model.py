@@ -600,7 +600,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
 
         def convert_item(item):
             if isinstance(item, six.text_type):
-                return item.encode()
+                return item.encode('utf-8')
             return item
 
         def hash_item(item_value, item_hasher):
