@@ -281,7 +281,7 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
         # long action name; start on the next line
         else:
             tup = self._current_indent, '', action_header
-            action_header = '%*s%s\n' % tup
+            action_header = '%*s%s | \n' % tup
             indent_first = help_position
 
         # collect the pieces of the action help
@@ -291,13 +291,17 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
         if action.help:
             help_text = self._expand_help(action)
             help_lines = self._split_lines(help_text, help_width)
+            parts.append(' | ')
             parts.append('%*s%s\n' % (indent_first, '', help_lines[0]))
             for line in help_lines[1:]:
-                parts.append('%*s%s\n' % (help_position, '', line))
+#                parts.append('%*s%s\n' % (help_position, '', line))
+                parts.append('%*s' % (help_position, ''))
+                parts.append(' | ')
+                parts.append('%s\n' % (line))
 
         # or add a newline if the description doesn't end with one
         elif not action_header.endswith('\n'):
-            parts.append('\n')
+            parts.append(' | \n')
 
         # if there are any sub-actions, add their help as well
         for subaction in self._iter_indented_subactions(action):

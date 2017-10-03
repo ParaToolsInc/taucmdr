@@ -49,8 +49,10 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 
 HELP_PAGE = """
 TAU Commander Initialize:
+============================================================================
 
-To begin Initialize TAU:  Enter tau initialize or simply tau init.  
+To begin Initialize TAU Commander, enter: `tau initialize` or simply 
+`tau init`.  
 This first initialization will take quite a bit of time.  Not only is this 
 command creating a project it is also downloading and building the 
 TAU Performance System® and associated libraries that it depends on.  
@@ -59,9 +61,10 @@ display the tau dashboard (which can be viewed at anytime by entering:
 'tau dashboard').
 
 Many parameters may be defined at initialization.  The full list of options is 
-displayed above this help section.   It is easier to define options at 
+displayed below this help section.   It is easier to define options at 
 initialization (eg. tau init --MPI T) than it is to edit application and 
 measurement later.
+___________________________________________________________________________
 
 """
 
@@ -171,9 +174,6 @@ class InitializeCommand(AbstractCommand):
         measurement_names = []
         measurement_args = ['--%s=True' % attr for attr in 'cuda', 'mpi', 'opencl', 'shmem' 
                             if getattr(application_args, attr, False)]
-        _, unknown = measurement_create_cmd.parser.parse_known_args([target_name] + argv)
-        measurement_argv = [arg for arg in argv if arg not in unknown]
-        measurement_args.extend(measurement_argv)
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'
             _safe_execute(measurement_create_cmd, 
@@ -226,4 +226,4 @@ class InitializeCommand(AbstractCommand):
                                 " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
             return EXIT_WARNING
 
-COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU CommanderQ.") 
+COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.") 
