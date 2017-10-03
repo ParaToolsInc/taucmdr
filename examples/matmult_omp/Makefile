@@ -1,5 +1,5 @@
-F90 = tau mpif90
-FFLAGS = -O -g
+F90 = mpif90
+FFLAGS = -O -g -fopenmp
 LIBS= -fopenmp
 
 SRC = matmult.f90
