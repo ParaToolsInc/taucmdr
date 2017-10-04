@@ -1,0 +1,59 @@
+.taucmdr_project_selector {
+    background-color: white;
+}
+
+table.table {
+  width: 100%;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 9pt;
+}
+
+.table th {
+  font-size: 10pt;
+}
+
+.table th, .table td {
+  text-align: left;
+  padding: 0.25em;
+}
+
+.table tr {
+  border-bottom: 1px solid #DDD;
+}
+
+.selected {
+  background-color: #AAAAAA;
+}
+
+td.edit-buttons { text-align: left; }
+button {
+  border-radius: 3px;
+  border: none;
+  margin: 0 0.25em;
+  transition: all 0.3s;
+}
+
+button:hover {
+  box-shadow: 0 0 4px rgba(3,3,3,0.8);
+  opacity: 0.9;
+}
+
+button.select { background: #6F9; }
+
+@media screen and (max-width: 800px) {
+  tr {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0.5em 0;
+    border: 1px solid rgba(3,3,3,0.2);
+  }
+  td, th {
+    flex: 1 1 150px;
+    border: 0.5px solid rgba(3,3,3,0.2);
+  }
+  td.edit-buttons, td.empty {
+    /*flex: 1 0 90%;
+    text-align: center;*/
+  }
+}

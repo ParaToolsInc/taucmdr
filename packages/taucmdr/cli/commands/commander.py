@@ -27,7 +27,10 @@
 #
 """``commander`` subcommand."""
 
+import os
 import jupyterlab.labapp
+
+from taucmdr import TAUCMDR_HOME
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 
@@ -41,6 +44,10 @@ class CommanderCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
+        # Add TAUCMDR_HOME/packages to PYTHONPATH so JupyterLab environment has access to
+        # the taucmdr package
+        os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
+                                   + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
         return jupyterlab.labapp.main(argv)
 
 
