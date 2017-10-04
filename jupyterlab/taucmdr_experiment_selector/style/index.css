@@ -1,0 +1,86 @@
+/* Copyright (c) 2017, ParaTools, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * (1) Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimer.
+ * (2) Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ * (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+ *     be used to endorse or promote products derived from this software without
+ *     specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+.taucmdr_experiment_selector {
+    background-color: white;
+}
+
+table.table {
+  width: 100%;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 9pt;
+}
+
+.table th {
+  font-size: 10pt;
+}
+
+.table th, .table td {
+  text-align: left;
+  padding: 0.25em;
+}
+
+.table tr {
+  border-bottom: 1px solid #DDD;
+}
+
+.selected {
+  background-color: #AAAAAA;
+}
+
+td.edit-buttons { text-align: left; }
+button {
+  border-radius: 3px;
+  border: none;
+  margin: 0 0.25em;
+  transition: all 0.3s;
+}
+
+button:hover {
+  box-shadow: 0 0 4px rgba(3,3,3,0.8);
+  opacity: 0.9;
+}
+
+button.select { background: #6F9; }
+
+@media screen and (max-width: 800px) {
+  tr {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0.5em 0;
+    border: 1px solid rgba(3,3,3,0.2);
+  }
+  td, th {
+    flex: 1 1 150px;
+    border: 0.5px solid rgba(3,3,3,0.2);
+  }
+  td.edit-buttons, td.empty {
+    /*flex: 1 0 90%;
+    text-align: center;*/
+  }
+}

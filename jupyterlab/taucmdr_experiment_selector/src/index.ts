@@ -23,6 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 import {
     Widget
 } from '@phosphor/widgets';
@@ -41,59 +42,50 @@ import {
 
 import '../style/index.css';
 
-const widget_id = 'taucmdr_project_selector';
+const widget_id = 'taucmdr_experiment_selector';
 
-interface IProjectsResult {
+interface IExperimentsResult {
     readonly Hash: string;
     readonly Name: string;
-    readonly Targets: string;
-    readonly Applications: string;
-    readonly Measurements: string;
-    readonly Experiments: string;
+    readonly Trials: string;
     readonly Selected: boolean;
     readonly [propName: string]: any;
-};
-
-function showErrorMessage(title: string, error: any): Promise<void> {
-  console.error(error);
-  let options = {
-    title: title,
-    body: error.message || String(error).replace(
-  /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''),
-    buttons: [Dialog.okButton()],
-    okText: 'DISMISS'
-  };
-  return showDialog(options).then(() => { /* no-op */ });
 }
 
-class ProjectSelectorWidget extends Widget {
+function showErrorMessage(title: string, error: any): Promise<void> {
+    console.error(error);
+    let options = {
+        title: title,
+        body: error.message || String(error).replace(
+            /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''),
+        buttons: [Dialog.okButton()],
+        okText: 'DISMISS'
+    };
+    return showDialog(options).then(() => { /* no-op */ });
+}
+
+class ExperimentSelectorWidget extends Widget {
 
     readonly session_path: string = 'taucmdr.ipynb';
 
-    readonly get_projects_kernel: string = `
+    readonly get_experiments_kernel: string = `
 import json
+from taucmdr.model.experiment import Experiment
 from taucmdr.model.project import Project
-selected_name = ""
-try:
-    selected_name = Project.selected()['name']
-except:
-    pass
-projects = [(proj.hash_digest(), proj.populate()) for proj in Project.controller().all()]
+experiments = Experiment.controller().all()
+selected_eid = Project.selected().get('experiment', None)
 entries = []
-for (digest, proj) in projects:
+for exp in experiments:
     entry = {}
-    entry['Name'] = proj['name']
-    entry['Hash'] = digest[-10:]
-    entry['Targets'] = ", ".join([target['name'] for target in proj['targets']])
-    entry['Applications'] = ", ".join([app['name'] for app in proj['applications']])
-    entry['Measurements'] = ", ".join([meas['name'] for meas in proj['measurements']])
-    entry['Experiments'] = len(proj['experiments'])
-    entry['Selected'] = selected_name == proj['name']
+    entry['Hash'] = exp.hash_digest()[-10:]
+    entry['Name'] = exp['name']
+    entry['Trials'] = len(exp['trials'])
+    entry['Selected'] = selected_eid == exp.eid
     entries.append(entry)
 print(json.dumps(entries))
 `;
 
-    readonly fields = ['Hash', 'Name', 'Experiments'];
+    readonly fields = ['Hash', 'Name', 'Trials'];
 
     contentDiv: HTMLDivElement;
     table: HTMLTableElement;
@@ -105,21 +97,21 @@ print(json.dumps(entries))
     constructor() {
         super();
         this.id = widget_id;
-        this.title.label = 'Projects';
+        this.title.label = 'Experiments';
         this.title.closable = true;
         this.addClass(widget_id);
 
         this.contentDiv = document.createElement("div");
         let button = document.createElement('button');
-        button.appendChild(document.createTextNode("Refresh project list"));
-        button.addEventListener('click', () => {this.list_projects()});
+        button.appendChild(document.createTextNode("Refresh experiment list"));
+        button.addEventListener('click', () => {this.list_experiments()});
         this.contentDiv.appendChild(button);
         this.node.appendChild(this.contentDiv);
         this.table = document.createElement('table');
         this.table.className = 'table';
         this.build_header();
         this.tBody = this.table.createTBody();
-        this.contentDiv.appendChild(this.table);
+        this.contentDiv.appendChild(this.table)
     };
 
     build_header(): void {
@@ -159,12 +151,11 @@ print(json.dumps(entries))
         }
     };
 
-    select_project(name : string) : void {
+    select_experiment(name : string) : void {
         console.log(`Should select ${name}`);
         let kernel_code = `
-from taucmdr.model.project import Project
-proj = Project.controller().one({"name": "${name}"})
-Project.controller().select(proj)
+from taucmdr.model.experiment import Experiment
+Experiment.select("${name}")
 `;
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: kernel_code});
@@ -173,23 +164,22 @@ Project.controller().select(proj)
                 if (msg.header.msg_type == "stream") {
                     console.log(msg.content.text.toString());
                 } else if(msg.header.msg_type == "error") {
-                    showErrorMessage('Unable to select project', msg.content.ename);
-                    console.log(msg.content);
+                    showErrorMessage('Unable to select experiment', msg.content.ename + "\n" + msg.content.evalue);
                 } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
                     console.log("Selection complete")
-                    this.list_projects();
+                    this.list_experiments();
                 }
             };
         }, r => {
-            showErrorMessage('Unable to select project', r);
+            console.error("Unable to select experiment: " + r.toString());
         });
     }
 
-    list_projects(): void {
+    list_experiments(): void {
         let result : string = "";
         this.tBody.innerHTML = "";
         this.start_session().then(s => {
-            let future = this.session.kernel.requestExecute({code: this.get_projects_kernel});
+            let future = this.session.kernel.requestExecute({code: this.get_experiments_kernel});
             future.onIOPub = msg => {
                 console.log(msg);
                 if (msg.header.msg_type == "stream") {
@@ -197,24 +187,25 @@ Project.controller().select(proj)
                 } else if(msg.header.msg_type == "error") {
                     let errMsg : string;
                     if(msg.content.ename == "ProjectSelectionError") {
-                        errMsg = "The current working directory does not contain any projects.";
+                        errMsg = "There is no project selected";
                     } else {
-                        errMsg = msg.content.ename.toString();
+                        errMsg = msg.content.ename.toString() + "\n" + msg.content.evalue.toString();
                         console.log(msg.content);
                     }
-                    showErrorMessage("Unable to list projects", errMsg);
+                    showErrorMessage("Unable to list experiments", errMsg);
                 } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
-                    let projects: Array<IProjectsResult> = JSON.parse(result);
-                    projects.forEach(project => {
+                    let experiments: Array<IExperimentsResult> = JSON.parse(result);
+                    experiments.forEach(experiment => {
                         let row = this.tBody.insertRow();
                         let button = document.createElement('button');
                         button.className = 'select';
-                        button.id = project.Name;
+                        button.id = experiment.Name;
                         button.addEventListener('click', event => {
-                            this.select_project((<HTMLElement>(event.target)).id);
+                            this.select_experiment((<HTMLElement>(event.target)).id);
                         });
                         button.appendChild(document.createTextNode('Select'));
-                        if(project.Selected) {
+                        if(experiment.Selected) {
+                            button.disabled = true;
                             row.className = 'selected';
                         }
                         let firstCell = row.insertCell();
@@ -222,22 +213,22 @@ Project.controller().select(proj)
                         firstCell.appendChild(button);
                         this.fields.forEach(field => {
                             let cell = row.insertCell();
-                            cell.appendChild(document.createTextNode(project[field]));
+                            cell.appendChild(document.createTextNode(experiment[field]));
                         });
                     });
                 }
             };
         }, r => {
-            showErrorMessage("Unable to get project list", r);
+            console.error("Unable to get experiment list: " + r.toString())
         });
     };
 }
 
 function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRestorer) {
     // Declare a widget variable
-    let widget: ProjectSelectorWidget;
+    let widget: ExperimentSelectorWidget;
 
-    widget = new ProjectSelectorWidget();
+    widget = new ExperimentSelectorWidget();
 
     app.shell.addToLeftArea(widget, {rank: 1000});
 
