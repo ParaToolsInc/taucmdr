@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.2.0.48
+        VERSION:     '1.2.0.50
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -92,6 +92,7 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">urlparse</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">zipimport</span> <span class="kn">import</span> <span class="n">zipimporter</span>
 <span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
@@ -504,7 +505,7 @@
     <span class="k">yield</span>
 
 
-<div class="viewcode-block" id="create_subprocess"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.create_subprocess">[docs]</a><span class="k">def</span> <span class="nf">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="create_subprocess"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.create_subprocess">[docs]</a><span class="k">def</span> <span class="nf">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">error_buf</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create a subprocess.</span>
 <span class="sd">    </span>
 <span class="sd">    See :any:`subprocess.Popen`.</span>
@@ -515,6 +516,9 @@
 <span class="sd">        env (dict): Environment variables to set or unset before launching cmd.</span>
 <span class="sd">        stdout (bool): If True send subprocess stdout and stderr to this processes&#39; stdout.</span>
 <span class="sd">        log (bool): If True send subprocess stdout and stderr to the debug log.</span>
+<span class="sd">        error_buf (int): If non-zero, stdout is not already being sent, and return value is</span>
+<span class="sd">                          non-zero then send last `error_buf` lines of subprocess stdout and stderr</span>
+<span class="sd">                          to this processes&#39; stdout.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        int: Subprocess return code.</span>
@@ -531,6 +535,8 @@
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating subprocess: cmd=</span><span class="si">%s</span><span class="s2">, cwd=&#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">)</span>
     <span class="n">context</span> <span class="o">=</span> <span class="n">progress_spinner</span> <span class="k">if</span> <span class="n">show_progress</span> <span class="k">else</span> <span class="n">_null_context</span>
     <span class="k">with</span> <span class="n">context</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">error_buf</span><span class="p">:</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="n">error_buf</span><span class="p">)</span>
         <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">subproc_env</span><span class="p">,</span> 
                                 <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
@@ -541,9 +547,14 @@
                     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">stdout</span><span class="p">:</span>
                     <span class="k">print</span> <span class="n">line</span><span class="p">,</span>
+                <span class="k">if</span> <span class="n">error_buf</span><span class="p">:</span>
+                    <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="n">proc</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
     <span class="n">retval</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">retval</span> <span class="ow">and</span> <span class="n">error_buf</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stdout</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">buf</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">line</span><span class="p">,</span>
     <span class="k">return</span> <span class="n">retval</span></div>
 
 
