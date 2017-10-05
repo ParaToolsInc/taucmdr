@@ -51,19 +51,21 @@ interface IProjectsResult {
     readonly Measurements: string;
     readonly Experiments: string;
     readonly Selected: boolean;
+
     readonly [propName: string]: any;
 };
 
 function showErrorMessage(title: string, error: any): Promise<void> {
-  console.error(error);
-  let options = {
-    title: title,
-    body: error.message || String(error).replace(
-  /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''),
-    buttons: [Dialog.okButton()],
-    okText: 'DISMISS'
-  };
-  return showDialog(options).then(() => { /* no-op */ });
+    console.error(error);
+    let options = {
+        title: title,
+        body: error.message || String(error).replace(
+            /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''),
+        buttons: [Dialog.okButton()],
+        okText: 'DISMISS'
+    };
+    return showDialog(options).then(() => { /* no-op */
+    });
 }
 
 class ProjectSelectorWidget extends Widget {
@@ -95,6 +97,8 @@ print(json.dumps(entries))
 
     readonly fields = ['Hash', 'Name', 'Experiments'];
 
+    app: JupyterLab;
+
     contentDiv: HTMLDivElement;
     table: HTMLTableElement;
     tHead: HTMLTableSectionElement;
@@ -102,8 +106,11 @@ print(json.dumps(entries))
     tHeadRow: HTMLTableRowElement;
     session: Session.ISession;
 
-    constructor() {
+    constructor(app: JupyterLab) {
         super();
+
+        this.app = app;
+
         this.id = widget_id;
         this.title.label = 'Projects';
         this.title.closable = true;
@@ -112,7 +119,9 @@ print(json.dumps(entries))
         this.contentDiv = document.createElement("div");
         let button = document.createElement('button');
         button.appendChild(document.createTextNode("Refresh project list"));
-        button.addEventListener('click', () => {this.list_projects()});
+        button.addEventListener('click', () => {
+            this.list_projects()
+        });
         this.contentDiv.appendChild(button);
         this.node.appendChild(this.contentDiv);
         this.table = document.createElement('table');
@@ -128,7 +137,7 @@ print(json.dumps(entries))
         let firstCol = document.createElement('th');
         firstCol.className = 'empty';
         this.tHeadRow.appendChild(firstCol)
-        this.fields.forEach( field => {
+        this.fields.forEach(field => {
             let headerCol = document.createElement('th');
             headerCol.appendChild(document.createTextNode(field));
             this.tHeadRow.appendChild(headerCol);
@@ -136,7 +145,7 @@ print(json.dumps(entries))
     }
 
     start_session(): Promise<Session.ISession> {
-        if(!this.session) {
+        if (!this.session) {
             return Session.findByPath(this.session_path).then(model => {
                 return Session.connectTo(model.id).then(s => {
                     this.session = s;
@@ -159,7 +168,7 @@ print(json.dumps(entries))
         }
     };
 
-    select_project(name : string) : void {
+    select_project(name: string): void {
         console.log(`Should select ${name}`);
         let kernel_code = `
 from taucmdr.model.project import Project
@@ -172,21 +181,22 @@ Project.controller().select(proj)
                 console.log(msg);
                 if (msg.header.msg_type == "stream") {
                     console.log(msg.content.text.toString());
-                } else if(msg.header.msg_type == "error") {
+                } else if (msg.header.msg_type == "error") {
                     showErrorMessage('Unable to select project', msg.content.ename);
                     console.log(msg.content);
-                } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
+                } else if (msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
                     console.log("Selection complete")
                     this.list_projects();
+                    this.app.commands.execute("tam:open").then(r=>{});
                 }
             };
         }, r => {
-            showErrorMessage('Unable to select project', r);
+            showErrorMessage('Unable to select project', r).then(r=>{});
         });
     }
 
     list_projects(): void {
-        let result : string = "";
+        let result: string = "";
         this.tBody.innerHTML = "";
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: this.get_projects_kernel});
@@ -194,16 +204,16 @@ Project.controller().select(proj)
                 console.log(msg);
                 if (msg.header.msg_type == "stream") {
                     result = result.concat(msg.content.text.toString());
-                } else if(msg.header.msg_type == "error") {
-                    let errMsg : string;
-                    if(msg.content.ename == "ProjectSelectionError") {
+                } else if (msg.header.msg_type == "error") {
+                    let errMsg: string;
+                    if (msg.content.ename == "ProjectSelectionError") {
                         errMsg = "The current working directory does not contain any projects.";
                     } else {
                         errMsg = msg.content.ename.toString();
                         console.log(msg.content);
                     }
-                    showErrorMessage("Unable to list projects", errMsg);
-                } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
+                    showErrorMessage("Unable to list projects", errMsg).then(r=>{});
+                } else if (msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
                     let projects: Array<IProjectsResult> = JSON.parse(result);
                     projects.forEach(project => {
                         let row = this.tBody.insertRow();
@@ -214,7 +224,7 @@ Project.controller().select(proj)
                             this.select_project((<HTMLElement>(event.target)).id);
                         });
                         button.appendChild(document.createTextNode('Select'));
-                        if(project.Selected) {
+                        if (project.Selected) {
                             row.className = 'selected';
                         }
                         let firstCell = row.insertCell();
@@ -228,7 +238,7 @@ Project.controller().select(proj)
                 }
             };
         }, r => {
-            showErrorMessage("Unable to get project list", r);
+            showErrorMessage("Unable to get project list", r).then(r=>{});
         });
     };
 }
@@ -237,7 +247,7 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
     // Declare a widget variable
     let widget: ProjectSelectorWidget;
 
-    widget = new ProjectSelectorWidget();
+    widget = new ProjectSelectorWidget(app);
 
     app.shell.addToLeftArea(widget, {rank: 1000});
 

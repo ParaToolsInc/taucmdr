@@ -1,0 +1,10 @@
+.taucmdr_tam_pane {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    background-color: white;
+}
+
+.main_content {
+
+}
