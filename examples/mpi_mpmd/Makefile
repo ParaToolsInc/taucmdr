@@ -27,13 +27,16 @@ WORKER_SRC = worker1.c worker2.c worker3.c
 OBJ = $(MASTER_OBJ) $(WORKER1_OBJ) $(WORKER2_OBJ) $(WORKER3_OBJ)
 EXES = $(MASTER_EXE) $(WORKER1_EXE) $(WORKER2_EXE) $(WORKER3_EXE)
 
-.PHONY: all run clean
+.PHONY: all run run-appfile clean
 .DEFAULT: all
 
 all: $(EXES)
 
 run: all
 	tau mpirun -np 1 ./master : -np 1 ./worker1 : -np 2 ./worker2 : -np 3 ./worker3
+
+run-appfile: all
+	tau mpirun -configfile mpmd.conf
 
 $(MASTER_EXE): $(MASTER_OBJ)
 	$(LD) -o $@ $(LDFLAGS) $^ $(LIBS)
