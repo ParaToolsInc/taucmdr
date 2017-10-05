@@ -526,7 +526,7 @@ class MakeInstallation(Installation):
         LOGGER.info("Compiling %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             cmd = ['make'] + flags
-            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
                 util.add_error_stack(self._src_prefix)
                 raise SoftwarePackageError('%s compilation failed' % self.title)
 
@@ -545,7 +545,7 @@ class MakeInstallation(Installation):
         LOGGER.info("Installing %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             cmd = ['make', 'install'] + flags
-            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+            if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
                 util.add_error_stack(self._src_prefix)
                 raise SoftwarePackageError('%s installation failed' % self.title)
         # Some systems use lib64 instead of lib
@@ -579,7 +579,7 @@ class AutotoolsInstallation(MakeInstallation):
         LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
         cmd = ['./configure', '--prefix=%s' % self.install_prefix] + flags
         LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('%s configure failed' % self.title)   
     
@@ -630,7 +630,7 @@ class CMakeInstallation(MakeInstallation):
         cmake = self._get_cmake()
         cmd = [cmake, '-DCMAKE_INSTALL_PREFIX=%s' % self.install_prefix] + flags
         LOGGER.info("Executing CMake for %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, error_buf=True):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('CMake failed for %s' %self.title)
     
