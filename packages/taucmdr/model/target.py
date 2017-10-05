@@ -47,7 +47,7 @@ from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -120,7 +120,7 @@ def papi_source_default():
     return 'download'
 
 
-def cuda_default():
+def cuda_toolkit_default():
     default_path = '/usr/local/cuda'
     nvcc = util.which('nvcc')
     if not nvcc or os.path.dirname(nvcc) in ('/usr/bin', '/usr/local/bin'):
@@ -128,6 +128,25 @@ def cuda_default():
     else:
         return os.path.dirname(os.path.dirname(nvcc))
 
+def tau_source_default():
+    """"Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation.
+    
+    If a file named "override_tau_source" exists in the system-level storage prefix, use the contents of
+    that file as the default path for TAU.  Otherwise use "download" as the default.
+    
+    Returns:
+        str: Path to TAU or "download".
+    """
+    try:
+        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source')) as fin:
+            path = fin.read()
+    except IOError:
+        return 'download'
+    path = path.strip()
+    if not (os.path.isdir(path) and util.path_accessible(path)):
+        LOGGER.warning("'%s' does not exist or is not accessable.")
+        return 'download'
+    return path
 
 def attributes():
     """Construct attributes dictionary for the target model.
@@ -324,7 +343,7 @@ def attributes():
         'cuda_toolkit': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
-            'default': cuda_default(), 
+            'default': cuda_toolkit_default(), 
             'argparse': {'flags': ('--cuda-toolkit',),
                          'group': 'CUDA',
                          'metavar': '<path>',
@@ -334,7 +353,7 @@ def attributes():
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
-            'default': 'download',
+            'default': tau_source_default(),
             'argparse': {'flags': ('--tau',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|nightly)',

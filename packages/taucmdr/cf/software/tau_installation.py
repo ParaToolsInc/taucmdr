@@ -504,7 +504,7 @@ class TauInstallation(Installation):
             self.dependencies['papi'].check_metrics(self.metrics)
         tau_makefile = self.get_makefile()
         self._verify_tau_libs(tau_makefile)
-        if not (self.unmanaged or os.path.islink(self.install_prefix)):
+        if not self.unmanaged:
             self._verify_dependency_paths(tau_makefile)
         if self.io_inst:
             self._verify_iowrapper(tau_makefile)
@@ -1200,12 +1200,13 @@ class TauInstallation(Installation):
             tags = self._makefile_tags(makefile)
             if not self.mpi_support:
                 tags.add('serial')
-            if self.uid not in tags:
+            if self.uid not in tags and self.unmanaged:
                 LOGGER.warning("Unable to verify runtime compatibility of TAU makefile '%s'.\n\n"
                                "This might be OK, but it is your responsibility to know that TAU was configured "
                                "correctly for your experiment. Runtime incompatibility may cause your experiment "
-                               "to crash or produce invalid data.  If you're unsure, use --tau=download to allow "
-                               "TAU Commander to manage your TAU configurations.", makefile)
+                               "to crash or produce invalid data.  If you're unsure, use '--tau=download' when "
+                               "creating your target to allow TAU Commander to manage your TAU configurations.", 
+                               makefile)
             tau_exec = ['tau_exec', '-T', ','.join(tags)] + opts
         if not application_cmds:
             cmd = self._rewrite_launcher_appfile_cmd(launcher_cmd, tau_exec)

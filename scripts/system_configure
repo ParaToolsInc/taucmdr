@@ -34,16 +34,27 @@ sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, '..', 'packages'))
 
 # pylint: disable=wrong-import-position
 from taucmdr import logger, util, EXIT_SUCCESS
+from taucmdr.error import Error
 from taucmdr.cli import arguments
 from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
 from taucmdr.model.project import Project
 from taucmdr.cf.software.tau_installation import TauInstallation
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
+
+
+class ParseTauAction(arguments.Action):
+    def __call__(self, parser, namespace, value, unused_option_string=None):
+        value_keywords = 'minimal', 'full'
+        if value not in value_keywords:
+            value = os.path.abspath(os.path.expanduser(value))
+            if not (os.path.isdir(value) or util.path_accessible(value)):
+                raise arguments.ArgumentError(self, "'minimal', 'full', or valid path required: %s" % value)
+        setattr(namespace, self.dest, value)
 
 
 def _translate_arg(flag, arg):
@@ -58,7 +69,7 @@ def _translate_arg(flag, arg):
     return [flag, str(arg)]
 
 
-def _initialize_project(args):
+def _configure_project(args):
     PROJECT_STORAGE.destroy()
     argv = []
     for key, val in sorted(vars(args).iteritems()):
@@ -70,33 +81,20 @@ def _initialize_project(args):
         return
     proj_ctrl = Project.controller()
     proj = proj_ctrl.selected().populate()
-    # Acquire source packages
     for targ in proj['targets']:
         targ.acquire_sources()
-    return proj, proj_ctrl
-    
-
-def _configure_project(args):
-    proj, proj_ctrl = _initialize_project(args)
-    # Add papi configurations
-    for meas in proj['measurements']:
-        measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
-    # Add OpenMP measurement methods
-    if getattr(args, 'openmp', False):
-        for meas in proj['measurements']:
-            for pkg in 'ompt', 'opari':
-                measurement_copy_cmd.main([meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
-    proj = proj_ctrl.selected().populate()
-    # Iterate through default configurations and configure system-level packages for each
-    for targ in proj['targets']:
         for app in proj['applications']:
             for meas in proj['measurements']:
+                targ_name = targ['name']
+                app_name = app['name']
+                meas_name = meas['name']
                 try:
-                    select_cmd.main(['--target', targ['name'], 
-                                     '--application', app['name'], 
-                                     '--measurement', meas['name']])
-                except:
-                    pass
+                    select_cmd.main(['--target', targ_name, '--application', app_name, '--measurement', meas_name])
+                except Error as err:
+                    LOGGER.warning("An error occurred configuring TAU for experiment %s-%s-%s: %s.\n\n"
+                                   "See '%s' for details.",
+                                   targ_name, app_name, meas_name, err, logger.LOG_FILE)
+    return proj
 
 
 def main(argv):
@@ -104,29 +102,42 @@ def main(argv):
     prog = sys.argv[0]
     parser = arguments.get_parser(prog=prog, usage='%s [arguments]' % prog, 
                                   description="Pre-build TAU configurations.")
-    parser.add_argument('--minimal', help="Build minimal TAU configuration and exit.", 
-                        type=bool, default=False, const=True, nargs='?', metavar='T/F')
+    parser.add_argument('--tau-config', help="Specify TAU configuration level.",
+                        default='minimal', action=ParseTauAction)
     parser.merge(initialize_cmd.parser, include_positional=False,
                  exclude_groups=['project arguments'],
                  exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name', 
                                     'tau-options', 'from-tau-makefile', 'bare'])
     args = parser.parse_args(argv)
-    os.chdir(util.mkdtemp())
     
-    have_openmp = True # Update as needed in future
-    have_mpi = bool(getattr(args, 'MPI_CC', False) and 
-                    getattr(args, 'MPI_CXX', False) and 
-                    getattr(args, 'MPI_FC', False))
-    have_shmem = bool(getattr(args, 'SHMEM_CC', False) and 
-                      getattr(args, 'SHMEM_CXX', False) and 
-                      getattr(args, 'SHMEM_FC', False))
-    have_cuda = bool(getattr(args, 'CUDA_CXX', False))
-
-    tau = TauInstallation.minimal()
-    tau.install()
-    _initialize_project(args)
-    if not args.minimal:
-        _configure_project(args)    
+    if args.tau_config not in ('minimal', 'full'):
+        # Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation
+        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source'), 'w') as fout:
+            fout.write(args.tau_config)
+        LOGGER.info("By default, targets will use '%s' as the TAU installation.", args.tau_config)
+        return EXIT_SUCCESS
+    
+    os.chdir(util.mkdtemp())
+    TauInstallation.minimal().install()
+    proj = _configure_project(args)
+    if args.tau_config == 'full':
+        # Add papi configurations
+        for meas in proj['measurements']:
+            measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
+        # Add OpenMP measurement methods
+        if getattr(args, 'openmp', False):
+            for meas in proj['measurements']:
+                for pkg in 'ompt', 'opari':
+                    measurement_copy_cmd.main([meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
+        # Configure TAU for all combinations
+        have_openmp = True # Update as needed in future
+        have_mpi = bool(getattr(args, 'MPI_CC', False) and 
+                        getattr(args, 'MPI_CXX', False) and 
+                        getattr(args, 'MPI_FC', False))
+        have_shmem = bool(getattr(args, 'SHMEM_CC', False) and 
+                          getattr(args, 'SHMEM_CXX', False) and 
+                          getattr(args, 'SHMEM_FC', False))
+        have_cuda = bool(getattr(args, 'CUDA_CXX', False))    
         for openmp in set([False, have_openmp]):
             for mpi in set([False, have_mpi]):
                 for shmem in set([False, have_shmem]):

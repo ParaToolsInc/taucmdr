@@ -40,6 +40,9 @@ from taucmdr.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
 Action = argparse.Action
 """Action base class."""
 
+ArgumentError = argparse.ArgumentError
+"""Argument error exception base class."""
+
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
 

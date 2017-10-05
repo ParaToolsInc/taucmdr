@@ -27,6 +27,12 @@
 #
 ###############################################################################
 
+# TAU configuration level:
+#   minimal: Install just enough to support the default project (`tau initialize` without any args).
+#   full   : Install as many TAU configurations as possible for the current environment.
+#   <path> : Use the TAU installation provided at <path>.
+TAU ?= minimal
+
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
@@ -49,8 +55,6 @@ endif
 ifeq ($(INSTALLDIR),)
   INSTALLDIR=$(HOME)/taucmdr-$(VERSION)
 endif
-
-TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
 ifeq ($(HOST_OS),)
@@ -145,16 +149,16 @@ help:
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander installation"
 	@echo
-	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)]"
+	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)] [TAU=(minimal|full|<path>)]"
 	@echo "-------------------------------------------------------------------------------"
-	
+
 build: python_check
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 
 install: build
 	$(ECHO)$(PYTHON) setup.py install --prefix $(INSTALLDIR)
-	$(ECHO)$(INSTALLDIR)/system/configure --minimal
+	$(ECHO)$(INSTALLDIR)/system/configure --tau-config=$(TAU)
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
@@ -183,7 +187,7 @@ install: build
 
 python_check: $(PYTHON_EXE)
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
-	
+
 python_download: $(CONDA_SRC)
 
 $(CONDA): $(CONDA_SRC)
