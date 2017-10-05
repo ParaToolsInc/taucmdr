@@ -412,7 +412,7 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
 
 
 def path_accessible(path, mode='r'):
-    """Check if a file or directory is accessable.
+    """Check if a file or directory exists and is accessable.
     
     Files are checked by attempting to open them with the given mode.
     Directories are checked by testing their access bits only, which may fail for 
@@ -427,6 +427,8 @@ def path_accessible(path, mode='r'):
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
     assert mode and set(mode) <= set(('r', 'w'))
+    if not os.path.exists(path):
+        return False
     if os.path.isdir(path):
         modebits = 0
         if 'r' in mode:
