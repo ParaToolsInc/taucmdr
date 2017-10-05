@@ -1,4 +1,4 @@
-CC = mpicc
+CC = tau mpicc
 CFLAGS = -O -g -fopenmp
 
 LD = $(CC)
@@ -33,7 +33,7 @@ EXES = $(MASTER_EXE) $(WORKER1_EXE) $(WORKER2_EXE) $(WORKER3_EXE)
 all: $(EXES)
 
 run: all
-	mpirun -np 1 ./master : -np 1 ./worker1 : -np 2 ./worker2 : -np 3 ./worker3
+	tau mpirun -np 1 ./master : -np 1 ./worker1 : -np 2 ./worker2 : -np 3 ./worker3
 
 $(MASTER_EXE): $(MASTER_OBJ)
 	$(LD) -o $@ $(LDFLAGS) $^ $(LIBS)
