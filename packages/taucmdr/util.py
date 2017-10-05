@@ -458,7 +458,7 @@ def _null_context():
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=False):
+def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50):
     """Create a subprocess.
     
     See :any:`subprocess.Popen`.
@@ -469,8 +469,8 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         env (dict): Environment variables to set or unset before launching cmd.
         stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
         log (bool): If True send subprocess stdout and stderr to the debug log.
-        error_buf (bool): If True, stdout is not already being sent, and return value is
-                          non-zero then send last 100 lines of subprocess stdout and stderr
+        error_buf (int): If non-zero, stdout is not already being sent, and return value is
+                          non-zero then send last `error_buf` lines of subprocess stdout and stderr
                           to this processes' stdout.
         
     Returns:
@@ -489,7 +489,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     context = progress_spinner if show_progress else _null_context
     with context():
         if error_buf:
-            buf = deque(maxlen=100)
+            buf = deque(maxlen=error_buf)
         proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
