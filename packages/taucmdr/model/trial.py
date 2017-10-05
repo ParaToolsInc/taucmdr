@@ -300,7 +300,7 @@ class Trial(Model):
         LOGGER.debug('Launcher: %s', launcher_cmd)
         LOGGER.debug('Remainder: %s', cmd)
         if not launcher_cmd:
-            if num_exes >= 1:
+            if num_exes > 1:
                 LOGGER.warning("Multiple executables were found on the command line but none of them "
                                "were recognized application launchers.  TAU will assume that the application "
                                "executable is '%s' and subsequent executables are arguments to that command. "
