@@ -236,6 +236,100 @@ class Trial(Model):
 
     __controller__ = TrialController
     
+    _launchers = {'mpirun': ['-app', '--app', '-configfile'], 
+                  'mpiexec': ['-app', '--app', '-configfile'], 
+                  'ibrun': [], 
+                  'aprun': [], 
+                  'qsub': [], 
+                  'srun': ['--multi-prog'], 
+                  'oshrun': []}
+    
+    @classmethod
+    def _separate_launcher_cmd(cls, cmd):
+        """Separate the launcher command and it's arguments from the application command(s) and arguments.
+        
+        Returns:
+            tuple: (Launcher command, Remainder of command line)
+            
+        Raises:
+            ConfigurationError: No application config files or executables found after a recognized launcher command.
+        """
+        cmd0 = cmd[0]
+        for launcher, appfile_flags in cls._launchers.iteritems():
+            if launcher not in cmd0:
+                continue
+            try:
+                idx = cmd.index('--')
+                return cmd[:idx], cmd[idx+1:] 
+            except ValueError:
+                # No '--' to indicate start of application, so look for first executable
+                for idx, exe in enumerate(cmd[1:], 1):
+                    if util.which(exe):
+                        return cmd[:idx], cmd[idx:]
+                # No exectuables, so look for application config file
+                if appfile_flags:
+                    for i, arg in enumerate(cmd[1:-1], 1):
+                        if arg in appfile_flags and util.path_accessible(cmd[i+1]):
+                            return cmd, []
+                raise ConfigurationError(("TAU is having trouble parsing the command line: no executable "
+                                          "commands or %s application files were found after "
+                                          "the launcher command '%s'") % (cmd0, cmd0),
+                                         "Check that the command is correct. Does it work without TAU?",
+                                         ("Use '--' to seperate '%s' and its arguments from the application "
+                                          "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
+        # No launcher command, just an application command
+        return [], cmd
+    
+    @classmethod
+    def parse_launcher_cmd(cls, cmd):
+        """Parses a command line to split the launcher command and application commands.
+        
+        Args:
+            cmd (list): Command line.
+            
+        Returns:
+            tuple: (Launcher command, list of application commands).
+        """ 
+        cmd0 = cmd[0]
+        launcher_cmd, cmd = cls._separate_launcher_cmd(cmd)
+        num_exes = len(x for x in cmd if util.which(x))
+        assert launcher_cmd or cmd
+        LOGGER.debug('Launcher: %s', launcher_cmd)
+        LOGGER.debug('Remainder: %s', cmd)
+        if not launcher_cmd:
+            if num_exes >= 1:
+                LOGGER.warning("Multiple executables were found on the command line but none of them "
+                               "were recognized application launchers.  TAU will assume that the application "
+                               "executable is '%s' and subsequent executables are arguments to that command. "
+                               "If this is incorrect, use '--' to separate '%s' and its arguments from the "
+                               "application command, e.g. `mpirun -np 4 -- ./a.out -l hello`", cmd0, cmd0)
+            return [], [cmd]
+        if not cmd:
+            raise NotImplementedError("TAU Commander doesn't support %s application files yet." % cmd0)
+        if num_exes == 0:
+            raise InternalError("No launcher commands or application executables.")
+        elif num_exes == 1:
+            return launcher_cmd, [cmd]
+        elif num_exes > 1:
+            # Split MPMD command on ':'.  Retain ':' as first element of each application command
+            application_cmds = []
+            while True:
+                try:
+                    idx = cmd.index(':')
+                except ValueError:
+                    break
+                application_cmds.append(cmd[:idx])
+                cmd = cmd[idx:]
+            if not application_cmds:
+                # Recognized launcher with multiple executables but not using ':' syntax.
+                LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
+                               "the application executable is '%s' and subsequent executables are arguments "
+                               "to that command. If this is incorrect, use ':' to separate each application "
+                               "executable and its arguments, e.g. "
+                               "`mpirun -np 4 ./foo -l : -np 2 ./bar --hello`", cmd0)
+            application_cmds.append(cmd)
+            return launcher_cmd, application_cmds
+
     @property
     def prefix(self):
         experiment = self.populate('experiment')
@@ -455,4 +549,3 @@ class Trial(Model):
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)
-

@@ -1106,15 +1106,16 @@ class TauInstallation(Installation):
                                      "Use taucmdr --log and see detailed output at the end of '%s'" % logger.LOG_FILE)
         return retval
 
-    def get_application_command(self, launcher_cmd, application_cmd):
+    def get_application_command(self, launcher_cmd, application_cmds):
         """Build a command line to launch an application under TAU.
 
         Sometimes TAU needs to use tau_exec, sometimes not.  This routine
         also handles backend launch commands like `aprun`.
 
         Args
-            launcher_cmd (list): Application launcher with command line arguments, e.g. ['mpirun', '-np', '4'].
-            application_cmd (list): Application command with command line arguments, e.g. ['./a.out', '-g', 'hello'].
+            launcher_cmd (list): Application launcher with command line arguments, e.g. ``['mpirun', '-np', '4']``.
+            application_cmds (list): List of application command with command line arguments (list of list), 
+                                     e.g. ``[['./a.out', '-g', 'hello'], [':', '-np', '2', './b.out', 'foobar']]``
 
         Returns:
             tuple: (cmd, env) where `cmd` is the new command line and `env` is a dictionary of environment
@@ -1122,21 +1123,20 @@ class TauInstallation(Installation):
         """
         self.install()
         opts, env = self.runtime_config()
-        if self.application_linkage == 'static':
-            use_tau_exec = False
-        else:
-            use_tau_exec = (self.measure_opencl or
-                            self.tbb_support or
-                            self.pthreads_support or
-                            (self.source_inst == 'never' and self.compiler_inst == 'never'))
         # Per Sameer's request, shim in site-specific flags.  
         # These should be specified in a taucmdr module or similar.
         try:
             launcher_cmd.extend(os.environ['__TAUCMDR_LAUNCHER_ARGS__'].split(' '))
         except KeyError:
             pass
-        if use_tau_exec:
-            tau_exec_opts = opts
+        use_tau_exec = (self.application_linkage != 'static' and
+                        (self.measure_opencl or
+                         self.tbb_support or
+                         self.pthreads_support or
+                         (self.source_inst == 'never' and self.compiler_inst == 'never')))
+        if not use_tau_exec:
+            tau_exec = []
+        else:
             makefile = self.get_makefile()
             tags = self._makefile_tags(makefile)
             if not self.mpi_support:
@@ -1147,10 +1147,19 @@ class TauInstallation(Installation):
                                "correctly for your experiment. Runtime incompatibility may cause your experiment "
                                "to crash or produce invalid data.  If you're unsure, use --tau=download to allow "
                                "TAU Commander to manage your TAU configurations.", makefile)
-            tau_exec = ['tau_exec', '-T', ','.join(tags)] + tau_exec_opts
-            cmd = launcher_cmd + tau_exec + application_cmd
-        else:
-            cmd = launcher_cmd + application_cmd
+            tau_exec = ['tau_exec', '-T', ','.join(tags)] + opts
+        cmd = launcher_cmd
+        cmd.extend(tau_exec)
+        cmd.extend(application_cmds[0])
+        for application_cmd in application_cmds[1:]:
+            for i, part in enumerate(application_cmd):
+                if util.which(part):
+                    cmd.extend(application_cmd[:i])
+                    cmd.extend(tau_exec)
+                    cmd.extend(application_cmd[i:])
+                    break
+            else:
+                raise InternalError("Application command '%s' contains no executables" % application_cmd)
         return cmd, env
     
     def _check_java(self):
