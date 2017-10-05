@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -206,14 +206,11 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">PdtInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;pdt&#39;</span><span class="p">,</span> <span class="s1">&#39;PDT&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> 
                                               <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="n">COMMANDS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="o">.</span><span class="n">find</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_retry_verify</span> <span class="o">=</span> <span class="bp">True</span>
-        
-    <span class="k">def</span> <span class="nf">_set_install_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="c1"># PDT puts installation files (bin, lib, etc.) in a magically named subfolder</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PdtInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_set_install_prefix</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="n">arch_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arch_path</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arch_path</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bin_subdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lib_subdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">)</span>
+        <span class="c1"># Work around brokenness in edg4x-rose installer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_retry_verify</span> <span class="o">=</span> <span class="bp">True</span>
 
     <span class="k">def</span> <span class="nf">_configure_edg4x_rose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;edg4x-rose parser configuration failed.  Retrying...&#39;</span><span class="p">)</span>

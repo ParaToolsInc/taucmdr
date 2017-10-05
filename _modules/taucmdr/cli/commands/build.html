@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -80,6 +80,26 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 
+<span class="n">HELP_PAGE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"> TAU Commander Build</span>
+<span class="s2">==============================================================================</span>
+
+<span class="s2">After configuring TAU Commander and placing the bin directory in your path </span>
+<span class="s2">build with “tau” prefixes. This would be something like `tau cc`, </span>
+<span class="s2">`tau f77`, or `tau mpicxx`, . . .  Edit the Makefile to use compilers </span>
+<span class="s2">with `tau` prefixes.  Changing the selected experiment typically will </span>
+<span class="s2">require that you rebuild your application binaries – depending on </span>
+<span class="s2">what changes.  TAU Commander will remind you to rebuild your binary </span>
+<span class="s2">executable. </span>
+
+<span class="s2">The list of compilers suported by TAU Commander is in the list below this help </span>
+<span class="s2">section.</span>
+<span class="s2"> </span>
+<span class="s2">To selectively control instrumentation for files or routines that are part of </span>
+<span class="s2">the binary to be analyzed, see the select-file options in the TAU Commander </span>
+<span class="s2">Applications section. </span>
+<span class="s2">__________________________________________________________________________</span>
+<span class="s2">&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="BuildCommand"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.build.html#taucmdr.cli.commands.build.BuildCommand">[docs]</a><span class="k">class</span> <span class="nc">BuildCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``build`` subcommand.&quot;&quot;&quot;</span>
@@ -117,7 +137,7 @@
         <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">managed_build</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">cmd_args</span><span class="p">)</span></div></div>
 
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">BuildCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Instrument programs during compilation and/or linking.&quot;</span><span class="p">)</span>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">BuildCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="n">HELP_PAGE</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Instrument programs during compilation and/or linking.&quot;</span><span class="p">)</span>
 </pre></div>
 
       </div>

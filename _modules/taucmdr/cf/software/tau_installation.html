@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -82,7 +82,7 @@
 <span class="c1"># pylint: disable=too-many-locals</span>
 <span class="c1"># pylint: disable=too-many-statements</span>
 <span class="c1"># pylint: disable=too-many-lines</span>
-
+<span class="c1"># pylint: disable=too-many-branches</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
@@ -108,21 +108,33 @@
 
 <span class="n">NIGHTLY</span> <span class="o">=</span> <span class="s1">&#39;http://fs.paratools.com/tau-nightly.tgz&#39;</span>
 
+<span class="n">DATA_TOOLS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;jumpshot&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;paraprof&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfdmf_configure&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfdmf_createapp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfdmf_createexp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfdmfdb.py&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfdmf_loadtrial&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfexplorer&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;perfexplorer_configure&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;pprof&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;slog2print&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau2slog2&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taudb_configure&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taudb_install_cert&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taudb_keygen&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;taudb_loadtrial&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_ebs2otf.pl&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_ebs_process.pl&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_merge&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_multimerge&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_treemerge.pl&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tau_treemerge.pl&#39;</span><span class="p">]</span>
+
 <span class="n">COMMANDS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span>
-            <span class="p">[</span><span class="s1">&#39;jumpshot&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;paraprof&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfdmf_configure&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfdmf_createapp&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfdmf_createexp&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfdmfdb.py&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfdmf_loadtrial&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfexplorer&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;perfexplorer_configure&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;phaseconvert&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;pprof&#39;</span><span class="p">,</span>
+            <span class="n">DATA_TOOLS</span> <span class="o">+</span> 
+            <span class="p">[</span><span class="s1">&#39;phaseconvert&#39;</span><span class="p">,</span>
              <span class="s1">&#39;ppscript&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;slog2print&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau2slog2&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_analyze&#39;</span><span class="p">,</span>
              <span class="s1">&#39;taucc&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_cc.sh&#39;</span><span class="p">,</span>
@@ -131,12 +143,6 @@
              <span class="s1">&#39;tau_convert&#39;</span><span class="p">,</span>
              <span class="s1">&#39;taucxx&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_cxx.sh&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;taudb_configure&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;taudb_install_cert&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;taudb_keygen&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;taudb_loadtrial&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau_ebs2otf.pl&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau_ebs_process.pl&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tauex&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_exec&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_f77.sh&#39;</span><span class="p">,</span>
@@ -148,19 +154,15 @@
              <span class="s1">&#39;tau_java&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_javamax.sh&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_macro.sh&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau_merge&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau_multimerge&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_pebil_rewrite&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_reduce&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_rewrite&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_selectfile&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_show_libs&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_throttle.sh&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau_treemerge.pl&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tauupc&#39;</span><span class="p">,</span>
              <span class="s1">&#39;tau_upc.sh&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;tau_user_setup.sh&#39;</span><span class="p">,</span>
-             <span class="s1">&#39;trace2profile&#39;</span><span class="p">]}</span>
+             <span class="s1">&#39;tau_user_setup.sh&#39;</span><span class="p">]}</span>
 
 <span class="n">HEADERS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Profile/Profiler.h&#39;</span><span class="p">,</span> <span class="s1">&#39;Profile/TAU.h&#39;</span><span class="p">]}</span>
 
@@ -182,6 +184,14 @@
 <span class="n">PROFILE_ANALYSIS_TOOLS</span> <span class="o">=</span> <span class="s1">&#39;paraprof&#39;</span><span class="p">,</span> <span class="s1">&#39;pprof&#39;</span>
 
 <span class="n">TRACE_ANALYSIS_TOOLS</span> <span class="o">=</span> <span class="s1">&#39;jumpshot&#39;</span><span class="p">,</span> <span class="s1">&#39;vampir&#39;</span>
+
+<span class="n">PROGRAM_LAUNCHERS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mpirun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span> 
+                     <span class="s1">&#39;mpiexec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span> 
+                     <span class="s1">&#39;ibrun&#39;</span><span class="p">:</span> <span class="p">[],</span> 
+                     <span class="s1">&#39;aprun&#39;</span><span class="p">:</span> <span class="p">[],</span> 
+                     <span class="s1">&#39;qsub&#39;</span><span class="p">:</span> <span class="p">[],</span> 
+                     <span class="s1">&#39;srun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;--multi-prog&#39;</span><span class="p">],</span> 
+                     <span class="s1">&#39;oshrun&#39;</span><span class="p">:</span> <span class="p">[]}</span>
 
 
 <div class="viewcode-block" id="check_env_compat"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.check_env_compat">[docs]</a><span class="k">def</span> <span class="nf">check_env_compat</span><span class="p">():</span>
@@ -215,16 +225,12 @@
                  <span class="n">pthreads_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">tbb_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">mpi_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">mpi_include_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">mpi_library_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">mpi_libraries</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">cuda_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">cuda_prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">opencl_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">opencl_prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">shmem_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">shmem_include_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">shmem_library_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">shmem_libraries</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">mpc_support</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="c1"># Instrumentation methods and options</span>
@@ -270,15 +276,11 @@
 <span class="sd">            pthreads_support (bool): Enable or disable pthreads support in TAU.</span>
 <span class="sd">            tbb_support (bool): Enable or disable tbb support in TAU.</span>
 <span class="sd">            mpi_support (bool): Enable or disable MPI support in TAU.</span>
-<span class="sd">            mpi_include_path (list):  Paths to search for MPI header files.</span>
-<span class="sd">            mpi_library_path (list): Paths to search for MPI library files.</span>
 <span class="sd">            mpi_libraries (list): MPI libraries to include when linking with TAU.</span>
 <span class="sd">            cuda_support (bool): Enable or disable CUDA support in TAU.</span>
 <span class="sd">            cuda_prefix (str): Path to CUDA toolkit installation.</span>
 <span class="sd">            opencl_support (bool): Enable or disable OpenCL support in TAU.</span>
 <span class="sd">            shmem_support (bool): Enable or disable SHMEM support in TAU.</span>
-<span class="sd">            shmem_include_path (list):  Paths to search for SHMEM header files.</span>
-<span class="sd">            shmem_library_path (list): Paths to search for SHMEM library files.</span>
 <span class="sd">            shmem_libraries (list): SHMEM libraries to include when linking with TAU.</span>
 <span class="sd">            mpc_support (bool): Enable or disable MPC support in TAU.</span>
 <span class="sd">            source_inst (str): Policy for source-based instrumentation, one of &quot;automatic&quot;, &quot;manual&quot;, or &quot;never&quot;.</span>
@@ -313,16 +315,12 @@
         <span class="k">assert</span> <span class="n">pthreads_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">tbb_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">mpi_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mpi_include_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mpi_include_path</span> <span class="ow">is</span> <span class="bp">None</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mpi_library_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mpi_library_path</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mpi_libraries</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mpi_libraries</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">cuda_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cuda_prefix</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">cuda_prefix</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">opencl_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">opencl_prefix</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">opencl_prefix</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">shmem_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shmem_include_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">shmem_include_path</span> <span class="ow">is</span> <span class="bp">None</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shmem_library_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">shmem_library_path</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shmem_libraries</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="n">shmem_libraries</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="k">assert</span> <span class="n">mpc_support</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">source_inst</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span> <span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="s2">&quot;never&quot;</span><span class="p">)</span>
@@ -356,9 +354,14 @@
                                               <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> 
                                               <span class="n">REPOS</span><span class="p">,</span> <span class="n">COMMANDS</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_sources</span> <span class="o">=</span> <span class="n">sources</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="s1">&#39;nightly&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="n">NIGHTLY</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="o">.</span><span class="n">find</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span><span class="p">))</span>
+        <span class="c1"># TAU puts installation files (bin, lib, etc.) in a magically named subfolder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bin_subdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lib_subdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">LOG_LEVEL</span> <span class="o">==</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minimal_configuration</span> <span class="o">=</span> <span class="n">minimal_configuration</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">=</span> <span class="n">application_linkage</span>
@@ -368,14 +371,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span> <span class="o">=</span> <span class="n">pthreads_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tbb_support</span> <span class="o">=</span> <span class="n">tbb_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span> <span class="o">=</span> <span class="n">mpi_support</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_include_path</span> <span class="o">=</span> <span class="n">mpi_include_path</span> <span class="k">if</span> <span class="n">mpi_include_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">mpi_library_path</span> <span class="o">=</span> <span class="n">mpi_library_path</span> <span class="k">if</span> <span class="n">mpi_library_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libraries</span> <span class="o">=</span> <span class="n">mpi_libraries</span> <span class="k">if</span> <span class="n">mpi_libraries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cuda_support</span> <span class="o">=</span> <span class="n">cuda_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cuda_prefix</span> <span class="o">=</span> <span class="n">cuda_prefix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span> <span class="o">=</span> <span class="n">shmem_support</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_include_path</span> <span class="o">=</span> <span class="n">shmem_include_path</span> <span class="k">if</span> <span class="n">shmem_include_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">shmem_library_path</span> <span class="o">=</span> <span class="n">shmem_library_path</span> <span class="k">if</span> <span class="n">shmem_library_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shmem_libraries</span> <span class="o">=</span> <span class="n">shmem_libraries</span> <span class="k">if</span> <span class="n">shmem_libraries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mpc_support</span> <span class="o">=</span> <span class="n">mpc_support</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">=</span> <span class="n">source_inst</span>
@@ -408,14 +407,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_per_call</span> <span class="o">=</span> <span class="n">throttle_per_call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span> <span class="o">=</span> <span class="n">throttle_num_calls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span> <span class="o">=</span> <span class="n">forced_makefile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_pdt</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_binutils</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libunwind</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">met</span> <span class="k">for</span> <span class="n">met</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="k">if</span> <span class="s1">&#39;PAPI&#39;</span> <span class="ow">in</span> <span class="n">met</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">==</span> <span class="s1">&#39;cubex&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_ompt</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;ompt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libotf2</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uses_cuda</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cuda_prefix</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cuda_support</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">opencl_support</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">forced_makefile</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="s1">&#39;binutils&#39;</span><span class="p">,</span> <span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;pdt&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">,</span> <span class="s1">&#39;libotf2&#39;</span><span class="p">:</span>
-                <span class="n">uses_pkg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_uses_&#39;</span><span class="o">+</span><span class="n">pkg</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">uses_pkg</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_uses_&#39;</span><span class="o">+</span><span class="n">pkg</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">pkg</span><span class="p">,</span> <span class="n">sources</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">mpi_support</span><span class="p">,</span> <span class="n">shmem_support</span><span class="p">,</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">_uses_binutils</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libunwind</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_pdt</span><span class="p">())</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_uses_binutils</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libunwind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_pdt</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="s1">&#39;binutils&#39;</span><span class="p">,</span> <span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;pdt&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">,</span> <span class="s1">&#39;libotf2&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">sources</span><span class="p">[</span><span class="n">pkg</span><span class="p">]:</span>
@@ -456,57 +462,18 @@
         <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">uid</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()))</span>
         <span class="c1"># TAU changes if any dependencies change.</span>
         <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="s1">&#39;binutils&#39;</span><span class="p">,</span> <span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;pdt&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">,</span> <span class="s1">&#39;libotf2&#39;</span><span class="p">:</span>
-            <span class="n">uses_pkg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_uses_&#39;</span><span class="o">+</span><span class="n">pkg</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">uses_pkg</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_uses_&#39;</span><span class="o">+</span><span class="n">pkg</span><span class="p">):</span>
                 <span class="n">uid_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="n">pkg</span><span class="p">]</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">uid_parts</span></div>
     
     <span class="k">def</span> <span class="nf">_get_install_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag</span>
         <span class="c1"># so multiple TAU installations share the large common files.</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="c1"># pylint: disable=attribute-defined-outside-init</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">())</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span>
     
-    <span class="k">def</span> <span class="nf">_set_install_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="c1"># TAU puts installation files (bin, lib, etc.) in a magically named subfolder</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_set_install_prefix</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="n">arch_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arch_path</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arch_path</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_uses_pdt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># TAU uses PDT to generate the SHMEM wrapper libraries, so PDT is required for SHMEM support</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span>
-
-    <span class="k">def</span> <span class="nf">_uses_binutils</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span>
-
-    <span class="k">def</span> <span class="nf">_uses_libunwind</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span>
-
-    <span class="k">def</span> <span class="nf">_uses_papi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">met</span> <span class="k">for</span> <span class="n">met</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="k">if</span> <span class="s1">&#39;PAPI&#39;</span> <span class="ow">in</span> <span class="n">met</span><span class="p">]))</span>
-
-    <span class="k">def</span> <span class="nf">_uses_scorep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">==</span> <span class="s1">&#39;cubex&#39;</span>
-
-    <span class="k">def</span> <span class="nf">_uses_ompt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span> <span class="o">==</span> <span class="s1">&#39;ompt&#39;</span>
-
-    <span class="k">def</span> <span class="nf">_uses_libotf2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">==</span> <span class="s1">&#39;otf2&#39;</span>
-
-<div class="viewcode-block" id="TauInstallation.verify"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.verify">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
-        <span class="c1"># Check PAPI metrics for compatibility</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;papi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">check_metrics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span>
-        <span class="c1"># Check for TAU libraries</span>
-        <span class="n">tau_makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">_verify_tau_libs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau_makefile</span><span class="p">):</span>
         <span class="n">makefile_tags</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tau_makefile</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Makefile.tau&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">static_lib</span> <span class="o">=</span> <span class="s2">&quot;libtau</span><span class="si">%s</span><span class="s2">.*&quot;</span> <span class="o">%</span> <span class="n">makefile_tags</span>
         <span class="n">shared_lib</span> <span class="o">=</span> <span class="s2">&quot;libTAUsh</span><span class="si">%s</span><span class="s2">.*&quot;</span> <span class="o">%</span> <span class="n">makefile_tags</span>
@@ -515,71 +482,87 @@
                 <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU libraries for makefile &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">tau_makefile</span><span class="p">)</span>
-        <span class="c1"># Open TAU makefile and check BFDINCLUDE, UNWIND_INC, PAPIDIR, etc.</span>
+        
+    <span class="k">def</span> <span class="nf">_verify_dependency_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau_makefile</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tau_makefile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fin</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
                     <span class="k">continue</span>
                 <span class="k">elif</span> <span class="s1">&#39;BFDINCLUDE=&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_binutils</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_binutils</span><span class="p">:</span>
                         <span class="n">binutils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;binutils&#39;</span><span class="p">]</span>
                         <span class="n">bfd_inc</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;-I&quot;</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">binutils</span><span class="o">.</span><span class="n">include_path</span> <span class="o">!=</span> <span class="n">bfd_inc</span><span class="p">:</span>
                             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;BFDINCLUDE=&#39;</span><span class="si">%s</span><span class="s2">&#39; != &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">bfd_inc</span><span class="p">,</span> <span class="n">binutils</span><span class="o">.</span><span class="n">include_path</span><span class="p">)</span>
-                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;BFDINCLUDE in &#39;</span><span class="si">%s</span><span class="s2">&#39; is invalid&quot;</span> <span class="o">%</span> <span class="n">tau_makefile</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;BFDINCLUDE in &#39;</span><span class="si">%s</span><span class="s2">&#39; is not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
+                                                       <span class="p">(</span><span class="n">tau_makefile</span><span class="p">,</span> <span class="n">binutils</span><span class="o">.</span><span class="n">include_path</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="s1">&#39;UNWIND_INC=&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libunwind</span><span class="p">():</span> 
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libunwind</span><span class="p">:</span> 
                         <span class="n">libunwind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;libunwind&#39;</span><span class="p">]</span>
                         <span class="n">libunwind_inc</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;-I&quot;</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">libunwind</span><span class="o">.</span><span class="n">include_path</span> <span class="o">!=</span> <span class="n">libunwind_inc</span><span class="p">:</span>
                             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;UNWIND_INC=&#39;</span><span class="si">%s</span><span class="s2">&#39; != &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">libunwind_inc</span><span class="p">,</span> <span class="n">libunwind</span><span class="o">.</span><span class="n">include_path</span><span class="p">)</span>
-                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;UNWIND_INC in &#39;</span><span class="si">%s</span><span class="s2">&#39; is invalid&quot;</span> <span class="o">%</span> <span class="n">tau_makefile</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;UNWIND_INC in &#39;</span><span class="si">%s</span><span class="s2">&#39; is not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
+                                                       <span class="p">(</span><span class="n">tau_makefile</span><span class="p">,</span> <span class="n">libunwind</span><span class="o">.</span><span class="n">include_path</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="s1">&#39;PAPIDIR=&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">:</span>
                         <span class="n">papi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;papi&#39;</span><span class="p">]</span>
                         <span class="n">papi_dir</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                         <span class="k">if</span> <span class="n">papi</span><span class="o">.</span><span class="n">install_prefix</span> <span class="o">!=</span> <span class="n">papi_dir</span><span class="p">:</span>
                             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PAPI_DIR=&#39;</span><span class="si">%s</span><span class="s2">&#39; != &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">papi_dir</span><span class="p">,</span> <span class="n">papi</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
-                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;PAPI_DIR in &#39;</span><span class="si">%s</span><span class="s2">&#39; is invalid&quot;</span> <span class="o">%</span> <span class="n">tau_makefile</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;PAPI_DIR in &#39;</span><span class="si">%s</span><span class="s2">&#39; is not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
+                                                       <span class="p">(</span><span class="n">tau_makefile</span><span class="p">,</span> <span class="n">papi</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="s1">&#39;SCOREPDIR=&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">:</span>
                         <span class="n">scorep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;scorep&#39;</span><span class="p">]</span>
                         <span class="n">scorep_dir</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                         <span class="k">if</span> <span class="n">scorep</span><span class="o">.</span><span class="n">install_prefix</span> <span class="o">!=</span> <span class="n">scorep_dir</span><span class="p">:</span>
                             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;SCOREPDIR=&#39;</span><span class="si">%s</span><span class="s2">&#39; != &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">scorep_dir</span><span class="p">,</span> <span class="n">scorep</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
-                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;SCOREPDIR in &#39;</span><span class="si">%s</span><span class="s2">&#39; is invalid&quot;</span> <span class="o">%</span> <span class="n">tau_makefile</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;SCOREPDIR in &#39;</span><span class="si">%s</span><span class="s2">&#39; is not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
+                                                       <span class="p">(</span><span class="n">tau_makefile</span><span class="p">,</span> <span class="n">scorep</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="s1">&#39;OTFINC=&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libotf2</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_libotf2</span><span class="p">:</span>
                         <span class="n">libotf2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;libotf2&#39;</span><span class="p">]</span>
                         <span class="n">libotf2_dir</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;-I&quot;</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">libotf2</span><span class="o">.</span><span class="n">include_path</span> <span class="o">!=</span> <span class="n">libotf2_dir</span><span class="p">:</span>
                             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;OTFINC=&#39;</span><span class="si">%s</span><span class="s2">&#39; != &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">libotf2_dir</span><span class="p">,</span> <span class="n">libotf2</span><span class="o">.</span><span class="n">include_path</span><span class="p">)</span>
-                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;OTFINC in &#39;</span><span class="si">%s</span><span class="s2">&#39; is invalid&quot;</span> <span class="o">%</span> <span class="n">tau_makefile</span><span class="p">)</span>
-        <span class="c1"># Check for iowrapper libraries and link options</span>
+                            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;OTFINC in &#39;</span><span class="si">%s</span><span class="s2">&#39; is not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> 
+                                                       <span class="p">(</span><span class="n">tau_makefile</span><span class="p">,</span> <span class="n">libotf2</span><span class="o">.</span><span class="n">include_path</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">_verify_iowrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau_makefile</span><span class="p">):</span>
+        <span class="c1"># Replace right-most occurance of &#39;Makefile.tau&#39; with &#39;shared&#39;</span>
+        <span class="n">tagged_shared_dir</span> <span class="o">=</span> <span class="s1">&#39;shared&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_makefile</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;Makefile.tau&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">shared_dir</span> <span class="ow">in</span> <span class="n">tagged_shared_dir</span><span class="p">,</span> <span class="s1">&#39;shared&#39;</span><span class="p">:</span>
+            <span class="n">iowrap_libs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">shared_dir</span><span class="p">,</span> <span class="s1">&#39;libTAU-iowrap*&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">iowrap_libs</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU I/O wrapper libraries not found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">shared_dir</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found iowrap shared libraries: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iowrap_libs</span><span class="p">)</span>
+        <span class="n">io_wrapper_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;wrappers&#39;</span><span class="p">,</span> <span class="s1">&#39;io_wrapper&#39;</span><span class="p">)</span>
+        <span class="n">iowrap_link_options</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">io_wrapper_dir</span><span class="p">,</span> <span class="s1">&#39;link_options.tau&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">iowrap_link_options</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU I/O wrapper link options not found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">io_wrapper_dir</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found iowrap link options: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iowrap_link_options</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="TauInstallation.verify"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.verify">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="s1">&#39;papi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">check_metrics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="n">tau_makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verify_tau_libs</span><span class="p">(</span><span class="n">tau_makefile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_verify_dependency_paths</span><span class="p">(</span><span class="n">tau_makefile</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_inst</span><span class="p">:</span>
-            <span class="c1"># Replace right-most occurance of &#39;Makefile.tau&#39; with &#39;shared&#39;</span>
-            <span class="n">tagged_shared_dir</span> <span class="o">=</span> <span class="s1">&#39;shared&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;Makefile.tau&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">shared_dir</span> <span class="ow">in</span> <span class="n">tagged_shared_dir</span><span class="p">,</span> <span class="s1">&#39;shared&#39;</span><span class="p">:</span>
-                <span class="n">iowrap_libs</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">shared_dir</span><span class="p">,</span> <span class="s1">&#39;libTAU-iowrap*&#39;</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">iowrap_libs</span><span class="p">:</span>
-                    <span class="k">break</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU I/O wrapper libraries not found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">shared_dir</span><span class="p">)</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found iowrap shared libraries: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iowrap_libs</span><span class="p">)</span>
-            <span class="n">io_wrapper_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;wrappers&#39;</span><span class="p">,</span> <span class="s1">&#39;io_wrapper&#39;</span><span class="p">)</span>
-            <span class="n">iowrap_link_options</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">io_wrapper_dir</span><span class="p">,</span> <span class="s1">&#39;link_options.tau&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">iowrap_link_options</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU I/O wrapper link options not found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">io_wrapper_dir</span><span class="p">)</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found iowrap link options: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">iowrap_link_options</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_verify_iowrapper</span><span class="p">(</span><span class="n">tau_makefile</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TAU installation at &#39;</span><span class="si">%s</span><span class="s2">&#39; is valid&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_select_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">libglobs</span><span class="p">,</span> <span class="n">user_inc</span><span class="p">,</span> <span class="n">user_lib</span><span class="p">,</span> <span class="n">user_libraries</span><span class="p">,</span> <span class="n">wrap_cc</span><span class="p">,</span> <span class="n">wrap_cxx</span><span class="p">,</span> <span class="n">wrap_fc</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_select_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">libglobs</span><span class="p">,</span> <span class="n">user_libraries</span><span class="p">,</span> <span class="n">wrap_cc</span><span class="p">,</span> <span class="n">wrap_cxx</span><span class="p">,</span> <span class="n">wrap_fc</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">unique</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
             <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
             <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seq</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">seen</span> <span class="ow">or</span> <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span>
         <span class="n">selected_inc</span><span class="p">,</span> <span class="n">selected_lib</span><span class="p">,</span> <span class="n">selected_library</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
-        <span class="c1"># Prefer user-specified paths over autodetected paths</span>
-        <span class="n">include_path</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">user_inc</span> <span class="o">+</span> <span class="n">wrap_cc</span><span class="o">.</span><span class="n">include_path</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">include_path</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">include_path</span><span class="p">)</span>
+        <span class="n">include_path</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">wrap_cc</span><span class="o">.</span><span class="n">include_path</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">include_path</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">include_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">include_path</span><span class="p">:</span>
             <span class="c1"># Unfortunately, TAU&#39;s configure script can only accept one path on -mpiinc</span>
             <span class="c1"># and it expects the compiler&#39;s include path argument (e.g. &quot;-I&quot;) to be omitted</span>
@@ -595,7 +578,7 @@
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> not found on include path: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
                                          <span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">include_path</span><span class="p">)),</span>
                                          <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
-        <span class="n">library_path</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">user_lib</span> <span class="o">+</span> <span class="n">wrap_cc</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">library_path</span><span class="p">)</span>
+        <span class="n">library_path</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">wrap_cc</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_cxx</span><span class="o">.</span><span class="n">library_path</span> <span class="o">+</span> <span class="n">wrap_fc</span><span class="o">.</span><span class="n">library_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">library_path</span><span class="p">:</span>
             <span class="n">selected_lib</span> <span class="o">=</span> <span class="bp">None</span>
             <span class="k">for</span> <span class="n">libglob</span> <span class="ow">in</span> <span class="n">libglobs</span><span class="p">:</span>
@@ -646,7 +629,7 @@
                     <span class="s1">&#39;-bfd=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">binutils</span><span class="o">.</span><span class="n">install_prefix</span> <span class="k">if</span> <span class="n">binutils</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                     <span class="s1">&#39;-unwind=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">libunwind</span><span class="o">.</span><span class="n">install_prefix</span> <span class="k">if</span> <span class="n">libunwind</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                    <span class="p">]</span> <span class="k">if</span> <span class="n">flag</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">error_buf</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;TAU configure failed&#39;</span><span class="p">)</span>
             <span class="k">return</span>
 
@@ -681,8 +664,6 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span>
             <span class="n">mpiinc</span><span class="p">,</span> <span class="n">mpilib</span><span class="p">,</span> <span class="n">mpilibrary</span> <span class="o">=</span> \
                 <span class="bp">self</span><span class="o">.</span><span class="n">_select_flags</span><span class="p">(</span><span class="s1">&#39;mpi.h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;libmpi*&#39;</span><span class="p">,),</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">mpi_include_path</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">mpi_library_path</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">mpi_libraries</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">MPI_CC</span><span class="p">],</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">MPI_CXX</span><span class="p">],</span>
@@ -693,8 +674,6 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">:</span>
             <span class="n">shmeminc</span><span class="p">,</span> <span class="n">shmemlib</span><span class="p">,</span> <span class="n">shmemlibrary</span> <span class="o">=</span> \
                 <span class="bp">self</span><span class="o">.</span><span class="n">_select_flags</span><span class="p">(</span><span class="s1">&#39;shmem.h&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;lib*shmem*&#39;</span><span class="p">,</span> <span class="s1">&#39;lib*sma*&#39;</span><span class="p">),</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">shmem_include_path</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">shmem_library_path</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">shmem_libraries</span><span class="p">,</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_CC</span><span class="p">],</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">SHMEM_CXX</span><span class="p">],</span>
@@ -715,7 +694,7 @@
                   <span class="s1">&#39;-mpiinc=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">mpiinc</span> <span class="k">if</span> <span class="n">mpiinc</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                   <span class="s1">&#39;-mpilib=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">mpilib</span> <span class="k">if</span> <span class="n">mpilib</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                   <span class="s1">&#39;-mpilibrary=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">mpilibrary</span> <span class="k">if</span> <span class="n">mpilibrary</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
-                  <span class="s1">&#39;-cuda=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda_prefix</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda_prefix</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
+                  <span class="s1">&#39;-cuda=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda_prefix</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_cuda</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                   <span class="s1">&#39;-opencl=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">opencl_prefix</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opencl_prefix</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                   <span class="s1">&#39;-shmem&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
                   <span class="s1">&#39;-shmeminc=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">shmeminc</span> <span class="k">if</span> <span class="n">shmeminc</span> <span class="k">else</span> <span class="bp">None</span><span class="p">,</span>
@@ -754,7 +733,7 @@
         
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;./configure&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">flags</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Configuring TAU...&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">error_buf</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;TAU configure failed&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TauInstallation.make_install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.make_install">[docs]</a>    <span class="k">def</span> <span class="nf">make_install</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -767,7 +746,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">,</span> <span class="s1">&#39;install&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">parallel_make_flags</span><span class="p">()</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Compiling and installing TAU...&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">error_buf</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s1">&#39;TAU compilation/installation failed&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TauInstallation.install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.install">[docs]</a>    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_reinstall</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
@@ -786,19 +765,27 @@
             <span class="n">forced_install_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span><span class="p">),</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_install_prefix</span><span class="p">(</span><span class="n">forced_install_prefix</span><span class="p">)</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;TAU makefile was forced! Not verifying TAU installation&quot;</span><span class="p">)</span>
-            <span class="k">return</span> 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
-                <span class="n">pkg</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">force_reinstall</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">unmanaged_hints</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Allow TAU Commander to manage your TAU configurations&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;Check for earlier error or warning messages&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;Ask your system administrator to build any missing TAU configurations mentioned above&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
             <span class="k">except</span> <span class="n">SoftwarePackageError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> source package is unavailable and the installation at &#39;</span><span class="si">%s</span><span class="s2">&#39; &quot;</span>
-                                               <span class="s2">&quot;is invalid: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
-                                               <span class="s2">&quot;Specify source code path or URL to enable package reinstallation.&quot;</span><span class="p">)</span>
+                                               <span class="s2">&quot;is invalid:</span><span class="se">\n\n</span><span class="s2">    </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
+                                               <span class="o">*</span><span class="n">unmanaged_hints</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
-                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;TAU must be reconfigured: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;Unable to configure TAU: &#39;</span><span class="si">%s</span><span class="s2">&#39; is not writable.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span>
+                                       <span class="o">*</span><span class="n">unmanaged_hints</span><span class="p">)</span>
+        <span class="c1"># Check dependencies after verifying TAU instead of before in case </span>
+        <span class="c1"># we&#39;re using an unmanaged TAU or forced makefile. </span>
+        <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">pkg</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">force_reinstall</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Installing </span><span class="si">%s</span><span class="s2"> at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">new_os_environ</span><span class="p">(),</span> <span class="n">util</span><span class="o">.</span><span class="n">umask</span><span class="p">(</span><span class="mo">002</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
@@ -808,8 +795,16 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">installation_sequence</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_group</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">SoftwarePackageError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span>
+                    <span class="n">err</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="s2">&quot;: the TAU installation at &#39;</span><span class="si">%s</span><span class="s2">&#39; is not writable&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span>
+                    <span class="n">err</span><span class="o">.</span><span class="n">hints</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Grant write permission on &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">]</span> <span class="o">+</span> <span class="n">unmanaged_hints</span> <span class="o">+</span> <span class="n">err</span><span class="o">.</span><span class="n">hints</span>
+                    <span class="n">parent_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="n">parent_prefix</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">):</span>
+                        <span class="n">err</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="s2">&quot; (but the parent directory is)&quot;</span>
+                <span class="k">raise</span> <span class="n">err</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> installation failed: </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> installation failed: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
                 <span class="k">raise</span>
         <span class="c1"># Verify the new installation</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Verifying </span><span class="si">%s</span><span class="s2"> installation...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
@@ -817,7 +812,10 @@
     
 <div class="viewcode-block" id="TauInstallation.installation_sequence"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.installation_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">installation_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">configure</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_install</span><span class="p">()</span>
+        <span class="c1"># Rebuild makefile cache on next call to get_makefile() </span>
+        <span class="c1"># since a new, possibly better makefile is now available</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="bp">None</span></div>
 
     <span class="k">def</span> <span class="nf">_compiler_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">host_compilers</span><span class="o">.</span><span class="n">INTEL</span><span class="p">:</span> <span class="s1">&#39;intel&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_magic</span><span class="o">.</span><span class="n">operating_system</span> <span class="ow">is</span> <span class="n">CRAY_CNL</span> <span class="k">else</span> <span class="s1">&#39;icpc&#39;</span><span class="p">,</span>
@@ -840,11 +838,11 @@
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compiler_tags</span><span class="p">()[</span><span class="n">cxx_compiler</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="p">])</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_pdt</span><span class="p">():</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_pdt</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;pdt&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">():</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_papi</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;papi&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">():</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;pthread&#39;</span><span class="p">)</span>
@@ -863,7 +861,7 @@
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;tbb&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda_support</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cuda_support</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">opencl_support</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;cupti&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;shmem&#39;</span><span class="p">)</span>
@@ -890,13 +888,37 @@
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;opari&#39;</span><span class="p">)</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;ompt&#39;</span><span class="p">)</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;gomp&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uses_scorep</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;shmem&#39;</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Incompatible tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tags</span></div>
+    
+    <span class="k">def</span> <span class="nf">_makefile_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">makefile</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
 
+    <span class="k">def</span> <span class="nf">_match_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">):</span>
+        <span class="n">tau_makefiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;Makefile.tau*&#39;</span><span class="p">))</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found makefiles: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tau_makefiles</span><span class="p">)</span>
+        <span class="n">dangerous_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incompatible_tags</span><span class="p">()</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Will not use makefiles containing tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dangerous_tags</span><span class="p">)</span>
+        <span class="n">approx_tags</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">approx_makefile</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">makefile</span> <span class="ow">in</span> <span class="n">tau_makefiles</span><span class="p">:</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makefile_tags</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">config_tags</span> <span class="o">&lt;=</span> <span class="n">tags</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> contains desired tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">tags</span> <span class="o">&lt;=</span> <span class="n">config_tags</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found TAU makefile </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">makefile</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="n">tags</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">dangerous_tags</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">approx_tags</span> <span class="ow">or</span> <span class="n">tags</span> <span class="o">&lt;</span> <span class="n">approx_tags</span><span class="p">:</span>
+                        <span class="n">approx_makefile</span> <span class="o">=</span> <span class="n">makefile</span>
+                        <span class="n">approx_tags</span> <span class="o">=</span> <span class="n">tags</span>
+        <span class="k">return</span> <span class="n">approx_makefile</span>
+    
 <div class="viewcode-block" id="TauInstallation.get_makefile"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.get_makefile">[docs]</a>    <span class="k">def</span> <span class="nf">get_makefile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns an absolute path to a TAU_MAKEFILE.</span>
 
@@ -912,38 +934,27 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span>
-        <span class="n">tau_makefiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;Makefile.tau*&#39;</span><span class="p">))</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found makefiles: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tau_makefiles</span><span class="p">)</span>
         <span class="n">config_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Searching for makefile with tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
-        <span class="n">approx_tags</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="n">approx_makefile</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="n">dangerous_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incompatible_tags</span><span class="p">()</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Will not use makefiles containing tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dangerous_tags</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">makefile</span> <span class="ow">in</span> <span class="n">tau_makefiles</span><span class="p">:</span>
-            <span class="n">tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">config_tags</span> <span class="o">&lt;=</span> <span class="n">tags</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> contains desired tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">tags</span> <span class="o">&lt;=</span> <span class="n">config_tags</span><span class="p">:</span>
-                    <span class="n">makefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
-                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found TAU makefile </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="n">makefile</span>
-                    <span class="k">return</span> <span class="n">makefile</span>
-                <span class="k">elif</span> <span class="ow">not</span> <span class="n">tags</span> <span class="o">&amp;</span> <span class="n">dangerous_tags</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">approx_tags</span> <span class="ow">or</span> <span class="n">tags</span> <span class="o">&lt;</span> <span class="n">approx_tags</span><span class="p">:</span>
-                        <span class="n">approx_makefile</span> <span class="o">=</span> <span class="n">makefile</span>
-                        <span class="n">approx_tags</span> <span class="o">=</span> <span class="n">tags</span>
-                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Best approximate match is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">approx_tags</span><span class="p">)</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No TAU makefile exactly matches tags &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">approx_makefile</span><span class="p">:</span>
-            <span class="n">makefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">approx_makefile</span><span class="p">)</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found approximate match with TAU makefile </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="n">makefile</span>
-            <span class="k">return</span> <span class="n">makefile</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No TAU makefile approximately matches tags &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU Makefile not found for tags &#39;</span><span class="si">%s</span><span class="s2">&#39; in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
-                                   <span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_tags</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">))</span></div>
+        <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_match_makefile</span><span class="p">(</span><span class="n">config_tags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">makefile</span><span class="p">:</span> 
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No TAU makefile exactly matches tags &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span><span class="p">:</span>
+                <span class="c1"># This is a managed TAU installation so we can build it.</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU Makefile not found for tags &#39;</span><span class="si">%s</span><span class="s2">&#39; in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
+                                           <span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_tags</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">))</span>
+            <span class="c1"># Ignore UID and try again in case the TAU configuration was built manually without a UID.</span>
+            <span class="c1"># Warn the user that it&#39;s on them to know that the makefile is correct.</span>
+            <span class="n">config_tags</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
+            <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_match_makefile</span><span class="p">(</span><span class="n">config_tags</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">makefile</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No TAU makefile approximately matches tags &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">config_tags</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;TAU Makefile not found for tags &#39;</span><span class="si">%s</span><span class="s2">&#39; in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span>
+                                           <span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config_tags</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">))</span>
+        <span class="n">makefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found TAU makefile </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span> <span class="o">=</span> <span class="n">makefile</span>
+        <span class="k">return</span> <span class="n">makefile</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_sanitize_environment</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
@@ -1024,8 +1035,16 @@
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-g&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">!=</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">IBM</span><span class="p">:</span>
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-DTAU_ENABLED=1&#39;</span><span class="p">)</span>
-        <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_MAKEFILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_OPTIONS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_opts</span><span class="p">)</span>
+        <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makefile_tags</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to verify compiler compatibility of TAU makefile &#39;</span><span class="si">%s</span><span class="s2">&#39;.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                           <span class="s2">&quot;This might be OK, but it is your responsibility to know that TAU was configured &quot;</span>
+                           <span class="s2">&quot;correctly for your experiment. Compiler incompatibility may cause your experiment &quot;</span>
+                           <span class="s2">&quot;to crash or produce invalid data.  If you&#39;re unsure, use --tau=download to allow &quot;</span>
+                           <span class="s2">&quot;TAU Commander to manage your TAU configurations.&quot;</span><span class="p">,</span> <span class="n">makefile</span><span class="p">)</span>
+        <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_MAKEFILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">makefile</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span></div>
 
 
@@ -1142,15 +1161,67 @@
                                      <span class="s2">&quot;Use taucmdr --log and see detailed output at the end of &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">logger</span><span class="o">.</span><span class="n">LOG_FILE</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">retval</span></div>
 
-<div class="viewcode-block" id="TauInstallation.get_application_command"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.get_application_command">[docs]</a>    <span class="k">def</span> <span class="nf">get_application_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmd</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_rewrite_launcher_appfile_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">tau_exec</span><span class="p">):</span>
+        <span class="n">launcher</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">appfile_flags</span> <span class="o">=</span> <span class="n">PROGRAM_LAUNCHERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">launcher</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">appfile_flags</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Application configuration file flags for &#39;</span><span class="si">%s</span><span class="s2">&#39; are unknown&quot;</span> <span class="o">%</span> <span class="n">launcher</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">flag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flag</span><span class="p">,</span> <span class="n">appfile</span> <span class="o">=</span> <span class="n">flag</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                <span class="n">with_equals</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">appfile</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">with_equals</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Unable to parse application configuration file in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">cmd</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">appfile_flags</span><span class="p">:</span>
+                <span class="n">appfile_arg_idx</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">appfile_flag</span> <span class="o">=</span> <span class="n">flag</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;None of &#39;</span><span class="si">%s</span><span class="s2">&#39; found in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">appfile_flags</span><span class="p">,</span> <span class="n">cmd</span><span class="p">))</span>
+        <span class="n">tau_appfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="n">appfile</span><span class="o">+</span><span class="s2">&quot;.tau&quot;</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Rewriting &#39;</span><span class="si">%s</span><span class="s2">&#39; as &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">appfile</span><span class="p">,</span> <span class="n">tau_appfile</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tau_appfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">appfile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fin</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">application_cmd</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">launcher</span> <span class="o">==</span> <span class="s1">&#39;srun&#39;</span><span class="p">:</span>
+                    <span class="c1"># Slurm makes this easy: https://computing.llnl.gov/tutorials/linux_clusters/multi-prog.html</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">exe</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">exe</span><span class="p">):</span>
+                            <span class="k">break</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No executables found on line </span><span class="si">%d</span><span class="s2"> of &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lineno</span><span class="p">,</span> <span class="n">appfile</span><span class="p">),</span>
+                                                 <span class="s2">&quot;Check the file for errors. Does it work without TAU?&quot;</span><span class="p">,</span>
+                                                 <span class="s2">&quot;Avoid breaking commands over multiple lines.&quot;</span><span class="p">)</span>
+                <span class="n">tau_line</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">tau_exec</span> <span class="o">+</span> <span class="n">application_cmd</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">])</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">tau_line</span><span class="p">)</span>
+                <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tau_line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_equals</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cmd</span><span class="p">[:</span><span class="n">appfile_arg_idx</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">appfile_flag</span><span class="o">+</span><span class="s1">&#39;=&#39;</span><span class="o">+</span><span class="n">tau_appfile</span><span class="p">]</span> <span class="o">+</span> <span class="n">cmd</span><span class="p">[</span><span class="n">appfile_arg_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cmd</span><span class="p">[:</span><span class="n">appfile_arg_idx</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">appfile_flag</span><span class="p">,</span> <span class="n">tau_appfile</span><span class="p">]</span> <span class="o">+</span> <span class="n">cmd</span><span class="p">[</span><span class="n">appfile_arg_idx</span><span class="o">+</span><span class="mi">2</span><span class="p">:]</span>
+        
+<div class="viewcode-block" id="TauInstallation.get_application_command"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.get_application_command">[docs]</a>    <span class="k">def</span> <span class="nf">get_application_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmds</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Build a command line to launch an application under TAU.</span>
 
 <span class="sd">        Sometimes TAU needs to use tau_exec, sometimes not.  This routine</span>
 <span class="sd">        also handles backend launch commands like `aprun`.</span>
+<span class="sd">        </span>
+<span class="sd">        `application_cmds` may be an empty list if the application is launched </span>
+<span class="sd">        via a configuration file, e.g. ``mpirun --app myapp.cfg``.</span>
 
 <span class="sd">        Args</span>
-<span class="sd">            launcher_cmd (list): Application launcher with command line arguments, e.g. [&#39;mpirun&#39;, &#39;-np&#39;, &#39;4&#39;].</span>
-<span class="sd">            application_cmd (list): Application command with command line arguments, e.g. [&#39;./a.out&#39;, &#39;-g&#39;, &#39;hello&#39;].</span>
+<span class="sd">            launcher_cmd (list): Application launcher with command line arguments, e.g. ``[&#39;mpirun&#39;, &#39;-np&#39;, &#39;4&#39;]``.</span>
+<span class="sd">            application_cmds (list): List of application command with command line arguments (list of list), </span>
+<span class="sd">                                     e.g. ``[[&#39;./a.out&#39;, &#39;-g&#39;, &#39;hello&#39;], [&#39;:&#39;, &#39;-np&#39;, &#39;2&#39;, &#39;./b.out&#39;, &#39;foobar&#39;]]``</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (cmd, env) where `cmd` is the new command line and `env` is a dictionary of environment</span>
@@ -1158,24 +1229,47 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
         <span class="n">opts</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">==</span> <span class="s1">&#39;static&#39;</span><span class="p">:</span>
-            <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="c1"># Per Sameer&#39;s request, shim in site-specific flags.  </span>
+        <span class="c1"># These should be specified in a taucmdr module or similar.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">launcher_cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;__TAUCMDR_LAUNCHER_ARGS__&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">!=</span> <span class="s1">&#39;static&#39;</span> <span class="ow">and</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_opencl</span> <span class="ow">or</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">tbb_support</span> <span class="ow">or</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span> <span class="ow">or</span>
+                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">use_tau_exec</span><span class="p">:</span>
+            <span class="n">tau_exec</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_opencl</span> <span class="ow">or</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">tbb_support</span> <span class="ow">or</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span> <span class="ow">or</span>
-                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">use_tau_exec</span><span class="p">:</span>
-            <span class="n">tau_exec_opts</span> <span class="o">=</span> <span class="n">opts</span>
-            <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
+            <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makefile_tags</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span>
                 <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;serial&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opencl_support</span><span class="p">:</span>
-                <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;cupti&#39;</span><span class="p">)</span>
-            <span class="n">tau_exec</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau_exec&#39;</span><span class="p">,</span> <span class="s1">&#39;-T&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tags</span><span class="p">)]</span> <span class="o">+</span> <span class="n">tau_exec_opts</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="n">launcher_cmd</span> <span class="o">+</span> <span class="n">tau_exec</span> <span class="o">+</span> <span class="n">application_cmd</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tags</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to verify runtime compatibility of TAU makefile &#39;</span><span class="si">%s</span><span class="s2">&#39;.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                               <span class="s2">&quot;This might be OK, but it is your responsibility to know that TAU was configured &quot;</span>
+                               <span class="s2">&quot;correctly for your experiment. Runtime incompatibility may cause your experiment &quot;</span>
+                               <span class="s2">&quot;to crash or produce invalid data.  If you&#39;re unsure, use &#39;--tau=download&#39; when &quot;</span>
+                               <span class="s2">&quot;creating your target to allow TAU Commander to manage your TAU configurations.&quot;</span><span class="p">,</span> 
+                               <span class="n">makefile</span><span class="p">)</span>
+            <span class="n">tau_exec</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau_exec&#39;</span><span class="p">,</span> <span class="s1">&#39;-T&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tags</span><span class="p">)]</span> <span class="o">+</span> <span class="n">opts</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">application_cmds</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rewrite_launcher_appfile_cmd</span><span class="p">(</span><span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">tau_exec</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">cmd</span> <span class="o">=</span> <span class="n">launcher_cmd</span> <span class="o">+</span> <span class="n">application_cmd</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">launcher_cmd</span>
+            <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tau_exec</span><span class="p">)</span>
+            <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">application_cmds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">application_cmd</span> <span class="ow">in</span> <span class="n">application_cmds</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">part</span><span class="p">):</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tau_exec</span><span class="p">)</span>
+                        <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Application command &#39;</span><span class="si">%s</span><span class="s2">&#39; contains no executables&quot;</span> <span class="o">%</span> <span class="n">application_cmd</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span></div>
     
     <span class="k">def</span> <span class="nf">_check_java</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1287,6 +1381,7 @@
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trace file &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">retval</span> <span class="o">+=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;jumpshot&#39;</span><span class="p">),</span> <span class="n">path</span><span class="p">],</span> 
                                              <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
@@ -1303,6 +1398,7 @@
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trace file &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
             <span class="n">evt_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="s1">&#39;traces/*.evt&#39;</span><span class="p">))</span>
             <span class="n">def_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="s1">&#39;traces/*.def&#39;</span><span class="p">))</span>
@@ -1310,6 +1406,15 @@
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Too many trace files, use vampirserver to view.&quot;</span><span class="p">)</span>
             <span class="n">retval</span> <span class="o">+=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">([</span><span class="s1">&#39;vampir&#39;</span><span class="p">,</span> <span class="n">path</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">retval</span>
+    
+<div class="viewcode-block" id="TauInstallation._prep_data_analysis_tools"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation._prep_data_analysis_tools">[docs]</a>    <span class="k">def</span> <span class="nf">_prep_data_analysis_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks that data analysis tools are installed, or installs them if needed.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;Makefile.tau*&#39;</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">DATA_TOOLS</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="TauInstallation.show_data_files"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.show_data_files">[docs]</a>    <span class="k">def</span> <span class="nf">show_data_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">profile_tools</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">trace_tools</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Displays profile and trace data.</span>
@@ -1324,7 +1429,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: An error occurred while displaying a data file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prep_data_analysis_tools</span><span class="p">()</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_profile_format</span><span class="p">(</span><span class="n">fmt</span><span class="p">):</span>
@@ -1359,7 +1464,7 @@
 <span class="sd">            src (str): Directory containing TAU profiles to convert to PPK format.</span>
 <span class="sd">            remove_existing (bool): If True, delete ``dest`` before writing it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prep_data_analysis_tools</span><span class="p">()</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_java</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">remove_existing</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
@@ -1379,7 +1484,7 @@
 <span class="sd">        Args: </span>
 <span class="sd">            prefix (str): Path to the directory containing *.trc and *.edf files.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prep_data_analysis_tools</span><span class="p">()</span>
         <span class="n">trc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.trc&#39;</span><span class="p">))</span>
         <span class="n">edf_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;*.edf&#39;</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">trc_files</span><span class="p">:</span>
@@ -1405,7 +1510,7 @@
 <span class="sd">            edf (str): Path to the edf file.</span>
 <span class="sd">            slog2 (str): Path to the slog2 file to create.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prep_data_analysis_tools</span><span class="p">()</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Converting TAU trace files to SLOG2 format...&quot;</span><span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;tau2slog2&#39;</span><span class="p">),</span> <span class="n">trc</span><span class="p">,</span> <span class="n">edf</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">slog2</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>

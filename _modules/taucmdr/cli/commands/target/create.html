@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -123,7 +123,7 @@
         <span class="c1"># Parsing a TAU Makefile is a really hairy operation, so let&#39;s lift the limits</span>
         <span class="c1"># pylint: disable=too-many-statements,too-many-locals</span>
         <span class="n">makefile</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">forced_makefile</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">file_accessible</span><span class="p">(</span><span class="n">makefile</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="n">makefile</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid TAU makefile: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">makefile</span><span class="p">)</span>
         <span class="n">tau_arch_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">makefile</span><span class="p">)))</span>
         <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">arch</span> <span class="k">for</span> <span class="n">arch</span> <span class="ow">in</span> <span class="n">TauMagic</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">arch</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">tau_arch_name</span><span class="p">]</span>

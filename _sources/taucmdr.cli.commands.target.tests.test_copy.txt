@@ -1,0 +1,7 @@
+taucmdr.cli.commands.target.tests.test_copy module
+==================================================
+
+.. automodule:: taucmdr.cli.commands.target.tests.test_copy
+    :members:
+    :undoc-members:
+    :show-inheritance:

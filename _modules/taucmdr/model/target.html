@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -94,7 +94,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">Architecture</span><span class="p">,</span> <span class="n">OperatingSystem</span> 
 <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_ARCH</span><span class="p">,</span> <span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">IBM_BGL</span><span class="p">,</span> <span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">CRAY_CNL</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler</span> <span class="kn">import</span> <span class="n">Knowledgebase</span><span class="p">,</span> <span class="n">InstalledCompilerSet</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">SYSTEM_STORAGE</span>
 
 
 <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -167,7 +167,7 @@
     <span class="k">return</span> <span class="s1">&#39;download&#39;</span></div>
 
 
-<div class="viewcode-block" id="cuda_default"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.cuda_default">[docs]</a><span class="k">def</span> <span class="nf">cuda_default</span><span class="p">():</span>
+<div class="viewcode-block" id="cuda_toolkit_default"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.cuda_toolkit_default">[docs]</a><span class="k">def</span> <span class="nf">cuda_toolkit_default</span><span class="p">():</span>
     <span class="n">default_path</span> <span class="o">=</span> <span class="s1">&#39;/usr/local/cuda&#39;</span>
     <span class="n">nvcc</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;nvcc&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">nvcc</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">nvcc</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;/usr/bin&#39;</span><span class="p">,</span> <span class="s1">&#39;/usr/local/bin&#39;</span><span class="p">):</span>
@@ -175,6 +175,25 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">nvcc</span><span class="p">))</span></div>
 
+<div class="viewcode-block" id="tau_source_default"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.tau_source_default">[docs]</a><span class="k">def</span> <span class="nf">tau_source_default</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;&quot;Per Sameer&#39;s request, override managed TAU installation with an existing unmanaged TAU installation.</span>
+<span class="sd">    </span>
+<span class="sd">    If a file named &quot;override_tau_source&quot; exists in the system-level storage prefix, use the contents of</span>
+<span class="sd">    that file as the default path for TAU.  Otherwise use &quot;download&quot; as the default.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Path to TAU or &quot;download&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SYSTEM_STORAGE</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;override_tau_source&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">fin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;download&#39;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist or is not accessable.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;download&#39;</span>
+    <span class="k">return</span> <span class="n">path</span></div>
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.target.html#taucmdr.model.target.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Construct attributes dictionary for the target model.</span>
@@ -304,28 +323,6 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
-        <span class="s1">&#39;mpi_include_path&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;paths to search for MPI header files when building MPI applications&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi-include-path&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Message Passing Interface (MPI)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
-        <span class="p">},</span>
-        <span class="s1">&#39;mpi_library_path&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;paths to search for MPI library files when building MPI applications&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi-library-path&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Message Passing Interface (MPI)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
-        <span class="p">},</span>
         <span class="s1">&#39;mpi_libraries&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;libraries to link to when building MPI applications&#39;</span><span class="p">,</span>
@@ -364,22 +361,6 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
-        <span class="s1">&#39;shmem_include_path&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;paths to search for SHMEM header files when building SHMEM applications&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem-include-path&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
-        <span class="p">},</span>
-        <span class="s1">&#39;shmem_library_path&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;paths to search for SHMEM library files when building SHMEM applications&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem-library-path&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM)&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
-        <span class="p">},</span>
         <span class="s1">&#39;shmem_libraries&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;libraries to link to when building SHMEM applications&#39;</span><span class="p">,</span>
@@ -409,7 +390,7 @@
         <span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path to NVIDIA CUDA Toolkit (enables OpenCL support)&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">cuda_default</span><span class="p">(),</span> 
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">cuda_toolkit_default</span><span class="p">(),</span> 
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda-toolkit&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;CUDA&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;path&gt;&#39;</span><span class="p">,</span>
@@ -419,7 +400,7 @@
         <span class="s1">&#39;tau_source&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;path or URL to a TAU installation or archive file&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;download&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="n">tau_source_default</span><span class="p">(),</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--tau&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;software package&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;(&lt;path&gt;|&lt;url&gt;|download|nightly)&#39;</span><span class="p">,</span>

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -155,6 +155,24 @@ SLOG2 traces and TAU profiles would return <code class="docutils literal"><span 
 <dt id="taucmdr.model.trial.Trial.on_delete">
 <code class="descname">on_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.on_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.on_delete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="taucmdr.model.trial.Trial.parse_launcher_cmd">
+<em class="property">classmethod </em><code class="descname">parse_launcher_cmd</code><span class="sig-paren">(</span><em>cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/trial.html#Trial.parse_launcher_cmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.trial.Trial.parse_launcher_cmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a command line to split the launcher command and application commands.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Command line.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(Launcher command, possibly empty list of application commands).</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#tuple" title="(in Python v2.7)">tuple</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.model.trial.Trial.prefix">

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -86,6 +86,9 @@
 
 <span class="n">Action</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Action</span>
 <span class="sd">&quot;&quot;&quot;Action base class.&quot;&quot;&quot;</span>
+
+<span class="n">ArgumentError</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span>
+<span class="sd">&quot;&quot;&quot;Argument error exception base class.&quot;&quot;&quot;</span>
 
 <span class="n">SUPPRESS</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
 <span class="sd">&quot;&quot;&quot;Suppress attribute creation in parsed argument namespace.&quot;&quot;&quot;</span>
@@ -328,7 +331,7 @@
         <span class="c1"># long action name; start on the next line</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_indent</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">action_header</span>
-            <span class="n">action_header</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%*s%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">tup</span>
+            <span class="n">action_header</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%*s%s</span><span class="s1"> | </span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">tup</span>
             <span class="n">indent_first</span> <span class="o">=</span> <span class="n">help_position</span>
 
         <span class="c1"># collect the pieces of the action help</span>
@@ -338,13 +341,17 @@
         <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">help</span><span class="p">:</span>
             <span class="n">help_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_help</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
             <span class="n">help_lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_lines</span><span class="p">(</span><span class="n">help_text</span><span class="p">,</span> <span class="n">help_width</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; | &#39;</span><span class="p">)</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%*s%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">indent_first</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">help_lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">help_lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%*s%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">help_position</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+<span class="c1">#                parts.append(&#39;%*s%s\n&#39; % (help_position, &#39;&#39;, line))</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%*s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">help_position</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; | &#39;</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="p">))</span>
 
         <span class="c1"># or add a newline if the description doesn&#39;t end with one</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">action_header</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; | </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="c1"># if there are any sub-actions, add their help as well</span>
         <span class="k">for</span> <span class="n">subaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter_indented_subactions</span><span class="p">(</span><span class="n">action</span><span class="p">):</span>
@@ -383,7 +390,7 @@
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">is_url</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="n">util</span><span class="o">.</span><span class="n">file_accessible</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="n">value</span><span class="p">)):</span>
                     <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Keyword, valid path, or URL required: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="n">value_as_bool</span> <span class="k">else</span> <span class="bp">None</span>

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -94,10 +94,30 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.project</span> <span class="kn">import</span> <span class="n">ProjectStorageError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span><span class="p">,</span> <span class="n">STORAGE_LEVELS</span>
 
+<span class="n">HELP_PAGE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">TAU Commander Initialize:</span>
+<span class="s2">============================================================================</span>
+
+<span class="s2">To begin Initialize TAU Commander, enter: `tau initialize` or simply </span>
+<span class="s2">`tau init`.  </span>
+<span class="s2">This first initialization will take quite a bit of time.  Not only is this </span>
+<span class="s2">command creating a project it is also downloading and building the </span>
+<span class="s2">TAU Performance System® and associated libraries that it depends on.  </span>
+<span class="s2">Let this run and check for successful completion. When it completes it will </span>
+<span class="s2">display the tau dashboard (which can be viewed at anytime by entering: </span>
+<span class="s2">&#39;tau dashboard&#39;).</span>
+
+<span class="s2">Many parameters may be defined at initialization.  The full list of options is </span>
+<span class="s2">displayed below this help section.   It is easier to define options at </span>
+<span class="s2">initialization (eg. tau init --MPI T) than it is to edit application and </span>
+<span class="s2">measurement later.</span>
+<span class="s2">___________________________________________________________________________</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InitializeCommand"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.initialize.html#taucmdr.cli.commands.initialize.InitializeCommand">[docs]</a><span class="k">class</span> <span class="nc">InitializeCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau initialize`` subcommand.&quot;&quot;&quot;</span>
-
+       
 <div class="viewcode-block" id="InitializeCommand._construct_parser"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.initialize.html#taucmdr.cli.commands.initialize.InitializeCommand._construct_parser">[docs]</a>    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs the command line argument parser.</span>
 <span class="sd">         </span>
@@ -253,7 +273,7 @@
                                 <span class="s2">&quot; &#39;</span><span class="si">%s</span><span class="s2">&#39; to reset to a fresh environment.&quot;</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">EXIT_WARNING</span></div></div>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">InitializeCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Initialize TAU Commander.&quot;</span><span class="p">)</span>
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">InitializeCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="n">HELP_PAGE</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Initialize TAU Commander.&quot;</span><span class="p">)</span> 
 </pre></div>
 
       </div>

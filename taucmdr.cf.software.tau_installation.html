@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -56,7 +56,7 @@
 <p>TAU is the core software package of TAU Commander.</p>
 <dl class="class">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation">
-<em class="property">class </em><code class="descclassname">taucmdr.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>minimal_configuration=False</em>, <em>application_linkage='dynamic'</em>, <em>openmp_support=False</em>, <em>pthreads_support=False</em>, <em>tbb_support=False</em>, <em>mpi_support=False</em>, <em>mpi_include_path=None</em>, <em>mpi_library_path=None</em>, <em>mpi_libraries=None</em>, <em>cuda_support=False</em>, <em>cuda_prefix=None</em>, <em>opencl_support=False</em>, <em>opencl_prefix=None</em>, <em>shmem_support=False</em>, <em>shmem_include_path=None</em>, <em>shmem_library_path=None</em>, <em>shmem_libraries=None</em>, <em>mpc_support=False</em>, <em>source_inst='never'</em>, <em>compiler_inst='never'</em>, <em>link_only=False</em>, <em>io_inst=False</em>, <em>keep_inst_files=False</em>, <em>reuse_inst_files=False</em>, <em>select_file=None</em>, <em>profile='tau'</em>, <em>trace='none'</em>, <em>sample=False</em>, <em>metrics=None</em>, <em>measure_mpi=False</em>, <em>measure_openmp='ignore'</em>, <em>measure_opencl=False</em>, <em>measure_cuda=False</em>, <em>measure_shmem=False</em>, <em>measure_heap_usage=False</em>, <em>measure_memory_alloc=False</em>, <em>measure_comm_matrix=False</em>, <em>measure_callsite=False</em>, <em>callpath_depth=100</em>, <em>throttle=True</em>, <em>metadata_merge=True</em>, <em>throttle_per_call=10</em>, <em>throttle_num_calls=100000</em>, <em>forced_makefile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">taucmdr.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>minimal_configuration=False</em>, <em>application_linkage='dynamic'</em>, <em>openmp_support=False</em>, <em>pthreads_support=False</em>, <em>tbb_support=False</em>, <em>mpi_support=False</em>, <em>mpi_libraries=None</em>, <em>cuda_support=False</em>, <em>cuda_prefix=None</em>, <em>opencl_support=False</em>, <em>opencl_prefix=None</em>, <em>shmem_support=False</em>, <em>shmem_libraries=None</em>, <em>mpc_support=False</em>, <em>source_inst='never'</em>, <em>compiler_inst='never'</em>, <em>link_only=False</em>, <em>io_inst=False</em>, <em>keep_inst_files=False</em>, <em>reuse_inst_files=False</em>, <em>select_file=None</em>, <em>profile='tau'</em>, <em>trace='none'</em>, <em>sample=False</em>, <em>metrics=None</em>, <em>measure_mpi=False</em>, <em>measure_openmp='ignore'</em>, <em>measure_opencl=False</em>, <em>measure_cuda=False</em>, <em>measure_shmem=False</em>, <em>measure_heap_usage=False</em>, <em>measure_memory_alloc=False</em>, <em>measure_comm_matrix=False</em>, <em>measure_callsite=False</em>, <em>callpath_depth=100</em>, <em>throttle=True</em>, <em>metadata_merge=True</em>, <em>throttle_per_call=10</em>, <em>throttle_num_calls=100000</em>, <em>forced_makefile=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation" title="taucmdr.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.software.installation.Installation</span></code></a></p>
 <p>Encapsulates a TAU installation.</p>
 <p>TAU is an enormous, organic, complex piece of software so this class is
@@ -66,6 +66,12 @@ of the systemization of TAU is actually implemented so it can get ugly.</p>
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation._incompatible_tags">
 <code class="descname">_incompatible_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation._incompatible_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation._incompatible_tags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a set of makefile tags incompatible with the specified config.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.tau_installation.TauInstallation._prep_data_analysis_tools">
+<code class="descname">_prep_data_analysis_tools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation._prep_data_analysis_tools"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation._prep_data_analysis_tools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that data analysis tools are installed, or installs them if needed.</p>
 </dd></dl>
 
 <dl class="method">
@@ -162,14 +168,19 @@ TAU&#8217;s configure script failed.</td>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.get_application_command">
-<code class="descname">get_application_command</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.get_application_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_application_command" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_application_command</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.get_application_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_application_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a command line to launch an application under TAU.</p>
 <p>Sometimes TAU needs to use tau_exec, sometimes not.  This routine
 also handles backend launch commands like <cite>aprun</cite>.</p>
+<p><cite>application_cmds</cite> may be an empty list if the application is launched
+via a configuration file, e.g. <code class="docutils literal"><span class="pre">mpirun</span> <span class="pre">--app</span> <span class="pre">myapp.cfg</span></code>.</p>
 <dl class="docutils">
 <dt>Args</dt>
-<dd>launcher_cmd (list): Application launcher with command line arguments, e.g. [&#8216;mpirun&#8217;, &#8216;-np&#8217;, &#8216;4&#8217;].
-application_cmd (list): Application command with command line arguments, e.g. [&#8216;./a.out&#8217;, &#8216;-g&#8217;, &#8216;hello&#8217;].</dd>
+<dd><p class="first">launcher_cmd (list): Application launcher with command line arguments, e.g. <code class="docutils literal"><span class="pre">['mpirun',</span> <span class="pre">'-np',</span> <span class="pre">'4']</span></code>.
+application_cmds (list): List of application command with command line arguments (list of list),</p>
+<blockquote class="last">
+<div>e.g. <code class="docutils literal"><span class="pre">[['./a.out',</span> <span class="pre">'-g',</span> <span class="pre">'hello'],</span> <span class="pre">[':',</span> <span class="pre">'-np',</span> <span class="pre">'2',</span> <span class="pre">'./b.out',</span> <span class="pre">'foobar']]</span></code></div></blockquote>
+</dd>
 </dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

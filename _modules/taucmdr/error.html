@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -157,7 +157,7 @@
                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;TAU cannot proceed with the given inputs.</span><span class="se">\n</span><span class="s2">&quot;</span> 
-                   <span class="s2">&quot;Please check the selected configuration for errors or contact </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
+                   <span class="s2">&quot;Please check the configuration for errors or contact </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the Error instance.</span>
@@ -235,8 +235,6 @@
                      <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see current project configuration.&quot;</span> <span class="o">%</span> <span class="n">dashboard_cmd</span><span class="p">,</span>
                      <span class="s2">&quot;Use `</span><span class="si">%s</span><span class="s2">` to see available project configurations.&quot;</span> <span class="o">%</span> <span class="n">project_list_cmd</span><span class="p">)</span>    
         <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentSelectionError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span></div>
-
-
 
 
 <div class="viewcode-block" id="excepthook"><a class="viewcode-back" href="../../taucmdr.error.html#taucmdr.error.excepthook">[docs]</a><span class="k">def</span> <span class="nf">excepthook</span><span class="p">(</span><span class="n">etype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>

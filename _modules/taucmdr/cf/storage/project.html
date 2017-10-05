@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -103,7 +103,8 @@
 <span class="sd">            search_root (str): Directory in which the search for a project directory was initiated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Project directory not found in &#39;</span><span class="si">%s</span><span class="s2">&#39; or any of its parent directories.&quot;</span> <span class="o">%</span> <span class="n">search_root</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">hints</span> <span class="o">=</span> <span class="s2">&quot;Make sure that you have already run the `tau initialize` command in this directory or any of its parent directories.&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">hints</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">search_root</span> <span class="o">=</span> <span class="n">search_root</span></div>
         
 

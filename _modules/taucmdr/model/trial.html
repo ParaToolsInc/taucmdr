@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -89,7 +89,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.progress</span> <span class="kn">import</span> <span class="n">ProgressIndicator</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.controller</span> <span class="kn">import</span> <span class="n">Controller</span>
 <span class="kn">from</span> <span class="nn">taucmdr.mvc.model</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">taucmdr.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TauInstallation</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.software.tau_installation</span> <span class="kn">import</span> <span class="n">TauInstallation</span><span class="p">,</span> <span class="n">PROGRAM_LAUNCHERS</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">PROJECT_STORAGE</span>
 
 
@@ -283,6 +283,99 @@
 
     <span class="n">__controller__</span> <span class="o">=</span> <span class="n">TrialController</span>
     
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_separate_launcher_cmd</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Separate the launcher command and it&#39;s arguments from the application command(s) and arguments.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            cmd (list): Command line.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (Launcher command, Remainder of command line)</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ConfigurationError: No application config files or executables found after a recognized launcher command.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd0</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">launcher</span><span class="p">,</span> <span class="n">appfile_flags</span> <span class="ow">in</span> <span class="n">PROGRAM_LAUNCHERS</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">launcher</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cmd0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">],</span> <span class="n">cmd</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span> 
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="c1"># No &#39;--&#39; to indicate start of application, so look for first executable</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">exe</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">exe</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">cmd</span><span class="p">[:</span><span class="n">idx</span><span class="p">],</span> <span class="n">cmd</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span>
+                <span class="c1"># No exectuables, so look for application config file</span>
+                <span class="k">if</span> <span class="n">appfile_flags</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">arg</span><span class="p">,</span> <span class="n">appfile</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">appfile</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                                <span class="c1"># Reached the end of the command line without finding an application config file</span>
+                                <span class="k">break</span>
+                        <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">appfile_flags</span> <span class="ow">and</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="n">appfile</span><span class="p">):</span>
+                            <span class="k">return</span> <span class="n">cmd</span><span class="p">,</span> <span class="p">[]</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">((</span><span class="s2">&quot;TAU is having trouble parsing the command line: no executable &quot;</span>
+                                          <span class="s2">&quot;commands or </span><span class="si">%s</span><span class="s2"> application files were found after &quot;</span>
+                                          <span class="s2">&quot;the launcher command &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd0</span><span class="p">,</span> <span class="n">cmd0</span><span class="p">),</span>
+                                         <span class="s2">&quot;Check that the command is correct. Does it work without TAU?&quot;</span><span class="p">,</span>
+                                         <span class="p">(</span><span class="s2">&quot;Use &#39;--&#39; to seperate &#39;</span><span class="si">%s</span><span class="s2">&#39; and its arguments from the application &quot;</span>
+                                          <span class="s2">&quot;command, e.g. `mpirun -np 4 -- ./a.out -l hello`&quot;</span> <span class="o">%</span> <span class="n">cmd0</span><span class="p">))</span>
+        <span class="c1"># No launcher command, just an application command</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="n">cmd</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Trial.parse_launcher_cmd"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.parse_launcher_cmd">[docs]</a>    <span class="k">def</span> <span class="nf">parse_launcher_cmd</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parses a command line to split the launcher command and application commands.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            cmd (list): Command line.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (Launcher command, possibly empty list of application commands).</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">cmd0</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">cmd</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_separate_launcher_cmd</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">num_exes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cmd</span> <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
+        <span class="k">assert</span> <span class="n">launcher_cmd</span> <span class="ow">or</span> <span class="n">cmd</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Launcher: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">launcher_cmd</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Remainder: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">launcher_cmd</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">num_exes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Multiple executables were found on the command line but none of them &quot;</span>
+                               <span class="s2">&quot;were recognized application launchers.  TAU will assume that the application &quot;</span>
+                               <span class="s2">&quot;executable is &#39;</span><span class="si">%s</span><span class="s2">&#39; and subsequent executables are arguments to that command. &quot;</span>
+                               <span class="s2">&quot;If this is incorrect, use &#39;--&#39; to separate &#39;</span><span class="si">%s</span><span class="s2">&#39; and its arguments from the &quot;</span>
+                               <span class="s2">&quot;application command, e.g. `mpirun -np 4 -- ./a.out -l hello`&quot;</span><span class="p">,</span> <span class="n">cmd0</span><span class="p">,</span> <span class="n">cmd0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="p">[</span><span class="n">cmd</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cmd</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">num_exes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;No launcher commands or application executables.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">num_exes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="p">[</span><span class="n">cmd</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">num_exes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">colons</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;:&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">colons</span><span class="p">:</span>
+                <span class="c1"># Recognized launcher with multiple executables but not using &#39;:&#39; syntax.</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Multiple executables were found on the command line.  TAU will assume that &quot;</span>
+                               <span class="s2">&quot;the application executable is &#39;</span><span class="si">%s</span><span class="s2">&#39; and subsequent executables are arguments &quot;</span>
+                               <span class="s2">&quot;to that command. If this is incorrect, use &#39;:&#39; to separate each application &quot;</span>
+                               <span class="s2">&quot;executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`&quot;</span><span class="p">,</span> <span class="n">cmd0</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="p">[</span><span class="n">cmd</span><span class="p">]</span>
+            <span class="c1"># Split MPMD command on &#39;:&#39;.  Retain &#39;:&#39; as first element of each application command</span>
+            <span class="n">colons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+            <span class="n">application_cmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[:</span><span class="n">colons</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">colons</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">application_cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">colons</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="k">return</span> <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">application_cmds</span></div>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span>
@@ -502,7 +595,6 @@
                 <span class="n">util</span><span class="o">.</span><span class="n">create_archive</span><span class="p">(</span><span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="n">export_file</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">expr_dir</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">fmt</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Unhandled data file format &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span></div></div>
-
 </pre></div>
 
       </div>

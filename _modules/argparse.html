@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -729,7 +729,7 @@
         <span class="k">return</span> <span class="bp">None</span>
 
 
-<span class="k">class</span> <span class="nc">ArgumentError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="ArgumentError"><a class="viewcode-back" href="../taucmdr.cli.arguments.html#taucmdr.cli.arguments.ArgumentError">[docs]</a><span class="k">class</span> <span class="nc">ArgumentError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;An error from creating or using an argument (optional or positional).</span>
 
 <span class="sd">    The string value of this exception is the message, augmented with</span>
@@ -746,7 +746,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">format</span> <span class="o">=</span> <span class="s1">&#39;argument </span><span class="si">%(argument_name)s</span><span class="s1">: </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
         <span class="k">return</span> <span class="n">format</span> <span class="o">%</span> <span class="nb">dict</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
-                             <span class="n">argument_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">argument_name</span><span class="p">)</span>
+                             <span class="n">argument_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">argument_name</span><span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">ArgumentTypeError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>

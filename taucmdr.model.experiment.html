@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -136,7 +136,7 @@ The experiment is not configured to perform the desired build.</p>
 
 <dl class="method">
 <dt id="taucmdr.model.experiment.Experiment.managed_run">
-<code class="descname">managed_run</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmd</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.managed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">managed_run</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmds</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.managed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses this experiment to run an application command.</p>
 <p>Performs all relevent system preparation tasks to run the user&#8217;s application
 under the specified experimental configuration.</p>
@@ -146,7 +146,7 @@ under the specified experimental configuration.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>launcher_cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
-<li><strong>application_cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Application executable with command line arguments.</li>
+<li><strong>application_cmds</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; List of application executables with command line arguments (list of lists).</li>
 <li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; If not None, a description of the run.</li>
 </ul>
 </td>

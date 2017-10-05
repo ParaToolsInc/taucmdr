@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.2.0
+        VERSION:     '1.2.0.48
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -146,27 +146,31 @@
         <span class="sd">&quot;&quot;&quot;Show a subcommands help page and exit.&quot;&quot;&quot;</span>
         <span class="n">cmd_obj</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">find_command</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">command</span> <span class="o">=</span> <span class="n">cmd_obj</span><span class="o">.</span><span class="n">command</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Usage: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
-                 <span class="n">cmd_obj</span><span class="o">.</span><span class="n">usage</span><span class="p">,</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
                  <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Help: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
-                 <span class="n">cmd_obj</span><span class="o">.</span><span class="n">help_page</span><span class="p">]</span>
-        <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+                 <span class="n">cmd_obj</span><span class="o">.</span><span class="n">help_page</span><span class="p">,</span>
+                 <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Usage: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
+                 <span class="n">cmd_obj</span><span class="o">.</span><span class="n">usage</span><span class="p">]</span>
+        <span class="n">util</span><span class="o">.</span><span class="n">page_output</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="HelpCommand.exit_with_fullhelp"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.help.html#taucmdr.cli.commands.help.HelpCommand.exit_with_fullhelp">[docs]</a>    <span class="k">def</span> <span class="nf">exit_with_fullhelp</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;Show a recursive help page for all commands and exit.&quot;&quot;&quot;</span>
+        <span class="n">help_output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="n">commands</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">get_all_commands</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">cmd_name</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">command_from_module_name</span><span class="p">(</span><span class="n">cmd_name</span><span class="p">)</span>
             <span class="n">cmd_obj</span> <span class="o">=</span> <span class="n">cli</span><span class="o">.</span><span class="n">find_command</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">:])</span>
             <span class="n">command</span> <span class="o">=</span> <span class="n">cmd_obj</span><span class="o">.</span><span class="n">command</span>
             <span class="n">command</span> <span class="o">=</span> <span class="n">cmd_obj</span><span class="o">.</span><span class="n">command</span>
-            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Usage: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
-                     <span class="n">cmd_obj</span><span class="o">.</span><span class="n">usage</span><span class="p">,</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
                      <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Help: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
-                     <span class="n">cmd_obj</span><span class="o">.</span><span class="n">help_page</span><span class="p">]</span>
-            <span class="k">print</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+                     <span class="n">cmd_obj</span><span class="o">.</span><span class="n">help_page</span><span class="p">,</span>
+                     <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">hline</span><span class="p">(</span><span class="s2">&quot;Usage: &quot;</span> <span class="o">+</span> <span class="n">command</span><span class="p">),</span>
+                     <span class="n">cmd_obj</span><span class="o">.</span><span class="n">usage</span><span class="p">]</span>
+            <span class="n">help_output</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="n">util</span><span class="o">.</span><span class="n">page_output</span><span class="p">(</span><span class="n">help_output</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
 
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
