@@ -42,7 +42,7 @@ from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
-from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.cf.software.tau_installation import TauInstallation, PROGRAM_LAUNCHERS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
@@ -236,17 +236,12 @@ class Trial(Model):
 
     __controller__ = TrialController
     
-    _launchers = {'mpirun': ['-app', '--app', '-configfile'], 
-                  'mpiexec': ['-app', '--app', '-configfile'], 
-                  'ibrun': [], 
-                  'aprun': [], 
-                  'qsub': [], 
-                  'srun': ['--multi-prog'], 
-                  'oshrun': []}
-    
     @classmethod
     def _separate_launcher_cmd(cls, cmd):
         """Separate the launcher command and it's arguments from the application command(s) and arguments.
+        
+        Args:
+            cmd (list): Command line.
         
         Returns:
             tuple: (Launcher command, Remainder of command line)
@@ -255,7 +250,7 @@ class Trial(Model):
             ConfigurationError: No application config files or executables found after a recognized launcher command.
         """
         cmd0 = cmd[0]
-        for launcher, appfile_flags in cls._launchers.iteritems():
+        for launcher, appfile_flags in PROGRAM_LAUNCHERS.iteritems():
             if launcher not in cmd0:
                 continue
             try:
@@ -268,8 +263,16 @@ class Trial(Model):
                         return cmd[:idx], cmd[idx:]
                 # No exectuables, so look for application config file
                 if appfile_flags:
-                    for i, arg in enumerate(cmd[1:-1], 1):
-                        if arg in appfile_flags and util.path_accessible(cmd[i+1]):
+                    for i, arg in enumerate(cmd[1:], 1):
+                        try:
+                            arg, appfile = arg.split('=')
+                        except ValueError:
+                            try:
+                                appfile = cmd[i+1]
+                            except IndexError:
+                                # Reached the end of the command line without finding an application config file
+                                break
+                        if arg in appfile_flags and util.path_accessible(appfile):
                             return cmd, []
                 raise ConfigurationError(("TAU is having trouble parsing the command line: no executable "
                                           "commands or %s application files were found after "
@@ -288,7 +291,7 @@ class Trial(Model):
             cmd (list): Command line.
             
         Returns:
-            tuple: (Launcher command, list of application commands).
+            tuple: (Launcher command, possibly empty list of application commands).
         """ 
         cmd0 = cmd[0]
         launcher_cmd, cmd = cls._separate_launcher_cmd(cmd)
@@ -305,7 +308,7 @@ class Trial(Model):
                                "application command, e.g. `mpirun -np 4 -- ./a.out -l hello`", cmd0, cmd0)
             return [], [cmd]
         if not cmd:
-            raise NotImplementedError("TAU Commander doesn't support %s application files yet." % cmd0)
+            return launcher_cmd, []
         if num_exes == 0:
             raise InternalError("No launcher commands or application executables.")
         elif num_exes == 1:
@@ -317,8 +320,7 @@ class Trial(Model):
                 LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
                                "the application executable is '%s' and subsequent executables are arguments "
                                "to that command. If this is incorrect, use ':' to separate each application "
-                               "executable and its arguments, e.g. "
-                               "`mpirun -np 4 ./foo -l : -np 2 ./bar --hello`", cmd0)
+                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`", cmd0)
                 return launcher_cmd, [cmd]
             # Split MPMD command on ':'.  Retain ':' as first element of each application command
             colons.append(len(cmd))

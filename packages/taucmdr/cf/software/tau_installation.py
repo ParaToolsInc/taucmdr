@@ -138,6 +138,14 @@ PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 
 TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
 
+PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'], 
+                     'mpiexec': ['-app', '--app', '-configfile'], 
+                     'ibrun': [], 
+                     'aprun': [], 
+                     'qsub': [], 
+                     'srun': ['--multi-prog'], 
+                     'oshrun': []}
+
 
 def check_env_compat():
     """Checks the current shell environment for incompatible libraries or modules.
@@ -1106,11 +1114,60 @@ class TauInstallation(Installation):
                                      "Use taucmdr --log and see detailed output at the end of '%s'" % logger.LOG_FILE)
         return retval
 
+    def _rewrite_launcher_appfile_cmd(self, cmd, tau_exec):
+        launcher = cmd[0]
+        appfile_flags = PROGRAM_LAUNCHERS.get(launcher)
+        if not appfile_flags:
+            raise InternalError("Application configuration file flags for '%s' are unknown" % launcher)
+        for i, flag in enumerate(cmd[1:], 1):
+            try:
+                flag, appfile = flag.split('=')
+                with_equals = True
+            except ValueError:
+                try:
+                    appfile = cmd[i+1]
+                    with_equals = False
+                except IndexError:
+                    raise InternalError("Unable to parse application configuration file in '%s'" % cmd)
+            if flag in appfile_flags:
+                appfile_arg_idx = i
+                appfile_flag = flag
+                break
+        else:
+            raise InternalError("None of '%s' found in '%s'" % (appfile_flags, cmd))
+        tau_appfile = os.path.join(util.mkdtemp(), appfile+".tau")
+        LOGGER.debug("Rewriting '%s' as '%s'", appfile, tau_appfile)
+        with open(tau_appfile, 'w') as fout, open(appfile, 'r') as fin:
+            for lineno, line in enumerate(fin):
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                application_cmd = line.split()
+                if launcher == 'srun':
+                    # Slurm makes this easy: https://computing.llnl.gov/tutorials/linux_clusters/multi-prog.html
+                    idx = 1
+                else:
+                    for idx, exe in enumerate(application_cmd):
+                        if util.which(exe):
+                            break
+                    else:
+                        raise ConfigurationError("No executables found on line %d of '%s'", lineno, appfile)
+                tau_line = ' '.join(application_cmd[:idx] + tau_exec + application_cmd[idx:] + ['\n'])
+                LOGGER.debug(tau_line)
+                fout.write(tau_line)
+        if with_equals:
+            return cmd[:appfile_arg_idx] + [appfile_flag+'='+tau_appfile] + cmd[appfile_arg_idx+1:]
+        else:
+            return cmd[:appfile_arg_idx] + [appfile_flag, tau_appfile] + cmd[appfile_arg_idx+2:]
+        
     def get_application_command(self, launcher_cmd, application_cmds):
         """Build a command line to launch an application under TAU.
 
         Sometimes TAU needs to use tau_exec, sometimes not.  This routine
         also handles backend launch commands like `aprun`.
+        
+        `application_cmds` may be an empty list if the application is launched 
+        via a configuration file, e.g. ``mpirun --app myapp.cfg``.
 
         Args
             launcher_cmd (list): Application launcher with command line arguments, e.g. ``['mpirun', '-np', '4']``.
@@ -1148,18 +1205,21 @@ class TauInstallation(Installation):
                                "to crash or produce invalid data.  If you're unsure, use --tau=download to allow "
                                "TAU Commander to manage your TAU configurations.", makefile)
             tau_exec = ['tau_exec', '-T', ','.join(tags)] + opts
-        cmd = launcher_cmd
-        cmd.extend(tau_exec)
-        cmd.extend(application_cmds[0])
-        for application_cmd in application_cmds[1:]:
-            for i, part in enumerate(application_cmd):
-                if util.which(part):
-                    cmd.extend(application_cmd[:i])
-                    cmd.extend(tau_exec)
-                    cmd.extend(application_cmd[i:])
-                    break
-            else:
-                raise InternalError("Application command '%s' contains no executables" % application_cmd)
+        if not application_cmds:
+            cmd = self._rewrite_launcher_appfile_cmd(launcher_cmd, tau_exec)
+        else:
+            cmd = launcher_cmd
+            cmd.extend(tau_exec)
+            cmd.extend(application_cmds[0])
+            for application_cmd in application_cmds[1:]:
+                for i, part in enumerate(application_cmd):
+                    if util.which(part):
+                        cmd.extend(application_cmd[:i])
+                        cmd.extend(tau_exec)
+                        cmd.extend(application_cmd[i:])
+                        break
+                else:
+                    raise InternalError("Application command '%s' contains no executables" % application_cmd)
         return cmd, env
     
     def _check_java(self):
