@@ -480,11 +480,6 @@ class Experiment(Model):
         Returns:
             int: Application subprocess return code.
         """
-        # Check for command line errors before configuring TAU
-        for application_cmd in application_cmds:
-            command = util.which(application_cmd[0])
-            if not command:
-                raise ConfigurationError("Cannot find executable: %s" % application_cmd[0])
         tau = self.configure()
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')

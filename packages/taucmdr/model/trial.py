@@ -292,7 +292,7 @@ class Trial(Model):
         """ 
         cmd0 = cmd[0]
         launcher_cmd, cmd = cls._separate_launcher_cmd(cmd)
-        num_exes = len(x for x in cmd if util.which(x))
+        num_exes = len([x for x in cmd if util.which(x)])
         assert launcher_cmd or cmd
         LOGGER.debug('Launcher: %s', launcher_cmd)
         LOGGER.debug('Remainder: %s', cmd)
@@ -311,23 +311,20 @@ class Trial(Model):
         elif num_exes == 1:
             return launcher_cmd, [cmd]
         elif num_exes > 1:
-            # Split MPMD command on ':'.  Retain ':' as first element of each application command
-            application_cmds = []
-            while True:
-                try:
-                    idx = cmd.index(':')
-                except ValueError:
-                    break
-                application_cmds.append(cmd[:idx])
-                cmd = cmd[idx:]
-            if not application_cmds:
+            colons = [i for i, x in enumerate(cmd) if x == ':']
+            if not colons:
                 # Recognized launcher with multiple executables but not using ':' syntax.
                 LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
                                "the application executable is '%s' and subsequent executables are arguments "
                                "to that command. If this is incorrect, use ':' to separate each application "
                                "executable and its arguments, e.g. "
                                "`mpirun -np 4 ./foo -l : -np 2 ./bar --hello`", cmd0)
-            application_cmds.append(cmd)
+                return launcher_cmd, [cmd]
+            # Split MPMD command on ':'.  Retain ':' as first element of each application command
+            colons.append(len(cmd))
+            application_cmds = [cmd[:colons[0]]]
+            for i, idx in enumerate(colons[:-1]):
+                application_cmds.append(cmd[idx:colons[i+1]])
             return launcher_cmd, application_cmds
 
     @property

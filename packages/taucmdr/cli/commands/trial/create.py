@@ -67,6 +67,8 @@ class TrialCreateCommand(CreateCommand):
         description = getattr(args, 'description', None)
         cmd = [args.cmd] + args.cmd_args
         launcher_cmd, application_cmds = Trial.parse_launcher_cmd(cmd)
+        self.logger.debug("Launcher command: %s", launcher_cmd)
+        self.logger.debug("Application commands: %s", application_cmds)
         return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
 
 
