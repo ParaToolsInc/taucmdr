@@ -1138,7 +1138,7 @@ class TauInstallation(Installation):
         tau_appfile = os.path.join(util.mkdtemp(), appfile+".tau")
         LOGGER.debug("Rewriting '%s' as '%s'", appfile, tau_appfile)
         with open(tau_appfile, 'w') as fout, open(appfile, 'r') as fin:
-            for lineno, line in enumerate(fin):
+            for lineno, line in enumerate(fin, 1):
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
@@ -1151,7 +1151,9 @@ class TauInstallation(Installation):
                         if util.which(exe):
                             break
                     else:
-                        raise ConfigurationError("No executables found on line %d of '%s'", lineno, appfile)
+                        raise ConfigurationError("No executables found on line %d of '%s'" % (lineno, appfile),
+                                                 "Check the file for errors. Does it work without TAU?",
+                                                 "Avoid breaking commands over multiple lines.")
                 tau_line = ' '.join(application_cmd[:idx] + tau_exec + application_cmd[idx:] + ['\n'])
                 LOGGER.debug(tau_line)
                 fout.write(tau_line)
