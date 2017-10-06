@@ -1,6 +1,9 @@
 language: python
+
 os:
   - linux
+  - osx
+
 matrix:
   include:
     - os: osx
