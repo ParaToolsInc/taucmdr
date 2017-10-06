@@ -78,11 +78,11 @@ endif
 # Usage: $(call download,source,dest)
 WGET = $(shell which wget)
 ifneq ($(WGET),)
-  download = $(WGET) $(WGET_FLAGS) -O "$(2)" "$(1)"
+  download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
   CURL = $(shell which curl)
   ifneq ($(CURL),)
-    download = $(CURL) $(CURL_FLAGS) -L "$(1)" > "$(2)"
+    download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
   else
     $(warning Either curl or wget must be in PATH to download packages)
   endif
@@ -195,8 +195,18 @@ $(CONDA): $(CONDA_SRC)
 	$(ECHO)touch $(CONDA_DEST)/bin/*
 
 $(CONDA_SRC):
-	$(ECHO)$(MKDIR) `dirname "$(CONDA_SRC)"`
-	$(call download,$(CONDA_URL),$(CONDA_SRC))
+	@$(ECHO)$(MKDIR) `dirname "$(CONDA_SRC)"`
+	@$(call download,$(CONDA_URL),$(CONDA_SRC)) || \
+            (rm -f "$(CONDA_SRC)" ; \
+             echo "**************************************************************************" ; \
+             echo "*" ; \
+             echo "* ERROR" ; \
+             echo "*" ; \
+             echo "* Unable to download $(CONDA_URL)." ; \
+             echo "* Please use an all-in-one package from www.taucommander.com" ; \
+             echo "*" ; \
+             echo "**************************************************************************" ; \
+             false)
 
 clean: 
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
