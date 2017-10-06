@@ -36,7 +36,7 @@ import os
 import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
-from taucmdr.error import ExperimentSelectionError, UniqueAttributeError
+from taucmdr.error import ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
@@ -99,151 +99,61 @@ def attributes():
 
 class ExperimentController(Controller):
     """Experiment data controller."""
-
-    def _restrict_project(self, key_dict):
-        key_dict['project'] = Project.controller(self.storage).selected().eid
-
-    def one(self, keys):
+ 
+    @property
+    def _project_eid(self):
+        """Avoid multiple lookup of the selected project since project selection will not change mid-process."""
         try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except TypeError:
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        return super(ExperimentController, self).one(keys)
+            return self._selected_project.eid
+        except AttributeError:
+            # pylint: disable=attribute-defined-outside-init
+            self._selected_project = Project.controller(self.storage).selected() 
+            return self._selected_project.eid
     
+    def _restrict_project(self, keys):
+        """Ensures that we only operate on experiment records in the selected project.""" 
+        try:
+            return dict(keys, project=self._project_eid)
+        except TypeError:
+            try:
+                return [dict(key, project=self._project_eid) for key in keys]
+            except TypeError:
+                pass
+        return keys
+ 
+    def one(self, keys):
+        return super(ExperimentController, self).one(self._restrict_project(keys))
+     
     def all(self):
-        try:
-            keys = dict()
-            keys['project'] = Project.controller(self.storage).selected().eid
-        except TypeError:
-            try:
-                for key in keys:
-                    key['project'] = Project.controller(self.storage).selected().eid
-            except TypeError:
-                keys = None
+        keys = {'project': self._project_eid}
         return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
-
+    
+    def count(self):
+        return len(self.all())
+ 
     def search(self, keys=None):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        return super(ExperimentController, self).search(keys)
-
+        return super(ExperimentController, self).search(self._restrict_project(keys))
+ 
     def exists(self, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except TypeError:
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        return super(ExperimentController, self).exists(keys)
-
+        return super(ExperimentController, self).exists(self._restrict_project(keys))
+    
+    def _check_unique(self, data, match_any=False):
+        """Default match_any to False to prevent matches outside the selected project."""
+        return super(ExperimentController, self)._check_unique(data, match_any)
+ 
     def create(self, data):
-        try:
-            data = dict(data)
-            self._restrict_project(data)
-        except TypeError:
-            try:
-                for key in data:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        self._restrict_project(data)
-        data = self.model.validate(data)
-        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
-        if unique and self.storage.contains(unique, match_any=False, table_name=self.model.name):
-            raise UniqueAttributeError(self.model, unique)
-        with self.storage as database:
-            record = database.insert(data, table_name=self.model.name)
-            for attr, foreign in self.model.associations.iteritems():
-                if 'model' or 'collection' in self.model.attributes[attr]:
-                    affected = record.get(attr, None)
-                    if affected:
-                        foreign_cls, via = foreign
-                        self._associate(record, foreign_cls, affected, via)
-            model = self.model(record)
-            model.check_compatibility(model)
-            model.on_create()
-            return model
-
+        data['project'] = self._project_eid
+        return super(ExperimentController, self).create(data)
+ 
     def update(self, data, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except TypeError:
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        return super(ExperimentController, self).update(data, keys)
-
+        return super(ExperimentController, self).update(data, self._restrict_project(keys))
+ 
     def unset(self, fields, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except TypeError:
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        return super(ExperimentController, self).unset(fields, keys)
-
+        return super(ExperimentController, self).unset(fields, self._restrict_project(keys))
+ 
     def delete(self, keys):
-        self._restrict_project(keys)
-        with self.storage as database:
-            removed_data = []
-            changing = self.search(keys)
-            for model in changing:
-                for attr, foreign in model.associations.iteritems():
-                    foreign_model, via = foreign
-                    affected_keys = model.get(attr, None)
-                    if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
-                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
-                        self._disassociate(model, foreign_model, affected_keys, via)
-                for foreign_model, via in model.references:
-                    # pylint complains because `model` is changing on every iteration so we'll have
-                    # a different lambda function `test` on each iteration.  This is exactly what
-                    # we want so we disble the warning. 
-                    # pylint: disable=cell-var-from-loop, undefined-loop-variable
-                    test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
-                    affected = database.match(via, test=test, table_name=foreign_model.name)
-                    affected_keys = [record.eid for record in affected]
-                    if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
-                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
-                        self._disassociate(model, foreign_model, affected_keys, via)
-                removed_data.append(dict(model))
-            database.remove(keys, table_name=self.model.name)
-            for model in changing:
-                model.on_delete()
+        return super(ExperimentController, self).delete(self._restrict_project(keys))
 
-    def export_records(self, keys=None, eids=None):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except TypeError:
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        return super(ExperimentController, self).export_records(keys, eids)
 
 class Experiment(Model):
     """Experiment data model."""

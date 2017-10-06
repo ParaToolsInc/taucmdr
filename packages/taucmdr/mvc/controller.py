@@ -176,6 +176,11 @@ class Controller(object):
         else:
             return foreign.controller(self.storage).one(value)
 
+    def _check_unique(self, data, match_any=True):
+        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
+        if unique and self.storage.contains(unique, match_any=match_any, table_name=self.model.name):
+            raise UniqueAttributeError(self.model, unique)
+    
     def create(self, data):
         """Atomically store a new record and update associations.
         
@@ -189,9 +194,7 @@ class Controller(object):
             Model: The newly created data. 
         """
         data = self.model.validate(data)
-        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
-        if unique and self.storage.contains(unique, match_any=True, table_name=self.model.name):
-            raise UniqueAttributeError(self.model, unique)
+        self._check_unique(data)
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
             for attr, foreign in self.model.associations.iteritems():
