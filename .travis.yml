@@ -1,8 +1,10 @@
 language: python
+os:
+  - linux
 matrix:
-  - os: linux
-  - os: osx
-    python: nightly
+  include:
+    - os: osx
+      python: nightly
 
 branches:
   except:
