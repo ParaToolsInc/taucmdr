@@ -22,9 +22,6 @@ env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
     - __TAUCMDR_PROGRESS_BARS__="minimal"
-  matrix:
-    - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
-    - OS='OSX'
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
@@ -55,7 +52,7 @@ after_failure:
   - tail -1000 "$HOME/.tau/debug_log"
 
 after_script:
-  - codecov --env OS
+  - codecov --env TRAVIS_OS_NAME
 
 deploy:
   provider: script
