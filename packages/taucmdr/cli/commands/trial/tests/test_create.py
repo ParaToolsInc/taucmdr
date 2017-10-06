@@ -107,11 +107,8 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertInLastTrialData("Heap Memory Used (KB) at Entry")
         self.assertInLastTrialData("Heap Memory Used (KB) at Exit")
-        self.assertInLastTrialData("Heap Memory Used (KB)")
-        self.assertInLastTrialData("Heap Allocate")
         self.assertInLastTrialData("compute_interchange")
         self.assertInLastTrialData("compute")
-        self.assertInLastTrialData("malloc")
 
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
