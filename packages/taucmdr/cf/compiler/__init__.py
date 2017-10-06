@@ -730,7 +730,11 @@ class InstalledCompilerFamily(object):
                 absolute_path = util.which(info.command)
                 if absolute_path:
                     LOGGER.debug("%s %s compiler is '%s'", family.name, info.role.language, absolute_path)
-                    installed = InstalledCompiler(absolute_path, info)
+                    try:
+                        installed = InstalledCompiler(absolute_path, info)
+                    except ConfigurationError as err:
+                        LOGGER.warning(err)
+                        continue
                     self.members.setdefault(role, []).append(installed)
         if not self.members:
             raise ConfigurationError("%s compilers not found." % self.family.name)
