@@ -437,6 +437,7 @@ class TauInstallation(Installation):
             raise SoftwarePackageError("TAU libraries for makefile '%s' not found" % tau_makefile)
         
     def _verify_dependency_paths(self, tau_makefile):
+        LOGGER.debug("Checking dependency paths in '%s'", tau_makefile)
         with open(tau_makefile, 'r') as fin:
             for line in fin:
                 if line.startswith('#'):
@@ -445,6 +446,8 @@ class TauInstallation(Installation):
                     if self._uses_binutils:
                         binutils = self.dependencies['binutils']
                         bfd_inc = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(bfd_inc):
+                            raise SoftwarePackageError("BFDINCLUDE in '%s' is not a directory" % tau_makefile)                            
                         if binutils.include_path != bfd_inc:
                             LOGGER.debug("BFDINCLUDE='%s' != '%s'", bfd_inc, binutils.include_path)
                             raise SoftwarePackageError("BFDINCLUDE in '%s' is not '%s'" % 
@@ -453,6 +456,8 @@ class TauInstallation(Installation):
                     if self._uses_libunwind: 
                         libunwind = self.dependencies['libunwind']
                         libunwind_inc = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(libunwind_inc):
+                            raise SoftwarePackageError("UNWIND_INC in '%s' is not a directory" % tau_makefile)                            
                         if libunwind.include_path != libunwind_inc:
                             LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
                             raise SoftwarePackageError("UNWIND_INC in '%s' is not '%s'" % 
@@ -461,6 +466,8 @@ class TauInstallation(Installation):
                     if self._uses_papi:
                         papi = self.dependencies['papi']
                         papi_dir = line.split('=')[1].strip()
+                        if not os.path.isdir(papi_dir):
+                            raise SoftwarePackageError("PAPI_DIR in '%s' is not a directory" % tau_makefile)                            
                         if papi.install_prefix != papi_dir:
                             LOGGER.debug("PAPI_DIR='%s' != '%s'", papi_dir, papi.install_prefix)
                             raise SoftwarePackageError("PAPI_DIR in '%s' is not '%s'" % 
@@ -469,6 +476,8 @@ class TauInstallation(Installation):
                     if self._uses_scorep:
                         scorep = self.dependencies['scorep']
                         scorep_dir = line.split('=')[1].strip()
+                        if not os.path.isdir(scorep_dir):
+                            raise SoftwarePackageError("SCOREPDIR in '%s' is not a directory" % tau_makefile)                            
                         if scorep.install_prefix != scorep_dir:
                             LOGGER.debug("SCOREPDIR='%s' != '%s'", scorep_dir, scorep.install_prefix)
                             raise SoftwarePackageError("SCOREPDIR in '%s' is not '%s'" % 
@@ -477,6 +486,8 @@ class TauInstallation(Installation):
                     if self._uses_libotf2:
                         libotf2 = self.dependencies['libotf2']
                         libotf2_dir = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(libotf2_dir):
+                            raise SoftwarePackageError("OTFINC in '%s' is not a directory" % tau_makefile)                            
                         if libotf2.include_path != libotf2_dir:
                             LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
                             raise SoftwarePackageError("OTFINC in '%s' is not '%s'" % 
