@@ -76,17 +76,21 @@ def tmpfs_prefix():
     fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
     unavailable then use the filesystem prefix of the highest writable storage container.
     
+    An attempt is made to ensure that there is at least 2GiB of free space in the 
+    selected filesystem.  If
+    
     Returns:
         str: Path to a uniquely-named directory in the temporary filesystem. The directory 
             and all its contents **will be deleted** when the program exits if it installs
             correctly.
     """
     try:
-        tmp_prefix = tmpfs_prefix.value
+        return tmpfs_prefix.value
     except AttributeError:
         import tempfile
         import subprocess
         from stat import S_IRUSR, S_IWUSR, S_IEXEC
+        candidate = None
         for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
             try:
                 tmp_prefix = util.mkdtemp(dir=prefix)
@@ -94,19 +98,39 @@ def tmpfs_prefix():
                 LOGGER.debug(err)
                 continue
             # Check execute privilages some distros mount tmpfs with the noexec option.
+            check_exe_script = None
             try:
                 with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:
-                    tmp_path = tmp_file.name
+                    check_exe_script = tmp_file.name
                     tmp_file.write("#!/bin/sh\nexit 0")
-                os.chmod(tmp_path, S_IRUSR | S_IWUSR | S_IEXEC)
-                subprocess.check_call([tmp_path])
+                os.chmod(check_exe_script, S_IRUSR | S_IWUSR | S_IEXEC)
+                subprocess.check_call([check_exe_script])
             except (OSError, IOError, subprocess.CalledProcessError) as err:
                 LOGGER.debug(err)
                 continue
+            try:
+                statvfs = os.statvfs(check_exe_script)
+            except (OSError, IOError) as err:
+                LOGGER.debug(err)
+                if candidate is None:
+                    candidate = tmp_prefix
+                continue
             else:
-                break
+                free_mib = (statvfs.f_frsize*statvfs.f_bavail)/0x100000
+                LOGGER.debug("%s: %sMB free", tmp_prefix, free_mib)
+                if free_mib < 2000:
+                    continue
+            if check_exe_script:
+                os.remove(check_exe_script)
+            break
+        else:
+            if not candidate:
+                raise ConfigurationError("No filesystem has at least 2GB free space and supports executables.")
+            tmp_prefix = candidate
+            LOGGER.warning("Unable to count available bytes in '%s'", tmp_prefix)
         tmpfs_prefix.value = tmp_prefix
-    return tmp_prefix
+        LOGGER.debug("Temporary prefix: '%s'", tmp_prefix)
+        return tmp_prefix
     
 
 @contextmanager
