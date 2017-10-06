@@ -147,20 +147,6 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'oshrun': []}
 
 
-def check_env_compat():
-    """Checks the current shell environment for incompatible libraries or modules.
-
-    Other instrumentation packages like Darshan can conflict with TAU.  This routine
-    checks that no conflicting packages are active in the current environment.
-
-    Raises:
-        ConfigurationError: TAU cannot be used in the current environment.
-    """
-    if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
-        raise ConfigurationError("TAU cannot be used with darshan. ",
-                                 "Unload the darshan module and try again.") 
-
-
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
 
@@ -382,6 +368,7 @@ class TauInstallation(Installation):
             if sources['scorep']:
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
+        self.check_env_compat()
     
     @classmethod
     def minimal(cls):
@@ -408,6 +395,23 @@ class TauInstallation(Installation):
         compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
         inst = cls(sources, target_arch, target_os, compilers, minimal_configuration=True)
         return inst
+
+    @classmethod
+    def check_env_compat(cls):
+        """Checks the current shell environment for incompatible libraries or modules.
+    
+        Other instrumentation packages like Darshan can conflict with TAU.  This routine
+        checks that no conflicting packages are active in the current environment.
+    
+        Raises:
+            ConfigurationError: TAU cannot be used in the current environment.
+        """
+        if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
+            raise ConfigurationError("TAU cannot be used with darshan. ",
+                                     "Unload the darshan module and try again.") 
+        if os.environ.get('PE_ENV') == 'CRAY':
+            raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
+                                     "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, or PrgEnv-pgi and try again.")
 
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]

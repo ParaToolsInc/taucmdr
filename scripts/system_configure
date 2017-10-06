@@ -99,6 +99,8 @@ def _configure_project(args):
 
 def main(argv):
     """Program entry point."""
+    TauInstallation.check_env_compat()
+
     prog = sys.argv[0]
     parser = arguments.get_parser(prog=prog, usage='%s [arguments]' % prog, 
                                   description="Pre-build TAU configurations.")
