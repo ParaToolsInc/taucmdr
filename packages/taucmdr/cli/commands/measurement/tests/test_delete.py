@@ -64,5 +64,5 @@ class DeleteTest(tests.TestCase):
         self.assertIn("Created a new experiment 'targ1-app1-profile2'", stdout)
         self.assertFalse(stderr)
         stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['profile2'])
-        self.assertFalse(stdout)
+        self.assertIn("Deleted measurement 'profile2'", stdout)
         self.assertFalse(stderr)
