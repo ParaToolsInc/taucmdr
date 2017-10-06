@@ -38,30 +38,31 @@ class CopyTest(tests.TestCase):
     """Tests for :any:`project.copy`."""
 
     def test_copy(self):
+        """https://github.com/ParaToolsInc/taucmdr/issues/178"""
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, PROJECT_COPY_COMMAND, 
                                                        ['proj1', 'proj2', 
                                                         '--application', 'app1', 
-                                                        '--measurements profile',
-                                                        ' --targets east03'])
-        self.assertIn('Created a new project named \'proj2\'', stdout)
+                                                        '--measurements', 'profile',
+                                                        '--targets', 'targ1'])
+        self.assertIn("Created a new project-level project: 'proj2'", stdout)
         self.assertFalse(stderr)
 
     def test_duplicatename(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, PROJECT_COPY_COMMAND, ['proj1', 'proj2'])
-        self.assertIn('Created a new project named \'proj2\'', stdout)
+        self.assertIn("Created a new project-level project: 'proj2'", stdout)
         self.assertFalse(stderr)
         stdout, stderr = self.assertNotCommandReturnValue(0, PROJECT_COPY_COMMAND, ['proj1', 'proj2'])
-        self.assertIn("project copy: error: A project named 'proj2' already exists", stderr)
+        self.assertIn("project copy: error: A project with name='proj2' already exists", stderr)
         self.assertFalse(stdout)
-
+ 
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, PROJECT_COPY_COMMAND, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
         self.assertFalse(stderr)
-
+ 
     def test_help_arg(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, PROJECT_COPY_COMMAND, ['--help'])
