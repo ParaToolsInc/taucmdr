@@ -1060,6 +1060,7 @@ class TauInstallation(Installation):
             opts.append('-io')
         if self.measure_memory_alloc:
             env['TAU_SHOW_MEMORY_FUNCTIONS'] = '1'
+            opts.append('-memory')
         if self.measure_shmem:
             opts.append('-shmem')
         return list(set(opts)), env

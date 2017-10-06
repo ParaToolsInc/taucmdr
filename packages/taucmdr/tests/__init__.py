@@ -29,16 +29,17 @@
 
 import os
 import sys
+import glob
 import shutil
 import atexit
 import tempfile
 import unittest
+from unittest import skipIf, skipUnless
 import warnings
 try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-from unittest import skipIf, skipUnless
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
@@ -254,7 +255,23 @@ class TestCase(unittest.TestCase):
         cc_cmd = self.assertCompiler(compiler_role)
         args = [cc_cmd] + compiler_args + [src]
         self.assertCommandReturnValue(return_value, build_command, args)
-    
+        
+    def assertInLastTrialData(self, value, data_type='tau'):
+        from taucmdr.model.project import Project
+        trial = Project.selected().experiment().trials()
+        data_files = trial[0].get_data_files()
+        if data_type == 'tau':
+            data = []
+            for profile_file in glob.glob(os.path.join(data_files['tau'], 'profile.*.*.*')):
+                with open(profile_file) as fin:
+                    buff = fin.read()
+                    if value in buff:
+                        return
+                    data.append(buff)
+        else:
+            raise NotImplementedError 
+        self.fail("'%s' not found in '%s'" % (value, '\n'.join(data)))
+
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
