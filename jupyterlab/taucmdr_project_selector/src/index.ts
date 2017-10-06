@@ -39,6 +39,10 @@ import {
     Session
 } from '@jupyterlab/services';
 
+import {
+    Message
+} from '@phosphor/messaging';
+
 import '../style/index.css';
 
 const widget_id = 'taucmdr_project_selector';
@@ -70,7 +74,7 @@ function showErrorMessage(title: string, error: any): Promise<void> {
 
 class ProjectSelectorWidget extends Widget {
 
-    readonly session_path: string = 'taucmdr.ipynb';
+    readonly session_path: string = 'taucmdr_project_selector.ipynb';
 
     readonly get_projects_kernel: string = `
 import json
@@ -169,7 +173,6 @@ print(json.dumps(entries))
     };
 
     select_project(name: string): void {
-        console.log(`Should select ${name}`);
         let kernel_code = `
 from taucmdr.model.project import Project
 proj = Project.controller().one({"name": "${name}"})
@@ -178,7 +181,6 @@ Project.controller().select(proj)
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: kernel_code});
             future.onIOPub = msg => {
-                console.log(msg);
                 if (msg.header.msg_type == "stream") {
                     console.log(msg.content.text.toString());
                 } else if (msg.header.msg_type == "error") {
@@ -195,13 +197,12 @@ Project.controller().select(proj)
         });
     }
 
-    list_projects(): void {
+    list_projects(show_errors: boolean = true): void {
         let result: string = "";
         this.tBody.innerHTML = "";
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: this.get_projects_kernel});
             future.onIOPub = msg => {
-                console.log(msg);
                 if (msg.header.msg_type == "stream") {
                     result = result.concat(msg.content.text.toString());
                 } else if (msg.header.msg_type == "error") {
@@ -212,7 +213,10 @@ Project.controller().select(proj)
                         errMsg = msg.content.ename.toString();
                         console.log(msg.content);
                     }
-                    showErrorMessage("Unable to list projects", errMsg).then(r=>{});
+                    if(show_errors) {
+                        showErrorMessage("Unable to list projects", errMsg).then(r => {
+                        });
+                    }
                 } else if (msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
                     let projects: Array<IProjectsResult> = JSON.parse(result);
                     projects.forEach(project => {
@@ -238,9 +242,19 @@ Project.controller().select(proj)
                 }
             };
         }, r => {
-            showErrorMessage("Unable to get project list", r).then(r=>{});
+            if(show_errors) {
+                showErrorMessage("Unable to get project list", r).then(r => {
+                });
+            }
         });
     };
+
+    protected onAfterAttach(msg: Message): void {
+        this.list_projects(false);
+    }
+
+    protected onBeforeDetach(msg: Message): void {
+    }
 }
 
 function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRestorer) {
@@ -254,9 +268,6 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
     restorer.add(widget, widget_id);
 }
 
-/**
- * Initialization data for the jupyterlab_xkcd extension.
- */
 const extension: JupyterLabPlugin<void> = {
     id: widget_id,
     autoStart: true,

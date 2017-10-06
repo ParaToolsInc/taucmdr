@@ -74,7 +74,7 @@ class DashboardCommand(AbstractCommand):
             raise err
         else:
             project_list_cmd.main(subargs + [proj['name']])
-        print
+        print()
         return EXIT_SUCCESS
 
 COMMAND = DashboardCommand(__name__, summary_fmt="Show all project components.")

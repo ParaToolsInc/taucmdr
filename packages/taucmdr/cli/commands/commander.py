@@ -48,6 +48,10 @@ class CommanderCommand(AbstractCommand):
         # the taucmdr package
         os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
                                    + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
+
+        # ANSI escape sequences aren't supported by Jupyter OutputCells
+        os.environ['ANSI_COLORS_DISABLED'] = "1"
+
         return jupyterlab.labapp.main(argv)
 
 

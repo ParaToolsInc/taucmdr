@@ -24,23 +24,96 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {
+    Session
+} from '@jupyterlab/services';
+
+export class Kernels {
+
+    session: Session.ISession;
+
+    constructor() {
+        this.start_session().then(r=>{});
+    }
+
+    get_project() : Promise<Array<Kernels.JSONResult>> {
+        return this.execute_kernel(Kernels.getProjectKernel).then(stream => {
+            return stream.split("\n").slice(0, -1).map(entry => {
+               return JSON.parse(entry);
+            });
+        }, reason => {
+            throw new Error(reason);
+        });
+    }
+
+    protected execute_kernel(kernel: string) : Promise<string> {
+        return this.start_session().then(session => {
+            console.log("Executing: ", kernel);
+            let future = session.kernel.requestExecute({code: kernel});
+            let stream : string = "";
+            let error : boolean = false;
+            let errString : string = "";
+            future.onIOPub = msg => {
+                if (msg.header.msg_type == "stream") {
+                    stream = stream.concat(msg.content.text.toString());
+                } else if (msg.header.msg_type == "error") {
+                    error = true;
+                    errString = msg.content.ename + "\n" + msg.content.evalue + "\n" + msg.content.traceback;
+                }
+            };
+            return future.done.then(r => {
+                if(error) {
+                    throw new Error(errString);
+                }
+                console.log("Got result: ", stream);
+                return stream;
+            }, reason => {
+                throw new Error(reason);
+            });
+        });
+    }
+
+    protected start_session(): Promise<Session.ISession> {
+        if (!this.session) {
+            return Session.findByPath(Kernels.session_path).then(model => {
+                return Session.connectTo(model.id).then(s => {
+                    this.session = s;
+                    return this.session;
+                });
+            }, () => {
+                let options: Session.IOptions = {
+                    kernelName: 'python',
+                    path: Kernels.session_path
+                };
+                return Session.startNew(options).then(s => {
+                    this.session = s;
+                    return this.session;
+                }, r => {
+                    throw new Error("Unable to start session")
+                });
+            })
+        } else {
+            return Promise.resolve(this.session);
+        }
+    };
+}
+
 export namespace Kernels {
+
+    export const session_path = 'taucmdr_tam_pane.ipynb';
+
     export const getProjectKernel = `
-def get_project:
-    import json
+def get_project():
     from taucmdr.model.project import Project
     selected = Project.selected()
-    digest = proj.hash_digest()
-    proj = selected.populate()
-    entry = {}
-    entry['Name'] = proj['name']
-    entry['Hash'] = digest[-10:]
-    entry['Targets'] = [target['name'] for target in proj['targets']]
-    entry['Applications'] = [app['name'] for app in proj['applications']]
-    entry['Measurements'] = [meas['name'] for meas in proj['measurements']]
-    entry['Experiments'] = len(proj['experiments'])
-    return entry
-print(json.dumps(get_project()))`;
+    from taucmdr.cli.commands.project.list import COMMAND as project_list_command
+    return project_list_command.main([selected['name'], '--json'])
+get_project()
+`;
 
+    export class JSONResult {
+        readonly [propname: string]: any;
+    }
 
 }
+

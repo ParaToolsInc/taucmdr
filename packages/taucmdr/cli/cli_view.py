@@ -32,6 +32,8 @@ See http://en.wikipedia.org/wiki/Model-view-controller
 
 from __future__ import print_function
 
+import json
+
 import six
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS, ENTERPRISE_URL
@@ -323,6 +325,31 @@ class ListCommand(AbstractCliView):
         table.add_rows(rows)
         return [title, table.draw(), '']
 
+    def json_format(self, records):
+        rows = []
+        for record in records:
+            populated = record.populate()
+            row = {}
+            for col in self.dashboard_columns:
+                if 'value' in col:
+                    try:
+                        cell = populated[col['value']]
+                    except KeyError:
+                        cell = None
+                elif 'yesno' in col:
+                    cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
+                elif 'function' in col:
+                    cell = col['function'](populated)
+                elif 'hash' in col:
+                    cell = record.hash_digest()[-col['hash']:]
+                else:
+                    raise InternalError("Invalid column definition: %s" % col)
+                row[col['header']] = cell
+            rows.append(row)
+        headers = [col['header'] for col in self.dashboard_columns]
+        result = {'model': self.model_name, 'headers': headers, 'rows': rows}
+        return [json.dumps(result)]
+
     def _format_long_item(self, key, val):
         attrs = self.model.attributes[key]
         if 'collection' in attrs:
@@ -409,6 +436,10 @@ class ListCommand(AbstractCliView):
         style_group.add_argument('-l', '--long',
                                  help="show all %(model_name)s data in a list" % self._format_fields,
                                  const='long', action='store_const', dest=style_dest,
+                                 default=arguments.SUPPRESS)
+        style_group.add_argument('-j', '--json',
+                                 help="show all %(model_name)s data as JSON" % self._format_fields,
+                                 const='json', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False,
@@ -513,7 +544,10 @@ class ListCommand(AbstractCliView):
         except StorageError:
             records = []
         if not records:
-            parts = ["No %ss." % self.model_name]
+            if style == 'json':
+                parts = ['[]']
+            else:
+                parts = ["No %ss." % self.model_name]
         else:
             formatter = getattr(self, style + '_format')
             parts = formatter(records)

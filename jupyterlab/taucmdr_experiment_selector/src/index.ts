@@ -40,6 +40,10 @@ import {
     Session
 } from '@jupyterlab/services';
 
+import {
+    Message
+} from '@phosphor/messaging';
+
 import '../style/index.css';
 
 const widget_id = 'taucmdr_experiment_selector';
@@ -66,7 +70,7 @@ function showErrorMessage(title: string, error: any): Promise<void> {
 
 class ExperimentSelectorWidget extends Widget {
 
-    readonly session_path: string = 'taucmdr.ipynb';
+    readonly session_path: string = 'taucmdr_experiment_selector.ipynb';
 
     readonly get_experiments_kernel: string = `
 import json
@@ -152,7 +156,6 @@ print(json.dumps(entries))
     };
 
     select_experiment(name : string) : void {
-        console.log(`Should select ${name}`);
         let kernel_code = `
 from taucmdr.model.experiment import Experiment
 Experiment.select("${name}")
@@ -160,13 +163,10 @@ Experiment.select("${name}")
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: kernel_code});
             future.onIOPub = msg => {
-                console.log(msg);
                 if (msg.header.msg_type == "stream") {
-                    console.log(msg.content.text.toString());
                 } else if(msg.header.msg_type == "error") {
                     showErrorMessage('Unable to select experiment', msg.content.ename + "\n" + msg.content.evalue);
                 } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
-                    console.log("Selection complete")
                     this.list_experiments();
                 }
             };
@@ -175,13 +175,12 @@ Experiment.select("${name}")
         });
     }
 
-    list_experiments(): void {
+    list_experiments(show_errors: boolean = true): void {
         let result : string = "";
         this.tBody.innerHTML = "";
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: this.get_experiments_kernel});
             future.onIOPub = msg => {
-                console.log(msg);
                 if (msg.header.msg_type == "stream") {
                     result = result.concat(msg.content.text.toString());
                 } else if(msg.header.msg_type == "error") {
@@ -192,7 +191,9 @@ Experiment.select("${name}")
                         errMsg = msg.content.ename.toString() + "\n" + msg.content.evalue.toString();
                         console.log(msg.content);
                     }
-                    showErrorMessage("Unable to list experiments", errMsg);
+                    if(show_errors) {
+                        showErrorMessage("Unable to list experiments", errMsg).then(r=>{});
+                    }
                 } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
                     let experiments: Array<IExperimentsResult> = JSON.parse(result);
                     experiments.forEach(experiment => {
@@ -222,6 +223,13 @@ Experiment.select("${name}")
             console.error("Unable to get experiment list: " + r.toString())
         });
     };
+
+    protected onAfterAttach(msg: Message): void {
+        this.list_experiments(false);
+    }
+
+    protected onBeforeDetach(msg: Message): void {
+    }
 }
 
 function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRestorer) {
@@ -235,9 +243,6 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
     restorer.add(widget, widget_id);
 }
 
-/**
- * Initialization data for the jupyterlab_xkcd extension.
- */
 const extension: JupyterLabPlugin<void> = {
     id: widget_id,
     autoStart: true,

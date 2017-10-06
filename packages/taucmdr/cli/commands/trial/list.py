@@ -73,7 +73,6 @@ class TrialListCommand(ListCommand):
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
         for record in records:
-            print(record.get_data_files())
             populated = record.populate()
             row = []
             for col in self.dashboard_columns:

@@ -66,6 +66,7 @@ class ProjectListCommand(ListCommand):
         """
         args = self._parse_args(argv)
         style_args = ['--' + args.style] if hasattr(args, 'style') else []
+        json_out = '--json' in style_args
         levels = arguments.parse_storage_flag(args)
         keys = getattr(args, 'keys', [])
         single = (len(keys) == 1 and len(levels) == 1)
@@ -93,8 +94,13 @@ class ProjectListCommand(ListCommand):
                 if records:
                     cmd.main([record[primary_key] for record in records] + style_args)
                 else:
-                    label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
-                    print("%s.  Use `%s` to view available %s.\n" % (label, cmd, prop))
+                    if json_out:
+                        print("{}")
+                    else:
+                        label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
+                        print("%s.  Use `%s` to view available %s.\n" % (label, cmd, prop))
+            if json_out:
+                return retval
             if proj.get('force_tau_options', False):
                 self.logger.warning("Project '%s' will add '%s' to TAU_OPTIONS without error checking.", 
                                     proj['name'], ' '.join(proj['force_tau_options']))
