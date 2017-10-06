@@ -35,7 +35,7 @@ The selected experiment will be used for application compilation and trial visua
 import os
 import fasteners
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
+from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ProjectSelectionError
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
@@ -129,7 +129,10 @@ class ExperimentController(Controller):
         return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
     
     def count(self):
-        return len(self.all())
+        try:
+            return len(self.all())
+        except ProjectSelectionError:
+            return 0
  
     def search(self, keys=None):
         return super(ExperimentController, self).search(self._restrict_project(keys))
