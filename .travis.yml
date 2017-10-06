@@ -1,13 +1,8 @@
-language: python
+language: generic
 
 os:
   - linux
   - osx
-
-matrix:
-  include:
-    - os: osx
-      python: nightly
 
 branches:
   except:
