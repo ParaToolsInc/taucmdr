@@ -32,6 +32,7 @@ Functions used for unit tests of create.py.
 #pylint: disable=missing-docstring 
 
 from taucmdr import tests, util
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
@@ -98,7 +99,9 @@ class CreateTest(tests.TestCase):
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
 
+    @tests.skipIf(HOST_OS is DARWIN, "No 'sample' measurement on Darwin.")
     def test_new_project(self):
+        """https://github.com/ParaToolsInc/taucmdr/issues/29"""
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, project_create_cmd, ['test_proj'])
         self.assertIn("Created a new project named 'test_proj'", stdout)
