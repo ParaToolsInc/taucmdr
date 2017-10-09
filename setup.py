@@ -93,6 +93,7 @@ CLASSIFIERS = [
 import os
 import sys
 import shutil
+import pickle
 import fnmatch
 import tempfile
 import fileinput
@@ -283,7 +284,7 @@ class Release(SDistCommand):
                     [('target-arch=', None, "Target architecture"),
                      ('target-os=', None, "Target operating system"),
                      ('web', None, "Build a web-based distribution"),
-                     ('all', None, "List all (arch, os) combinations supported by TAU")])
+                     ('all', None, "Build all-in-one packages for all supported (arch, os) combinations")])
     
     def initialize_options(self):
         SDistCommand.initialize_options(self)
@@ -297,15 +298,13 @@ class Release(SDistCommand):
         # pylint: disable=attribute-defined-outside-init
         SDistCommand.finalize_options(self)
         from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
-        if self.all:
-            if self.web or self.target_arch or self.target_os:
-                print '--all must not be used with any other arguments'
-                sys.exit(-1)
-        if self.web:
-            if self.all or self.target_arch or self.target_os:
-                print '--web must not be used with any other arguments'
-                sys.exit(-1)
-        else: 
+        if self.all and (self.web or self.target_arch or self.target_os):
+            print '--all must not be used with any other arguments'
+            sys.exit(-1)
+        elif self.web and (self.all or self.target_arch or self.target_os):
+            print '--web must not be used with any other arguments'
+            sys.exit(-1)
+        else:
             try:
                 self.target_arch = Architecture.find(self.target_arch or str(HOST_ARCH))
             except KeyError:
@@ -329,7 +328,6 @@ class Release(SDistCommand):
 
     def _download(self, pkg):
         from taucmdr import util
-        print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
         module_name = pkg + '_installation'
         repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)), 
                                    globals(), locals(), ['REPOS'], -1), 'REPOS')
@@ -340,9 +338,23 @@ class Release(SDistCommand):
             src = default
         else:
             src = arch_dct.get(self.target_os, arch_dct.get(None, default))
-        dest = os.path.join(os.path.realpath(os.path.abspath('system')), 'src', os.path.basename(src))
-        util.download(src, dest)
-        
+        pkg = os.path.basename(src)
+        cache_dir = tempfile.gettempdir()
+        cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
+        cache_pkg = os.path.join(cache_dir, pkg)
+        try:
+            with open(cache_db, 'r') as fin:
+                cache = pickle.load(fin)
+        except IOError:
+            cache = {}
+        if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg): 
+            print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
+            util.download(src, cache_pkg)
+        cache[cache_pkg] = src
+        with open(cache_db, 'w') as fout:
+            pickle.dump(cache, fout)
+        util.download(cache_pkg, os.path.join('system', 'src', pkg))
+
     def _download_python(self):
         from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX
         make_arch = self.target_arch
@@ -363,8 +375,9 @@ class Release(SDistCommand):
             make_os = os_map[self.target_os]
         except KeyError:
             return
+        # Use `make` to download Python because we keep the Tau/Anaconda target translation in the Makefile
         subprocess.call(['make', 'python_download', 'HOST_ARCH='+make_arch, 'HOST_OS='+make_os])
-            
+        
     def _build_web_release(self):
         SDistCommand.run(self)
         for path in self.archive_files:
@@ -383,18 +396,21 @@ class Release(SDistCommand):
             shutil.move(src, dest)
             print "Wrote '%s'" % dest
             
-    def _list_all(self):
+    def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
-        targets = set()
-        for magic in TauMagic.all():
-            target = magic.architecture, magic.operating_system
-            if target not in targets:
-                targets.add(target)
-                print '(%s, %s)' % (str(target[0]), str(target[1]))
+        targets = set([(magic.architecture, magic.operating_system) for magic in TauMagic.all()])
+        for target in targets:
+            targ_arch, targ_os = target
+            # Setuptools is a dirty, stateful animal.
+            # Have to create a new subprocess to hack around setuptools' stateful implementation of sdist.
+            subprocess.call(['python', 'setup.py', 'release', 
+                             '--target-arch', str(targ_arch),
+                             '--target-os', str(targ_os)])
 
     def run(self):
         from taucmdr import util
         util.rmtree('system', ignore_errors=True)
+        # Update package version number
         for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version() 
@@ -402,7 +418,8 @@ class Release(SDistCommand):
         if self.web:
             self._build_web_release()
         elif self.all:
-            self._list_all()
+            self._build_all()
+            self._build_web_release()
         else:
             self._build_target_release()
 
