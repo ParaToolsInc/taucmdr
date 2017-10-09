@@ -44,7 +44,7 @@ script:
   - travis_wait 30 coverage run setup.py test
 
 after_failure:
-  - tail -1000 "$HOME/.tau/debug_log"
+  - tail -1000 "$HOME/.local/taucmdr/debug_log"
 
 after_script:
   - codecov --env TRAVIS_OS_NAME
