@@ -92,9 +92,6 @@ class ProjectListCommand(ListCommand):
                 else:
                     label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
                     print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
-            if proj.get('force_tau_options', False):
-                self.logger.warning("Project '%s' will add '%s' to TAU_OPTIONS without error checking.", 
-                                    proj['name'], ' '.join(proj['force_tau_options']))
             try:
                 expr = proj.experiment()
             except ExperimentSelectionError:

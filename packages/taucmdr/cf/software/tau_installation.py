@@ -963,46 +963,45 @@ class TauInstallation(Installation):
         for pkg in self.dependencies.itervalues():
             opts, env = pkg.compiletime_config(opts, env)
         try:
-            tau_opts = set(env['TAU_OPTIONS'].split(' '))
-        except KeyError:
-            tau_opts = set()
-        if self.source_inst == 'manual' or (self.source_inst == 'never' and self.compiler_inst == 'never'):
-            tau_opts.add('-optLinkOnly')
-        else:
-            tau_opts.add('-optRevert')
-        if self.verbose:
-            tau_opts.add('-optVerbose')
-        if self.compiler_inst == 'always':
-            tau_opts.add('-optCompInst')
-        elif self.compiler_inst == 'never':
-            tau_opts.add('-optNoCompInst')
-        elif self.compiler_inst == 'fallback':
-            tau_opts.add('-optRevert')
-        if self.link_only:
-            tau_opts.add('-optLinkOnly')
-        if self.keep_inst_files:
-            tau_opts.add('-optKeepFiles')
-        if self.reuse_inst_files:
-            tau_opts.add('-optReuseFiles')
-        if self.select_file:
-            select_file = os.path.realpath(os.path.abspath(self.select_file))
-            tau_opts.add('-optTauSelectFile=%s' % select_file)
-        if self.io_inst:
-            tau_opts.add('-optTrackIO')
-        if self.measure_memory_alloc:
-            tau_opts.add('-optMemDbg')
-        if self.openmp_support and self.source_inst == 'automatic':
-            tau_opts.add('-optContinueBeforeOMP')
-        if logger.LOG_LEVEL != 'DEBUG':
-            tau_opts.add('-optQuiet')
-        try:
-            tau_opts.update(self.force_tau_options)
+            tau_opts = set(self.force_tau_options)
         except AttributeError:
-            pass
-        if self.sample or self.compiler_inst != 'never':
-            opts.append('-g')
-        if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
-            opts.append('-DTAU_ENABLED=1')
+            try:
+                tau_opts = set(env['TAU_OPTIONS'].split())
+            except KeyError:
+                tau_opts = set()
+            if self.source_inst == 'manual' or (self.source_inst == 'never' and self.compiler_inst == 'never'):
+                tau_opts.add('-optLinkOnly')
+            else:
+                tau_opts.add('-optRevert')
+            if self.verbose:
+                tau_opts.add('-optVerbose')
+            if self.compiler_inst == 'always':
+                tau_opts.add('-optCompInst')
+            elif self.compiler_inst == 'never':
+                tau_opts.add('-optNoCompInst')
+            elif self.compiler_inst == 'fallback':
+                tau_opts.add('-optRevert')
+            if self.link_only:
+                tau_opts.add('-optLinkOnly')
+            if self.keep_inst_files:
+                tau_opts.add('-optKeepFiles')
+            if self.reuse_inst_files:
+                tau_opts.add('-optReuseFiles')
+            if self.select_file:
+                select_file = os.path.realpath(os.path.abspath(self.select_file))
+                tau_opts.add('-optTauSelectFile=%s' % select_file)
+            if self.io_inst:
+                tau_opts.add('-optTrackIO')
+            if self.measure_memory_alloc:
+                tau_opts.add('-optMemDbg')
+            if self.openmp_support and self.source_inst == 'automatic':
+                tau_opts.add('-optContinueBeforeOMP')
+            if logger.LOG_LEVEL != 'DEBUG':
+                tau_opts.add('-optQuiet')
+            if self.sample or self.compiler_inst != 'never':
+                opts.append('-g')
+            if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
+                opts.append('-DTAU_ENABLED=1')
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         makefile = self.get_makefile()
         tags = self._makefile_tags(makefile)

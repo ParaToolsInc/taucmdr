@@ -366,14 +366,13 @@ class Experiment(Model):
         # We've found a candidate compiler.  Check that this compiler record is still valid.
         installed_compiler = found_compiler.verify()
         tau = self.configure()
+        meas = self.populate('measurement')
         try:
-            proj = self.populate('project')
-            tau.force_tau_options = proj['force_tau_options']
+            tau.force_tau_options = meas['force_tau_options']
         except KeyError:
             pass
         else:
-            LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS",
-                        proj['name'], ' '.join(tau.force_tau_options))
+            LOGGER.warning("Measurement '%s' forces TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.force_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
     def managed_run(self, launcher_cmd, application_cmds, description):

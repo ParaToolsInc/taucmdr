@@ -320,6 +320,15 @@ def attributes():
                               Target.discourage('libunwind_source', None),
                               Target.exclude('host_os', DARWIN))}
         },
+        'force_tau_options': {
+            'type': 'array',
+            'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
+            'rebuild_on_change': True,
+            'argparse': {'flags': ('--force-tau-options',),
+                         'nargs': '+',
+                         'metavar': '<option>'},
+            'compat': {True: Measurement.discourage('force_tau_options')}
+        }
     }
 
 
