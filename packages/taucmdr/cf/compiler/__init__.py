@@ -73,6 +73,7 @@ from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
 
+
 LOGGER = logger.get_logger(__name__)
 
 
@@ -737,7 +738,9 @@ class InstalledCompilerFamily(object):
                         continue
                     self.members.setdefault(role, []).append(installed)
         if not self.members:
-            raise ConfigurationError("%s compilers not found." % self.family.name)
+            cmds = [info.command for info_list in family.members.itervalues() for info in info_list]
+            raise ConfigurationError("%s %s not found." % (self.family.name, self.family.kbase.description),
+                                     "Check that these commands are in your PATH: %s" % ', '.join(cmds))
 
     def __contains__(self, role):
         """Returns True if any installed compiler can fill a given role."""
