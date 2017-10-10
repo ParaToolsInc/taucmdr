@@ -170,6 +170,10 @@ class InitializeCommand(AbstractCommand):
         measurement_names = []
         measurement_args = ['--%s=True' % attr for attr in 'cuda', 'mpi', 'opencl', 'shmem' 
                             if getattr(application_args, attr, False)]
+        _safe_execute(measurement_create_cmd, 
+                      ['baseline', '--profile=none', '--trace=none', '--sample=False',
+                       '--source-inst=never', '--compiler-inst=never',
+                       '--link-only=False'] + measurement_args)
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'
             _safe_execute(measurement_create_cmd, 
@@ -189,6 +193,8 @@ class InitializeCommand(AbstractCommand):
                            '--source-inst', args.source_inst, '--compiler-inst', args.compiler_inst, 
                            '--link-only=False'] + measurement_args)
             measurement_names.append('trace')
+        # Baseline should be the default only if no other measurements exist
+        measurement_names.append('baseline')
 
         select_cmd.main(['--target', target_name, 
                          '--application', application_name, 

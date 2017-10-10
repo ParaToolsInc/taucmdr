@@ -337,26 +337,6 @@ class Measurement(Model):
     
     __attributes__ = attributes
 
-    def on_create(self):
-        def get_flag(key):
-            return self.attributes[key]['argparse']['flags'][0]
-
-        if self['profile'].lower() == 'none' and self['trace'].lower() == 'none':
-            profile_flag = get_flag('profile')
-            trace_flag = get_flag('trace')
-            raise ConfigurationError("Profiling, tracing, or both must be enabled",
-                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
-        
-        if ((self['source_inst'].lower() == 'never') and (self['compiler_inst'].lower() == 'never') and 
-                (not self['sample']) and (not self['link_only'])):
-            source_inst_flag = get_flag('source_inst')
-            compiler_inst_flag = get_flag('compiler_inst')
-            sample_flag = get_flag('sample')
-            link_only_flag = get_flag('link_only')
-            raise ConfigurationError("At least one instrumentation method must be used",
-                                     "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
-                                                                    sample_flag, link_only_flag))
-
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment

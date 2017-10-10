@@ -271,7 +271,6 @@ class TauInstallation(Installation):
         assert isinstance(select_file, basestring) or select_file is None
         assert profile in ("tau", "merged", "cubex", "none")
         assert trace in ("slog2", "otf2", "none")
-        assert profile != "none" or trace != "none"
         assert sample in (True, False)
         assert isinstance(metrics, list) or metrics is None
         assert measure_mpi in (True, False)
@@ -1203,11 +1202,12 @@ class TauInstallation(Installation):
             launcher_cmd.extend(os.environ['__TAUCMDR_LAUNCHER_ARGS__'].split(' '))
         except KeyError:
             pass
-        use_tau_exec = (self.application_linkage != 'static' and
-                        (self.measure_opencl or
+        use_tau_exec = (self.application_linkage != 'static' and 
+                        (self.profile != 'none' or self.trace != 'none') and
+                        ((self.source_inst == 'never' and self.compiler_inst == 'never') or
+                         self.measure_opencl or
                          self.tbb_support or
-                         self.pthreads_support or
-                         (self.source_inst == 'never' and self.compiler_inst == 'never')))
+                         self.pthreads_support))
         if not use_tau_exec:
             tau_exec = []
         else:

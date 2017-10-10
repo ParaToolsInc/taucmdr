@@ -39,7 +39,8 @@ DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
                      {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'Description', 'value': 'description'},
-                     {'header': 'Status', 'value': 'phase'}]
+                     {'header': 'Status', 'value': 'phase'},
+                     {'header': 'Elapsed Time', 'value': 'elapsed'}]
 
 class TrialListCommand(ListCommand):
     """``trial list`` subcommand."""
@@ -53,6 +54,12 @@ class TrialListCommand(ListCommand):
         expr = Project.selected().experiment()
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
         return [rec for rec in records if rec['experiment'] == expr.eid]
+    
+    def _format_long_item(self, key, val):
+        key, val, flags, description = super(TrialListCommand, self)._format_long_item(key, val)
+        if key == 'environment':
+            val = '(base64 encoded, %d bytes)' % len(val)
+        return [key, val, flags, description]
 
     def dashboard_format(self, records):
         """Format modeled records in dashboard format.

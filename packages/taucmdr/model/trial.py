@@ -35,6 +35,8 @@ the performance data.
 import os
 import glob
 import errno
+import base64
+import time
 from datetime import datetime
 import fasteners
 from taucmdr import logger, util
@@ -75,8 +77,7 @@ def attributes():
         },
         'environment': {
             'type': 'string',
-            'required': True,
-            'description': "shell environment the trial was performed in"
+            'description': "shell environment in which the trial was performed, encoded as a base64 string"
         },
         'begin_time': {
             'type': 'datetime',
@@ -102,7 +103,11 @@ def attributes():
         },
         'phase': {
             'type': 'string',
-            'description': "phase of trial"
+            'description': "phase of trial: initializing, executing, complete, or failed"
+        },
+        'elapsed': {
+            'type': 'float',
+            'description': "seconds spent executing the application command only (excludes all other operations)"
         },
     }
 
@@ -120,6 +125,13 @@ class TrialError(ConfigurationError):
 class TrialController(Controller):
     """Trial data controller."""
 
+    @staticmethod
+    def _mark_time(mark, expr):
+        timestamp = str(datetime.utcnow())
+        headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, expr['name'], timestamp), logger.LINE_WIDTH)
+        LOGGER.info(headline)
+        return timestamp
+
     def _perform_bluegene(self, expr, trial, cmd, cwd, env):
         if os.path.basename(cmd[0]) != 'qsub':
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
@@ -133,7 +145,7 @@ class TrialController(Controller):
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
         try:
-            self.update({'phase': 'running'}, trial.eid)
+            self.update({'phase': 'executing'}, trial.eid)
             retval = trial.queue_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
@@ -150,30 +162,24 @@ class TrialController(Controller):
         return retval
 
     def _perform_interactive(self, expr, trial, cmd, cwd, env):
-        def banner(mark, name, time):
-            headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
-            LOGGER.info(headline)
-
-        banner('BEGIN', expr.name, trial['begin_time'])
+        begin_time = self._mark_time('BEGIN', expr)
+        retval = None
         try:
-            self.update({'phase': 'running'}, trial.eid)
-            retval = trial.execute_command(expr, cmd, cwd, env)
+            self.update({'phase': 'executing', 'begin_time': begin_time}, trial.eid)
+            retval, elapsed = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
             raise
-        else:
-            end_time = str(datetime.utcnow())
-            self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
         finally:
-            end_time = str(datetime.utcnow())
-            banner('END', expr.name, end_time)
+            end_time = self._mark_time('END', expr)
 
-        self.update({'phase': 'post-processing'}, trial.eid)
+        fields = {'end_time': end_time, 'return_code': retval, 'elapsed': elapsed}
         data_size = 0
         for dir_path, _, file_names in os.walk(trial.prefix):
             for name in file_names:
                 data_size += os.path.getsize(os.path.join(dir_path, name))
-        self.update({'data_size': data_size}, trial.eid)
+        fields['data_size'] = data_size
+        self.update(fields, trial.eid)
         if retval != 0:
             if data_size != 0:
                 LOGGER.warning("Program exited with nonzero status code: %s", retval)
@@ -188,7 +194,7 @@ class TrialController(Controller):
         LOGGER.info('Command: %s', ' '.join(cmd))
         LOGGER.info('Current working directory: %s', cwd)
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
-        self.update({'phase': 'completed'}, trial.eid)
+        LOGGER.info('Elapsed seconds: %s', elapsed)
         return retval
 
     def perform(self, proj, cmd, cwd, env, description):
@@ -210,9 +216,7 @@ class TrialController(Controller):
                     'experiment': expr.eid,
                     'command': ' '.join(cmd),
                     'cwd': cwd,
-                    'environment': 'FIXME',
-                    'phase': 'initializing',
-                    'begin_time': str(datetime.utcnow())}
+                    'phase': 'initializing'}
             if description is not None:
                 data['description'] = str(description)
             trial = self.create(data)
@@ -222,11 +226,19 @@ class TrialController(Controller):
         measurement = expr.populate('measurement')
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
-        targ = expr.populate('target')
-        if targ.architecture().is_bluegene():
-            return self._perform_bluegene(expr, trial, cmd, cwd, env)
+        b64env = base64.b64encode(repr(env))
+        is_bluegene = expr.populate('target').architecture().is_bluegene()
+        try:
+            if is_bluegene:
+                retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
+            else:
+                retval = self._perform_interactive(expr, trial, cmd, cwd, env)
+        except:
+            self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
+            raise
         else:
-            return self._perform_interactive(expr, trial, cmd, cwd, env)
+            self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
+            return retval
 
 
 class Trial(Model):
@@ -463,19 +475,21 @@ class Trial(Model):
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
         try:
+            begin_time = time.time()
             retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
+            elapsed = time.time() - begin_time
         except OSError as err:
             target = expr.populate('target')
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
-
+        
         measurement = expr.populate('measurement')
+
         profiles = []
         for pat in 'profile.*.*.*', 'MULTI__*/profile.*.*.*', 'tauprofile.xml', '*.cubex':
             profiles.extend(glob.glob(os.path.join(self.prefix, pat)))
-        
         if profiles:
             LOGGER.info("Trial %s produced %s profile files.", self['number'], len(profiles))
             negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
@@ -501,15 +515,14 @@ class Trial(Model):
         traces = []
         for pat in '*.slog2', '*.trc', '*.edf', 'traces/*.def', 'traces/*.evt', 'traces.otf2':
             traces.extend(glob.glob(os.path.join(self.prefix, pat)))
-        
         if traces:
             LOGGER.info("Trial %s produced %s trace files.", self['number'], len(traces))
         elif measurement['trace'] != 'none':
-            raise TrialError("Application completed successfuly but did not produce any traces.")            
+            raise TrialError("Application completed successfuly but did not produce any traces.")
 
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        return retval
+        return retval, elapsed
     
     def export(self, dest):
         """Export experiment trial data.
