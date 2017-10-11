@@ -345,21 +345,21 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
-        self._uses_pdt = (self.source_inst == 'automatic' or self.shmem_support)
-        self._uses_binutils = (self.target_os is not DARWIN)
-        self._uses_libunwind = (self.target_os is not DARWIN)
-        self._uses_papi = bool(len([met for met in self.metrics if 'PAPI' in met]))
-        self._uses_scorep = (self.profile == 'cubex')
-        self._uses_ompt = (self.measure_openmp == 'ompt')
-        self._uses_libotf2 = (self.trace == 'otf2')
-        self._uses_cuda = (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        self.uses_pdt = (self.source_inst == 'automatic' or self.shmem_support)
+        self.uses_binutils = (self.target_os is not DARWIN)
+        self.uses_libunwind = (self.target_os is not DARWIN)
+        self.uses_papi = bool(len([met for met in self.metrics if 'PAPI' in met]))
+        self.uses_scorep = (self.profile == 'cubex')
+        self.uses_ompt = (self.measure_openmp == 'ompt')
+        self.uses_libotf2 = (self.trace == 'otf2')
+        self.uses_cuda = (self.cuda_prefix and (self.cuda_support or self.opencl_support))
         if forced_makefile is None:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
-                if getattr(self, '_uses_'+pkg):
+                if getattr(self, 'uses_'+pkg):
                     self.add_dependency(pkg, sources)
-            if self._uses_scorep:
+            if self.uses_scorep:
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
-                                    self._uses_binutils, self._uses_libunwind, self._uses_papi, self._uses_pdt)
+                                    self.uses_binutils, self.uses_libunwind, self.uses_papi, self.uses_pdt)
         else:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
                 if sources[pkg]:
@@ -418,7 +418,7 @@ class TauInstallation(Installation):
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
-            if getattr(self, '_uses_'+pkg):
+            if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         return uid_parts
     
@@ -446,7 +446,7 @@ class TauInstallation(Installation):
                 if line.startswith('#'):
                     continue
                 elif 'BFDINCLUDE=' in line:
-                    if self._uses_binutils:
+                    if self.uses_binutils:
                         binutils = self.dependencies['binutils']
                         bfd_inc = line.split('=')[1].strip().strip("-I")
                         if not os.path.isdir(bfd_inc):
@@ -456,7 +456,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("BFDINCLUDE in '%s' is not '%s'" % 
                                                        (tau_makefile, binutils.include_path))
                 elif 'UNWIND_INC=' in line:
-                    if self._uses_libunwind: 
+                    if self.uses_libunwind: 
                         libunwind = self.dependencies['libunwind']
                         libunwind_inc = line.split('=')[1].strip().strip("-I")
                         if not os.path.isdir(libunwind_inc):
@@ -466,7 +466,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("UNWIND_INC in '%s' is not '%s'" % 
                                                        (tau_makefile, libunwind.include_path))
                 elif 'PAPIDIR=' in line:
-                    if self._uses_papi:
+                    if self.uses_papi:
                         papi = self.dependencies['papi']
                         papi_dir = line.split('=')[1].strip()
                         if not os.path.isdir(papi_dir):
@@ -476,7 +476,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("PAPI_DIR in '%s' is not '%s'" % 
                                                        (tau_makefile, papi.install_prefix))
                 elif 'SCOREPDIR=' in line:
-                    if self._uses_scorep:
+                    if self.uses_scorep:
                         scorep = self.dependencies['scorep']
                         scorep_dir = line.split('=')[1].strip()
                         if not os.path.isdir(scorep_dir):
@@ -486,7 +486,7 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("SCOREPDIR in '%s' is not '%s'" % 
                                                        (tau_makefile, scorep.install_prefix))
                 elif 'OTFINC=' in line:
-                    if self._uses_libotf2:
+                    if self.uses_libotf2:
                         libotf2 = self.dependencies['libotf2']
                         libotf2_dir = line.split('=')[1].strip().strip("-I")
                         if not os.path.isdir(libotf2_dir):
@@ -514,7 +514,7 @@ class TauInstallation(Installation):
     
     def verify(self):
         super(TauInstallation, self).verify()
-        if self._uses_papi:
+        if self.uses_papi:
             self.dependencies['papi'].check_metrics(self.metrics)
         tau_makefile = self.get_makefile()
         self._verify_tau_libs(tau_makefile)
@@ -661,7 +661,7 @@ class TauInstallation(Installation):
                   '-mpiinc=%s' % mpiinc if mpiinc else None,
                   '-mpilib=%s' % mpilib if mpilib else None,
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else None,
-                  '-cuda=%s' % self.cuda_prefix if self._uses_cuda else None,
+                  '-cuda=%s' % self.cuda_prefix if self.uses_cuda else None,
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else None,
                   '-shmem' if self.shmem_support else None,
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
@@ -805,11 +805,11 @@ class TauInstallation(Installation):
             tags.add(self._compiler_tags()[cxx_compiler.info.family])
         except KeyError:
             pass
-        if self._uses_pdt:
+        if self.uses_pdt:
             tags.add('pdt')
-        if self._uses_papi:
+        if self.uses_papi:
             tags.add('papi')
-        if self._uses_scorep:
+        if self.uses_scorep:
             tags.add('scorep')
         if self.pthreads_support:
             tags.add('pthread')
@@ -855,7 +855,7 @@ class TauInstallation(Installation):
             tags.add('opari')
             tags.add('ompt')
             tags.add('gomp')
-        if not self._uses_scorep:
+        if not self.uses_scorep:
             tags.add('scorep')
         if not self.shmem_support:
             tags.add('shmem')
