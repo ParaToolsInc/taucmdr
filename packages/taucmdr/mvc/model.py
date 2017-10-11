@@ -109,7 +109,7 @@ class Model(StorageRecord):
     key_attribute = None
     
     def __init__(self, record):
-        super(Model, self).__init__(record.storage, record.eid, record.element)
+        super(Model, self).__init__(record.storage, record.eid, record)
         self._populated = None
     
     def __setitem__(self, key, value):
@@ -132,7 +132,7 @@ class Model(StorageRecord):
             If the attribute is not set and has no default value then a KeyError is raised.
         """
         try:
-            return self.element[key]
+            return self[key]
         except KeyError:
             return self.attributes[key]['default']
 

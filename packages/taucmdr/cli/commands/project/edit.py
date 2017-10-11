@@ -175,7 +175,7 @@ class ProjectEditCommand(EditCommand):
             self.parser.error("'%s' is not a project name. Type `%s` to see valid names." % 
                               (project_name, project_list.command))
     
-        updates = dict(project.element)
+        updates = dict(project)
         updates['name'] = getattr(args, 'new_name', project_name)
         targets = set(project['targets'])
         applications = set(project['applications'])
