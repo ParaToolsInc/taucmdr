@@ -150,4 +150,19 @@ class TauProfile(object):
             atomic_data = cls._parse_atomic_data(fin)
             return cls(trial, node, context, thread, metric, metadata, interval_data, atomic_data)
         
-        
+    @staticmethod
+    def indices(data):
+        """Get list of (node,context,thread) from Trial profile data as returned from Trial.get_data
+
+        Args:
+            data (dict): Trial profile data
+
+        Returns:
+            (list of tuple): List of 3-tuples of the form (node: int, context: int, thread: int)
+        """
+        indices = []
+        for node_num, node_data in data.iteritems():
+            for context_num, context_data in node_data.iteritems():
+                for thread_num, thread_data in context_data.iteritems():
+                    indices.append((node_num, context_num, thread_num))
+        return indices

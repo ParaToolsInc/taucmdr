@@ -49,6 +49,11 @@ class CommanderCommand(AbstractCommand):
         os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
                                    + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
 
+        # Prevent Bokeh from printing debug or info level warnings, which otherwise show up in
+        # the output cell along with the chart
+        os.environ['BOKEH_LOG_LEVEL'] = 'warn'
+        os.environ['BOKEH_PY_LOG_LEVEL'] = 'warn'
+
         # ANSI escape sequences aren't supported by Jupyter OutputCells
         os.environ['ANSI_COLORS_DISABLED'] = "1"
 
