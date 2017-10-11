@@ -52,7 +52,7 @@ from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
-from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -1485,3 +1485,40 @@ class TauInstallation(Installation):
             raise InternalError("Nonzero return code from tau2slog2")
         if not os.path.exists(slog2):
             raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")                
+
+    def tau_metrics(self):
+        """List TAU metrics available on this target.
+        
+        Returns a list of (name, description) tuples.
+        
+        Returns:
+            list: List of event name/description tuples.
+        """
+        metrics = [("LOGICAL_CLOCK", "Logical clock that increments on each request."),
+                   ("USER_CLOCK", ("User-defined clock. Implement "
+                                   "'void metric_write_userClock(int tid, double value)'  to set the clock value.")),
+                   ("GET_TIME_OF_DAY", "Wall clock that calls gettimeofday."),
+                   ("TIME", "Alias for GET_TIME_OF_DAY. Wall clock that calls gettimeofday."),
+                   ("CLOCK_GET_TIME", "Wall clock that calls clock_gettime."),
+                   ("P_WALL_CLOCK_TIME", "Wall clock that calls PAPI_get_real_usec."),
+                   ("PAPI_TIME", "Alias for P_WALL_CLOCK_TIME.  Wall clock that calls PAPI_get_real_usec."),
+                   ("P_VIRTUAL_TIME", "PAPI virtual clock that calls PAPI_get_virt_usec."),
+                   ("PAPI_VIRTUAL_TIME", ("Alias for P_VIRTUAL_TIME.  "
+                                          "PAPI virtual clock that calls PAPI_get_virt_usec.")),
+                   ("CPU_TIME", "CPU timer that calls getrusage."),
+                   ("LINUX_TIMERS", "Linux high resolution wall clock."),
+                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI messsage sizes."),
+                   ("MEMORY_DELTA", "Instantaneous resident set size (RSS)")]
+        if self.cuda_support:
+            metrics.append(("TAUGPU_TIME", "Wall clock that uses TAU's GPU timestamps."))
+        if self.target_os is CRAY_CNL:
+            metrics.extend([("CRAY_TIMERS", "Cray high resolution clock."),
+                            ("ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/energy"),
+                            ("ACCEL_ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/accel_energy")])
+        if self.target_arch is IBM_BGL:
+            metrics.append(("BGL_TIMERS", "BlueGene/L high resolution clock."))
+        elif self.target_arch is IBM_BGP:
+            metrics.append(("BGP_TIMERS", "BlueGene/P high resolution clock."))
+        elif self.target_arch is IBM_BGQ:
+            metrics.append(("BGQ_TIMERS", "BlueGene/Q high resolution clock."))
+        return metrics
