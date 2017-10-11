@@ -55,7 +55,7 @@ more information in the TAU User Guide
 (https://www.cs.uoregon.edu/research/tau/docs/newguide/index.html). 
  
 The following measurement instrumentation arguments can be set to True or False 
-(T/F) `--keep-inst-files --link-only --reuse-inst-files --sample` 
+(T/F) `--keep-inst-files --reuse-inst-files --sample` 
  
 The following measurement arguments are set to True or False `--callsite 
 --comm-matrix --cuda --io --metadata-merge --mpi --opencl --shmem --throttle 

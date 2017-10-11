@@ -171,27 +171,44 @@ class InitializeCommand(AbstractCommand):
         measurement_args = ['--%s=True' % attr for attr in 'cuda', 'mpi', 'opencl', 'shmem' 
                             if getattr(application_args, attr, False)]
         _safe_execute(measurement_create_cmd, 
-                      ['baseline', '--profile=none', '--trace=none', '--sample=False',
-                       '--source-inst=never', '--compiler-inst=never',
-                       '--link-only=False'] + measurement_args)
+                      ['baseline', 
+                       '--profile=none', 
+                       '--trace=none', 
+                       '--sample=False',
+                       '--source-inst=never', 
+                       '--compiler-inst=never'] 
+                      + measurement_args)
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'
             _safe_execute(measurement_create_cmd, 
-                          ['sample', '--profile', args.profile, '--trace', trace, '--sample=True',
-                           '--source-inst=never', '--compiler-inst=never',
-                           '--link-only=False'] + measurement_args)
+                          ['sample', 
+                           '--profile', args.profile, 
+                           '--trace', trace, 
+                           '--sample=True',
+                           '--source-inst=never', 
+                           '--compiler-inst=never'] 
+                          + measurement_args)
             measurement_names.append('sample')
         if args.profile != 'none':
             _safe_execute(measurement_create_cmd, 
-                          ['profile', '--profile', args.profile, '--trace=none', '--sample=False',
-                           '--source-inst', args.source_inst, '--compiler-inst', args.compiler_inst, 
-                           '--link-only=False'] + measurement_args)
+                          ['profile', 
+                           '--profile', args.profile, 
+                           '--trace=none', 
+                           '--sample=False',
+                           '--source-inst', args.source_inst, 
+                           '--compiler-inst', args.compiler_inst] 
+                          + measurement_args)
             measurement_names.append('profile')
         if args.trace != 'none':
             _safe_execute(measurement_create_cmd, 
-                          ['trace', '--profile=none', '--trace', args.trace, '--sample=False', '--callpath=0', 
-                           '--source-inst', args.source_inst, '--compiler-inst', args.compiler_inst, 
-                           '--link-only=False'] + measurement_args)
+                          ['trace', 
+                           '--profile=none', 
+                           '--trace', args.trace, 
+                           '--sample=False', 
+                           '--callpath=0', 
+                           '--source-inst', args.source_inst, 
+                           '--compiler-inst', args.compiler_inst] 
+                          + measurement_args)
             measurement_names.append('trace')
         # Baseline should be the default only if no other measurements exist
         measurement_names.append('baseline')

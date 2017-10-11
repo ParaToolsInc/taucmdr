@@ -177,8 +177,6 @@ class TauInstallation(Installation):
                  # Instrumentation methods and options
                  source_inst="never",
                  compiler_inst="never",
-                 link_only=False,
-                 io_inst=False,
                  keep_inst_files=False,
                  reuse_inst_files=False,
                  select_file=None,
@@ -187,6 +185,7 @@ class TauInstallation(Installation):
                  trace="none",
                  sample=False,
                  metrics=None,
+                 measure_io=False,
                  measure_mpi=False,
                  measure_openmp="ignore",
                  measure_opencl=False,
@@ -226,8 +225,6 @@ class TauInstallation(Installation):
             mpc_support (bool): Enable or disable MPC support in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
             compiler_inst (str): Policy for compiler-based instrumentation, one of "always", "fallback", or "never".
-            link_only (bool): True to disable instrumentation and link TAU libraries.
-            io_inst (bool): Enable or disable POSIX I/O instrumentation in TAU.
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
             select_file (str): Path to selective instrumentation file.
@@ -235,6 +232,7 @@ class TauInstallation(Installation):
             trace (str): Format for trace files, one of "slog2", "otf2", or "none".
             sample (bool): Enable or disable event-based sampling.
             metrics (list): Metrics to measure, e.g. ['TIME', 'PAPI_FP_INS']
+            measure_io (bool): If True then measure time spent in POSIX I/O calls.
             measure_mpi (bool): If True then measure time spent in MPI calls.
             measure_openmp (str): String specifying OpenMP measurement method, one of "ignore", "ompt", or "opari".
             measure_cuda (bool): If True then measure time spent in CUDA calls.
@@ -266,8 +264,6 @@ class TauInstallation(Installation):
         assert mpc_support in (True, False)
         assert source_inst in ("automatic", "manual", "never")
         assert compiler_inst in ("always", "fallback", "never")
-        assert link_only in (True, False)
-        assert io_inst in (True, False)
         assert keep_inst_files in (True, False)
         assert reuse_inst_files in (True, False)
         assert isinstance(select_file, basestring) or select_file is None
@@ -275,6 +271,7 @@ class TauInstallation(Installation):
         assert trace in ("slog2", "otf2", "none")
         assert sample in (True, False)
         assert isinstance(metrics, list) or metrics is None
+        assert measure_io in (True, False)
         assert measure_mpi in (True, False)
         assert measure_openmp in ("ignore", "ompt", "opari")
         assert measure_opencl in (True, False)
@@ -319,8 +316,6 @@ class TauInstallation(Installation):
         self.mpc_support = mpc_support
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
-        self.link_only = link_only
-        self.io_inst = io_inst
         self.keep_inst_files = keep_inst_files
         self.reuse_inst_files = reuse_inst_files
         self.select_file = select_file
@@ -328,6 +323,7 @@ class TauInstallation(Installation):
         self.trace = trace
         self.sample = sample
         self.metrics = ['TIME'] if metrics is None else metrics
+        self.measure_io = measure_io
         self.measure_mpi = measure_mpi
         self.measure_openmp = measure_openmp
         self.measure_opencl = measure_opencl
@@ -527,7 +523,7 @@ class TauInstallation(Installation):
         self._verify_tau_libs(tau_makefile)
         if not self.unmanaged:
             self._verify_dependency_paths(tau_makefile)
-        if self.io_inst:
+        if self.measure_io:
             self._verify_iowrapper(tau_makefile)
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
@@ -693,7 +689,7 @@ class TauInstallation(Installation):
                     flags.append('-opari')
                 else:
                     raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
-        if self.io_inst:
+        if self.measure_io:
             flags.append('-iowrapper')
 
         # Use -useropt for hacks and workarounds.
@@ -987,8 +983,6 @@ class TauInstallation(Installation):
                 tau_opts.add('-optNoCompInst')
             elif self.compiler_inst == 'fallback':
                 tau_opts.add('-optRevert')
-            if self.link_only:
-                tau_opts.add('-optLinkOnly')
             if self.keep_inst_files:
                 tau_opts.add('-optKeepFiles')
             if self.reuse_inst_files:
@@ -996,7 +990,7 @@ class TauInstallation(Installation):
             if self.select_file:
                 select_file = os.path.realpath(os.path.abspath(self.select_file))
                 tau_opts.add('-optTauSelectFile=%s' % select_file)
-            if self.io_inst:
+            if self.measure_io:
                 tau_opts.add('-optTrackIO')
             if self.measure_memory_alloc:
                 tau_opts.add('-optMemDbg')
@@ -1076,7 +1070,7 @@ class TauInstallation(Installation):
             opts.append('-cupti')
         if self.measure_opencl:
             opts.append('-opencl')
-        if self.io_inst:
+        if self.measure_io:
             opts.append('-io')
         if self.measure_memory_alloc:
             env['TAU_SHOW_MEMORY_FUNCTIONS'] = '1'
@@ -1097,8 +1091,7 @@ class TauInstallation(Installation):
         use_wrapper = (self.source_inst != 'never' or
                        self.compiler_inst != 'never' or
                        self.measure_openmp == 'opari' or
-                       self.application_linkage == 'static' or
-                       self.link_only)
+                       self.application_linkage == 'static')
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:

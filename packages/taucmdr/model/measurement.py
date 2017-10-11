@@ -157,14 +157,6 @@ def attributes():
                         Target.exclude('host_os', DARWIN))},
             'rebuild_required': True
         },
-        'link_only': {
-            'type': 'boolean',
-            'default': False,
-            'description': "don't instrument, only link the TAU library to the application",
-            'argparse': {'flags': ('--link-only',),
-                         'group': 'instrumentation'},
-            'rebuild_required': True
-        },
         'mpi': {
             'type': 'boolean',
             'default': False,

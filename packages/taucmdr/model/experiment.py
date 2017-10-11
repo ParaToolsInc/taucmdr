@@ -307,7 +307,6 @@ class Experiment(Model):
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),
-                    link_only=measurement.get_or_default('link_only'),
                     io_inst=measurement.get_or_default('io'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
