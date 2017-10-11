@@ -109,7 +109,15 @@ class Model(StorageRecord):
     key_attribute = None
     
     def __init__(self, record):
-        super(Model, self).__init__(record.storage, record.eid, record)
+        deprecated = [attr for attr in record if attr not in self.attributes]
+        if deprecated:
+            try:
+                title = "%s '%s'" % (self.name, record[self.key_attribute])
+            except (KeyError, ModelError):
+                title = "%s" % self.name
+            LOGGER.debug("Ignorning deprecated attributes %s in %s", deprecated, title)
+        super(Model, self).__init__(record.storage, record.eid, 
+                                    (item for item in record.iteritems() if item[0] not in deprecated))
         self._populated = None
     
     def __setitem__(self, key, value):
