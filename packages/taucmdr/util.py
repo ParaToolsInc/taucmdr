@@ -58,6 +58,14 @@ from taucmdr.progress import ProgressIndicator, progress_spinner
 
 LOGGER = logger.get_logger(__name__)
 
+# Suppress debugging messages in optimized code
+if __debug__:
+    _heavy_debug = LOGGER.debug   # pylint: disable=invalid-name
+else:
+    def _heavy_debug(*args, **kwargs):
+        # pylint: disable=unused-argument
+        pass
+
 
 _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
@@ -207,7 +215,7 @@ def which(program, use_cached=True):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
                 _WHICH_CACHE[program] = exe_file
                 return exe_file
-    LOGGER.debug("which(%s): command not found", program)
+    _heavy_debug("which(%s): command not found", program)
     _WHICH_CACHE[program] = None
     return None
 
@@ -266,7 +274,7 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
         proc_output = get_command_output(size_cmd)
     except subprocess.CalledProcessError as err:
         return err.returncode
-    LOGGER.debug(proc_output)
+    _heavy_debug(proc_output)
     try:
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
     except (ValueError, IndexError):
@@ -308,7 +316,7 @@ def archive_toplevel(archive):
     Returns:
         str: Directory name.
     """
-    LOGGER.debug("Determining top-level directory name in '%s'", archive)
+    _heavy_debug("Determining top-level directory name in '%s'", archive)
     try:
         fin = tarfile.open(archive)
     except tarfile.ReadError:
@@ -481,10 +489,10 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         for key, val in env.iteritems():
             if val is None:
                 subproc_env.pop(key, None)
-                LOGGER.debug("unset %s", key)
+                _heavy_debug("unset %s", key)
             else:
                 subproc_env[key] = val
-                LOGGER.debug("%s=%s", key, val)
+                _heavy_debug("%s=%s", key, val)
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
     context = progress_spinner if show_progress else _null_context
     with context():
@@ -536,11 +544,11 @@ def get_command_output(cmd, cwd=None, env=None):
     except KeyError:
         pass
     else:
-        LOGGER.debug("Using cached output for command: %s", cmd)
+        _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
     stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     get_command_output.cache[key] = stdout
-    LOGGER.debug(stdout)
+    _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 

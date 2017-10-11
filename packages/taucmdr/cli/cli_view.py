@@ -254,7 +254,6 @@ class ListCommand(AbstractCliView):
         Returns:
             str: Record data in short format.
         """
-        self.logger.debug("Short format")
         return [str(model[self.model.key_attribute]) for model in models]
 
     def dashboard_format(self, records):
@@ -266,7 +265,6 @@ class ListCommand(AbstractCliView):
         Returns:
             str: Record data in dashboard format.
         """
-        self.logger.debug("Dashboard format")
         title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
                                              'storage_path': records[0].storage}, 'cyan')
         header_row = [col['header'] for col in self.dashboard_columns]
@@ -333,7 +331,6 @@ class ListCommand(AbstractCliView):
         Returns:
             str: Record data in long format.
         """
-        self.logger.debug("Long format")
         title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(), 
                                              'storage_path': records[0].storage}, 'cyan')
         retval = [title]
