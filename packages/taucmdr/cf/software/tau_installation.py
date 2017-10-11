@@ -154,6 +154,8 @@ class TauInstallation(Installation):
     unusually complex to consider all the corner cases.  This is where most
     of the systemization of TAU is actually implemented so it can get ugly.
     """
+    
+    _deps = 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2'
 
     def __init__(self, sources, target_arch, target_os, compilers,
                  # Minimal configuration support
@@ -359,14 +361,14 @@ class TauInstallation(Installation):
         else:
             self.metrics.insert(0, 'TIME')
         if forced_makefile is None:
-            for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+            for pkg in self._deps:
                 if getattr(self, 'uses_'+pkg):
                     self.add_dependency(pkg, sources)
             if self.uses_scorep:
                 self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                     self.uses_binutils, self.uses_libunwind, self.uses_papi, self.uses_pdt)
         else:
-            for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+            for pkg in self._deps:
                 if sources[pkg]:
                     self.add_dependency(pkg, sources)
             if sources['scorep']:
@@ -422,7 +424,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+        for pkg in self._deps:
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         return uid_parts
