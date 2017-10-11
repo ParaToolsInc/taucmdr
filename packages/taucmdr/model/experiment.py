@@ -307,7 +307,6 @@ class Experiment(Model):
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),
-                    io_inst=measurement.get_or_default('io'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
                     select_file=application.get('select_file', None),
@@ -316,6 +315,7 @@ class Experiment(Model):
                     trace=measurement.get_or_default('trace'),
                     sample=measurement.get_or_default('sample'),
                     metrics=measurement.get_or_default('metrics'),
+                    measure_io=measurement.get_or_default('io'),
                     measure_mpi=measurement.get_or_default('mpi'),
                     measure_openmp=measurement.get_or_default('openmp'),
                     measure_opencl=measurement.get_or_default('opencl'),
