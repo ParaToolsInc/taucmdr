@@ -234,7 +234,11 @@ class TrialController(Controller):
             else:
                 retval = self._perform_interactive(expr, trial, cmd, cwd, env)
         except:
-            self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
+            try:
+                self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
+            except KeyError:
+                # Trial record was deleted
+                pass
             raise
         else:
             self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
