@@ -155,8 +155,6 @@ class TauInstallation(Installation):
     of the systemization of TAU is actually implemented so it can get ugly.
     """
     
-    _deps = 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2'
-
     def __init__(self, sources, target_arch, target_os, compilers,
                  # Minimal configuration support
                  minimal_configuration=False,
@@ -355,21 +353,14 @@ class TauInstallation(Installation):
                     self.metrics.insert(0, self.metrics.pop(i))
                 break
         else:
-            self.metrics.insert(0, 'TIME')
-        if forced_makefile is None:
-            for pkg in self._deps:
-                if getattr(self, 'uses_'+pkg):
-                    self.add_dependency(pkg, sources)
-            if self.uses_scorep:
-                self.add_dependency('scorep', sources, mpi_support, shmem_support,
-                                    self.uses_binutils, self.uses_libunwind, self.uses_papi, self.uses_pdt)
-        else:
-            for pkg in self._deps:
-                if sources[pkg]:
-                    self.add_dependency(pkg, sources)
-            if sources['scorep']:
-                self.add_dependency('scorep', sources, mpi_support, shmem_support,
-                                    sources['binutils'], sources['libunwind'], sources['papi'], sources['pdt'])
+            self.metrics.insert(0, 'TIME')        
+        uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg) 
+        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+            if uses(pkg):
+                self.add_dependency(pkg, sources)
+        if uses('scorep'):
+            self.add_dependency('scorep', sources, mpi_support, shmem_support,
+                                uses('binutils'), uses('libunwind'), uses('papi'), uses('pdt'))
         self.check_env_compat()
     
     @classmethod
@@ -420,7 +411,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in self._deps:
+        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         return uid_parts
