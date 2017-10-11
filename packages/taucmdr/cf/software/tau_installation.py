@@ -325,11 +325,7 @@ class TauInstallation(Installation):
         self.profile = profile
         self.trace = trace
         self.sample = sample
-        if metrics is not None:
-            self.metrics = [x for x in metrics if x != 'TIME']
-            self.metrics.insert(0, 'TIME')
-        else:
-            self.metrics = []
+        self.metrics = ['TIME'] if metrics is None else metrics
         self.measure_mpi = measure_mpi
         self.measure_openmp = measure_openmp
         self.measure_opencl = measure_opencl
@@ -353,6 +349,15 @@ class TauInstallation(Installation):
         self.uses_ompt = (self.measure_openmp == 'ompt')
         self.uses_libotf2 = (self.trace == 'otf2')
         self.uses_cuda = (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        for i, metric in enumerate(self.metrics):
+            if 'TIME' in metric:
+                # TAU assumes the first metric is always some kind of wallclock timer
+                # so move the first wallclock metric to the front of the list
+                if 'TIME' not in self.metrics[0]:
+                    self.metrics.insert(0, self.metrics.pop(i))
+                break
+        else:
+            self.metrics.insert(0, 'TIME')
         if forced_makefile is None:
             for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
                 if getattr(self, 'uses_'+pkg):
