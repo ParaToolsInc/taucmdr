@@ -233,13 +233,13 @@ class TrialController(Controller):
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
             else:
                 retval = self._perform_interactive(expr, trial, cmd, cwd, env)
-        except:
+        except Exception as err:
             try:
                 self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
             except KeyError:
                 # Trial record was deleted
                 pass
-            raise
+            raise err
         else:
             self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
             return retval
