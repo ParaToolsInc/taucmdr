@@ -40,7 +40,7 @@ DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
                      {'header': 'Command', 'value': 'command'},
                      {'header': 'Description', 'value': 'description'},
                      {'header': 'Status', 'value': 'phase'},
-                     {'header': 'Elapsed Time', 'value': 'elapsed'}]
+                     {'header': 'Elapsed Seconds', 'value': 'elapsed'}]
 
 class TrialListCommand(ListCommand):
     """``trial list`` subcommand."""
