@@ -177,8 +177,7 @@ class InitializeCommand(AbstractCommand):
                        '--trace=none', 
                        '--sample=False',
                        '--source-inst=never', 
-                       '--compiler-inst=never'] 
-                      + measurement_args)
+                       '--compiler-inst=never'])
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'
             _safe_execute(measurement_create_cmd, 
