@@ -86,6 +86,16 @@ def attributes():
             'unique': True,
             'description': "measurement configuration name",
         },
+        'baseline': {
+            'type': 'boolean',
+            'default': False,
+            'description': "completely disable all instrumentation and measure wall clock time via the OS",
+            'argparse': {'flags': ('--baseline',),
+                         'group': 'instrumentation'},
+            'compat': {True: (Measurement.require('profile', 'tau'),
+                              Measurement.require('trace', 'none'))}
+        },
+        
         'profile': {
             'type': 'string',
             'default': 'tau',
@@ -124,7 +134,8 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN))}
+                              Target.exclude('host_os', DARWIN),
+                              Measurement.exclude('baseline', True))}
         },
         'source_inst': {
             'type': 'string',
@@ -136,7 +147,9 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
-            'compat': {'automatic': Target.exclude('pdt_source', None)},
+            'compat': {lambda x: x in ('automatic', 'manual'): 
+                       (Target.exclude('pdt_source', None),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'compiler_inst': {
@@ -154,7 +167,8 @@ def attributes():
                         Target.exclude('binutils_source', None),
                         Target.require('libunwind_source'),
                         Target.exclude('libunwind_source', None),
-                        Target.exclude('host_os', DARWIN))},
+                        Target.exclude('host_os', DARWIN),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'mpi': {
@@ -165,7 +179,8 @@ def attributes():
             'compat': {True:
                        (Target.require(MPI_CC.keyword),
                         Target.require(MPI_CXX.keyword),
-                        Target.require(MPI_FC.keyword))},
+                        Target.require(MPI_FC.keyword),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'openmp': {
@@ -177,8 +192,10 @@ def attributes():
                          'choices': ('ignore', 'opari', 'ompt')},
             'compat': {'opari':
                        (Application.require('openmp', True),
-                        Measurement.discourage('source_inst', 'never')),
-                       'ompt': Application.require('openmp', True)},
+                        Measurement.discourage('source_inst', 'never'),
+                        Measurement.exclude('baseline', True)),
+                       'ompt': (Application.require('openmp', True),
+                                Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'cuda': {
@@ -186,7 +203,8 @@ def attributes():
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
-            'compat': {True: Target.require('cuda_toolkit')},
+            'compat': {True: (Target.require('cuda_toolkit'),
+                              Measurement.exclude('baseline', True))},
         },
         'shmem': {
             'type': 'boolean',
@@ -196,7 +214,8 @@ def attributes():
             'compat': {True:
                        (Target.require(SHMEM_CC.keyword),
                         Target.require(SHMEM_CXX.keyword),
-                        Target.require(SHMEM_FC.keyword))},
+                        Target.require(SHMEM_FC.keyword),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'opencl': {
@@ -205,7 +224,8 @@ def attributes():
             'description': 'measure OpenCL events',
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda_toolkit'),
-                              Application.require('opencl'))},
+                              Application.require('opencl'),
+                              Measurement.exclude('baseline', True))},
         },
         'callpath': {
             'type': 'integer',
@@ -222,6 +242,7 @@ def attributes():
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',)},
+            'compat': {True: Measurement.exclude('baseline', True)},
         },
         'heap_usage': {
             'type': 'boolean',
@@ -229,6 +250,7 @@ def attributes():
             'description': 'measure heap memory usage',
             'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory'},
+            'compat': {True: Measurement.exclude('baseline', True)},
         },
         'memory_alloc': {
             'type': 'boolean',
@@ -236,6 +258,7 @@ def attributes():
             'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
+            'compat': {True: Measurement.exclude('baseline', True)},
         },
         'metrics': {
             'type': 'array',
@@ -245,8 +268,8 @@ def attributes():
                          'group': 'data',
                          'metavar': '<metric>'},
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
-                       (Target.require('papi_source'), 
-                        Target.exclude('papi_source', None))},
+                       (Target.require('papi_source'), Target.exclude('papi_source', None)),
+                       lambda x: x != ['TIME']: Measurement.exclude('baseline', True)},
             'rebuild_required': True
         },
         'keep_inst_files': {
@@ -269,7 +292,8 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'record the point-to-point communication matrix',
-            'argparse': {'flags': ('--comm-matrix',)}
+            'argparse': {'flags': ('--comm-matrix',)},
+            'compat': {True: Measurement.exclude('baseline', True)},
         },
         'throttle': {
             'type': 'boolean',
@@ -310,7 +334,8 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN))}
+                              Target.exclude('host_os', DARWIN),
+                              Measurement.exclude('baseline', True))}
         },
         'force_tau_options': {
             'type': 'array',
@@ -319,7 +344,8 @@ def attributes():
             'argparse': {'flags': ('--force-tau-options',),
                          'nargs': '+',
                          'metavar': '<option>'},
-            'compat': {True: Measurement.discourage('force_tau_options')}
+            'compat': {True: (Measurement.discourage('force_tau_options'),
+                              Measurement.exclude('baseline', True))}
         }
     }
 
