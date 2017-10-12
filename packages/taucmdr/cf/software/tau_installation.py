@@ -402,7 +402,7 @@ class TauInstallation(Installation):
         if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
             raise ConfigurationError("TAU cannot be used with darshan. ",
                                      "Unload the darshan module and try again.") 
-        if os.environ.get('PE_ENV') == 'CRAY':
+        if os.environ.get('PE_ENV', '').lower() == 'cray':
             raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
                                      "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, or PrgEnv-pgi and try again.")
 
