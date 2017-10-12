@@ -315,6 +315,27 @@ class Installation(object):
                     LOGGER.debug("Cannot set group on '%s': %s", path, err)
                 progress_bar.update(i)
                 
+    def _acquire_source(self, reuse_archive):
+        archive_file = os.path.basename(self.src)
+        if reuse_archive:
+            for storage in ORDERED_LEVELS:
+                try:
+                    archive = os.path.join(storage.prefix, "src", archive_file)
+                except StorageError:
+                    continue
+                if os.path.exists(archive):
+                    return archive
+        archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
+        archive = os.path.join(archive_prefix, os.path.basename(self.src))
+        try:
+            util.download(self.src, archive)
+        except IOError:
+            hints = ("If a firewall is blocking access to this server, use another method to download "
+                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+                     "Check that the file or directory is accessible")
+            raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+        return archive
+    
     def acquire_source(self, reuse_archive=True):
         """Acquires package source code archive file via download or file copy.
 
@@ -334,24 +355,14 @@ class Installation(object):
             raise ConfigurationError("No source code provided for %s" % self.title)
         if self.unmanaged:
             return self.src
-        archive_file = os.path.basename(self.src)
-        if reuse_archive:
-            for storage in reversed(ORDERED_LEVELS):
-                try:
-                    archive = os.path.join(storage.prefix, "src", archive_file)
-                except StorageError:
-                    continue
-                if os.path.exists(archive):
-                    return archive
-        archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
-        archive = os.path.join(archive_prefix, os.path.basename(self.src))
+        archive = self._acquire_source(reuse_archive)
+        # Check that archive is valid by getting archive top-level directory
         try:
-            util.download(self.src, archive)
+            util.archive_toplevel(archive)
         except IOError:
-            hints = ("If a firewall is blocking access to this server, use another method to download "
-                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
-                     "Check that the file or directory is accessible")
-            raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+            if not reuse_archive:
+                raise ConfigurationError("Unable to acquire %s source package '%s'" % (self.name, self.src))
+            return self.acquire_source(reuse_archive=False)
         return archive
 
     def _prepare_src(self, reuse_archive=True):
