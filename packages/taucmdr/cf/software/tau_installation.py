@@ -1079,10 +1079,13 @@ class TauInstallation(Installation):
         Returns:
             str: Command for TAU compiler wrapper without path or arguments.
         """
-        use_wrapper = (self.source_inst != 'never' or
-                       self.compiler_inst != 'never' or
-                       self.measure_openmp == 'opari' or
-                       self.application_linkage == 'static')
+        # FIXME: at the moment we indicate a "baseline" run by setting profile and trace to "none",
+        # but this isn't strictly correct since `tau_baseline` actually generates a tau profile
+        use_wrapper = (not (self.profile == 'none' and self.trace == 'none') and
+                       (self.source_inst != 'never' or
+                        self.compiler_inst != 'never' or
+                        self.measure_openmp == 'opari' or
+                        self.application_linkage == 'static'))
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
@@ -1193,6 +1196,13 @@ class TauInstallation(Installation):
             launcher_cmd.extend(os.environ['__TAUCMDR_LAUNCHER_ARGS__'].split(' '))
         except KeyError:
             pass
+        # FIXME: at the moment we indicate a "baseline" run by setting profile and trace to "none",
+        # but this isn't strictly correct since `tau_baseline` actually generates a tau profile
+        if self.profile == 'none' and self.trace == 'none':
+            cmd = ['tau_baseline'] + launcher_cmd
+            for application_cmd in application_cmds:
+                cmd.extend(application_cmd)
+            return cmd, env
         use_tau_exec = (self.application_linkage != 'static' and 
                         (self.profile != 'none' or self.trace != 'none') and
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
