@@ -87,7 +87,7 @@ def attributes():
             'default': False,
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
-            'compat': {True: Measurement.require('mpi', True)},
+            'compat': {True: Measurement.encourage('mpi', True)},
             'rebuild_required': True
         },
         'cuda': {
