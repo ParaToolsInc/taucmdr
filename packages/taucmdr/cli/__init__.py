@@ -134,6 +134,7 @@ def _get_commands(package_name):
             __import__(module)
             dct.setdefault(car, {})['__module__'] = sys.modules[module]
 
+    __import__(COMMANDS_PACKAGE_NAME)
     command_module = sys.modules[COMMANDS_PACKAGE_NAME]
     for _, module, _ in util.walk_packages(command_module.__path__, prefix=command_module.__name__+'.'):
         if not (module.endswith('__main__') or '.tests' in module):
