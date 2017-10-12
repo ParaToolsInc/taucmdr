@@ -99,10 +99,14 @@ import tempfile
 import fileinput
 import subprocess
 import setuptools
+from setuptools import Command
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 from setuptools.command.install_lib import install_lib as InstallLibCommand
 from setuptools.command.sdist import sdist as SDistCommand
+
+# Don't show `setup.py` as the root command
+os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
@@ -424,6 +428,45 @@ class Release(SDistCommand):
             self._build_target_release()
 
 
+class BuildMarkdown(Command):
+    """Generate markdown documentation files for each TAU Commander command"""
+    
+    description = "Generate markdown documentation files for each TAU Commander command"
+
+    user_options = [('dest=', None, "Directory in which to write markdown files")]
+    
+    def initialize_options(self):
+        # Distuilts defines attributes outside __init__
+        # pylint: disable=attribute-defined-outside-init
+        self.dest = None
+    
+    def finalize_options(self):
+        # Distuilts defines attributes outside __init__
+        # pylint: disable=attribute-defined-outside-init
+        if self.dest is None:
+            build = self.get_finalized_command('build')
+            self.dest = os.path.join(os.path.abspath(build.build_base), 'markdown')
+            self.mkpath(self.dest)
+    
+    def run(self):
+        from taucmdr import cli
+        cli.USAGE_FORMAT = "markdown"
+        os.environ['ANSI_COLORS_DISABLED'] = '1'
+        for cmd_name in cli.get_all_commands():
+            name = cli.command_from_module_name(cmd_name)
+            cmd_obj = cli.find_command(name.split()[1:])
+            parts = [cmd_obj.help_page,
+                     "", "",
+                     "Command Line Usage", 
+                     "==================",
+                     "", "",
+                     cmd_obj.usage]
+            filename = os.path.join(self.dest, cmd_name.replace('.', '_')+'.md')
+            with open(filename, 'w') as fout:
+                fout.write('\n'.join(parts))
+            print 'wrote %s' % filename
+
+
 def _version():
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
     if os.path.exists(version_file):
@@ -497,5 +540,6 @@ setuptools.setup(
               'install_lib': InstallLib,
               'test': Test,
               'build_sphinx': BuildSphinx,
-              'release': Release}
+              'release': Release,
+              'build_markdown': BuildMarkdown}
 )

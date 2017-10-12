@@ -32,8 +32,8 @@ from taucmdr.model.application import Application
 
 
 HELP_PAGE = """
-TAU Commander Applications:
-=======================================================================
+TAU Commander Applications
+==========================
 
 Creating new applications:
 Enter:  `tau application create <application_name>`
@@ -67,9 +67,6 @@ List TAU Commander Applications in a project:
 Enter: `tau application list`
 `tau application list --l` (long description)
 `tau application list --s` (short description)
-
-The sections below provide details of the subcomamnd options.
-_______________________________________________________________________
 """
 
 

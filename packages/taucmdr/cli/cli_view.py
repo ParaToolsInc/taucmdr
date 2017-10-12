@@ -70,7 +70,7 @@ class RootCommand(AbstractCliView):
     def _construct_parser(self):
         usage = "%s <subcommand> [arguments]" % self.command
         epilog = ['', cli.commands_description(self.module_name), '',
-                  "See '%s <subcommand> --help' for more information on <subcommand>." % self.command]
+                  "See `%s <subcommand> --help` for more information on a subcommand." % self.command]
         parser = arguments.get_parser(prog=self.command, usage=usage, 
                                       description=self.summary, epilog='\n'.join(epilog))
         parser.add_argument('subcommand', 

@@ -111,14 +111,11 @@ class HelpCommand(AbstractCommand):
     def exit_with_fullhelp():
         """Show a recursive help page for all commands and exit."""
         help_output = ''
-        commands = cli.get_all_commands()
-        for cmd_name in commands:
+        for cmd_name in cli.get_all_commands():
             name = cli.command_from_module_name(cmd_name)
             cmd_obj = cli.find_command(name.split()[1:])
             command = cmd_obj.command
-            command = cmd_obj.command
-            parts = [
-                     "", util.hline("Help: " + command),
+            parts = ["", util.hline("Help: " + command),
                      cmd_obj.help_page,
                      "", util.hline("Usage: " + command),
                      cmd_obj.usage]
