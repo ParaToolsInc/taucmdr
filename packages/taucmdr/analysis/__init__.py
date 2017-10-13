@@ -26,4 +26,24 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """Analysis and visualization"""
+import importlib
+import sys
 
+from taucmdr import util
+import taucmdr.analysis.analyses
+from taucmdr.analysis import analyses
+
+_ANALYSES = {}
+
+
+def get_analyses():
+    if not _ANALYSES:
+        analyses_module = sys.modules[__name__ + '.analyses']
+        for importer, name, ispkg in util.walk_packages(analyses_module.__path__, prefix=analyses_module.__name__ + '.'):
+            try:
+                print("importin")
+                analysis_module = importlib.import_module(name)
+                _ANALYSES[analysis_module.ANALYSIS.name] = analysis_module.ANALYSIS
+            except AttributeError:
+                pass
+    return _ANALYSES

@@ -91,6 +91,8 @@ print(json.dumps(entries))
 
     readonly fields = ['Hash', 'Name', 'Trials'];
 
+    app: JupyterLab;
+
     contentDiv: HTMLDivElement;
     table: HTMLTableElement;
     tHead: HTMLTableSectionElement;
@@ -98,8 +100,9 @@ print(json.dumps(entries))
     tHeadRow: HTMLTableRowElement;
     session: Session.ISession;
 
-    constructor() {
+    constructor(app: JupyterLab) {
         super();
+        this.app = app;
         this.id = widget_id;
         this.title.label = 'Experiments';
         this.title.closable = true;
@@ -123,7 +126,7 @@ print(json.dumps(entries))
         this.tHeadRow = this.tHead.insertRow();
         let firstCol = document.createElement('th');
         firstCol.className = 'empty';
-        this.tHeadRow.appendChild(firstCol)
+        this.tHeadRow.appendChild(firstCol);
         this.fields.forEach( field => {
             let headerCol = document.createElement('th');
             headerCol.appendChild(document.createTextNode(field));
@@ -156,9 +159,18 @@ print(json.dumps(entries))
     };
 
     select_experiment(name : string) : void {
+        // Ignore ConfigurationError because they are not relevant to data analysis --
+        // e.g., if we are selecting the experiment to run analyses on the trials it contains,
+        // we don't care that its compilers aren't available on this system.
         let kernel_code = `
-from taucmdr.model.experiment import Experiment
-Experiment.select("${name}")
+def select_experiment(name):
+    from taucmdr.model.experiment import Experiment
+    from taucmdr.error import ConfigurationError
+    try:
+        Experiment.select(name)
+    except ConfigurationError:
+        pass
+select_experiment("${name}")
 `;
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: kernel_code});
@@ -168,10 +180,12 @@ Experiment.select("${name}")
                     showErrorMessage('Unable to select experiment', msg.content.ename + "\n" + msg.content.evalue);
                 } else if(msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
                     this.list_experiments();
+                    this.app.commands.execute("tam:open_experiment").then(r=>{});
                 }
             };
         }, r => {
             console.error("Unable to select experiment: " + r.toString());
+            throw new Error(r);
         });
     }
 
@@ -206,7 +220,6 @@ Experiment.select("${name}")
                         });
                         button.appendChild(document.createTextNode('Select'));
                         if(experiment.Selected) {
-                            button.disabled = true;
                             row.className = 'selected';
                         }
                         let firstCell = row.insertCell();
@@ -221,6 +234,7 @@ Experiment.select("${name}")
             };
         }, r => {
             console.error("Unable to get experiment list: " + r.toString())
+            throw new Error(r);
         });
     };
 
@@ -236,7 +250,7 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
     // Declare a widget variable
     let widget: ExperimentSelectorWidget;
 
-    widget = new ExperimentSelectorWidget();
+    widget = new ExperimentSelectorWidget(app);
 
     app.shell.addToLeftArea(widget, {rank: 1000});
 

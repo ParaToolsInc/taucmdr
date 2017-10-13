@@ -30,14 +30,20 @@ var Kernels = (function () {
     function Kernels() {
         this.start_session().then(function (r) { });
     }
-    Kernels.prototype.get_project = function () {
-        return this.execute_kernel(Kernels.getProjectKernel).then(function (stream) {
+    Kernels.prototype.handle_listing_command = function (command) {
+        return this.execute_kernel(command).then(function (stream) {
             return stream.split("\n").slice(0, -1).map(function (entry) {
                 return JSON.parse(entry);
             });
         }, function (reason) {
             throw new Error(reason);
         });
+    };
+    Kernels.prototype.get_project = function () {
+        return this.handle_listing_command(Kernels.getProjectKernel);
+    };
+    Kernels.prototype.get_trials = function () {
+        return this.handle_listing_command(Kernels.getTrialsKernel);
     };
     Kernels.prototype.execute_kernel = function (kernel) {
         return this.start_session().then(function (session) {
@@ -98,6 +104,7 @@ exports.Kernels = Kernels;
 (function (Kernels) {
     Kernels.session_path = 'taucmdr_tam_pane.ipynb';
     Kernels.getProjectKernel = "\ndef get_project():\n    from taucmdr.model.project import Project\n    selected = Project.selected()\n    from taucmdr.cli.commands.project.list import COMMAND as project_list_command\n    return project_list_command.main([selected['name'], '--json'])\nget_project()\n";
+    Kernels.getTrialsKernel = "\ndef get_trials():\n    from taucmdr.cli.commands.trial.list import COMMAND as trial_list_command\n    return trial_list_command.main(['--json'])\nget_trials()    \n";
     var JSONResult = (function () {
         function JSONResult() {
         }

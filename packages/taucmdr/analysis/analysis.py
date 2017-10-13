@@ -32,9 +32,13 @@ import uuid
 
 import os
 
+import sys
+
 import six
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
+
+from taucmdr import util
 
 
 class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
@@ -51,7 +55,7 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
         description (str): A description of what the analysis does, to be shown as help text.
     """
 
-    def __init__(self, name, description):
+    def __init__(self, name=None, description=None):
         self.name = name
         self.description = description
 
@@ -84,7 +88,7 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
 
         """
 
-    def create_notebook(self, inputs, path, execute=False, *args, **kwargs):
+    def create_notebook(self, inputs, path, filename=None, execute=False, *args, **kwargs):
         """Create a Jupyter notebook which, when executed, performs the analysis.
 
         Args:
@@ -100,13 +104,36 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
 
         """
         nb = nbformat.v4.new_notebook()
+        # The 'cells' field contains a list of input cells
         nb['cells'] = self.get_cells(inputs, *args, **kwargs)
+
+        # Set up notebook metadata to identify the kernel used
         nb['metadata']['kernel_info'] = nbformat.NotebookNode()
         nb['metadata']['kernel_info']['name'] = 'python2'
+
+        # Also include the metadata that would be written by JupyterLab to select a specific
+        # kernelspec, so that it doesn't prompt the user to select a kernel when the notebook
+        # is opened for the first time.
+        nb['metadata']['kernelspec'] = nbformat.NotebookNode()
+        nb['metadata']['kernelspec']['name'] = 'python2'
+        nb['metadata']['kernelspec']['language'] = 'python'
+        nb['metadata']['kernelspec']['display_name'] = 'Python 2'
+
+        # And tell CodeMirror what language to use for syntax highlighting.
+        nb['metadata']['language_info'] = nbformat.NotebookNode()
+        nb['metadata']['language_info']['codemirror_mode'] = nbformat.NotebookNode()
+        nb['metadata']['language_info']['codemirror_mode']['name'] = 'ipython'
+        nb['metadata']['language_info']['codemirror_mode']['version'] = 2
+
+        # If requested, we do an in-place execute of the notebook. Unfortunately, this is
+        # less useful than it might otherwise be, as it doesn't take place in a browser and so
+        # any commands that require JavaScript to execute won't actually generate output.
         if execute:
             ep = ExecutePreprocessor(timeout=600, kernel_name='python2')
             ep.preprocess(nb, {'metadata': {'path': path}})
-        nb_name = "%s-%s.ipynb" % (self.name, uuid.uuid4().hex)
+
+        # Finally, we write out the notebook as a version 4 notebook file
+        nb_name = filename if filename else "%s-%s.ipynb" % (self.name, uuid.uuid4().hex)
         file_path = os.path.abspath(os.path.join(path, nb_name))
         with open(file_path, 'w') as nb_file:
             nbformat.write(nb, nb_file)

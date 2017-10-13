@@ -65,8 +65,8 @@ def show_trial_bar_plot(trial, metric):
 
 
 class TrialBarPlotVisualizer(AbstractAnalysis):
-    def __init__(self):
-        super(TrialBarPlotVisualizer, self).__init__('barplot', 'Display a ParaProf-style bar plot')
+    def __init__(self, name='trial-barplot', description='Trial Bar Plot'):
+        super(TrialBarPlotVisualizer, self).__init__(name=name, description=description)
 
     @staticmethod
     def trial_to_column_source(trial, metric):
@@ -167,3 +167,6 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         trials, metric = self._check_input(inputs, **kwargs)
         for trial in trials:
             show_trial_bar_plot(trial, metric)
+
+
+ANALYSIS = TrialBarPlotVisualizer()

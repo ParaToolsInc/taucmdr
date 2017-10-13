@@ -30,7 +30,6 @@
 from bokeh.models import ColumnDataSource
 
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
@@ -76,8 +75,8 @@ def show_profile_bar_plot(trial, indices, metric):
 
 
 class ProfileBarPlotVisualizer(AbstractAnalysis):
-    def __init__(self):
-        super(ProfileBarPlotVisualizer, self).__init__('barplot', 'Display a ParaProf-style bar plot')
+    def __init__(self, name='profile-barplot', description='Profile Bar Plot'):
+        super(ProfileBarPlotVisualizer, self).__init__(name=name, description=description)
 
     @staticmethod
     def profile_to_column_source(trial, indices, metric):
@@ -163,3 +162,6 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
         trials, metric, indices = self._check_input(inputs)
         for trial in trials:
             show_profile_bar_plot(trial, metric)
+
+
+ANALYSIS = ProfileBarPlotVisualizer()

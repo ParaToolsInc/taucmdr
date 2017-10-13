@@ -187,9 +187,8 @@ Project.controller().select(proj)
                     showErrorMessage('Unable to select project', msg.content.ename);
                     console.log(msg.content);
                 } else if (msg.header.msg_type == "status" && msg.content.execution_state == "idle") {
-                    console.log("Selection complete")
                     this.list_projects();
-                    this.app.commands.execute("tam:open").then(r=>{});
+                    this.app.commands.execute("tam:open_project").then(r=>{});
                 }
             };
         }, r => {

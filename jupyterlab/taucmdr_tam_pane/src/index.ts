@@ -54,7 +54,8 @@ import {
 
 import '../style/index.css';
 
-const widget_id = 'taucmdr_tam_pane';
+const tam_widget_id = 'taucmdr_tam_pane';
+const trial_widget_id = 'taucmdr_trial_pane';
 const class_name = 'tam';
 
 export class TAMPaneWidget extends Widget {
@@ -63,7 +64,9 @@ export class TAMPaneWidget extends Widget {
 
     mainContent: HTMLDivElement;
 
-    readonly table_names = ['projectTableDiv', 'targetTableDiv', 'applicationTableDiv', 'measurementTableDiv', 'experimentTableDiv'];
+    get_table_names() : Array<string> {
+        return ['projectTableDiv', 'targetTableDiv', 'applicationTableDiv', 'measurementTableDiv', 'experimentTableDiv'];
+    }
 
     projectTableDiv : HTMLDivElement;
     targetTableDiv : HTMLDivElement;
@@ -78,16 +81,17 @@ export class TAMPaneWidget extends Widget {
         this.kernels = new Kernels();
         this.app = app;
 
-        this.id = widget_id;
-        this.title.label = 'Commander';
+        this.id = tam_widget_id;
+        this.title.label = 'Project';
         this.title.closable = true;
-        this.addClass(widget_id);
+        this.addClass(tam_widget_id);
 
         this.mainContent = document.createElement('div');
         this.mainContent.className = 'main-content';
         this.node.appendChild(this.mainContent);
 
-        this.table_names.forEach(table_name => {
+        this.get_table_names().forEach(table_name => {
+            console.log(`Creating ${table_name} for table`);
             this[table_name] = document.createElement('div');
             this.mainContent.appendChild(this[table_name]);
         });
@@ -95,92 +99,169 @@ export class TAMPaneWidget extends Widget {
 
     protected onAfterAttach(msg: Message): void {
         this.update();
-        console.log("after attach");
     }
 
     protected onBeforeDetach(msg: Message): void {
     }
 
-    update_table(div: HTMLDivElement, model: string, rows: Array<Kernels.JSONResult>, fields: Array<string>): void {
-        this.kernels.get_project().then(project => {
-            let table = new Table(rows, fields, class_name);
-            div.innerHTML = "";
-            div.appendChild(document.createElement('h1').appendChild(
-                document.createTextNode(model)));
-            div.appendChild(table.get_table());
-        }, reason => {
-            throw new Error(reason);
+    /*
+     * Clears all the tables from the view.
+     */
+    clear(): void {
+        this.get_table_names().forEach(table_name => {
+            console.log(`Clearing ${table_name}`);
+            this[table_name].innerHTML = '';
+        })
+    }
+
+    /*
+     * Replaces the table contents of `rows` with a new table containing headings listed in `fields` and
+     * values from the JSON array `rows`.
+     */
+    protected update_table(div: HTMLDivElement, model: string, rows: Array<Kernels.JSONResult>, fields: Array<string>): void {
+        let table = new Table(rows, fields, class_name);
+        div.innerHTML = "";
+        div.appendChild(document.createElement('h1').appendChild(
+            document.createTextNode(model)));
+        div.appendChild(table.get_table());
+    }
+
+    protected update_handler(entries : Array<Kernels.JSONResult>) : void {
+        entries.forEach(entry => {
+            this.update_table(this[entry['model']+'TableDiv'], entry['model'], entry['rows'], entry['headers']);
         });
     }
 
+    /*
+     * Requests new data from TAU Commander and updates the table to display that data.
+     */
     update(): void {
+        this.clear();
         this.kernels.get_project().then(project_entries => {
-            project_entries.forEach(entry => {
-                console.log(`Updating a ${entry['model']}`);
-                this.update_table(this[entry['model']+'TableDiv'], entry['model'], entry['rows'], entry['headers']);
-            });
+            this.update_handler(project_entries);
         });
     }
 
     display(): void {
         this.app.shell.addToMainArea(this);
     }
+}
 
+export class ExperimentPaneWidget extends TAMPaneWidget {
+
+    get_table_names() : Array<string> {
+        return ['trialTableDiv'];
+    }
+
+    trialTableDiv : HTMLDivElement;
+
+    constructor(app: JupyterLab) {
+        console.log("Constructing the ExperimentPaneWidget!")
+        super(app);
+        this.id = trial_widget_id;
+        this.title.label = 'Experiment';
+        console.log("Done constructing the ExperimentPaneWidget!")
+    }
+
+    update(): void {
+        this.clear();
+        this.kernels.get_trials().then(project_entries => {
+            this.update_handler(project_entries);
+        });
+    }
 
 }
 
 export let defaultTAMPane: TAMPaneWidget = null;
+export let defaultExperimentPane: ExperimentPaneWidget = null;
 
 function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRestorer) {
-    console.log(`JupyterLab extension ${widget_id} is activated!`);
+    console.log(`JupyterLab extension ${tam_widget_id} is activated!`);
 
-    // Declare a widget variable
-    let widget: TAMPaneWidget;
-
-    // Add an application command
-    const command: string = 'tam:open';
-    app.commands.addCommand(command, {
-        label: 'Open TAM Pane',
+    // Add an application command to open the Project pane
+    let tamPaneWidget: TAMPaneWidget;
+    const open_project_command = 'tam:open_project';
+    app.commands.addCommand(open_project_command, {
+        label: 'Open Project Pane',
         execute: () => {
-            if (!widget) {
+            if (!tamPaneWidget) {
                 // Create a new widget if one does not exist
-                widget = new TAMPaneWidget(app);
+                tamPaneWidget = new TAMPaneWidget(app);
                 if (defaultTAMPane == null) {
-                    defaultTAMPane = widget
+                    defaultTAMPane = tamPaneWidget
                 }
-                widget.update();
+                tamPaneWidget.update();
             }
-            if (!tracker.has(widget)) {
+            if (!proj_tracker.has(tamPaneWidget)) {
                 // Track the state of the widget for later restoration
-                tracker.add(widget).then(r => {
+                proj_tracker.add(tamPaneWidget).then(r => {
                 });
             }
-            if (!widget.isAttached) {
+            if (!tamPaneWidget.isAttached) {
                 // Attach the widget to the main area if it's not there
-                app.shell.addToMainArea(widget);
+                app.shell.addToMainArea(tamPaneWidget);
             } else {
                 // Refresh the data in the widget
-                widget.update();
+                tamPaneWidget.update();
             }
             // Activate the widget
-            app.shell.activateById(widget.id);
+            app.shell.activateById(tamPaneWidget.id);
+        }
+    });
+
+    // Add an application command to open the Experiment pane
+    let experimentPaneWidget: ExperimentPaneWidget;
+    const open_experiment_command = 'tam:open_experiment';
+    app.commands.addCommand(open_experiment_command, {
+        label: 'Open Experiment Pane',
+        execute: () => {
+            console.log("Should open experiment pane");
+            if (!experimentPaneWidget) {
+                // Create a new widget if one does not exist
+                experimentPaneWidget = new ExperimentPaneWidget(app);
+                if (defaultExperimentPane == null) {
+                    defaultExperimentPane = experimentPaneWidget
+                }
+                experimentPaneWidget.update();
+            }
+            if (!exp_tracker.has(experimentPaneWidget)) {
+                // Track the state of the widget for later restoration
+                exp_tracker.add(experimentPaneWidget).then(r => {
+                });
+            }
+            if (!experimentPaneWidget.isAttached) {
+                // Attach the widget to the main area if it's not there
+                app.shell.addToMainArea(experimentPaneWidget);
+            } else {
+                // Refresh the data in the widget
+                experimentPaneWidget.update();
+            }
+            // Activate the widget
+            app.shell.activateById(experimentPaneWidget.id);
         }
     });
 
     // Add the command to the palette.
-    palette.addItem({command, category: 'Tutorial'});
+    palette.addItem({command: open_project_command, category: 'TAU Commander'});
+    palette.addItem({command: open_experiment_command, category: 'TAU Commander'});
 
     // Track and restore the widget state
-    let tracker = new InstanceTracker<Widget>({namespace: widget_id});
-    restorer.restore(tracker, {
-        command,
+    let proj_tracker = new InstanceTracker<Widget>({namespace: tam_widget_id});
+    restorer.restore(proj_tracker, {
+        command: open_project_command,
         args: () => JSONExt.emptyObject,
-        name: () => widget_id
+        name: () => 'project-view'
+    });
+    let exp_tracker = new InstanceTracker<Widget>({namespace: trial_widget_id});
+    restorer.restore(exp_tracker, {
+        command: open_experiment_command,
+        args: () => JSONExt.emptyObject,
+        name: () => 'experiment-view'
     });
 }
 
 const extension: JupyterLabPlugin<void> = {
-    id: widget_id,
+    id: tam_widget_id,
     autoStart: true,
     requires: [ICommandPalette, ILayoutRestorer],
     activate: activate

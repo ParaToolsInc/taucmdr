@@ -36,14 +36,22 @@ export class Kernels {
         this.start_session().then(r=>{});
     }
 
-    get_project() : Promise<Array<Kernels.JSONResult>> {
-        return this.execute_kernel(Kernels.getProjectKernel).then(stream => {
+    protected handle_listing_command(command: string) : Promise<Array<Kernels.JSONResult>> {
+        return this.execute_kernel(command).then(stream => {
             return stream.split("\n").slice(0, -1).map(entry => {
-               return JSON.parse(entry);
+                return JSON.parse(entry);
             });
         }, reason => {
             throw new Error(reason);
         });
+    }
+
+    get_project() : Promise<Array<Kernels.JSONResult>> {
+        return this.handle_listing_command(Kernels.getProjectKernel);
+    }
+
+    get_trials() : Promise<Array<Kernels.JSONResult>> {
+        return this.handle_listing_command(Kernels.getTrialsKernel);
     }
 
     protected execute_kernel(kernel: string) : Promise<string> {
@@ -109,6 +117,13 @@ def get_project():
     from taucmdr.cli.commands.project.list import COMMAND as project_list_command
     return project_list_command.main([selected['name'], '--json'])
 get_project()
+`;
+
+    export const getTrialsKernel = `
+def get_trials():
+    from taucmdr.cli.commands.trial.list import COMMAND as trial_list_command
+    return trial_list_command.main(['--json'])
+get_trials()    
 `;
 
     export class JSONResult {
