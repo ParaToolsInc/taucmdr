@@ -44,7 +44,6 @@ To select a specific project `tau project select <project_name>`
 To copy a project: `tau project copy <project_name> <new_project_name>` 
 [optional - specify measurements, applications, and targets] 
 
-The sections below provide details on the tau project subcommand options.
 ________________________________________________________________________
 """ 
  

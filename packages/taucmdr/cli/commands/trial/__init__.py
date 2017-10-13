@@ -62,7 +62,6 @@ same affect as: `tau trial show #`
 You may also specify files instead of trial numbers, in this case enter: 
 `tau show <data_file>` or `tau trial show <data_file>` 
  
-The sections below provide details on the tau trial subcommand options.
 _______________________________________________________________________
 """
 

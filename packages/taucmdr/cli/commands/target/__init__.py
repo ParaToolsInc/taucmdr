@@ -58,7 +58,6 @@ Enter: `tau target list`
 `tau target list –l` (long description)
 `tau target list –s` (short description)
 
-The sections below provide details on the tau target subcommand options.
 _________________________________________________________________________
 """
 

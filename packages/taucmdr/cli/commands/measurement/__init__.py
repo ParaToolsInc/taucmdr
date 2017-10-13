@@ -70,7 +70,6 @@ A measurement can be deleted with: `tau measurement --delete <measurement_name>`
 Measurements are listed with: `tau measurement list` (optional `--l` or `--s` 
 (long or short descriptions)).
 
-The sections below provide details on all the measurement subcommand options.
 _____________________________________________________________________________
 """
 

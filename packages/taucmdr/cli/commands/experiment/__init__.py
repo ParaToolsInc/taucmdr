@@ -53,7 +53,6 @@ specifying each parameter:
 --measurement <measurement_name> --target <target_name>`    The entities 
 experiment, application and measurement must already be defined.
 
-The area below provides details on each of the experiment subcommands.
 _________________________________________________________________________
 """
 
