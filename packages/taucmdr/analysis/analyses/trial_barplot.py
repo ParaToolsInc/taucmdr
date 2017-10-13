@@ -40,7 +40,7 @@ import nbformat
 import inspect
 
 
-def show_bar_plot(trial, metric):
+def show_trial_bar_plot(trial, metric):
     from taucmdr.data.tauprofile import TauProfile
     from taucmdr.gui.interaction import InteractivePlotHandler
     from taucmdr import logger
@@ -52,7 +52,7 @@ def show_bar_plot(trial, metric):
     output_notebook(hide_banner=True)
 
     def build_bar_plot(trial):
-        data_source = BarPlotVisualizer.trial_to_column_source(trial, metric)
+        data_source = TrialBarPlotVisualizer.trial_to_column_source(trial, metric)
         indices = map(lambda x: str(x), TauProfile.indices(trial.get_data())[::-1])
         glyph = HBar(y="y", height="height", left="left", right="right", line_color="color", fill_color="color")
         fig = figure(plot_width=400, plot_height=400, y_range=indices, output_backend="webgl")
@@ -64,9 +64,9 @@ def show_bar_plot(trial, metric):
     plot.show()
 
 
-class BarPlotVisualizer(AbstractAnalysis):
+class TrialBarPlotVisualizer(AbstractAnalysis):
     def __init__(self):
-        super(BarPlotVisualizer, self).__init__('barplot', 'Display a ParaProf-style bar plot')
+        super(TrialBarPlotVisualizer, self).__init__('barplot', 'Display a ParaProf-style bar plot')
 
     @staticmethod
     def trial_to_column_source(trial, metric):
@@ -115,13 +115,14 @@ class BarPlotVisualizer(AbstractAnalysis):
         return data_source
 
     @staticmethod
-    def _check_input(inputs):
+    def _check_input(inputs, **kwargs):
         if not isinstance(inputs, list):
             inputs = [inputs]
         for trial in inputs:
             if not isinstance(trial, Trial):
                 raise ConfigurationError("Bar plots can only be built for Trials.")
-        return inputs
+        metric = kwargs.get('metric', 'Exclusive')
+        return inputs, metric
 
     def get_cells(self, inputs, *args, **kwargs):
         """Get Jupyter input cell containing code which will create a barplot when
@@ -139,15 +140,14 @@ class BarPlotVisualizer(AbstractAnalysis):
         Raises:
             ConfigurationError: The provided models are not Trials
         """
-        metric = kwargs.get('metric', 'Exclusive')
-        trials = self._check_input(inputs)
-        commands = ['from taucmdr.analysis.analyses.barplot import BarPlotVisualizer',
+        trials, metric = self._check_input(inputs, **kwargs)
+        commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
-                    inspect.getsource(show_bar_plot)]
+                    inspect.getsource(show_trial_bar_plot)]
         for trial in trials:
             digest = trial.hash_digest()
-            commands.append('show_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
+            commands.append('show_trial_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
                             % (digest, metric))
         cell_source = "\n".join(commands)
         return [nbformat.v4.new_code_cell(cell_source)]
@@ -164,7 +164,6 @@ class BarPlotVisualizer(AbstractAnalysis):
         Raises:
             ConfigurationError: The provided models are not Trials
         """
-        metric = kwargs.get('metric', 'Exclusive')
-        trials = self._check_input(inputs)
+        trials, metric = self._check_input(inputs, **kwargs)
         for trial in trials:
-            show_bar_plot(trial, metric)
+            show_trial_bar_plot(trial, metric)
