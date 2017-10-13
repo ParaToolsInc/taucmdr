@@ -257,7 +257,7 @@ class Experiment(Model):
         except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
-
+                
     def data_size(self):
         return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
 
@@ -285,11 +285,14 @@ class Experiment(Model):
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
+        baseline = measurement.get_or_default('baseline')
         tau = TauInstallation(\
                     target.sources(),
                     target_arch=target.architecture(),
                     target_os=target.operating_system(),
                     compilers=target.compilers(),
+                    # Use a minimal configuration for the baseline measurement
+                    minimal_configuration=baseline,
                     # TAU feature suppport
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
@@ -311,6 +314,7 @@ class Experiment(Model):
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
                     select_file=application.get('select_file', None),
                     # Measurement methods and options
+                    baseline=baseline,
                     profile=measurement.get_or_default('profile'),
                     trace=measurement.get_or_default('trace'),
                     sample=measurement.get_or_default('sample'),
@@ -332,7 +336,8 @@ class Experiment(Model):
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     forced_makefile=target.get('forced_makefile', None))
         tau.install()
-        self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
+        if not baseline:
+            self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):

@@ -179,6 +179,7 @@ class TauInstallation(Installation):
                  reuse_inst_files=False,
                  select_file=None,
                  # Measurement methods and options
+                 baseline=False,
                  profile="tau",
                  trace="none",
                  sample=False,
@@ -226,6 +227,7 @@ class TauInstallation(Installation):
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
             select_file (str): Path to selective instrumentation file.
+            baseline (bool): If True, only measure wallclock time via `tau_baseline`.
             profile (str): Format for profile files, one of "tau", "merged", "cubex", or "none".
             trace (str): Format for trace files, one of "slog2", "otf2", or "none".
             sample (bool): Enable or disable event-based sampling.
@@ -265,6 +267,7 @@ class TauInstallation(Installation):
         assert keep_inst_files in (True, False)
         assert reuse_inst_files in (True, False)
         assert isinstance(select_file, basestring) or select_file is None
+        assert baseline in (True, False)
         assert profile in ("tau", "merged", "cubex", "none")
         assert trace in ("slog2", "otf2", "none")
         assert sample in (True, False)
@@ -317,6 +320,7 @@ class TauInstallation(Installation):
         self.keep_inst_files = keep_inst_files
         self.reuse_inst_files = reuse_inst_files
         self.select_file = select_file
+        self.baseline = baseline
         self.profile = profile
         self.trace = trace
         self.sample = sample
@@ -402,7 +406,7 @@ class TauInstallation(Installation):
         if 'DARSHAN_PRELOAD' in os.environ or 'darshan' in os.environ.get('LOADEDMODULES', '').lower():
             raise ConfigurationError("TAU cannot be used with darshan. ",
                                      "Unload the darshan module and try again.") 
-        if os.environ.get('PE_ENV') == 'CRAY':
+        if os.environ.get('PE_ENV', '').lower() == 'cray':
             raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
                                      "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, or PrgEnv-pgi and try again.")
 
@@ -1079,10 +1083,11 @@ class TauInstallation(Installation):
         Returns:
             str: Command for TAU compiler wrapper without path or arguments.
         """
-        use_wrapper = (self.source_inst != 'never' or
-                       self.compiler_inst != 'never' or
-                       self.measure_openmp == 'opari' or
-                       self.application_linkage == 'static')
+        use_wrapper = (not self.baseline and
+                       (self.source_inst != 'never' or
+                        self.compiler_inst != 'never' or
+                        self.measure_openmp == 'opari' or
+                        self.application_linkage == 'static'))
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
         else:
@@ -1193,6 +1198,11 @@ class TauInstallation(Installation):
             launcher_cmd.extend(os.environ['__TAUCMDR_LAUNCHER_ARGS__'].split(' '))
         except KeyError:
             pass
+        if self.baseline:
+            cmd = ['tau_baseline'] + launcher_cmd
+            for application_cmd in application_cmds:
+                cmd.extend(application_cmd)
+            return cmd, env
         use_tau_exec = (self.application_linkage != 'static' and 
                         (self.profile != 'none' or self.trace != 'none') and
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
