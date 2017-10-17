@@ -112,7 +112,7 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
             if not isinstance(trial, Trial):
                 raise ConfigurationError("Bar plots can only be built for Trials.")
         metric = kwargs.get('metric', 'Exclusive')
-        indices = kwargs.get('indices', (0,0,0))
+        indices = kwargs.get('indices', (0, 0, 0))
         return inputs, metric, indices
 
     def get_cells(self, inputs, *args, **kwargs):
