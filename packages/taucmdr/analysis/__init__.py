@@ -37,13 +37,32 @@ _ANALYSES = {}
 
 
 def get_analyses():
+    """Get the available analyses.
+
+    Returns:
+        dict of str: :obj:`AbstractAnalysis`: Mapping from analysis name to instance of analysis class
+    """
     if not _ANALYSES:
         analyses_module = sys.modules[__name__ + '.analyses']
         for importer, name, ispkg in util.walk_packages(analyses_module.__path__, prefix=analyses_module.__name__ + '.'):
             try:
-                print("importin")
                 analysis_module = importlib.import_module(name)
                 _ANALYSES[analysis_module.ANALYSIS.name] = analysis_module.ANALYSIS
             except AttributeError:
                 pass
     return _ANALYSES
+
+
+def get_analysis(name):
+    """Get an instance of an analysis by name.
+
+    Args:
+        name (str): The name of the analysis.
+
+    Returns:
+        :obj:`AbstractAnalysis`: An instance of the named analysis
+
+    Raises:
+        KeyError: No analysis by that name is registered.
+    """
+    return get_analyses()[name]

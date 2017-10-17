@@ -121,6 +121,8 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
 
         # And tell CodeMirror what language to use for syntax highlighting.
         nb['metadata']['language_info'] = nbformat.NotebookNode()
+        nb['metadata']['language_info']['name'] = 'python'
+        nb['metadata']['language_info']['version'] = 2
         nb['metadata']['language_info']['codemirror_mode'] = nbformat.NotebookNode()
         nb['metadata']['language_info']['codemirror_mode']['name'] = 'ipython'
         nb['metadata']['language_info']['codemirror_mode']['version'] = 2

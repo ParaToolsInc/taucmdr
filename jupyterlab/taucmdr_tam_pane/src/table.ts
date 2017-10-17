@@ -35,11 +35,24 @@ export class Table {
     protected fields : Array<string>;
     protected table_class : string;
     protected table : HTMLTableElement;
+    protected footer : HTMLTableRowElement;
+    protected cols : number;
+    protected selectable : boolean;
+    protected primary_key : string;
+    protected checkboxes : Array<HTMLInputElement>;
 
-    constructor(data : Array<JSONResult>, fields : Array<string>, table_class : string) {
+    constructor(data : Array<JSONResult>, fields : Array<string>, table_class : string, selectable : boolean,
+                primary_key : string) {
         this.data = data;
         this.fields = fields;
         this.table_class = table_class;
+        this.selectable = selectable;
+        this.primary_key = primary_key;
+        this.cols = this.fields == null ? 0 : this.fields.length;
+        if(this.selectable) {
+            ++this.cols;
+        }
+        this.checkboxes = [];
         this.update_table();
     }
 
@@ -48,25 +61,87 @@ export class Table {
         this.table.className = this.table_class;
         let tHead = this.table.createTHead();
         let tBody = this.table.createTBody();
+        let tFoot = this.table.createTFoot();
+        this.footer = tFoot.insertRow();
 
         let tHeadRow = tHead.insertRow();
-        this.fields.forEach(field => {
-            let cell = document.createElement('th');
-            cell.appendChild(document.createTextNode(field));
-            tHeadRow.appendChild(cell);
-        });
 
-        this.data.forEach(rowData => {
-            let row = tBody.insertRow();
+        if(this.fields != null) {
+            if(this.selectable) {
+                // Header column for checkbox
+                let cell = document.createElement('th');
+                let checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.addEventListener('click', () => {
+                    this.checkboxes.forEach(row_checkbox => {
+                        row_checkbox.checked = checkbox.checked;
+                    });
+                });
+                cell.appendChild(checkbox);
+                tHeadRow.appendChild(cell);
+            }
             this.fields.forEach(field => {
-                let cell = row.insertCell();
-                cell.appendChild(document.createTextNode(rowData[field]));
-                row.appendChild(cell);
+                let cell = document.createElement('th');
+                cell.appendChild(document.createTextNode(field));
+                tHeadRow.appendChild(cell);
             });
-        });
+
+            this.data.forEach(rowData => {
+                let row = tBody.insertRow();
+                let checkbox : HTMLInputElement;
+                if(this.selectable) {
+                    let checkboxCell = row.insertCell();
+                    checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = rowData[this.primary_key];
+                    checkbox.name = 'selection';
+                    checkbox.value = checkbox.id;
+                    checkboxCell.appendChild(checkbox);
+                    this.checkboxes.push(checkbox);
+                    row.appendChild(checkboxCell);
+                }
+                this.fields.forEach(field => {
+                    let cell = row.insertCell();
+                    let value = rowData[field];
+                    if (value == null) {
+                        value = "N/A";
+                    }
+                    if(this.selectable) {
+                        cell.addEventListener('click', () => {
+                            checkbox.checked = !checkbox.checked;
+                        });
+                    }
+                    cell.appendChild(document.createTextNode(value));
+                    row.appendChild(cell);
+                });
+            });
+        }
     }
 
     get_table() : HTMLTableElement {
         return this.table;
+    }
+
+    get_footer() : HTMLTableRowElement {
+        return this.footer;
+    }
+
+    add_as_footer_row(element : HTMLElement) : void {
+        let cell = this.footer.insertCell();
+        cell.appendChild(element);
+        cell.colSpan = this.cols;
+    }
+
+    get_selected() : Array<string> {
+        let result : Array<string> = [];
+        if(this.selectable) {
+            this.checkboxes.forEach(checkbox => {
+                if(checkbox.checked) {
+                    result.push(checkbox.value);
+                }
+            });
+        }
+        return result;
+
     }
 }

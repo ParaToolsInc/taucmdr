@@ -46,12 +46,32 @@ export class Kernels {
         });
     }
 
+    protected handle_single_command(command: string): Promise<Kernels.JSONResult> {
+        return this.execute_kernel(command).then(stream => {
+            return JSON.parse(stream);
+        }, reason => {
+            throw new Error(reason);
+        });
+    }
+
     get_project() : Promise<Array<Kernels.JSONResult>> {
         return this.handle_listing_command(Kernels.getProjectKernel);
     }
 
     get_trials() : Promise<Array<Kernels.JSONResult>> {
         return this.handle_listing_command(Kernels.getTrialsKernel);
+    }
+
+    get_analyses() : Promise<Kernels.JSONResult> {
+        return this.handle_single_command(Kernels.getAnalysesKernel);
+    }
+
+    run_analysis(analysis_name : string, hashes : Array<string>) : Promise<Kernels.JSONResult> {
+        let kernelCode = `
+${Kernels.runAnalysisKernel}
+print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)})) 
+`;
+        return this.handle_single_command(kernelCode);
     }
 
     protected execute_kernel(kernel: string) : Promise<string> {
@@ -125,6 +145,26 @@ def get_trials():
     return trial_list_command.main(['--json'])
 get_trials()    
 `;
+
+    export const getAnalysesKernel = `
+def get_analyses():
+    import json
+    import taucmdr.analysis as analysis
+    return json.dumps([{'name': a.name, 'desc': a.description} for a in analysis.get_analyses().values()])
+print(get_analyses())
+`;
+
+    export const runAnalysisKernel = `
+def run_analysis(name, hashes):
+    import json
+    from taucmdr.analysis import get_analysis
+    from taucmdr.model.trial import Trial
+    from taucmdr.cf.storage.levels import PROJECT_STORAGE
+    trials = [Trial.controller(PROJECT_STORAGE).search_hash(h)[0] for h in hashes]
+    analysis = get_analysis(name)
+    return json.dumps({"path": analysis.create_notebook(trials, '.')})
+`;
+
 
     export class JSONResult {
         readonly [propname: string]: any;
