@@ -28,12 +28,83 @@ import {
     Session
 } from '@jupyterlab/services';
 
+
+/*
+ * The Kernels class and namespace are in charge of managing communication between
+ * the TAU Commander GUI and the Python backend.
+ */
 export class Kernels {
 
     session: Session.ISession;
 
     constructor() {
         this.start_session().then(r=>{});
+    }
+
+    /*
+     * Get all the project, targets, applications, measurements, and experiments
+     * for the currently selected TAU Commander project. These are returned as a list
+     * of JSON objects having the form:
+     *
+     *  {
+     *      model: model name (string),
+     *      headers: the names of the column headers for the model (array of string),
+     *      rows: the data for each row, in the same order as listed in headers (array of array)
+     *  }
+     */
+    get_project() : Promise<Array<Kernels.JSONResult>> {
+        return this.handle_listing_command(Kernels.getProjectKernel);
+    }
+
+    /*
+     * Get all the trials for the currently selected experiment.
+     * These are returned as a list of JSON objects having the form:
+     *
+     *  {
+     *      model: model name (string),
+     *      headers: the names of the column headers for the model (array of string),
+     *      rows: the data for each row, in the same order as listed in headers (array of array)
+     *  }
+     */
+    get_trials() : Promise<Array<Kernels.JSONResult>> {
+        return this.handle_listing_command(Kernels.getTrialsKernel);
+    }
+
+    /*
+     * Get a list of the available analyses. These are returned as a JSON object having the form:
+     *
+     *  [
+     *      {
+     *          name: analysis name, to be used when invoking the analysis (string),
+     *          desc: description of the analysis, to be presented to the user (string)
+     *      }, ...
+     *  ]
+     */
+    get_analyses() : Promise<Kernels.JSONResult> {
+        return this.handle_single_command(Kernels.getAnalysesKernel);
+    }
+
+    /*
+     * Run an analysis on the analysis identified by `analysis_name` on the TAU Commander
+     * objects having hashes listed in `hashes`. Returns a JSON object indicating the path to
+     * the created notebook having the form:
+     *
+     *  {
+     *      path: path to created notebook (string)
+     *  }
+     */
+    run_analysis(analysis_name : string, hashes : Array<string>) : Promise<Kernels.JSONResult> {
+        let kernelCode = `
+${Kernels.runAnalysisKernel}
+print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)})) 
+`;
+        return this.handle_single_command(kernelCode);
+    }
+
+    get_cwd() : Promise<string> {
+        return this.handle_single_command(Kernels.getCwdKernel).then(result => {
+            return result.cwd;
+        });
     }
 
     protected handle_listing_command(command: string) : Promise<Array<Kernels.JSONResult>> {
@@ -54,25 +125,6 @@ export class Kernels {
         });
     }
 
-    get_project() : Promise<Array<Kernels.JSONResult>> {
-        return this.handle_listing_command(Kernels.getProjectKernel);
-    }
-
-    get_trials() : Promise<Array<Kernels.JSONResult>> {
-        return this.handle_listing_command(Kernels.getTrialsKernel);
-    }
-
-    get_analyses() : Promise<Kernels.JSONResult> {
-        return this.handle_single_command(Kernels.getAnalysesKernel);
-    }
-
-    run_analysis(analysis_name : string, hashes : Array<string>) : Promise<Kernels.JSONResult> {
-        let kernelCode = `
-${Kernels.runAnalysisKernel}
-print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)})) 
-`;
-        return this.handle_single_command(kernelCode);
-    }
 
     protected execute_kernel(kernel: string) : Promise<string> {
         return this.start_session().then(session => {
@@ -163,6 +215,14 @@ def run_analysis(name, hashes):
     trials = [Trial.controller(PROJECT_STORAGE).search_hash(h)[0] for h in hashes]
     analysis = get_analysis(name)
     return json.dumps({"path": analysis.create_notebook(trials, '.')})
+`;
+
+    export const getCwdKernel = `
+def get_cwd():
+    import os
+    import json
+    return json.dumps({'cwd': os.getcwd()})
+print(get_cwd())
 `;
 
 

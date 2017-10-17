@@ -55,7 +55,7 @@ def show_trial_bar_plot(trial, metric):
         data_source = TrialBarPlotVisualizer.trial_to_column_source(trial, metric)
         indices = map(lambda x: str(x), TauProfile.indices(trial.get_data())[::-1])
         glyph = HBar(y="y", height="height", left="left", right="right", line_color="color", fill_color="color")
-        fig = figure(plot_width=400, plot_height=400, y_range=indices, output_backend="webgl")
+        fig = figure(plot_width=80, plot_height=40, y_range=indices, output_backend="webgl")
         fig.add_glyph(data_source, glyph)
         return fig
 
@@ -97,6 +97,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
                     data[n][c][t].interval_data().sort_values(metric, ascending=False).loc[
                         trial['number'], n, c, t][
                         [metric]].itertuples():
+                time = time / 1e6
                 values.append(time)
                 next_time = last_time + time
                 color = mapping[name]
@@ -125,7 +126,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         return inputs, metric
 
     def get_cells(self, inputs, *args, **kwargs):
-        """Get Jupyter input cell containing code which will create a barplot when
+        """Get Jupyter input cells containing code which will create a barplot when
          executed for the trials in `inputs`.
 
         Args:
@@ -141,16 +142,19 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
             ConfigurationError: The provided models are not Trials
         """
         trials, metric = self._check_input(inputs, **kwargs)
+        notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
                     inspect.getsource(show_trial_bar_plot)]
+        def_cell_source = "\n".join(commands)
+        notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
         for trial in trials:
             digest = trial.hash_digest()
-            commands.append('show_trial_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
-                            % (digest, metric))
-        cell_source = "\n".join(commands)
-        return [nbformat.v4.new_code_cell(cell_source)]
+            notebook_cells.append(nbformat.v4.new_code_cell(
+                'show_trial_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
+                % (digest, metric)))
+        return notebook_cells
 
     def run(self, inputs, *args, **kwargs):
         """Create a barplot as direct notebook output for the trials in `inputs`.

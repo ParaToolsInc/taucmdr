@@ -38,13 +38,14 @@ class InteractivePlotHandler(Handler):
     In charge of launching or connecting to the Bokeh server instance and
     setting up tools for interactivity."""
 
-    def __init__(self, plots, tooltips=None):
+    def __init__(self, plots, tooltips=None, size=None):
         super(InteractivePlotHandler, self).__init__()
         if not isinstance(plots, list):
             plots = [plots]
         self.plots = plots
         self.tooltips = tooltips
         self.app = None
+        self.size = size
 
     def add_plots(self, plots):
         """Add new plots to the handler"""
@@ -71,7 +72,11 @@ class InteractivePlotHandler(Handler):
             tap_tool = TapTool()
             plot.add_tools(tap_tool)
             plot.toolbar.active_tap = tap_tool
-        doc.add_root(layout(self.plots, responsive=True))
+        if self.size:
+            view = layout(self.plots, sizing_mode=self.size)
+        else:
+            view = layout(self.plots, responsive=True)
+        doc.add_root(view)
 
     def _create_app(self):
         if self.app is None:

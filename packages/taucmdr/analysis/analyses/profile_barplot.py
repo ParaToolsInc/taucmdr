@@ -54,13 +54,11 @@ def show_profile_bar_plot(trial, indices, metric):
         data_source = ProfileBarPlotVisualizer.profile_to_column_source(trial, indices, metric)
         glyph = HBar(y="y", height="height", left="left", right="right", line_color="color", fill_color="color")
         max_time = data_source.data['left'][-1]
-        fig = figure(plot_width=400, plot_height=400, x_range=(2 * max_time, -2 * max_time), output_backend="webgl",
+        fig = figure(plot_width=80, plot_height=40, x_range=(1.5 * max_time, -4 * max_time), output_backend="webgl",
                      toolbar_location="left", title=str(indices))
         fig.add_glyph(data_source, glyph)
-        y_axis = fig.yaxis[0]
-        fig.left.remove(y_axis)
-        fig.right.append(y_axis)
-        y_axis.visible = False
+        fig.left.remove(fig.yaxis[0])
+        fig.below.remove(fig.xaxis[0])
         name_labels = LabelSet(x='right', y='y', text='name', level='glyph', y_offset=-10, x_offset=5,
                                text_align='left', source=data_source, render_mode='canvas')
         time_labels = LabelSet(x='left', y='y', text='value', level='glyph', y_offset=-10, x_offset=-5,

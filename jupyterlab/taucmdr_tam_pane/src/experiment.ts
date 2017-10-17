@@ -25,8 +25,13 @@
  */
 
 import {
+    ApplicationShell,
     JupyterLab
 } from "@jupyterlab/application";
+
+import {
+    NotebookPanel
+} from "@jupyterlab/notebook";
 
 import {
     TauCmdrPaneWidget
@@ -36,26 +41,61 @@ import {
     Kernels
 } from "./kernels";
 
+import {
+    showErrorMessage
+} from "./error";
+
 
 export const experiment_widget_id = 'taucmdr_trial_pane';
 
 export class ExperimentPaneWidget extends TauCmdrPaneWidget {
 
-    get_table_names() : Array<string> {
+    trialTableDiv: HTMLDivElement;
+    last_analysis_path: string;
+
+    get_table_names(): Array<string> {
         return ['trialTableDiv'];
     }
 
-    trialTableDiv : HTMLDivElement;
-
     constructor(app: JupyterLab) {
         super(app, experiment_widget_id, 'Experiment');
+        this.last_analysis_path = null;
     }
 
-    run_analysis(analysis_name : string) : void {
+    protected run_cells(sender: ApplicationShell, args: ApplicationShell.IChangedArgs): void {
+        if (args.newValue instanceof NotebookPanel) {
+            let notebookPanel = args.newValue as NotebookPanel;
+            notebookPanel.ready.then(() => {
+                if (notebookPanel.context.path == this.last_analysis_path) {
+                    this.app.shell.currentChanged.disconnect(this.run_cells, this);
+                    this.last_analysis_path = null;
+                    this.app.commands.execute('notebook:run-all-cells').then(() => {
+                        this.app.commands.execute('notebook:hide-all-cell-code').then(() => {
+                            console.log("Hid all code cells");
+                        });
+                    }, reason => {
+                        showErrorMessage("Couldn't execute analysis notebook", reason).then(() => {
+                        });
+                    });
+                }
+            });
+        }
+    }
+
+    run_analysis(analysis_name: string): Promise<void> {
         let selected_trials = this.table.get_selected();
-        console.log(`Should run ${analysis_name} on ${selected_trials}`);
-        this.kernels.run_analysis(analysis_name, selected_trials).then(response => {
-            console.log(response.path);
+        return this.kernels.get_cwd().then(base_path => {
+            this.kernels.run_analysis(analysis_name, selected_trials).then(response => {
+                let path = response.path as string;
+                let rel_path = path.replace(base_path, '');
+                this.last_analysis_path = rel_path;
+                // Warning! The promise returned by execute('docmanager:open') can return BEFORE the open
+                // actually completes! Because of that, we have to send commands to the resulting notebook
+                // widget when the current widget changed event fires, not when the promise is fulfilled.
+                this.app.shell.currentChanged.connect(this.run_cells, this);
+                this.app.commands.execute('docmanager:open', {path: rel_path}).then(() => {
+                });
+            });
         });
     }
 
@@ -74,12 +114,16 @@ export class ExperimentPaneWidget extends TauCmdrPaneWidget {
             let runButton = document.createElement('button');
             runButton.appendChild(document.createTextNode('Run'));
             runButton.addEventListener('click', () => {
-                this.run_analysis(select.options[select.selectedIndex].value);
+                this.run_analysis(select.options[select.selectedIndex].value).catch(reason => {
+                    showErrorMessage("Failed to run analysis", reason.toString()).then(() => {
+                    });
+                });
             });
             span.appendChild(runButton);
             this.table.add_as_footer_row(span);
         }, reason => {
-            throw new Error(reason);
+            showErrorMessage("Failed to retrieve analysis list", reason.toString()).then(() => {
+            });
         });
     }
 

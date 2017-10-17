@@ -21,7 +21,8 @@
     "extension": true
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.10.0"
+    "@jupyterlab/application": "^0.10.0",
+    "@jupyterlab/notebook": "^0.10.0"
   },
   "devDependencies": {
     "@types/node": "^8.0.32",
