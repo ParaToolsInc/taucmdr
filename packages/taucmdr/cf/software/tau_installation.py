@@ -53,6 +53,7 @@ from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
 
 
 LOGGER = logger.get_logger(__name__)
@@ -418,7 +419,22 @@ class TauInstallation(Installation):
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
+        # TAU changes if any of its hard-coded limits change
+        uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
         return uid_parts
+
+    def _get_max_threads(self):
+        if self.target_arch in (INTEL_KNC, INTEL_KNL):
+            nprocs = 256
+        else:
+            nprocs = multiprocessing.cpu_count()
+        # Round up to the next power of two, e.g. 160 => 256
+        return 1 << (nprocs-1).bit_length()
+
+    def _get_max_metrics(self):
+        nmetrics = len(self.metrics)
+        # Round up to the next power of two, e.g. 25 => 32
+        return 1 << (nmetrics-1).bit_length()
     
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
@@ -689,12 +705,12 @@ class TauInstallation(Installation):
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
-        nprocs = multiprocessing.cpu_count()
-        if nprocs > 128:
-            # Work around TAU's silly hard-coded thread limits.
-            nprocs = 1 << ((nprocs-1).bit_length() + 1)
-            useropts.append('-DTAU_MAX_THREADS=%d' % nprocs)
-        flags.append('-useropt=%s' % '#'.join(useropts))
+        # Work around TAU's silly hard-coded limits.
+        useropts.extend(['-DTAU_MAX_THREADS=%d' % self._get_max_threads(),
+                         '-DTAU_MAX_METRICS=%d' % self._get_max_metrics(),
+                         '-DTAU_MAX_COUNTERS=%d' % self._get_max_metrics()])
+        # -useropt flag uses '#' as an argument separator
+        flags.append('-useropt=' + '#'.join(useropts))
         
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
