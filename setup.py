@@ -449,6 +449,7 @@ class BuildMarkdown(Command):
             self.mkpath(self.dest)
     
     def run(self):
+        from unidecode import unidecode
         from taucmdr import cli
         cli.USAGE_FORMAT = "markdown"
         os.environ['ANSI_COLORS_DISABLED'] = '1'
@@ -463,7 +464,7 @@ class BuildMarkdown(Command):
                      cmd_obj.usage]
             filename = os.path.join(self.dest, cmd_name.replace('.', '_')+'.md')
             with open(filename, 'w') as fout:
-                fout.write('\n'.join(parts))
+                fout.write(unidecode('\n'.join(parts).decode('utf-8')))
             print 'wrote %s' % filename
 
 
