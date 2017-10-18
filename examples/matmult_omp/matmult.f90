@@ -10,8 +10,8 @@ program main
   integer, parameter :: MATSIZE = 1000
   integer, parameter :: MASTER = 0
 
-  real(kind=8), dimension(MATSIZE,MATSIZE) :: a, b, c
-  real(kind=8), dimension(MATSIZE) :: buffer, answer
+  real(kind=8), dimension(:,:),ALLOCATABLE :: a,b,c
+  real(kind=8), dimension(:), ALLOCATABLE :: buffer, answer
 
   integer :: myid, maxpe, ierr, provided
   integer, dimension(MPI_STATUS_SIZE) :: stat
@@ -22,6 +22,9 @@ program main
 
   continue
 
+  allocate(a(MATSIZE,MATSIZE),b(MATSIZE,MATSIZE),c(MATSIZE,MATSIZE))
+  allocate(buffer(MATSIZE),answer(MATSIZE))
+   
   call MPI_Init_thread(MPI_THREAD_FUNNELED, provided, ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, myid, ierr) 
   call MPI_Comm_size(MPI_COMM_WORLD, maxpe, ierr) 
