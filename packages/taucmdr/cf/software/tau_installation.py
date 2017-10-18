@@ -1081,6 +1081,8 @@ class TauInstallation(Installation):
             opts.append('-cupti')
         if self.measure_opencl:
             opts.append('-opencl')
+        if self.measure_openmp == 'ompt':
+            opts.append('-ompt')
         if self.measure_io:
             opts.append('-io')
         if self.measure_memory_alloc:
