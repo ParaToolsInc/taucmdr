@@ -88,25 +88,8 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
 
         """
 
-    def create_notebook(self, inputs, path, filename=None, execute=False, *args, **kwargs):
-        """Create a Jupyter notebook which, when executed, performs the analysis.
-
-        Args:
-            inputs (list of :obj:`Model`): The models containing the data to be analyzed.
-            path (str): Path to the directory in which the notebook is to be created.
-            execute (bool): Whether to execute the notebook before writing it.
-
-        Returns:
-            (str): Absolute path to the created notebook
-
-        Raises:
-            ConfigurationError: The provided models are not of the type required by the analysis.
-
-        """
-        nb = nbformat.v4.new_notebook()
-        # The 'cells' field contains a list of input cells
-        nb['cells'] = self.get_cells(inputs, *args, **kwargs)
-
+    @staticmethod
+    def _set_notebook_metadata(nb):
         # Set up notebook metadata to identify the kernel used
         nb['metadata']['kernel_info'] = nbformat.NotebookNode()
         nb['metadata']['kernel_info']['name'] = 'python2'
@@ -127,6 +110,34 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
         nb['metadata']['language_info']['codemirror_mode']['name'] = 'ipython'
         nb['metadata']['language_info']['codemirror_mode']['version'] = 2
 
+    @staticmethod
+    def _create_notebook_from_cells(cells):
+        nb = nbformat.v4.new_notebook()
+        AbstractAnalysis._set_notebook_metadata(nb)
+
+        # The 'cells' field contains a list of input cells
+        nb['cells'] = cells
+        return nb
+
+    def create_notebook(self, inputs, path, filename=None, execute=False, *args, **kwargs):
+        """Create a Jupyter notebook which, when executed, performs the analysis.
+
+        Args:
+            inputs (list of :obj:`Model`): The models containing the data to be analyzed.
+            path (str): Path to the directory in which the notebook is to be created.
+            filename (str): Name of the file to which the notebook is to be written.
+            execute (bool): Whether to execute the notebook before writing it.
+
+        Returns:
+            (str): Absolute path to the created notebook
+
+        Raises:
+            ConfigurationError: The provided models are not of the type required by the analysis.
+
+        """
+        cells = self.get_cells(inputs, *args, **kwargs)
+        nb = self._create_notebook_from_cells(cells)
+
         # If requested, we do an in-place execute of the notebook. Unfortunately, this is
         # less useful than it might otherwise be, as it doesn't take place in a browser and so
         # any commands that require JavaScript to execute won't actually generate output.
@@ -141,3 +152,103 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
             nbformat.write(nb, nb_file)
         return file_path
 
+
+class Recommendation(object):
+    """Recommendation for user action to improve performance
+
+    Attributes:
+        name (str): A name for the recommendation. Used as a heading for the notebook section.
+        description (str): User facing text explaining what to be done.
+                           Displayed in the UI as a checkbox. May contain Markdown formatting.
+        cells (list of :obj:`nbformat.NotebookNode`): The Jupyter cells providing details on the recommendation.
+        priority (int): A number used to order recommendations. A larger number is more urgent.
+        """
+
+    def __init__(self, name=None, description=None, cells=None, priority=0):
+        self.name = name
+        self.description = description
+        self.cells = cells
+        self.priority = priority
+
+    def __hash__(self):
+        return hash((self.name, self.description, self.cells, self.priority))
+
+    def __lt__(self, other):
+        try:
+            if self.priority == other.priority:
+                return self.name < other.name
+            return self.priority < other.priority
+        except AttributeError:
+            return NotImplemented
+
+
+class AbstractRecommendationAnalysis(six.with_metaclass(ABCMeta, AbstractAnalysis)):
+    """Abstract base class for a recommendation-producing analysis.
+
+    An analysis class which may produce recommendations for actions to be taken
+    to improve performance of the application being analyzed. In addition to the cells
+    of the analysis itself, a recommendation analysis produces a list of recommendations,
+    each of which is associated with one or more notebook cells that provide details on
+    the recommendation. Each recommendation also has a priority, so that recommendations
+    from multiple analyses can be combined into one report.
+
+    Attributes:
+        name (str): The name of the analysis, to be shown in the UI.
+        description (str): A description of what the analysis does, to be shown as help text.
+    """
+
+    def __init__(self, name=None, description=None):
+        super(AbstractRecommendationAnalysis).__init__(name=name, description=description)
+
+    @abstractmethod
+    def run(self, inputs, *args, **kwargs):
+        """Runs the analysis on `inputs` directly.
+
+        Args:
+            inputs (list of :obj:`Model`): The models containing the data to be analyzed.
+
+        Raises:
+            ConfigurationError: The provided models are not of the type required by the analysis.
+        """
+
+    @abstractmethod
+    def get_recommendations(self, inputs, *args, **kwargs):
+        """Get Jupyter cells which, when executed in order, perform the analysis.
+
+        Args:
+            inputs (list of :obj:`Model`): The models containing the data to be analyzed.
+
+        Returns:
+            list of :obj:`Recommendation`: The recommendations produced by the analysis. May be empty.
+
+        Raises:
+            ConfigurationError: The provided models are not of the type required by the analysis.
+
+        """
+
+    def get_cells(self, inputs, *args, **kwargs):
+        """Get Jupyter cells which, when executed in order, perform the analysis.
+
+        Args:
+            inputs (list of :obj:`Model`): The models containing the data to be analyzed.
+
+        Returns:
+            list of :obj:`nbformat.NotebookNode`: The cells which perform the analysis.
+
+        Raises:
+            ConfigurationError: The provided models are not of the type required by the analysis.
+
+        """
+        cells = []
+        recommendations = self.get_recommendations(inputs, *args, **kwargs)
+        # Recommendation checkboxes
+        checkboxes = ["%%html"]
+        for recommendation in sorted(recommendations):
+            checkboxes.append('<input type="checkbox">%s</input>' % recommendation.name)
+        checkboxes_cell = nbformat.v4.new_code_cell("\n".join(checkboxes))
+        cells.append(checkboxes_cell)
+        for recommendation in recommendations:
+            title_cell = nbformat.v4.new_markdown_cell('# %s' % recommendation.name)
+            cells.append(title_cell)
+            cells.extend(recommendation.cells)
+        return cells
