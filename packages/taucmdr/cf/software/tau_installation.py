@@ -432,9 +432,9 @@ class TauInstallation(Installation):
         return 1 << (nprocs-1).bit_length()
 
     def _get_max_metrics(self):
-        nmetrics = len(self.metrics)
         # Round up to the next power of two, e.g. 25 => 32
-        return 1 << (nmetrics-1).bit_length()
+        nmetrics = 1 << (len(self.metrics)-1).bit_length()
+        return max(nmetrics, 32)
     
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
