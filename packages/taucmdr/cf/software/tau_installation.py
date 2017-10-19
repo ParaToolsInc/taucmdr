@@ -528,8 +528,11 @@ class TauInstallation(Installation):
     
     def verify(self):
         super(TauInstallation, self).verify()
-        if self.uses_papi:
-            self.dependencies['papi'].check_metrics(self.metrics)
+        if self.uses_papi and (HOST_ARCH == self.target_arch and HOST_OS == self.target_os):
+            try:
+                self.dependencies['papi'].check_metrics(self.metrics)
+            except ConfigurationError as err:
+                LOGGER.warning(err)
         tau_makefile = self.get_makefile()
         self._verify_tau_libs(tau_makefile)
         if not self.unmanaged:

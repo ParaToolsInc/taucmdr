@@ -143,13 +143,12 @@ class PapiInstallation(AutotoolsInstallation):
                     break
             else:
                 why = ', and output from papi_event_chooser was not parsable.'
-            err = ConfigurationError(("PAPI metrics [%s] are not compatible on the current host%s."
-                                      "\n\nYou may ignore this warning if you are cross-compiling.") %
+            raise ConfigurationError(("PAPI metrics [%s] are not compatible on the current host%s.") %
                                      (', '.join(papi_metrics), why),
                                      "Use papi_avail to check metric availability.",
                                      "Spread the desired metrics over multiple measurements.",
-                                     "Choose fewer metrics.")
-            LOGGER.warning(err)
+                                     "Choose fewer metrics.",
+                                     "You may ignore this warning if you are cross-compiling")
 
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         """List PAPI available metrics.
