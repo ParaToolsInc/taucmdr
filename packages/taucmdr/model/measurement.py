@@ -252,6 +252,14 @@ def attributes():
                          'group': 'memory'},
             'compat': {True: Measurement.exclude('baseline', True)},
         },
+        'system_load': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'measure system load',
+            'argparse': {'flags': ('--system-load',),
+                         'group': 'data'},
+            'compat': {True: Measurement.exclude('baseline', True)},
+        },
         'memory_alloc': {
             'type': 'boolean',
             'default': False,

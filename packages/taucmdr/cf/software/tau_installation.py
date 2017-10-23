@@ -192,6 +192,7 @@ class TauInstallation(Installation):
                  measure_cuda=False,
                  measure_shmem=False,
                  measure_heap_usage=False,
+                 measure_system_load=False,
                  measure_memory_alloc=False,
                  measure_comm_matrix=False,
                  measure_callsite=False,
@@ -239,6 +240,7 @@ class TauInstallation(Installation):
             measure_cuda (bool): If True then measure time spent in CUDA calls.
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
             measure_heap_usage (bool): If True then measure memory usage.
+            measure_system_load (bool): If True then measure the system load.
             measure_memory_alloc (bool): If True then record memory allocation and deallocation events.
             measure_comm_matrix (bool): If True then record the point-to-point communication matrix.
             measure_callsite (bool): If True then record event callsites.
@@ -280,6 +282,7 @@ class TauInstallation(Installation):
         assert measure_cuda in (True, False)
         assert measure_shmem in (True, False)
         assert measure_heap_usage in (True, False)
+        assert measure_system_load in (True, False)
         assert measure_memory_alloc in (True, False)
         assert measure_comm_matrix in (True, False)
         assert measure_callsite in (True, False)
@@ -333,6 +336,7 @@ class TauInstallation(Installation):
         self.measure_cuda = measure_cuda
         self.measure_shmem = measure_shmem
         self.measure_heap_usage = measure_heap_usage
+        self.measure_system_load = measure_system_load
         self.measure_memory_alloc = measure_memory_alloc
         self.measure_comm_matrix = measure_comm_matrix
         self.measure_callsite = measure_callsite
@@ -1065,6 +1069,7 @@ class TauInstallation(Installation):
             env['SCOREP_ENABLE_TRACING'] = 'false'
         env['TAU_SAMPLING'] = str(int(self.sample))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
+        env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
         env['TAU_CALLSITE'] = str(int(self.measure_callsite))
         env['TAU_METRICS'] = ",".join(self.metrics) + ","

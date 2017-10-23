@@ -326,6 +326,7 @@ class Experiment(Model):
                     measure_cuda=measurement.get_or_default('cuda'),
                     measure_shmem=measurement.get_or_default('shmem'),
                     measure_heap_usage=measurement.get_or_default('heap_usage'),
+                    measure_system_load=measurement.get_or_default('system_load'),
                     measure_memory_alloc=measurement.get_or_default('memory_alloc'),
                     measure_comm_matrix=measurement.get_or_default('comm_matrix'),
                     measure_callsite=measurement.get_or_default('callsite'),
