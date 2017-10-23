@@ -133,3 +133,26 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("compute_interchange")
         self.assertInLastTrialData("compute")
         self.assertInLastTrialData("malloc")
+
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
+    def test_system_load_sample(self):
+        """Test TAU_TRACK_LOAD w/ sampling"""
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
+                                                       ['sample', '--system-load'])
+        self.assertIn("Updated measurement 'sample'", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
+        self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
+        self.assertFalse(stderr)
+
+    def test_system_load_profile(self):
+        """Test TAU_TRACK_LOAD w/ profiling"""
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
+                                                       ['profile', '--system-load'])
+        self.assertIn("Updated measurement 'profile'", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['profile'])
+        self.assertIn("Selected experiment 'targ1-app1-profile'", stdout)
+        self.assertFalse(stderr)
