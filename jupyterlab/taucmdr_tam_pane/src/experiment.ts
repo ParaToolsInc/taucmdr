@@ -70,9 +70,7 @@ export class ExperimentPaneWidget extends TauCmdrPaneWidget {
                     this.app.shell.currentChanged.disconnect(this.run_cells, this);
                     this.last_analysis_path = null;
                     this.app.commands.execute('notebook:run-all-cells').then(() => {
-                        this.app.commands.execute('notebook:hide-all-cell-code').then(() => {
-                            console.log("Hid all code cells");
-                        });
+                        this.app.commands.execute('notebook:hide-all-cell-code').then(() => {});
                     }, reason => {
                         showErrorMessage("Couldn't execute analysis notebook", reason).then(() => {
                         });
@@ -84,16 +82,25 @@ export class ExperimentPaneWidget extends TauCmdrPaneWidget {
 
     run_analysis(analysis_name: string): Promise<void> {
         let selected_trials = this.table.get_selected();
-        return this.kernels.get_cwd().then(base_path => {
-            this.kernels.run_analysis(analysis_name, selected_trials).then(response => {
-                let path = response.path as string;
-                let rel_path = path.replace(base_path, '');
-                this.last_analysis_path = rel_path;
-                // Warning! The promise returned by execute('docmanager:open') can return BEFORE the open
-                // actually completes! Because of that, we have to send commands to the resulting notebook
-                // widget when the current widget changed event fires, not when the promise is fulfilled.
-                this.app.shell.currentChanged.connect(this.run_cells, this);
-                this.app.commands.execute('docmanager:open', {path: rel_path}).then(() => {
+        // Get the kernel model for the running kernel so we can reuse it for the analysis notebook
+        return this.kernels.get_kernel_model().then( kernel_model => {
+            // Get the working directory from the Python backend so we can convert from absolute to relative paths
+            return this.kernels.get_cwd().then(base_path => {
+                return this.kernels.run_analysis(analysis_name, selected_trials).then(response => {
+                    let path = response.path as string;
+                    // Absolute to relative path
+                    let rel_path = path.replace(base_path, '');
+                    this.last_analysis_path = rel_path;
+                    // Warning! The promise returned by execute('docmanager:open') can return BEFORE the open
+                    // actually completes! Because of that, we have to send commands to the resulting notebook
+                    // widget when the current widget changed event fires, not when the promise is fulfilled.
+                    this.app.shell.currentChanged.connect(this.run_cells, this);
+                    // Open the analysis notebook using the already-running kernel
+                    console.log(`Attempting to open ${rel_path} in kernel ${kernel_model.name}, ${kernel_model.id}`)
+                    this.app.commands.execute('docmanager:open',
+                        {path: rel_path, kernel: kernel_model}).then(() => {
+                        return;
+                    });
                 });
             });
         });
@@ -115,15 +122,13 @@ export class ExperimentPaneWidget extends TauCmdrPaneWidget {
             runButton.appendChild(document.createTextNode('Run'));
             runButton.addEventListener('click', () => {
                 this.run_analysis(select.options[select.selectedIndex].value).catch(reason => {
-                    showErrorMessage("Failed to run analysis", reason.toString()).then(() => {
-                    });
+                    showErrorMessage("Failed to run analysis", reason.toString()).then(() => {});
                 });
             });
             span.appendChild(runButton);
             this.table.add_as_footer_row(span);
         }, reason => {
-            showErrorMessage("Failed to retrieve analysis list", reason.toString()).then(() => {
-            });
+            showErrorMessage("Failed to retrieve analysis list", reason.toString()).then(() => {});
         });
     }
 

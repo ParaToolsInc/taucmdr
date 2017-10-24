@@ -106,6 +106,8 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
     def _check_input(inputs, **kwargs):
         if not isinstance(inputs, list):
             inputs = [inputs]
+        if not inputs:
+            raise ConfigurationError("Profile bar plot requires that one trial be selected")
         if len(inputs) > 1:
             raise ConfigurationError("Profile bar plot can only be produced for one trial")
         for trial in inputs:

@@ -29,6 +29,7 @@
 
 from bokeh.models import ColumnDataSource
 
+import six
 from taucmdr.analysis.analysis import AbstractAnalysis
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
@@ -36,8 +37,11 @@ from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
 
 import nbformat
+import faststat
 
+from collections import defaultdict
 import inspect
+from math import sqrt
 
 
 def show_trial_bar_plot(trial, metric):
@@ -53,7 +57,9 @@ def show_trial_bar_plot(trial, metric):
 
     def build_bar_plot(trial):
         data_source = TrialBarPlotVisualizer.trial_to_column_source(trial, metric)
-        indices = map(lambda x: str(x), TauProfile.indices(trial.get_data())[::-1])
+        indices = []
+        indices.extend(map(lambda x: str(x), TauProfile.indices(trial.get_data())[::-1]))
+        indices.extend(['Min', 'Max', 'Mean', 'Std. Dev.'])
         glyph = HBar(y="y", height="height", left="left", right="right", line_color="color", fill_color="color")
         fig = figure(plot_width=80, plot_height=40, y_range=indices, output_backend="webgl")
         fig.add_glyph(data_source, glyph)
@@ -90,6 +96,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         colors = []
         labels = []
         values = []
+        stats = defaultdict(faststat.Stats)
         for n, c, t in indices:
             category = [str((n, c, t))]
             last_time = 0
@@ -108,6 +115,25 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
                 rights.append(next_time)
                 colors.append(color)
                 last_time = next_time
+                stats[name].add(time)
+        extras = [('Max', lambda s: s.max), ('Min', lambda s: s.min), ('Mean', lambda s: s.mean),
+                  ('Std. Dev.', lambda s: sqrt(s.variance))]
+        for extra, func in extras:
+            last_time = 0
+            category = [extra]
+            for name, stat in sorted(six.iteritems(stats), key=lambda (k,v): (func(v), k), reverse=True):
+                time = func(stat)
+                values.append(time)
+                next_time = last_time + time
+                color = mapping[name]
+                labels.append(name)
+                ys.append(category)
+                heights.append(0.5)
+                lefts.append(last_time)
+                rights.append(next_time)
+                colors.append(color)
+                last_time = next_time
+
         # It turns out that calling hbar with lists of elements to add is MUCH faster than repeatedly
         # calling hbar with single elements, which is why we build the lists above instead of just
         # calling hbar inside the loop.
@@ -119,6 +145,8 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
     def _check_input(inputs, **kwargs):
         if not isinstance(inputs, list):
             inputs = [inputs]
+        if not inputs:
+            raise ConfigurationError("Trial bar plot requires that at least one Trial be selected.");
         for trial in inputs:
             if not isinstance(trial, Trial):
                 raise ConfigurationError("Bar plots can only be built for Trials.")

@@ -28,6 +28,10 @@ import {
     Session
 } from '@jupyterlab/services';
 
+import {
+    Kernel
+} from '@jupyterlab/services';
+
 
 /*
  * The Kernels class and namespace are in charge of managing communication between
@@ -104,6 +108,12 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
     get_cwd() : Promise<string> {
         return this.handle_single_command(Kernels.getCwdKernel).then(result => {
             return result.cwd;
+        });
+    }
+
+    get_kernel_model() : Promise<Kernel.IModel> {
+        return this.start_session().then(s => {
+            return {id: s.kernel.id, name: s.kernel.name};
         });
     }
 
