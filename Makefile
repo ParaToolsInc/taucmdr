@@ -197,9 +197,10 @@ $(ANACONDA_SRC):
 	$(call download,$(ANACONDA_URL),$(ANACONDA_SRC))
 
 jupyterlab-install: $(CONDA)
-	$(ECHO)$(CONDA) list -f jupyterlab | grep -q jupyterlab 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
+	$(ECHO)$(CONDA) list -f jupyterlab | grep jupyterlab | grep -q 0\.27\.0 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
+	$(ECHO)$(CONDA) list -f bokeh | grep bokeh | grep -q 0\.12\.9 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge bokeh
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
-	$(ECHO)$(PIP) install faststat
+	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
 
 
 clean:

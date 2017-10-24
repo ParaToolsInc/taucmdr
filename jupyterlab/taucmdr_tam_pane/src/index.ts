@@ -50,6 +50,12 @@ import {
 
 import '../style/index.css';
 
+declare global {
+    export interface Window {
+        defaultProjectPane: ProjectPaneWidget;
+        defaultExperimentPane: ExperimentPaneWidget;
+    }
+}
 
 export let defaultTAMPane: ProjectPaneWidget = null;
 
@@ -68,7 +74,8 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
                 // Create a new widget if one does not exist
                 projectPaneWidget = new ProjectPaneWidget(app);
                 if (defaultTAMPane == null) {
-                    defaultTAMPane = projectPaneWidget
+                    defaultTAMPane = projectPaneWidget;
+                    window.defaultProjectPane = defaultTAMPane;
                 }
             }
             if (!proj_tracker.has(projectPaneWidget)) {
@@ -98,7 +105,8 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
                 // Create a new widget if one does not exist
                 experimentPaneWidget = new ExperimentPaneWidget(app);
                 if (defaultExperimentPane == null) {
-                    defaultExperimentPane = experimentPaneWidget
+                    defaultExperimentPane = experimentPaneWidget;
+                    window.defaultExperimentPane = defaultExperimentPane;
                 }
             }
             if (!exp_tracker.has(experimentPaneWidget)) {

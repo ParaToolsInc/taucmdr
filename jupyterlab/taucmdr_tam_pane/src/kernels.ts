@@ -105,6 +105,27 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
         return this.handle_single_command(kernelCode);
     }
 
+    /*
+     * Run an analysis on the analysis identified by `analysis_name` on the TAU Commander
+     * objects having hashes listed in `hashes`. Returns a JSON object indicating the path to
+     * the created notebook having the form:
+     *
+     *  {
+     *      path: path to created notebook (string)
+     *  }
+     */
+    run_analysis_with_args(analysis_name : string, hashes : Array<string>, args: string) : Promise<Kernels.JSONResult> {
+        if(args == null || args == "") {
+            return this.run_analysis(analysis_name, hashes);
+        } else {
+            let kernelCode = `
+${this.runAnalysisKernelWithArgs(args)}
+print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)})) 
+    `;
+            return this.handle_single_command(kernelCode);
+        }
+    }
+
     get_cwd() : Promise<string> {
         return this.handle_single_command(Kernels.getCwdKernel).then(result => {
             return result.cwd;
@@ -186,6 +207,20 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
             return Promise.resolve(this.session);
         }
     };
+
+    protected runAnalysisKernelWithArgs(args : string) : string {
+        return `
+def run_analysis(name, hashes):
+    import json
+    from taucmdr.analysis import get_analysis
+    from taucmdr.model.trial import Trial
+    from taucmdr.cf.storage.levels import PROJECT_STORAGE
+    trials = [Trial.controller(PROJECT_STORAGE).search_hash(h)[0] for h in hashes]
+    analysis = get_analysis(name)
+    return json.dumps({"path": analysis.create_notebook(trials, '.', ${args})})
+`
+    }
+
 }
 
 export namespace Kernels {
