@@ -120,6 +120,7 @@ ANACONDA_SRC = packages/$(ANACONDA_PKG)
 ANACONDA_DEST = $(INSTALLDIR)/anaconda-$(ANACONDA_VERSION)
 ANACONDA_PYTHON = $(ANACONDA_DEST)/bin/python
 CONDA = $(ANACONDA_DEST)/bin/conda
+PIP = $(ANACONDA_DEST)/bin/pip
 
 ifeq ($(USE_ANACONDA),true)
   PYTHON_EXE = $(ANACONDA_PYTHON)
@@ -196,7 +197,9 @@ $(ANACONDA_SRC):
 	$(call download,$(ANACONDA_URL),$(ANACONDA_SRC))
 
 jupyterlab-install: $(CONDA)
-	$(ECHO)$(CONDA) list -f jupyterlab | grep -q jupyterlab 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab
+	$(ECHO)$(CONDA) list -f jupyterlab | grep -q jupyterlab 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
+	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
+	$(ECHO)$(PIP) install faststat
 
 
 clean:
