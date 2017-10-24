@@ -27,14 +27,16 @@
 #
 """ParaProf style horizontal bar chart for an individual profile"""
 
-from bokeh.models import ColumnDataSource
-
 from taucmdr.analysis.analysis import AbstractAnalysis
+from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
 
+from bokeh.models import ColumnDataSource
 import nbformat
+from ipywidgets import interact
+import ipywidgets as widgets
 
 import inspect
 
@@ -70,6 +72,10 @@ def show_profile_bar_plot(trial, indices, metric):
     bar = build_profile_bar_plot(trial, indices, metric)
     plot = InteractivePlotHandler(bar)
     plot.show()
+
+
+def interaction_handler(trial, index, metric):
+    show_profile_bar_plot(trial, index, metric)
 
 
 class ProfileBarPlotVisualizer(AbstractAnalysis):
@@ -115,7 +121,8 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
                 raise ConfigurationError("Bar plots can only be built for Trials.")
         metric = kwargs.get('metric', 'Exclusive')
         indices = kwargs.get('indices', (0, 0, 0))
-        return inputs, metric, indices
+        interactive = kwargs.get('interactive', True)
+        return inputs, metric, indices, interactive
 
     def get_cells(self, inputs, *args, **kwargs):
         """Get Jupyter input cell containing code which will create a barplot when
@@ -134,15 +141,32 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
         Raises:
             ConfigurationError: The provided model is not a Trial, or more than one provided
         """
-        trials, metric, indices = self._check_input(inputs, **kwargs)
+        trials, metric, indices, interactive = self._check_input(inputs, **kwargs)
         commands = ['from taucmdr.analysis.analyses.profile_barplot import ProfileBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
                     inspect.getsource(show_profile_bar_plot)]
+        if interactive:
+            commands.extend(['from ipywidgets import interact',
+                             'import ipywidgets as widgets',
+                             'from taucmdr.data.tauprofile import TauProfile',
+                             inspect.getsource(interaction_handler)])
         for trial in trials:
             digest = trial.hash_digest()
-            commands.append('show_profile_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], %s, "%s")'
-                            % (digest, indices, metric))
+            if interactive:
+                commands.append('trial = Trial.controller(PROJECT_STORAGE).search_hash("%s")[0]' % digest)
+                commands.append('indices = TauProfile.indices(trial.get_data())')
+                commands.append('default_index = %s' % str(indices))
+                commands.append('metric = "%s"' % metric)
+                commands.append('interact(interaction_handler, '
+                                'trial=widgets.Dropdown(options=[trial], value=trial, disabled=True), '
+                                'index=widgets.Dropdown(options=indices, value=default_index), '
+                                'metric=widgets.Dropdown(options=[metric], value=metric, disabled=True))')
+            else:
+                commands.append('show_profile_bar_plot(Trial.controller(PROJECT_STORAGE).'
+                                'search_hash("%s")[0], %s, "%s")'
+                                % (digest, indices, metric))
         cell_source = "\n".join(commands)
         return [nbformat.v4.new_code_cell(cell_source)]
 
@@ -159,9 +183,15 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
         Raises:
             ConfigurationError: The provided model is not a Trial, or more than one provided
         """
-        trials, metric, indices = self._check_input(inputs)
+        trials, metric, indices, interactive = self._check_input(inputs)
         for trial in trials:
-            show_profile_bar_plot(trial, metric)
+            if interactive:
+                interact(interaction_handler,
+                         trial=widgets.Dropdown(options=[trial], value=trial, disabled=True),
+                         index=widgets.Dropbown(options=[TauProfile.indices(trial)], value=indices),
+                         metric=widgets.Dropdown(options=[metric], value=metric))
+            else:
+                show_profile_bar_plot(trial, metric)
 
 
 ANALYSIS = ProfileBarPlotVisualizer()
