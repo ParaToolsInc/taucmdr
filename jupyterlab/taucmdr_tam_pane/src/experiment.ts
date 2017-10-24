@@ -82,11 +82,15 @@ export class ExperimentPaneWidget extends TauCmdrPaneWidget {
 
     run_analysis(analysis_name: string): Promise<void> {
         let selected_trials = this.table.get_selected();
+        return this.run_analysis_on_trials_with_args(analysis_name, selected_trials, null);
+    }
+
+    run_analysis_on_trials_with_args(analysis_name: string, trials: Array<string>, args: string) : Promise <void> {
         // Get the kernel model for the running kernel so we can reuse it for the analysis notebook
         return this.kernels.get_kernel_model().then( kernel_model => {
             // Get the working directory from the Python backend so we can convert from absolute to relative paths
             return this.kernels.get_cwd().then(base_path => {
-                return this.kernels.run_analysis(analysis_name, selected_trials).then(response => {
+                return this.kernels.run_analysis_with_args(analysis_name, trials, args).then(response => {
                     let path = response.path as string;
                     // Absolute to relative path
                     let rel_path = path.replace(base_path, '');

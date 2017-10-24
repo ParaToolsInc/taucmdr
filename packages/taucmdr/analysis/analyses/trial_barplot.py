@@ -45,24 +45,30 @@ from math import sqrt
 
 
 def show_trial_bar_plot(trial, metric):
+    from taucmdr import logger
     from taucmdr.data.tauprofile import TauProfile
     from taucmdr.gui.interaction import InteractivePlotHandler
-    from taucmdr import logger
-    from bokeh.plotting import figure
-    from bokeh.models.glyphs import HBar
     from bokeh.io import output_notebook
+    from bokeh.models.callbacks import CustomJS
+    from bokeh.models.glyphs import HBar
+    from bokeh.models.ranges import DataRange1d
+    from bokeh.plotting import figure
 
     logger.set_log_level('WARN')
     output_notebook(hide_banner=True)
 
-    def build_bar_plot(trial):
-        data_source = TrialBarPlotVisualizer.trial_to_column_source(trial, metric)
+    def build_bar_plot(_trial):
+        data_source = TrialBarPlotVisualizer.trial_to_column_source(_trial, metric)
         indices = []
-        indices.extend(map(lambda x: str(x), TauProfile.indices(trial.get_data())[::-1]))
+        indices.extend(map(lambda x: str(x), TauProfile.indices(_trial.get_data())[::-1]))
         indices.extend(['Min', 'Max', 'Mean', 'Std. Dev.'])
         glyph = HBar(y="y", height="height", left="left", right="right", line_color="color", fill_color="color")
-        fig = figure(plot_width=80, plot_height=40, y_range=indices, output_backend="webgl")
+        fig = figure(plot_width=80, plot_height=40, x_range = DataRange1d(), y_range=indices, output_backend="webgl")
         fig.add_glyph(data_source, glyph)
+        callback = CustomJS(args=dict(y_range=fig.y_range),
+                            code=TrialBarPlotVisualizer.get_callback_code(_trial.hash_digest()))
+
+        fig.js_on_event('tap', callback)
         return fig
 
     bar = build_bar_plot(trial)
@@ -73,6 +79,32 @@ def show_trial_bar_plot(trial, metric):
 class TrialBarPlotVisualizer(AbstractAnalysis):
     def __init__(self, name='trial-barplot', description='Trial Bar Plot'):
         super(TrialBarPlotVisualizer, self).__init__(name=name, description=description)
+
+    @staticmethod
+    def get_callback_code(digest):
+        return """
+        let mapping = y_range._mapping;
+        let selected = null;
+        if(cb_obj.sx < 60) {
+            for(var key in mapping) {
+                if(mapping.hasOwnProperty(key)) {
+                    let mapsTo = mapping[key];
+                    if(mapsTo.hasOwnProperty("value")) {
+                        let value = mapsTo["value"];
+                        if(Math.abs(value - cb_obj.y) < 0.2) {
+                            selected = key;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if(selected != null) {
+            console.log("Clicked on " + key);
+            let trial_hash = "%s";
+            window.defaultExperimentPane.run_analysis_on_trials_with_args("profile-barplot", [trial_hash], "indices=" + key)
+        }
+        """ % digest
 
     @staticmethod
     def trial_to_column_source(trial, metric):
@@ -121,7 +153,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         for extra, func in extras:
             last_time = 0
             category = [extra]
-            for name, stat in sorted(six.iteritems(stats), key=lambda (k,v): (func(v), k), reverse=True):
+            for name, stat in sorted(six.iteritems(stats), key=lambda (k, v): (func(v), k), reverse=True):
                 time = func(stat)
                 values.append(time)
                 next_time = last_time + time
