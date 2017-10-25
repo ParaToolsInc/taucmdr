@@ -69,7 +69,7 @@ class _TauEnterpriseJsonRecordEncoder(json.JSONEncoder):
     # pylint: disable=method-hidden
     def default(self, obj):
         if isinstance(obj, _TauEnterpriseJsonRecord):
-            return obj.element
+            return obj
         return super(_TauEnterpriseJsonRecordEncoder, self).default(obj)
 
 
@@ -80,7 +80,7 @@ class _TauEnterpriseJsonRecord(StorageRecord):
         super(_TauEnterpriseJsonRecord, self).__init__(database, eid or element.eid, element, hash_digest=hash_digest)
 
     def __str__(self):
-        return json.dumps(self.element, cls=_TauEnterpriseJsonRecordEncoder)
+        return json.dumps(self, cls=_TauEnterpriseJsonRecordEncoder)
 
     def __repr__(self):
         return str(self)

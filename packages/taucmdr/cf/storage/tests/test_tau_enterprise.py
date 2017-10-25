@@ -81,7 +81,7 @@ class TauEnterpriseStorageTests(tests.TestCase):
         self.database.purge()
         record_1 = self.test_table_insert()
         record_2 = self.database.table('experiment').get(eid=record_1.eid)
-        self.assertDictEqual(record_1.element, record_2.element,
+        self.assertDictEqual(record_1, record_2,
                              "Record retrieved from database different from record inserted.")
 
     def test_table_count(self):
@@ -140,12 +140,12 @@ class TauEnterpriseStorageTests(tests.TestCase):
         eid_2 = table.insert(element_2).eid
         eid_3 = table.insert(element_3).eid
         table.update({'mpc': True}, eids=eid_1)
-        updated_element_1 = table.get(eid=eid_1).element
+        updated_element_1 = table.get(eid=eid_1)
         correct_element_1 = {'name': 'hello1', 'opencl': False, 'mpc': True, 'pthreads': False}
         self.assertDictEqual(updated_element_1, correct_element_1, "Updated element has wrong value")
         table.update({'pthreads': True}, keys={'opencl': True})
-        updated_element_2 = table.get(eid=eid_2).element
-        updated_element_3 = table.get(eid=eid_3).element
+        updated_element_2 = table.get(eid=eid_2)
+        updated_element_3 = table.get(eid=eid_3)
         self.assertTrue(updated_element_2['pthreads'], "Updated field did not change")
         self.assertTrue(updated_element_3['pthreads'], "Updated field did not change")
 
@@ -178,7 +178,7 @@ class TauEnterpriseStorageTests(tests.TestCase):
         table.remove(keys={'opencl': True})
         all_count = table.count({})
         self.assertEqual(all_count, 1, "After remove, only 1 record should be present")
-        remaining_element = table.get(eid=eid_1).element
+        remaining_element = table.get(eid=eid_1)
         self.assertDictEqual(element_1, remaining_element, "The remaining element should be the one not removed")
 
     def test_count(self):
@@ -198,10 +198,10 @@ class TauEnterpriseStorageTests(tests.TestCase):
         record_2 = self.storage.insert(element_2, table_name='application')
         get_result_1 = self.storage.get(keys=record_1.eid, table_name='application')
         self.assertEqual(get_result_1.eid, record_1.eid, "EID from insert and EID get should be same")
-        self.assertDictEqual(element_1, get_result_1.element, "Element from insert and get should be same")
+        self.assertDictEqual(element_1, get_result_1, "Element from insert and get should be same")
         get_result_2 = self.storage.get(keys={'opencl':True}, table_name='application')
         self.assertEqual(get_result_2.eid, record_2.eid, "EID from insert and dict get should be same")
-        self.assertDictEqual(get_result_2.element, record_2.element)
+        self.assertDictEqual(get_result_2, record_2)
 
     def test_search(self):
         self.storage.purge(table_name='application')
