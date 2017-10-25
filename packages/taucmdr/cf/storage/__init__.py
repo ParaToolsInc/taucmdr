@@ -48,21 +48,20 @@ class StorageError(Error):
                    "%(hints)s\n")
 
 
-class StorageRecord(object):
+class StorageRecord(dict):
     """A record in the storage container's database.
     
     Attributes:
         eid_type: Element identifier type.
         storage: Storage container whos database contains this record.
         eid: Element identifier value.
-        element (dict): The database element as a dictionary. 
     """
     eid_type = str
 
     def __init__(self, storage, eid, element, hash_digest=None):
+        super(StorageRecord, self).__init__(element)
         self.storage = storage
         self.eid = eid
-        self.element = element
         self._hash = hash_digest
 
     def __getitem__(self, key):
@@ -103,6 +102,9 @@ class StorageRecord(object):
     
     def __repr__(self):
         return repr(self.element)
+
+    def __hash__(self):
+        return hash(self.eid)
 
 
 class AbstractStorage(six.with_metaclass(ABCMeta, object)):

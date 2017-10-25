@@ -73,6 +73,7 @@ from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
 
+
 LOGGER = logger.get_logger(__name__)
 
 
@@ -694,7 +695,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         Args:
             prefix (str): Path to a directory in which the wrapper script will be created.
         """
-        script_file = os.path.join(prefix, '%s_%s' % (TAUCMDR_SCRIPT, self.command))
+        script_file = os.path.join(prefix, '%s_%s' % (os.path.basename(TAUCMDR_SCRIPT), self.command))
         util.mkdirp(prefix)
         with open(script_file, "w+") as fout:
             wrapper = _COMPILER_WRAPPER_TEMPLATE % {'date': str(datetime.now()),
@@ -728,10 +729,16 @@ class InstalledCompilerFamily(object):
                 absolute_path = util.which(info.command)
                 if absolute_path:
                     LOGGER.debug("%s %s compiler is '%s'", family.name, info.role.language, absolute_path)
-                    installed = InstalledCompiler(absolute_path, info)
+                    try:
+                        installed = InstalledCompiler(absolute_path, info)
+                    except ConfigurationError as err:
+                        LOGGER.warning(err)
+                        continue
                     self.members.setdefault(role, []).append(installed)
         if not self.members:
-            raise ConfigurationError("%s compilers not found." % self.family.name)
+            cmds = [info.command for info_list in family.members.itervalues() for info in info_list]
+            raise ConfigurationError("%s %s not found." % (self.family.name, self.family.kbase.description),
+                                     "Check that these commands are in your PATH: %s" % ', '.join(cmds))
 
     def __contains__(self, role):
         """Returns True if any installed compiler can fill a given role."""

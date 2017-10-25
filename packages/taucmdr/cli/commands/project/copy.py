@@ -47,7 +47,7 @@ class ProjectCopyCommand(CopyCommand):
         ctrl = model.controller(PROJECT_STORAGE)
         model_name = model.name.lower()
         try:
-            names = getattr(args, model_name)
+            names = getattr(args, model_name+'s')
         except AttributeError:
             pass
         else:
@@ -61,17 +61,17 @@ class ProjectCopyCommand(CopyCommand):
     
     def _construct_parser(self):
         parser = super(ProjectCopyCommand, self)._construct_parser()
-        parser.add_argument('--target',
+        parser.add_argument('--targets',
                             help="Target configurations in the project copy",
                             metavar='t',
                             nargs='+',
                             default=arguments.SUPPRESS)
-        parser.add_argument('--application',
+        parser.add_argument('--applications',
                             help="Application configurations in the project copy",
                             metavar='a',
                             nargs='+',
                             default=arguments.SUPPRESS)
-        parser.add_argument('--measurement',
+        parser.add_argument('--measurements',
                             help="Measurement configurations in the project copy",
                             metavar='m',
                             nargs='+',
@@ -99,6 +99,7 @@ class ProjectCopyCommand(CopyCommand):
             ctrl.create(data)
         except UniqueAttributeError:
             self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+        self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 
     def main(self, argv):

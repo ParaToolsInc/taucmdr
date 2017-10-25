@@ -110,8 +110,17 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
     key_attribute = None
     
     def __init__(self, record):
+        deprecated = [attr for attr in record if attr not in self.attributes]
+        if deprecated:
+            try:
+                title = "%s '%s'" % (self.name, record[self.key_attribute])
+            except (KeyError, ModelError):
+                title = "%s" % self.name
+            LOGGER.debug("Ignorning deprecated attributes %s in %s", deprecated, title)
         # pylint: disable=protected-access
-        super(Model, self).__init__(record.storage, record.eid, record.element, hash_digest=record._hash)
+        super(Model, self).__init__(record.storage, record.eid, 
+                                    (item for item in record.iteritems() if item[0] not in deprecated),
+                                    hash_digest=record._hash)
         self._populated = None
 
     def __setitem__(self, key, value):
@@ -134,7 +143,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
             If the attribute is not set and has no default value then a KeyError is raised.
         """
         try:
-            return self.element[key]
+            return self[key]
         except KeyError:
             return self.attributes[key]['default']
 

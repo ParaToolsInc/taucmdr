@@ -27,6 +27,12 @@
 #
 ###############################################################################
 
+# TAU configuration level:
+#   minimal: Install just enough to support the default project (`tau initialize` without any args).
+#   full   : Install as many TAU configurations as possible for the current environment.
+#   <path> : Use the TAU installation provided at <path>.
+TAU ?= minimal
+
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
@@ -51,8 +57,6 @@ ifeq ($(INSTALLDIR),)
   INSTALLDIR=$(HOME)/taucmdr-$(VERSION)
 endif
 
-TAU = $(INSTALLDIR)/bin/tau
-
 # Get target OS and architecture
 ifeq ($(HOST_OS),)
   HOST_OS = $(shell uname -s)
@@ -75,11 +79,11 @@ endif
 # Usage: $(call download,source,dest)
 WGET = $(shell which wget)
 ifneq ($(WGET),)
-  download = $(WGET) $(WGET_FLAGS) -O "$(2)" "$(1)"
+  download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
   CURL = $(shell which curl)
   ifneq ($(CURL),)
-    download = $(CURL) $(CURL_FLAGS) -L "$(1)" > "$(2)"
+    download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
   else
     $(warning Either curl or wget must be in PATH to download packages)
   endif
@@ -149,7 +153,7 @@ help:
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander installation"
 	@echo
-	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)]"
+	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)] [TAU=(minimal|full|<path>)]"
 	@echo "-------------------------------------------------------------------------------"
 
 build: python_check
@@ -158,7 +162,7 @@ build: python_check
 
 install: build
 	$(ECHO)$(PYTHON) setup.py install --prefix $(INSTALLDIR)
-	$(ECHO)$(INSTALLDIR)/system/configure --minimal
+	$(ECHO)$(INSTALLDIR)/system/configure --tau-config=$(TAU)
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"

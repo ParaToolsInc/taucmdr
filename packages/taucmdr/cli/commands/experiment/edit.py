@@ -43,11 +43,14 @@ class ExperimentEditCommand(EditCommand):
         store = arguments.parse_storage_flag(args)[0]
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
 
+        # Translate names to eids
         proj_ctrl = Project.controller()
         for model in Target, Application, Measurement:
             attr = model.name.lower()
             if attr in data:
                 record = model.controller(proj_ctrl.storage).one({'name': data[attr]})
+                if record is None:
+                    self.parser.error("Invalid %s: %s" % (attr, data[attr]))
                 data[attr] = record.eid
              
         key_attr = self.model.key_attribute

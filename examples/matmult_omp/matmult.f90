@@ -10,8 +10,8 @@ program main
   integer, parameter :: MATSIZE = 1000
   integer, parameter :: MASTER = 0
 
-  real(kind=8), dimension(MATSIZE,MATSIZE) :: a, b, c
-  real(kind=8), dimension(MATSIZE) :: buffer, answer
+  real(kind=8), dimension(:,:),ALLOCATABLE :: a,b,c
+  real(kind=8), dimension(:), ALLOCATABLE :: buffer, answer
 
   integer :: myid, maxpe, ierr, provided
   integer, dimension(MPI_STATUS_SIZE) :: stat
@@ -22,13 +22,15 @@ program main
 
   continue
 
+  allocate(a(MATSIZE,MATSIZE),b(MATSIZE,MATSIZE),c(MATSIZE,MATSIZE))
+  allocate(buffer(MATSIZE),answer(MATSIZE))
+   
   call MPI_Init_thread(MPI_THREAD_FUNNELED, provided, ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, myid, ierr) 
   call MPI_Comm_size(MPI_COMM_WORLD, maxpe, ierr) 
   write(*,'("Process ",I0," of ",I0," is active")') myid, maxpe
 
-  !$omp parallel private(tid)
-
+  !$omp parallel private(tid,nthreads) default(shared)
   tid = omp_get_thread_num()
   write(*,'("hello world from thread ",I0)') tid
   if (tid == 0) then
@@ -111,8 +113,9 @@ contains
     implicit none
     integer, intent(in) :: n
     real(kind=8), dimension(n,n), intent(out) :: a, b
+    integer :: i, j
 
-    !$omp parallel 
+    !$omp parallel private(i,j) default(shared)
     !$omp do
     do i = 1,n 
       do j = 1,n 
@@ -139,7 +142,7 @@ contains
     real(kind=8), dimension(n,n) :: b
     integer :: i, j
 
-    !$omp parallel do
+    !$omp parallel do private(i,j) default(shared)
     do i=1,n
       answer(i) = 0
       do j=1,MATSIZE 

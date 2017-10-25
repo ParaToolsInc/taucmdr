@@ -89,6 +89,15 @@ def attributes():
             'description': "measurement configuration name",
             'hashed': True
         },
+        'baseline': {
+            'type': 'boolean',
+            'default': False,
+            'description': "completely disable all instrumentation and measure wall clock time via the OS",
+            'argparse': {'flags': ('--baseline',),
+                         'group': 'instrumentation'},
+            'compat': {True: (Measurement.require('profile', 'tau'),
+                              Measurement.require('trace', 'none'))}
+        },
         'profile': {
             'type': 'string',
             'default': 'tau',
@@ -99,9 +108,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('tau', 'merged', 'cubex', 'none'),
                          'const': 'tau'},
-            'compat': {'cubex': (Target.exclude('scorep_source', None),
-                                 Application.require('mpi', True),
-                                 Measurement.require('mpi', True)),
+            'compat': {'cubex': Target.exclude('scorep_source', None),
                        'merged': _merged_profile_compat},
             'hashed': True
         },
@@ -129,7 +136,8 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN))},
+                              Target.exclude('host_os', DARWIN),
+                              Measurement.exclude('baseline', True))},
             'hashed': True
         },
         'source_inst': {
@@ -142,7 +150,9 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
-            'compat': {'automatic': Target.exclude('pdt_source', None)},
+            'compat': {lambda x: x in ('automatic', 'manual'):
+                       (Target.exclude('pdt_source', None),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True,
             'hashed': True
         },
@@ -161,16 +171,8 @@ def attributes():
                         Target.exclude('binutils_source', None),
                         Target.require('libunwind_source'),
                         Target.exclude('libunwind_source', None),
-                        Target.exclude('host_os', DARWIN))},
-            'rebuild_required': True,
-            'hashed': True
-        },
-        'link_only': {
-            'type': 'boolean',
-            'default': False,
-            'description': "don't instrument, only link the TAU library to the application",
-            'argparse': {'flags': ('--link-only',),
-                         'group': 'instrumentation'},
+                        Target.exclude('host_os', DARWIN),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True,
             'hashed': True
         },
@@ -182,7 +184,9 @@ def attributes():
             'compat': {True:
                        (Target.require(MPI_CC.keyword),
                         Target.require(MPI_CXX.keyword),
-                        Target.require(MPI_FC.keyword))},
+                        Target.require(MPI_FC.keyword),
+                        Application.require('mpi', True),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True,
             'hashed': True
         },
@@ -195,8 +199,9 @@ def attributes():
                          'choices': ('ignore', 'opari', 'ompt')},
             'compat': {'opari':
                        (Application.require('openmp', True),
-                        Measurement.discourage('source_inst', 'never')),
-                       'ompt': Application.require('openmp', True)},
+                        Measurement.exclude('baseline', True)),
+                       'ompt': (Application.require('openmp', True),
+                                Measurement.exclude('baseline', True))},
             'rebuild_required': True,
             'hashed': True
         },
@@ -205,7 +210,9 @@ def attributes():
             'default': False,
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
-            'compat': {True: Target.require('cuda_toolkit')},
+            'compat': {True: (Target.require('cuda_toolkit'),
+                              Application.require('cuda', True),
+                              Measurement.exclude('baseline', True))},
             'hashed': True
         },
         'shmem': {
@@ -216,7 +223,9 @@ def attributes():
             'compat': {True:
                        (Target.require(SHMEM_CC.keyword),
                         Target.require(SHMEM_CXX.keyword),
-                        Target.require(SHMEM_FC.keyword))},
+                        Target.require(SHMEM_FC.keyword),
+                        Application.require('shmem', True),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True,
             'hashed': True
         },
@@ -226,7 +235,8 @@ def attributes():
             'description': 'measure OpenCL events',
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda_toolkit'),
-                              Application.require('opencl'))},
+                              Application.require('opencl', True),
+                              Measurement.exclude('baseline', True))},
             'hashed': True
         },
         'callpath': {
@@ -245,6 +255,7 @@ def attributes():
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',)},
+            'compat': {True: Measurement.exclude('baseline', True)},
             'hashed': True
         },
         'heap_usage': {
@@ -253,6 +264,16 @@ def attributes():
             'description': 'measure heap memory usage',
             'argparse': {'flags': ('--heap-usage',),
                          'group': 'memory'},
+            'compat': {True: Measurement.exclude('baseline', True)},
+            'hashed': True
+        },
+        'system_load': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'measure system load',
+            'argparse': {'flags': ('--system-load',),
+                         'group': 'data'},
+            'compat': {True: Measurement.exclude('baseline', True)},
             'hashed': True
         },
         'memory_alloc': {
@@ -261,6 +282,7 @@ def attributes():
             'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
+            'compat': {True: Measurement.exclude('baseline', True)},
             'hashed': True
         },
         'metrics': {
@@ -271,8 +293,8 @@ def attributes():
                          'group': 'data',
                          'metavar': '<metric>'},
             'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
-                       (Target.require('papi_source'), 
-                        Target.exclude('papi_source', None))},
+                       (Target.require('papi_source'), Target.exclude('papi_source', None)),
+                       lambda x: x != ['TIME']: Measurement.exclude('baseline', True)},
             'rebuild_required': True,
             'hashed': True
         },
@@ -299,6 +321,7 @@ def attributes():
             'default': False,
             'description': 'record the point-to-point communication matrix',
             'argparse': {'flags': ('--comm-matrix',)},
+            'compat': {True: Measurement.exclude('baseline', True)},
             'hashed': True
         },
         'throttle': {
@@ -350,9 +373,20 @@ def attributes():
                               Target.exclude('binutils_source', None),
                               Target.encourage('libunwind_source'),
                               Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN))},
+                              Target.exclude('host_os', DARWIN),
+                              Measurement.exclude('baseline', True))},
             'hashed': True
         },
+        'force_tau_options': {
+            'type': 'array',
+            'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
+            'rebuild_on_change': True,
+            'argparse': {'flags': ('--force-tau-options',),
+                         'nargs': '+',
+                         'metavar': '<option>'},
+            'compat': {True: (Measurement.discourage('force_tau_options'),
+                              Measurement.exclude('baseline', True))}
+        }
     }
 
 
@@ -360,26 +394,6 @@ class Measurement(Model):
     """Measurement data model."""
     
     __attributes__ = attributes
-
-    def on_create(self):
-        def get_flag(key):
-            return self.attributes[key]['argparse']['flags'][0]
-
-        if self['profile'].lower() == 'none' and self['trace'].lower() == 'none':
-            profile_flag = get_flag('profile')
-            trace_flag = get_flag('trace')
-            raise ConfigurationError("Profiling, tracing, or both must be enabled",
-                                     "Specify %s or %s or both" % (profile_flag, trace_flag))
-        
-        if ((self['source_inst'].lower() == 'never') and (self['compiler_inst'].lower() == 'never') and 
-                (not self['sample']) and (not self['link_only'])):
-            source_inst_flag = get_flag('source_inst')
-            compiler_inst_flag = get_flag('compiler_inst')
-            sample_flag = get_flag('sample')
-            link_only_flag = get_flag('link_only')
-            raise ConfigurationError("At least one instrumentation method must be used",
-                                     "Specify %s, %s, %s, or %s" % (source_inst_flag, compiler_inst_flag, 
-                                                                    sample_flag, link_only_flag))
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError

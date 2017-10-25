@@ -100,28 +100,28 @@ class HelpCommand(AbstractCommand):
         """Show a subcommands help page and exit."""
         cmd_obj = cli.find_command(name)
         command = cmd_obj.command
-        parts = ["", util.hline("Usage: " + command),
-                 cmd_obj.usage,
+        parts = [
                  "", util.hline("Help: " + command),
-                 cmd_obj.help_page]
+                 cmd_obj.help_page,
+                 "", util.hline("Usage: " + command),
+                 cmd_obj.usage]
         util.page_output('\n'.join(parts))
         return EXIT_SUCCESS
 
     @staticmethod
     def exit_with_fullhelp():
         """Show a recursive help page for all commands and exit."""
-        parts = []
-        commands = cli.get_all_commands()
-        for cmd_name in commands:
+        help_output = ''
+        for cmd_name in cli.get_all_commands():
             name = cli.command_from_module_name(cmd_name)
             cmd_obj = cli.find_command(name.split()[1:])
             command = cmd_obj.command
-            command = cmd_obj.command
-            parts.extend("", util.hline("Usage: " + command),
-                         cmd_obj.usage,
-                         "", util.hline("Help: " + command),
-                         cmd_obj.help_page)
-        util.page_output(u'\n'.join(parts))
+            parts = ["", util.hline("Help: " + command),
+                     cmd_obj.help_page,
+                     "", util.hline("Usage: " + command),
+                     cmd_obj.usage]
+            help_output += '\n'.join(parts)
+        util.page_output(help_output)
         return EXIT_SUCCESS
 
     def _construct_parser(self):
@@ -178,6 +178,7 @@ class HelpCommand(AbstractCommand):
     
         LOGGER.error("Cannot identify '%s' as a command or filename.")
         return self.exit_with_help('__main__')
-    
+
+
 COMMAND = HelpCommand(__name__, summary_fmt="Show help for a command or suggest actions for a file.")
 

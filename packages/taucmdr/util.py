@@ -63,6 +63,14 @@ from taucmdr.progress import ProgressIndicator, progress_spinner
 
 LOGGER = logger.get_logger(__name__)
 
+# Suppress debugging messages in optimized code
+if __debug__:
+    _heavy_debug = LOGGER.debug   # pylint: disable=invalid-name
+else:
+    def _heavy_debug(*args, **kwargs):
+        # pylint: disable=unused-argument
+        pass
+
 
 _PY_SUFFEXES = ('.py', '.pyo', '.pyc')
 
@@ -214,7 +222,7 @@ def which(program, use_cached=True):
                 LOGGER.debug("which(%s) = '%s'", program, exe_file)
                 _WHICH_CACHE[program] = exe_file
                 return exe_file
-    LOGGER.debug("which(%s): command not found", program)
+    _heavy_debug("which(%s): command not found", program)
     _WHICH_CACHE[program] = None
     return None
 
@@ -273,7 +281,7 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
         proc_output = get_command_output(size_cmd)
     except subprocess.CalledProcessError as err:
         return err.returncode
-    LOGGER.debug(proc_output)
+    _heavy_debug(proc_output)
     try:
         file_size = int(proc_output.partition('Content-Length')[2].split()[1])
     except (ValueError, IndexError):
@@ -315,7 +323,7 @@ def archive_toplevel(archive):
     Returns:
         str: Directory name.
     """
-    LOGGER.debug("Determining top-level directory name in '%s'", archive)
+    _heavy_debug("Determining top-level directory name in '%s'", archive)
     try:
         fin = tarfile.open(archive)
     except tarfile.ReadError:
@@ -420,8 +428,8 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
 
 
 def path_accessible(path, mode='r'):
-    """Check if a file or directory is accessable.
-    
+    """Check if a file or directory exists and is accessable.
+
     Files are checked by attempting to open them with the given mode.
     Directories are checked by testing their access bits only, which may fail for 
     some filesystems which may have permissions semantics beyond the usual POSIX 
@@ -435,6 +443,8 @@ def path_accessible(path, mode='r'):
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
     assert mode and set(mode) <= set(('r', 'w'))
+    if not os.path.exists(path):
+        return False
     if os.path.isdir(path):
         modebits = 0
         if 'r' in mode:
@@ -463,7 +473,7 @@ def _null_context():
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=False):
+def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50):
     """Create a subprocess.
     
     See :any:`subprocess.Popen`.
@@ -474,8 +484,8 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         env (dict): Environment variables to set or unset before launching cmd.
         stdout (bool): If True send subprocess stdout and stderr to this processes' stdout.
         log (bool): If True send subprocess stdout and stderr to the debug log.
-        error_buf (bool): If True, stdout is not already being sent, and return value is
-                          non-zero then send last 100 lines of subprocess stdout and stderr
+        error_buf (int): If non-zero, stdout is not already being sent, and return value is
+                          non-zero then send last `error_buf` lines of subprocess stdout and stderr
                           to this processes' stdout.
         
     Returns:
@@ -486,15 +496,15 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         for key, val in six.iteritems(env):
             if val is None:
                 subproc_env.pop(key, None)
-                LOGGER.debug("unset %s", key)
+                _heavy_debug("unset %s", key)
             else:
                 subproc_env[key] = val
-                LOGGER.debug("%s=%s", key, val)
+                _heavy_debug("%s=%s", key, val)
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
     context = progress_spinner if show_progress else _null_context
     with context():
         if error_buf:
-            buf = deque(maxlen=100)
+            buf = deque(maxlen=error_buf)
         proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
@@ -514,7 +524,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     return retval
 
 
-def get_command_output(cmd, cwd=None, env=None):
+def get_command_output(cmd):
     """Return the possibly cached output of a command.
     
     Just :any:`subprocess.check_output` with a cache.
@@ -522,8 +532,6 @@ def get_command_output(cmd, cwd=None, env=None):
     
     Args:
         cmd (list): Command and its command line arguments.
-        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
-        env (dict): Environment variables to set before launching cmd.
 
     Raises:
         subprocess.CalledProcessError: return code was non-zero.
@@ -531,7 +539,7 @@ def get_command_output(cmd, cwd=None, env=None):
     Returns:
         str: Subprocess output.
     """
-    key = repr((cmd, cwd, env))
+    key = repr(cmd)
     try:
         return get_command_output.cache[key]
     except AttributeError:
@@ -539,13 +547,13 @@ def get_command_output(cmd, cwd=None, env=None):
     except KeyError:
         pass
     else:
-        LOGGER.debug("Using cached output for command: %s", cmd)
+        _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
     stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     if isinstance(stdout, six.binary_type):
         stdout = stdout.decode('utf-8')
     get_command_output.cache[key] = stdout
-    LOGGER.debug(stdout)
+    _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 
