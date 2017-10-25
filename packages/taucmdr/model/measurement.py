@@ -95,7 +95,6 @@ def attributes():
             'compat': {True: (Measurement.require('profile', 'tau'),
                               Measurement.require('trace', 'none'))}
         },
-        
         'profile': {
             'type': 'string',
             'default': 'tau',
@@ -106,9 +105,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('tau', 'merged', 'cubex', 'none'),
                          'const': 'tau'},
-            'compat': {'cubex': (Target.exclude('scorep_source', None),
-                                 Application.require('mpi', True),
-                                 Measurement.require('mpi', True)),
+            'compat': {'cubex': Target.exclude('scorep_source', None),
                        'merged': _merged_profile_compat},
         },
         'trace': {
@@ -180,6 +177,7 @@ def attributes():
                        (Target.require(MPI_CC.keyword),
                         Target.require(MPI_CXX.keyword),
                         Target.require(MPI_FC.keyword),
+                        Application.require('mpi', True),
                         Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
@@ -192,7 +190,6 @@ def attributes():
                          'choices': ('ignore', 'opari', 'ompt')},
             'compat': {'opari':
                        (Application.require('openmp', True),
-                        Measurement.discourage('source_inst', 'never'),
                         Measurement.exclude('baseline', True)),
                        'ompt': (Application.require('openmp', True),
                                 Measurement.exclude('baseline', True))},
@@ -204,6 +201,7 @@ def attributes():
             'description': 'measure cuda events via the CUPTI interface',
             'argparse': {'flags': ('--cuda',)},
             'compat': {True: (Target.require('cuda_toolkit'),
+                              Application.require('cuda', True),
                               Measurement.exclude('baseline', True))},
         },
         'shmem': {
@@ -215,6 +213,7 @@ def attributes():
                        (Target.require(SHMEM_CC.keyword),
                         Target.require(SHMEM_CXX.keyword),
                         Target.require(SHMEM_FC.keyword),
+                        Application.require('shmem', True),
                         Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
@@ -224,7 +223,7 @@ def attributes():
             'description': 'measure OpenCL events',
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda_toolkit'),
-                              Application.require('opencl'),
+                              Application.require('opencl', True),
                               Measurement.exclude('baseline', True))},
         },
         'callpath': {
