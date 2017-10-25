@@ -697,7 +697,7 @@ class InstalledCompiler(object):
         Args:
             prefix (str): Path to a directory in which the wrapper script will be created.
         """
-        script_file = os.path.join(prefix, '%s_%s' % (TAUCMDR_SCRIPT, self.command))
+        script_file = os.path.join(prefix, '%s_%s' % (os.path.basename(TAUCMDR_SCRIPT), self.command))
         util.mkdirp(prefix)
         with open(script_file, "w+") as fout:
             wrapper = _COMPILER_WRAPPER_TEMPLATE % {'date': str(datetime.now()),
