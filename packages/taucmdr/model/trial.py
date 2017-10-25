@@ -368,7 +368,7 @@ class Trial(Model):
         slog2 = os.path.join(self.prefix, 'tau.slog2')
         if os.path.exists(slog2):
             return
-        tau = TauInstallation.minimal()
+        tau = TauInstallation.get_minimal()
         merged_trc = os.path.join(self.prefix, 'tau.trc')
         merged_edf = os.path.join(self.prefix, 'tau.edf')
         if not os.path.exists(merged_trc) or not os.path.exists(merged_edf):
@@ -545,7 +545,7 @@ class Trial(Model):
         for fmt, path in data.iteritems(): 
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
-                tau = TauInstallation.minimal()
+                tau = TauInstallation.get_minimal()
                 tau.create_ppk_file(export_file, path)
             elif fmt == 'merged':
                 export_file = os.path.join(dest, stem+'.xml.gz')

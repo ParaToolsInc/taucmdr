@@ -292,7 +292,7 @@ class Experiment(Model):
                     target_os=target.operating_system(),
                     compilers=target.compilers(),
                     # Use a minimal configuration for the baseline measurement
-                    minimal_configuration=baseline,
+                    minimal=baseline,
                     # TAU feature suppport
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),

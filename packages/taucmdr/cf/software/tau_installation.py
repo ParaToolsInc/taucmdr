@@ -158,7 +158,7 @@ class TauInstallation(Installation):
     
     def __init__(self, sources, target_arch, target_os, compilers,
                  # Minimal configuration support
-                 minimal_configuration=False,
+                 minimal=False,
                  # TAU feature suppport
                  application_linkage='dynamic',
                  openmp_support=False,
@@ -211,7 +211,7 @@ class TauInstallation(Installation):
             target_arch (Architecture): Target architecture description.
             target_os (OperatingSystem): Target operating system description.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-            minimal_configuration (bool): If True then ignore all other arguments and configure with minimal features.
+            minimal (bool): If True then ignore all other arguments and configure with minimal features.
             application_linkage (str): Either "static" or "dynamic". 
             openmp_support (bool): Enable or disable OpenMP support in TAU.
             pthreads_support (bool): Enable or disable pthreads support in TAU.
@@ -251,7 +251,7 @@ class TauInstallation(Installation):
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
-        assert minimal_configuration in (True, False)
+        assert minimal in (True, False)
         assert application_linkage in ('static', 'dynamic')
         assert openmp_support in (True, False)
         assert pthreads_support in (True, False)
@@ -305,7 +305,7 @@ class TauInstallation(Installation):
         self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
         self._lib_subdir = os.path.join(self.tau_magic.name, 'lib')
         self.verbose = (logger.LOG_LEVEL == 'DEBUG')
-        self.minimal_configuration = minimal_configuration
+        self.minimal = minimal
         self.application_linkage = application_linkage
         self.openmp_support = openmp_support
         self.opencl_support = opencl_support
@@ -346,20 +346,20 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
-        self.uses_pdt = (self.source_inst == 'automatic' or self.shmem_support)
-        self.uses_binutils = (self.target_os is not DARWIN)
-        self.uses_libunwind = (self.target_os is not DARWIN)
-        self.uses_papi = bool(len([met for met in self.metrics if 'PAPI' in met]))
-        self.uses_scorep = (self.profile == 'cubex')
-        self.uses_ompt = (self.measure_openmp == 'ompt')
-        self.uses_libotf2 = (self.trace == 'otf2')
-        self.uses_cuda = (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
+        self.uses_binutils = not minimal and (self.target_os is not DARWIN)
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
+        self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
+        self.uses_scorep = not minimal and (self.profile == 'cubex')
+        self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
+        self.uses_opari = not minimal and (self.measure_openmp == 'opari')
+        self.uses_libotf2 = not minimal and (self.trace == 'otf2')
+        self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        # TAU assumes the first metric is always some kind of wallclock timer
+        # so move the first wallclock metric to the front of the list
         for i, metric in enumerate(self.metrics):
-            if 'TIME' in metric:
-                # TAU assumes the first metric is always some kind of wallclock timer
-                # so move the first wallclock metric to the front of the list
-                if 'TIME' not in self.metrics[0]:
-                    self.metrics.insert(0, self.metrics.pop(i))
+            if 'TIME' in metric and 'TIME' not in self.metrics[0]:
+                self.metrics.insert(0, self.metrics.pop(i))
                 break
         else:
             self.metrics.insert(0, 'TIME')        
@@ -371,22 +371,18 @@ class TauInstallation(Installation):
             self.add_dependency('scorep', sources, mpi_support, shmem_support,
                                 uses('binutils'), uses('libunwind'), uses('papi'), uses('pdt'))
         self.check_env_compat()
-    
-    @classmethod
-    def minimal(cls):
-        """Creates a minimal TAU configuration for working with legacy data analysis tools.
 
+    @classmethod    
+    def get_minimal(cls):
+        """Creates a minimal TAU configuration for working with legacy data analysis tools.
+    
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
+        sources = {'tau': 'download'}
         target_arch = HOST_ARCH
         target_os = HOST_OS
-        if HOST_OS is DARWIN:
-            target_family = APPLE_LLVM
-            sources = {'tau': 'download'}
-        else:
-            target_family = GNU
-            sources = {'tau': 'download', 'binutils': 'download', 'libunwind': 'download'}
+        target_family = APPLE_LLVM if HOST_OS is DARWIN else GNU
         try:
             target_compilers = target_family.installation()
         except ConfigurationError:
@@ -395,7 +391,7 @@ class TauInstallation(Installation):
             if role not in target_compilers:
                 raise SoftwarePackageError("A %s compiler (required to build TAU) could not be found." % role.language)
         compilers = InstalledCompilerSet('minimal', Host_CC=target_compilers[CC], Host_CXX=target_compilers[CXX])
-        inst = cls(sources, target_arch, target_os, compilers, minimal_configuration=True)
+        inst = cls(sources, target_arch, target_os, compilers, minimal=True)
         return inst
 
     @classmethod
@@ -532,17 +528,18 @@ class TauInstallation(Installation):
     
     def verify(self):
         super(TauInstallation, self).verify()
-        if self.uses_papi and (HOST_ARCH == self.target_arch and HOST_OS == self.target_os):
-            try:
-                self.dependencies['papi'].check_metrics(self.metrics)
-            except ConfigurationError as err:
-                LOGGER.warning(err)
-        tau_makefile = self.get_makefile()
-        self._verify_tau_libs(tau_makefile)
-        if not self.unmanaged:
-            self._verify_dependency_paths(tau_makefile)
-        if self.measure_io:
-            self._verify_iowrapper(tau_makefile)
+        if not self.minimal:
+            if self.uses_papi and (HOST_ARCH == self.target_arch and HOST_OS == self.target_os):
+                try:
+                    self.dependencies['papi'].check_metrics(self.metrics)
+                except ConfigurationError as err:
+                    LOGGER.warning(err)
+            tau_makefile = self.get_makefile()
+            self._verify_tau_libs(tau_makefile)
+            if not self.unmanaged:
+                self._verify_dependency_paths(tau_makefile)
+            if self.measure_io:
+                self._verify_iowrapper(tau_makefile)
         LOGGER.debug("TAU installation at '%s' is valid", self.install_prefix)
 
     def _select_flags(self, header, libglobs, user_libraries, wrap_cc, wrap_cxx, wrap_fc):
@@ -608,7 +605,7 @@ class TauInstallation(Installation):
         ompt = self.dependencies.get('ompt')
         libotf2 = self.dependencies.get('libotf2')
 
-        if self.minimal_configuration:
+        if self.minimal:
             LOGGER.info("Configuring minimal TAU...")
             cmd = [flag for flag in 
                    ['./configure', 
@@ -724,6 +721,14 @@ class TauInstallation(Installation):
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU configure failed')
 
+    def make_install_minimal(self):
+        cmd = ['make', '-k', 'install'] + parallel_make_flags()
+        LOGGER.info('Compiling TAU utilities...')
+        # Nonzero return value is ignored since a full make would be required for all utilities to build.
+        # Just cross your fingers and hope that the utilities you need are compiled.
+        # If they don't build then package verification will fail so no harm done.  
+        util.create_subprocess(cmd, cwd=os.path.join(self._src_prefix, 'utils'), stdout=False, show_progress=True)
+
     def make_install(self):
         """Installs TAU to ``self.install_prefix``.
 
@@ -733,7 +738,7 @@ class TauInstallation(Installation):
             SoftwarePackageError: 'make install' failed.
         """
         cmd = ['make', 'install'] + parallel_make_flags()
-        LOGGER.info('Compiling and installing TAU...')
+        LOGGER.info('Compiling TAU...')
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU compilation/installation failed')
 
@@ -800,7 +805,10 @@ class TauInstallation(Installation):
     
     def installation_sequence(self):
         self.configure()
-        self.make_install()
+        if self.minimal:
+            self.make_install_minimal()
+        else:
+            self.make_install()
         # Rebuild makefile cache on next call to get_makefile() 
         # since a new, possibly better makefile is now available
         self._tau_makefile = None
