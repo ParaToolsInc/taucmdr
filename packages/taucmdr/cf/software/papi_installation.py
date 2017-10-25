@@ -34,6 +34,7 @@ import os
 import re
 import sys
 import fileinput
+from HTMLParser import HTMLParser
 from subprocess import CalledProcessError
 from xml.etree import ElementTree
 from taucmdr import logger, util
@@ -142,10 +143,41 @@ class PapiInstallation(AutotoolsInstallation):
                     break
             else:
                 why = ', and output from papi_event_chooser was not parsable.'
-            err = ConfigurationError(("PAPI metrics [%s] are not compatible on the current host%s."
-                                      "\n\nYou may ignore this warning if you are cross-compiling.") %
+            raise ConfigurationError(("PAPI metrics [%s] are not compatible on the current host%s.") %
                                      (', '.join(papi_metrics), why),
                                      "Use papi_avail to check metric availability.",
                                      "Spread the desired metrics over multiple measurements.",
-                                     "Choose fewer metrics.")
-            LOGGER.warning(err)
+                                     "Choose fewer metrics.",
+                                     "You may ignore this warning if you are cross-compiling")
+
+    def papi_metrics(self, event_type="PRESET", include_modifiers=False):
+        """List PAPI available metrics.
+        
+        Returns a list of (name, description) tuples corresponding to the
+        requested PAPI event type and possibly the event modifiers.
+        
+        Args:
+            event_type (str): Either "PRESET" or "NATIVE".
+            include_modifiers (bool): If True include event modifiers, 
+                                      e.g. BR_INST_EXEC:NONTAKEN_COND as well as BR_INST_EXEC.
+        
+        Returns:
+            list: List of event name/description tuples.
+        """
+        assert event_type == "PRESET" or event_type == "NATIVE"
+        metrics = []
+        html_parser = HTMLParser()
+        def _format(item):
+            name = item.attrib['name']
+            desc = html_parser.unescape(item.attrib['desc'])
+            desc = desc[0].capitalize() + desc[1:] + "."
+            return name, desc
+        xml_event_info = self.xml_event_info()
+        for eventset in xml_event_info.iter('eventset'):
+            if eventset.attrib['type'] == event_type:
+                for event in eventset.iter('event'):
+                    if include_modifiers:
+                        for modifier in event.iter('modifier'):
+                            metrics.append(_format(modifier))
+                    metrics.append(_format(event))
+        return metrics

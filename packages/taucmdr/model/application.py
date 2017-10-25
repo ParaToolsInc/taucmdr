@@ -95,9 +95,9 @@ def attributes():
             'default': False,
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
-            'compat': {True: Measurement.require('mpi', True)},
-            'rebuild_required': True,
-            'hashed': True
+            'hashed': True,
+            'compat': {True: Measurement.encourage('mpi', True)},
+            'rebuild_required': True
         },
         'cuda': {
             'type': 'boolean',

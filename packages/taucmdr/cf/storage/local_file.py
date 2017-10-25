@@ -52,10 +52,10 @@ class _JsonRecord(StorageRecord):
         super(_JsonRecord, self).__init__(database, eid or element.eid, element, hash_digest=None)
 
     def __str__(self):
-        return json.dumps(self.element)
+        return json.dumps(self)
 
     def __repr__(self):
-        return json.dumps(self.element)
+        return json.dumps(self)
 
 
 class _JsonFileStorage(tinydb.JSONStorage):

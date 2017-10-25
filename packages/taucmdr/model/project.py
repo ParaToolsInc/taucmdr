@@ -93,15 +93,6 @@ def attributes():
             'hashed': False,
             'direction': 'down'
         },
-        'force_tau_options': {
-            'type': 'array',
-            'description': "forcibly add options to TAU_OPTIONS environment variable (not recommended)",
-            'rebuild_on_change': True,
-            'argparse': {'flags': ('--force-tau-options',),
-                         'metavar': '<option>'},
-            'compat': {True: Project.discourage('force_tau_options')},
-            'hashed': True
-        }
     }
 
 

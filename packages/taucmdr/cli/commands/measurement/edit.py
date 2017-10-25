@@ -28,6 +28,7 @@
 """``measurement edit`` subcommand."""
 
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
+from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
 from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
 from taucmdr.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
@@ -49,7 +50,33 @@ class MeasurementEditCommand(EditCommand):
             rebuild_required = Experiment.rebuild_required()
             if rebuild_required: 
                 self.logger.info(rebuild_required)
-        return retval       
+        return retval
+    
+    def main(self, argv):
+        args = self._parse_args(argv)
+        store = arguments.parse_storage_flag(args)[0]
+        data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
+        meas_name = args.name
+        try:
+            force_tau_options = args.force_tau_options
+        except AttributeError:
+            pass
+        else:
+            # Unset force_tau_options if it was already set and --force-tau-options=none 
+            if data.pop('force_tau_options', False) and [i.lower().strip() for i in force_tau_options] == ['none']:
+                meas_ctrl = Measurement.controller(store)
+                meas_ctrl.unset(['force_tau_options'], {'name': meas_name})
+                self.logger.info("Removed 'force-tau-options' from measurement '%s'.", meas_name)
+            else:
+                data['force_tau_options'] = force_tau_options
+                self.logger.info("Added 'force-tau-options' to measurement '%s'.", meas_name)
+        key_attr = self.model.key_attribute
+        try:
+            data[key_attr] = args.new_key
+        except AttributeError:
+            pass
+        key = getattr(args, key_attr)
+        return self._update_record(store, data, key)
 
 
 COMMAND = MeasurementEditCommand(Measurement, __name__)

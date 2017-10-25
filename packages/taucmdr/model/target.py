@@ -47,9 +47,9 @@ from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem 
-from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_OS, DARWIN, CRAY_CNL
+from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -122,14 +122,37 @@ def papi_source_default():
     return 'download'
 
 
-def cuda_default():
-    default_path = '/usr/local/cuda'
+def cuda_toolkit_default():
+    for path in sorted(glob.glob('/usr/local/cuda*')):
+        if os.path.exists(os.path.join(path, 'bin', 'nvcc')):
+            return path
     nvcc = util.which('nvcc')
-    if not nvcc or os.path.dirname(nvcc) in ('/usr/bin', '/usr/local/bin'):
-        return default_path if os.path.exists(default_path) else None
-    else:
-        return os.path.dirname(os.path.dirname(nvcc))
+    if nvcc:
+        cuda_dir = os.path.dirname(os.path.dirname(nvcc))
+        if os.path.exists(os.path.join(cuda_dir, 'include', 'cuda.h')):
+            return cuda_dir
+    return None
 
+
+def tau_source_default():
+    """"Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation.
+    
+    If a file named "override_tau_source" exists in the system-level storage prefix, use the contents of
+    that file as the default path for TAU.  Otherwise use "download" as the default.
+    
+    Returns:
+        str: Path to TAU or "download".
+    """
+    try:
+        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source')) as fin:
+            path = fin.read()
+    except IOError:
+        return 'download'
+    path = path.strip()
+    if not (os.path.isdir(path) and util.path_accessible(path)):
+        LOGGER.warning("'%s' does not exist or is not accessable.")
+        return 'download'
+    return path
 
 def attributes():
     """Construct attributes dictionary for the target model.
@@ -357,7 +380,7 @@ def attributes():
         'cuda_toolkit': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
-            'default': cuda_default(), 
+            'default': cuda_toolkit_default(), 
             'argparse': {'flags': ('--cuda-toolkit',),
                          'group': 'CUDA',
                          'metavar': '<path>',
@@ -368,7 +391,7 @@ def attributes():
         'tau_source': {
             'type': 'string',
             'description': 'path or URL to a TAU installation or archive file',
-            'default': 'download',
+            'default': tau_source_default(),
             'argparse': {'flags': ('--tau',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|nightly)',
@@ -654,83 +677,15 @@ class Target(Model):
         return found
     
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
-        """List PAPI metrics available on this target.
-        
-        Returns a list of (name, description) tuples corresponding to the
-        requested PAPI event type and possibly the event modifiers.
-        
-        Args:
-            event_type (str): Either "PRESET" or "NATIVE".
-            include_modifiers (bool): If True include event modifiers, 
-                                      e.g. BR_INST_EXEC:NONTAKEN_COND as well as BR_INST_EXEC.
-        
-        Returns:
-            list: List of event name/description tuples.
-        """
-        assert event_type == "PRESET" or event_type == "NATIVE"
         if not self.get('papi_source'):
             return []
-        # PyLint doesn't realize that the fake modules in six.moves can be imported
-        import six.moves.html_parser as HTMLParser # pylint: disable=import-error
-
-        metrics = []
-        html_parser = HTMLParser()
-        papi = self.get_installation('papi')
-        def _format(item):
-            name = item.attrib['name']
-            desc = html_parser.unescape(item.attrib['desc'])
-            desc = desc[0].capitalize() + desc[1:] + "."
-            return name, desc
-        xml_event_info = papi.xml_event_info()
-        for eventset in xml_event_info.iter('eventset'):
-            if eventset.attrib['type'] == event_type:
-                for event in eventset.iter('event'):
-                    if include_modifiers:
-                        for modifier in event.iter('modifier'):
-                            metrics.append(_format(modifier))
-                    metrics.append(_format(event))
-        return metrics
+        return self.get_installation('papi').papi_metrics(event_type, include_modifiers)
 
     def tau_metrics(self):
-        """List TAU metrics available on this target.
-        
-        Returns a list of (name, description) tuples.
-        
-        Returns:
-            list: List of event name/description tuples.
-        """
-        metrics = [("LOGICAL_CLOCK", "Logical clock that increments on each request."),
-                   ("USER_CLOCK", ("User-defined clock. Implement "
-                                   "'void metric_write_userClock(int tid, double value)'  to set the clock value.")),
-                   ("GET_TIME_OF_DAY", "Wall clock that calls gettimeofday."),
-                   ("TIME", "Alias for GET_TIME_OF_DAY. Wall clock that calls gettimeofday."),
-                   ("CLOCK_GET_TIME", "Wall clock that calls clock_gettime."),
-                   ("P_WALL_CLOCK_TIME", "Wall clock that calls PAPI_get_real_usec."),
-                   ("PAPI_TIME", "Alias for P_WALL_CLOCK_TIME.  Wall clock that calls PAPI_get_real_usec."),
-                   ("P_VIRTUAL_TIME", "PAPI virtual clock that calls PAPI_get_virt_usec."),
-                   ("PAPI_VIRTUAL_TIME", ("Alias for P_VIRTUAL_TIME.  "
-                                          "PAPI virtual clock that calls PAPI_get_virt_usec.")),
-                   ("CPU_TIME", "CPU timer that calls getrusage."),
-                   ("LINUX_TIMERS", "Linux high resolution wall clock."),
-                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI messsage sizes."),
-                   ("MEMORY_DELTA", "Instantaneous resident set size (RSS)")]
-        if self.get('cuda'):
-            metrics.append(("TAUGPU_TIME", "Wall clock that uses TAU's GPU timestamps."))
-        target_arch = self.architecture()
-        target_os = self.operating_system()
-        if target_os is CRAY_CNL:
-            metrics.extend([("CRAY_TIMERS", "Cray high resolution clock."),
-                            ("ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/energy"),
-                            ("ACCEL_ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/accel_energy")])
-        if target_arch is IBM_BGL:
-            metrics.append(("BGL_TIMERS", "BlueGene/L high resolution clock."))
-        elif target_arch is IBM_BGP:
-            metrics.append(("BGP_TIMERS", "BlueGene/P high resolution clock."))
-        elif target_arch is IBM_BGQ:
-            metrics.append(("BGQ_TIMERS", "BlueGene/Q high resolution clock."))
-        return metrics
+        return self.get_installation('tau').tau_metrics()
     
     def cupti_metrics(self):
         if not self.get('cuda'):
             return []
-        
+        # FIXME: not implemented
+

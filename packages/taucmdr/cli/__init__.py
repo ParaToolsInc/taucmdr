@@ -56,6 +56,12 @@ SCRIPT_COMMAND = os.path.basename(TAUCMDR_SCRIPT)
 
 COMMANDS_PACKAGE_NAME = __name__ + '.commands'
 
+USAGE_FORMAT = "console"
+"""Specify usage formatting:
+    console: colorized and formatted to fit current console dimensions.
+    markdown: plain text markdown. 
+""" 
+
 _COMMANDS = {SCRIPT_COMMAND: {}}
 
 
@@ -136,6 +142,7 @@ def _get_commands(package_name):
             __import__(module)
             dct.setdefault(car, {})['__module__'] = sys.modules[module]
 
+    __import__(COMMANDS_PACKAGE_NAME)
     command_module = sys.modules[COMMANDS_PACKAGE_NAME]
     for _, module, _ in util.walk_packages(command_module.__path__, prefix=command_module.__name__+'.'):
         if not (module.endswith('__main__') or '.tests' in module):
@@ -173,6 +180,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
     Returns:
         str: Help string describing all commands found at or below `root`.
     """
+    usage_fmt = USAGE_FORMAT.lower()
     groups = {}
     commands = sorted([i for i in six.iteritems(_get_commands(package_name)) if i[0] != '__module__'])
     for cmd, topcmd in commands:
@@ -183,19 +191,23 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             continue 
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
-        name = util.color_text('{:<14}'.format(cmd), 'green')
-        groups.setdefault(group, []).append('  %s  %s' % (name, descr))
-
+        if usage_fmt == 'console':
+            line = '  %s%s' % (util.color_text('{:<14}'.format(cmd), 'green'), descr)
+        elif usage_fmt == 'markdown':
+            line = '  %s | %s' % ('{:<28}'.format(cmd), descr)
+        groups.setdefault(group, []).append(line)
     parts = []
     for group, members in six.iteritems(groups):
-        if group:
-            title = util.color_text(group.title() + ' Subcommands:', attrs=['bold'])
-        else:
-            title = util.color_text('Subcommands:', attrs=['bold'])
-        parts.append(title)
+        title = group.title() + ' Subcommands' if group else 'Subcommands'
+        if usage_fmt == 'console':
+            parts.append(util.color_text(title+':', attrs=['bold']))
+        elif usage_fmt == 'markdown':
+            parts.extend(['', ' ', '{:<30}'.format(title) + ' | Description',
+                          '%s:| %s' % ('-'*30, '-'*len('Description'))])
         parts.extend(members)
         parts.append('')
     return '\n'.join(parts)
+
 
 def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
     """Builds a list of all commands and subcommands.

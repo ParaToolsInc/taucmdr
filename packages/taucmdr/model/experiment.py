@@ -36,8 +36,8 @@ import os
 import fasteners
 import six
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError
-from taucmdr.error import ExperimentSelectionError, UniqueAttributeError
+from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ProjectSelectionError
+from taucmdr.error import ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
@@ -112,151 +112,63 @@ def attributes():
 
 class ExperimentController(Controller):
     """Experiment data controller."""
+ 
+    @property
+    def _project_eid(self):
+        """Avoid multiple lookup of the selected project since project selection will not change mid-process."""
+        try:
+            return self._selected_project.eid
+        except AttributeError:
+            # pylint: disable=attribute-defined-outside-init
+            self._selected_project = Project.controller(self.storage).selected() 
+            return self._selected_project.eid
 
-    def _restrict_project(self, key_dict):
-        key_dict['project'] = Project.controller(self.storage).selected().eid
-
+    def _restrict_project(self, keys):
+        """Ensures that we only operate on experiment records in the selected project.""" 
+        try:
+            return dict(keys, project=self._project_eid)
+        except (TypeError, ValueError):
+            try:
+                return [dict(key, project=self._project_eid) for key in keys]
+            except (TypeError, ValueError):
+                pass
+        return keys
+ 
     def one(self, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except (TypeError, ValueError):
-                pass
-        return super(ExperimentController, self).one(keys)
-    
+        return super(ExperimentController, self).one(self._restrict_project(keys))
+     
     def all(self):
-        try:
-            keys = dict()
-            keys['project'] = Project.controller(self.storage).selected().eid
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    key['project'] = Project.controller(self.storage).selected().eid
-            except (TypeError, ValueError):
-                keys = None
+        keys = {'project': self._project_eid}
         return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
-
+    
+    def count(self):
+        try:
+            return len(self.all())
+        except ProjectSelectionError:
+            return 0
+ 
     def search(self, keys=None):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except (TypeError, ValueError):
-                pass
-        return super(ExperimentController, self).search(keys)
-
+        return super(ExperimentController, self).search(self._restrict_project(keys))
+ 
     def exists(self, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except (TypeError, ValueError):
-                pass
-        return super(ExperimentController, self).exists(keys)
-
+        return super(ExperimentController, self).exists(self._restrict_project(keys))
+    
+    def _check_unique(self, data, match_any=False):
+        """Default match_any to False to prevent matches outside the selected project."""
+        return super(ExperimentController, self)._check_unique(data, match_any)
+ 
     def create(self, data):
-        try:
-            data = dict(data)
-            self._restrict_project(data)
-        except (TypeError, ValueError):
-            try:
-                for key in data:
-                    self._restrict_project(key)
-            except TypeError:
-                pass
-        self._restrict_project(data)
-        data = self.model.validate(data)
-        unique = {attr: data[attr] for attr, props in six.iteritems(self.model.attributes) if 'unique' in props}
-        if unique and self.storage.contains(unique, match_any=False, table_name=self.model.name):
-            raise UniqueAttributeError(self.model, unique)
-        with self.storage as database:
-            record = database.insert(data, table_name=self.model.name)
-            for attr, foreign in six.iteritems(self.model.associations):
-                if 'model' or 'collection' in self.model.attributes[attr]:
-                    affected = record.get(attr, None)
-                    if affected:
-                        foreign_cls, via = foreign
-                        self._associate(record, foreign_cls, affected, via)
-            model = self.model(record)
-            model.check_compatibility(model)
-            model.on_create()
-            return model
-
+        data['project'] = self._project_eid
+        return super(ExperimentController, self).create(data)
+ 
     def update(self, data, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except (TypeError, ValueError):
-                pass
-        return super(ExperimentController, self).update(data, keys)
-
+        return super(ExperimentController, self).update(data, self._restrict_project(keys))
+ 
     def unset(self, fields, keys):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except (TypeError, ValueError):
-                pass
-        return super(ExperimentController, self).unset(fields, keys)
-
+        return super(ExperimentController, self).unset(fields, self._restrict_project(keys))
+ 
     def delete(self, keys):
-        self._restrict_project(keys)
-        with self.storage as database:
-            removed_data = []
-            changing = self.search(keys)
-            for model in changing:
-                for attr, foreign in six.iteritems(model.associations):
-                    foreign_model, via = foreign
-                    affected_keys = model.get(attr, None)
-                    if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
-                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
-                        self._disassociate(model, foreign_model, affected_keys, via)
-                for foreign_model, via in model.references:
-                    # pylint complains because `model` is changing on every iteration so we'll have
-                    # a different lambda function `test` on each iteration.  This is exactly what
-                    # we want so we disble the warning. 
-                    # pylint: disable=cell-var-from-loop, undefined-loop-variable
-                    test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
-                    affected = database.match(via, test=test, table_name=foreign_model.name)
-                    affected_keys = [record.eid for record in affected]
-                    if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
-                                     self.model.name, model.eid, via, foreign_model.name, affected_keys)
-                        self._disassociate(model, foreign_model, affected_keys, via)
-                removed_data.append(dict(model))
-            database.remove(keys, table_name=self.model.name)
-            for model in changing:
-                model.on_delete()
-
-    def export_records(self, keys=None, eids=None):
-        try:
-            keys = dict(keys)
-            self._restrict_project(keys)
-        except (TypeError, ValueError):
-            try:
-                for key in keys:
-                    self._restrict_project(key)
-            except (TypeError, ValueError):
-                pass
-        return super(ExperimentController, self).export_records(keys, eids)
+        return super(ExperimentController, self).delete(self._restrict_project(keys))
 
 
 class Experiment(Model):
@@ -360,7 +272,7 @@ class Experiment(Model):
         except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
-
+                
     def data_size(self):
         return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
 
@@ -388,11 +300,14 @@ class Experiment(Model):
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
+        baseline = measurement.get_or_default('baseline')
         tau = TauInstallation(\
                     target.sources(),
                     target_arch=target.architecture(),
                     target_os=target.operating_system(),
                     compilers=target.compilers(),
+                    # Use a minimal configuration for the baseline measurement
+                    minimal=baseline,
                     # TAU feature suppport
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
@@ -410,22 +325,23 @@ class Experiment(Model):
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),
-                    link_only=measurement.get_or_default('link_only'),
-                    io_inst=measurement.get_or_default('io'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
                     select_file=application.get('select_file', None),
                     # Measurement methods and options
+                    baseline=baseline,
                     profile=measurement.get_or_default('profile'),
                     trace=measurement.get_or_default('trace'),
                     sample=measurement.get_or_default('sample'),
                     metrics=measurement.get_or_default('metrics'),
+                    measure_io=measurement.get_or_default('io'),
                     measure_mpi=measurement.get_or_default('mpi'),
                     measure_openmp=measurement.get_or_default('openmp'),
                     measure_opencl=measurement.get_or_default('opencl'),
                     measure_cuda=measurement.get_or_default('cuda'),
                     measure_shmem=measurement.get_or_default('shmem'),
                     measure_heap_usage=measurement.get_or_default('heap_usage'),
+                    measure_system_load=measurement.get_or_default('system_load'),
                     measure_memory_alloc=measurement.get_or_default('memory_alloc'),
                     measure_comm_matrix=measurement.get_or_default('comm_matrix'),
                     measure_callsite=measurement.get_or_default('callsite'),
@@ -436,7 +352,8 @@ class Experiment(Model):
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     forced_makefile=target.get('forced_makefile', None))
         tau.install()
-        self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
+        if not baseline:
+            self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):
@@ -469,17 +386,16 @@ class Experiment(Model):
         # We've found a candidate compiler.  Check that this compiler record is still valid.
         installed_compiler = found_compiler.verify()
         tau = self.configure()
+        meas = self.populate('measurement')
         try:
-            proj = self.populate('project')
-            tau.force_tau_options = proj['force_tau_options']
+            tau.force_tau_options = meas['force_tau_options']
         except KeyError:
             pass
         else:
-            LOGGER.info("Project '%s' forcibly adding '%s' to TAU_OPTIONS",
-                        proj['name'], ' '.join(tau.force_tau_options))
+            LOGGER.warning("Measurement '%s' forces TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.force_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
-    def managed_run(self, launcher_cmd, application_cmd, description):
+    def managed_run(self, launcher_cmd, application_cmds, description):
         """Uses this experiment to run an application command.
 
         Performs all relevent system preparation tasks to run the user's application
@@ -487,7 +403,7 @@ class Experiment(Model):
 
         Args:
             launcher_cmd (list): Application launcher with command line arguments.
-            application_cmd (list): Application executable with command line arguments.
+            application_cmds (list): List of application executables with command line arguments (list of lists).
             description (str): If not None, a description of the run.
 
         Raises:
@@ -496,11 +412,8 @@ class Experiment(Model):
         Returns:
             int: Application subprocess return code.
         """
-        command = util.which(application_cmd[0])
-        if not command:
-            raise ConfigurationError("Cannot find executable: %s" % application_cmd[0])
         tau = self.configure()
-        cmd, env = tau.get_application_command(launcher_cmd, application_cmd)
+        cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
         return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
 

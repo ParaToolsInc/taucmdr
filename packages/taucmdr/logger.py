@@ -222,9 +222,12 @@ class LogFormatter(logging.Formatter, object):
         message = record.getMessage()
         if self.printable_only and (not set(message).issubset(self._printable_chars)):
             message = "<<UNPRINTABLE>>"
-        marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
+        if __debug__:
+            marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
+        else:
+            marker = "[%s]" % record.levelname
         return '%s %s' % (marker, message)
-        
+
     def format(self, record):
         """Formats a log record.
         

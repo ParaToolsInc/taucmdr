@@ -32,6 +32,7 @@ Functions used for unit tests of edit.py.
 
 
 from taucmdr import tests
+from taucmdr.model.project import Project
 from taucmdr.model.measurement import Measurement
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.measurement.create import COMMAND as CREATE_COMMAND
@@ -103,3 +104,13 @@ class EditTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertIn("WARNING", stdout)
 
+    def test_set_tau_force_options(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        self.assertFalse('force-tau-options' in expr.populate('measurement'))
+        tau_options = "-optVerbose -optNoCompInst"
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
+        # Check that 'force-tau-options' is now a list containing the expected options in the project record
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        self.assertIsNotNone(meas)
+        self.assertListEqual(meas['force_tau_options'], [tau_options])

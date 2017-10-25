@@ -1,9 +1,7 @@
-language: python
-python:
-  - "2.6"
-  - "2.7"
-  - "3.2"
-  - "nightly"
+language: generic
+
+os:
+  - linux
 
 branches:
   except:
@@ -36,9 +34,9 @@ before_install:
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
 
-# Test ./configure && make install while boostraping Python 2.7 environment and required packages.
+# Test `make install` while boostraping Python 2.7 environment and required packages.
 install:
-  - make install INSTALLDIR="$INSTALLDIR" || (tail -1000 "$HOME/.tau/debug_log" && false)
+  - make install INSTALLDIR="$INSTALLDIR" || (tail -1000 "$HOME/.local/taucmdr/debug_log" && false)
   - export PATH="$INSTALLDIR/conda/bin:$PATH"
   - export PATH="$INSTALLDIR/anaconda-$ANACONDA_VERSION/bin:$PATH"
   - which python
@@ -50,10 +48,10 @@ script:
   - travis_wait 30 coverage run setup.py test
 
 after_failure:
-  - tail -1000 "$HOME/.tau/debug_log"
+  - tail -1000 "$HOME/.local/taucmdr/debug_log"
 
 after_script:
-  - codecov --env OS
+  - codecov --env TRAVIS_OS_NAME
 
 deploy:
   provider: script

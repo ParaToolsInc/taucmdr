@@ -43,7 +43,7 @@ from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
-from taucmdr.cf.software.tau_installation import TAU_MINIMAL_COMPILERS
+from taucmdr.cf.software.tau_installation import TauInstallation, TAU_MINIMAL_COMPILERS
 
 
 
@@ -311,6 +311,7 @@ class TargetCreateCommand(CreateCommand):
         return compilers
 
     def main(self, argv):
+        TauInstallation.check_env_compat()
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         if hasattr(args, "forced_makefile"):
