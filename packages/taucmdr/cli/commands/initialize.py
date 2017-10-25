@@ -35,6 +35,7 @@ from taucmdr.error import InternalError, ConfigurationError, ProjectSelectionErr
 from taucmdr.model.project import Project
 from taucmdr.model.target import Target
 from taucmdr.model.application import Application
+from taucmdr.model.measurement import Measurement
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.arguments import ParseBooleanAction
@@ -74,12 +75,7 @@ ___________________________________________________________________________
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
        
-    def _construct_parser(self):
-        """Constructs the command line argument parser.
-         
-        Returns:
-            A command line argument parser instance.
-        """
+    def _construct_initalize_parser(self):
         def _default_target_name():
             node_name = platform.node()
             if not node_name:
@@ -95,34 +91,40 @@ class InitializeCommand(AbstractCommand):
                             default=False,
                             metavar='T/F',
                             action=ParseBooleanAction)
-        
-        default_project_name = os.path.basename(os.getcwd()) or 'default_project'
         project_group = parser.add_argument_group('project arguments')
         project_group.add_argument('--project-name',
                                    help="Name of the new project",
                                    metavar='<name>',
-                                   default=default_project_name)
+                                   default=(os.path.basename(os.getcwd()) or 'default_project'))
         project_group.add_argument('--storage-level',
                                    help='location of installation directory',
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>', default=arguments.SUPPRESS)
-
-        parser.merge(target_create_cmd.parser, group_title='target arguments')
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
                                   help="Name of the new target configuration",
                                   metavar='<name>',
                                   default=_default_target_name())
-
-        parser.merge(application_create_cmd.parser, group_title='application arguments')
-        default_application_name = os.path.basename(os.getcwd()) or 'default_application'
         application_group = parser.add_argument_group('application arguments')
         application_group.add_argument('--application-name',
                                        help="Name of the new application configuration",
                                        metavar='<name>',
-                                       default=default_application_name)
-
+                                       default=(os.path.basename(os.getcwd()) or 'default_application'))
+        return parser
+        
+    
+    def _construct_parser(self):
+        parser = self._construct_initalize_parser()
+        parser.merge(target_create_cmd.parser, group_title='target arguments')
+        parser.merge(application_create_cmd.parser, group_title='application arguments')
         parser.merge(measurement_create_cmd.parser, group_title='measurement arguments')
+        # Set defaults so that measurements are created unless explicitly disabled
+        measurement_group = parser.add_argument_group('measurement arguments')
+        measurement_group['--source-inst'].default = 'automatic'
+        measurement_group['--compiler-inst'].default = 'fallback'
+        measurement_group['--profile'].default = 'tau'
+        measurement_group['--trace'].default = 'otf2'
+        measurement_group['--sample'].default = True
         return parser
 
     def _split_args(self, cmd, argv):
@@ -144,21 +146,30 @@ class InitializeCommand(AbstractCommand):
         else:
             project_select_cmd.main([project_name])
             
-    def _populate_project(self, argv, args):
-        def _safe_execute(cmd, argv):
-            retval = cmd.main(argv)
-            if retval != EXIT_SUCCESS:
-                raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
+    def _create_measurement(self, name, argv, **kwargs):
+        argv = list(argv)
+        for key, val in kwargs.iteritems():
+            argv.append(Measurement.attributes[key]['argparse']['flags'][0])
+            argv.append(str(val))
+        self._safe_execute(measurement_create_cmd, [name] + argv)
+        return name
 
+    def _safe_execute(self, cmd, argv):
+        #print '%s %s' % (cmd, ' '.join(argv))
+        retval = cmd.main(argv)
+        if retval != EXIT_SUCCESS:
+            raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
+
+    def _populate_project(self, argv, args):
         # Parse and strip application arguments to avoid ambiguous arguments like '--mpi' in `measurement create`
         application_name = args.application_name
         application_argv, argv = self._split_args(application_create_cmd, [application_name] + argv)
-        _safe_execute(application_create_cmd, application_argv)
+        self._safe_execute(application_create_cmd, application_argv)
         
         # Parse and strip target arguments.
         target_name = args.target_name
         target_argv, argv = self._split_args(target_create_cmd, [target_name] + argv)
-        _safe_execute(target_create_cmd, target_argv)
+        self._safe_execute(target_create_cmd, target_argv)
 
         # Target was created so let's see if we can use binutils on this target.
         targ = Target.controller(PROJECT_STORAGE).one({'name': target_name})
@@ -166,66 +177,53 @@ class InitializeCommand(AbstractCommand):
             self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
             args.sample = False
             args.compiler_inst = 'never'
-        
-        # At this point, anything in argv is either an argument to `measurement create` or invalid.    
-        # Get application features so we can turn on measurements for those features.
+
+        # Add measurement flags to enable measurement of features active in the application, e.g. MPI. 
         app = Application.controller(PROJECT_STORAGE).one({'name': application_name})
-        measurement_args = argv + ['--%s=%s' % (attr, app.get(attr, False)) 
-                                   for attr in 'mpi', 'cuda', 'opencl', 'shmem']
+        for attr in 'mpi', 'cuda', 'opencl', 'shmem':
+            flag = Application.attributes[attr]['argparse']['flags'][0]
+            argv.extend([flag, str(app.get(attr, False))])
 
-        # Create measurements
-        measurement_names = []
-        _safe_execute(measurement_create_cmd, 
-                      ['baseline', 
-                       '--baseline=True',
-                       '--profile=tau',
-                       '--trace=none',
-                       '--sample=False',
-                       '--source-inst=never',
-                       '--compiler-inst=never'])
-        if args.sample:
-            trace = args.trace if args.profile == 'none' else 'none'
-            _safe_execute(measurement_create_cmd, 
-                          ['sample', 
-                           '--profile', args.profile, 
-                           '--trace', trace, 
-                           '--sample=True',
-                           '--source-inst=never', 
-                           '--compiler-inst=never'] 
-                          + measurement_args)
-            measurement_names.append('sample')
+        measurements = []
         if args.profile != 'none':
-            _safe_execute(measurement_create_cmd, 
-                          ['profile', 
-                           '--profile', args.profile, 
-                           '--trace=none', 
-                           '--sample=False',
-                           '--source-inst', args.source_inst, 
-                           '--compiler-inst', args.compiler_inst] 
-                          + measurement_args)
-            measurement_names.append('profile')
+            self._create_measurement(
+                'baseline', argv, baseline=True, profile='tau', trace='none', 
+                sample=False, source_inst='never', compiler_inst='never',
+                mpi=False, cuda=False, opencl=False, shmem=False)
+            if args.sample:
+                measurements.append(self._create_measurement(
+                    'sample', argv, profile=args.profile, trace='none',
+                    sample=True, source_inst='never', compiler_inst='never'))
+            if args.source_inst != 'never' or args.compiler_inst != 'never':
+                measurements.append(self._create_measurement(
+                    'profile', argv, profile=args.profile, trace='none',
+                    sample=False, source_inst=args.source_inst, compiler_inst=args.compiler_inst))
+            if args.source_inst != 'never':
+                measurements.append(self._create_measurement(
+                    'source-inst', argv, profile=args.profile, trace='none',
+                    sample=False, source_inst=args.source_inst, compiler_inst='never'))
+            if args.compiler_inst != 'never':
+                measurements.append(self._create_measurement(
+                    'compiler-inst', argv, profile=args.profile, trace='none',
+                    sample=False, source_inst='never', compiler_inst='always'))
         if args.trace != 'none':
-            _safe_execute(measurement_create_cmd, 
-                          ['trace', 
-                           '--profile=none', 
-                           '--trace', args.trace, 
-                           '--sample=False', 
-                           '--callpath=0', 
-                           '--source-inst', args.source_inst, 
-                           '--compiler-inst', args.compiler_inst] 
-                          + measurement_args)
-            measurement_names.append('trace')
-        # Baseline should be the default only if no other measurements exist
-        measurement_names.append('baseline')
-
+            if args.source_inst != 'never' or args.compiler_inst != 'never':
+                measurements.append(self._create_measurement(
+                    'trace', argv, profile='none', trace=args.trace, callpath=0,
+                    sample=False, source_inst=args.source_inst, compiler_inst=args.compiler_inst))
+        try:
+            measurement_name = measurements[0]
+        except IndexError:
+            measurement_name = 'baseline'
         select_cmd.main(['--target', target_name, 
                          '--application', application_name, 
-                         '--measurement', measurement_names[0]])
+                         '--measurement', measurement_name])
 
     def main(self, argv):
-        args, argv = self.parser.parse_known_args(argv)
+        args = self._parse_args(argv)
         if not (args.baseline or args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
+        _, argv = self._construct_initalize_parser().parse_known_args(argv)
 
         proj_ctrl = Project.controller()
         try:
