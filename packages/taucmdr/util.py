@@ -519,7 +519,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     return retval
 
 
-def get_command_output(cmd, cwd=None, env=None):
+def get_command_output(cmd):
     """Return the possibly cached output of a command.
     
     Just :any:`subprocess.check_output` with a cache.
@@ -527,8 +527,6 @@ def get_command_output(cmd, cwd=None, env=None):
     
     Args:
         cmd (list): Command and its command line arguments.
-        cwd (str): Change directory to `cwd` if given, otherwise use :any:`os.getcwd`.
-        env (dict): Environment variables to set before launching cmd.
 
     Raises:
         subprocess.CalledProcessError: return code was non-zero.
@@ -536,9 +534,8 @@ def get_command_output(cmd, cwd=None, env=None):
     Returns:
         str: Subprocess output.
     """
-    key = repr((cmd, cwd, env))
     try:
-        return get_command_output.cache[key]
+        return get_command_output.cache[cmd]
     except AttributeError:
         get_command_output.cache = {}
     except KeyError:
@@ -547,7 +544,7 @@ def get_command_output(cmd, cwd=None, env=None):
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
     stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    get_command_output.cache[key] = stdout
+    get_command_output.cache[cmd] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
