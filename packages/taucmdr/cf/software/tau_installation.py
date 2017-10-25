@@ -1141,8 +1141,8 @@ class TauInstallation(Installation):
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
-        LOGGER.info('\n'.join(tau_env_opts))
-        LOGGER.info(' '.join(cmd))
+        LOGGER.debug('\n'.join(tau_env_opts))
+        LOGGER.debug(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:
             raise ConfigurationError("TAU was unable to build the application.",
