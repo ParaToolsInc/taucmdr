@@ -34,6 +34,7 @@ from taucmdr import EXIT_SUCCESS, EXIT_WARNING
 from taucmdr.error import InternalError, ConfigurationError, ProjectSelectionError
 from taucmdr.model.project import Project
 from taucmdr.model.target import Target
+from taucmdr.model.application import Application
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.arguments import ParseBooleanAction
@@ -46,7 +47,6 @@ from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
-from taucmdr.cf.platforms import HOST_OS, DARWIN
 
 
 HELP_PAGE = """
@@ -123,14 +123,15 @@ class InitializeCommand(AbstractCommand):
                                        default=default_application_name)
 
         parser.merge(measurement_create_cmd.parser, group_title='measurement arguments')
-        measurement_group = parser.add_argument_group('measurement arguments')
-        # Override model defaults so measurements are created unless explicitly disabled
-        measurement_group['--source-inst'].default = 'automatic'
-        measurement_group['--profile'].default = 'tau'
-        measurement_group['--trace'].default = 'otf2'
-        measurement_group['--sample'].default = (HOST_OS != DARWIN)
         return parser
 
+    def _split_args(self, cmd, argv):
+        _, unparsed = cmd.parser.parse_known_args(argv)
+        known, unknown = [], []
+        for arg in argv:
+            (unknown if arg in unparsed else known).append(arg)
+        return known, unknown
+        
     def _create_project(self, args):
         project_name = args.project_name
         options = [project_name]
@@ -142,7 +143,7 @@ class InitializeCommand(AbstractCommand):
             raise
         else:
             project_select_cmd.main([project_name])
-        
+            
     def _populate_project(self, argv, args):
         def _safe_execute(cmd, argv):
             retval = cmd.main(argv)
@@ -151,32 +152,36 @@ class InitializeCommand(AbstractCommand):
 
         # Parse and strip application arguments to avoid ambiguous arguments like '--mpi' in `measurement create`
         application_name = args.application_name
-        application_args, unknown = application_create_cmd.parser.parse_known_args([application_name] + argv)
-        application_argv = [application_name] + [arg for arg in argv if arg not in unknown]
+        application_argv, argv = self._split_args(application_create_cmd, [application_name] + argv)
         _safe_execute(application_create_cmd, application_argv)
-        argv = [arg for arg in argv if arg in unknown]
         
+        # Parse and strip target arguments.
         target_name = args.target_name
-        _, unknown = target_create_cmd.parser.parse_known_args([target_name] + argv)
-        target_argv = [target_name] + [arg for arg in argv if arg not in unknown]
+        target_argv, argv = self._split_args(target_create_cmd, [target_name] + argv)
         _safe_execute(target_create_cmd, target_argv)
-        
+
+        # Target was created so let's see if we can use binutils on this target.
         targ = Target.controller(PROJECT_STORAGE).one({'name': target_name})
         if not targ['binutils_source']:
             self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
             args.sample = False
             args.compiler_inst = 'never'
+        
+        # At this point, anything in argv is either an argument to `measurement create` or invalid.    
+        # Get application features so we can turn on measurements for those features.
+        app = Application.controller(PROJECT_STORAGE).one({'name': application_name})
+        measurement_args = argv + ['--%s=%s' % (attr, app.get(attr, False)) 
+                                   for attr in 'mpi', 'cuda', 'opencl', 'shmem']
 
+        # Create measurements
         measurement_names = []
-        measurement_args = ['--%s=True' % attr for attr in 'cuda', 'mpi', 'opencl', 'shmem' 
-                            if getattr(application_args, attr, False)]
         _safe_execute(measurement_create_cmd, 
                       ['baseline', 
                        '--baseline=True',
-                       '--profile=tau', 
-                       '--trace=none', 
+                       '--profile=tau',
+                       '--trace=none',
                        '--sample=False',
-                       '--source-inst=never', 
+                       '--source-inst=never',
                        '--compiler-inst=never'])
         if args.sample:
             trace = args.trace if args.profile == 'none' else 'none'

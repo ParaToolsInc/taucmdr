@@ -25,9 +25,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Build TAU configurations to support experiments."""
+"""Build TAU configurations when TAU Commander is installed."""
 import os
 import sys
+import glob
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, '..', 'packages'))
@@ -42,12 +43,14 @@ from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cm
 from taucmdr.model.project import Project
 from taucmdr.cf.software.tau_installation import TauInstallation
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
+from taucmdr.cf.platforms import HOST_ARCH, DARWIN
 
 
 LOGGER = logger.get_logger(__name__)
 
 
 class ParseTauAction(arguments.Action):
+    # pylint: disable=too-few-public-methods
     def __call__(self, parser, namespace, value, unused_option_string=None):
         value_keywords = 'minimal', 'full'
         if value not in value_keywords:
@@ -69,18 +72,43 @@ def _translate_arg(flag, arg):
     return [flag, str(arg)]
 
 
+def _execute(cmd, argv):
+    LOGGER.info('%s %s', str(cmd), ' '.join(argv))
+    return cmd.main(argv)
+
+
 def _configure_project(args):
     PROJECT_STORAGE.destroy()
     argv = []
-    for key, val in sorted(vars(args).iteritems()):
-        for action in initialize_cmd.parser._actions:
+    for key, val in vars(args).iteritems():
+        for action in initialize_cmd.parser.actions:
             if key == action.dest:
                 argv.extend(_translate_arg(action.option_strings[0], val))
                 break
-    if initialize_cmd.main(argv) != EXIT_SUCCESS:
+
+    # Initialize all default measurements for this set of arguments
+    if _execute(initialize_cmd, argv) != EXIT_SUCCESS:
+        LOGGER.warning("An error occurred while creating a TAU project with options: %s.\n\n"
+                       "See '%s' for details.", argv, logger.LOG_FILE)
         return
     proj_ctrl = Project.controller()
     proj = proj_ctrl.selected().populate()
+   
+    # Add measurements requiring various features to create TAU configurations providing those features
+    # **Be sure to repopulate the project** after creating new measurements.
+    if getattr(args, 'papi', False):
+        for meas in proj['measurements']:
+            if meas['name'] != 'baseline':
+                _execute(measurement_copy_cmd, [meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
+    proj = proj_ctrl.selected().populate()
+    if getattr(args, 'openmp', False):
+        for meas in proj['measurements']:
+            if meas['name'] != 'baseline':
+                for pkg in 'ompt', 'opari':
+                    _execute(measurement_copy_cmd, [meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
+    proj = proj_ctrl.selected().populate()
+
+    # Select each measurement to trigger TAU reconfiguration. 
     for targ in proj['targets']:
         targ.acquire_sources()
         for app in proj['applications']:
@@ -89,12 +117,64 @@ def _configure_project(args):
                 app_name = app['name']
                 meas_name = meas['name']
                 try:
-                    select_cmd.main(['--target', targ_name, '--application', app_name, '--measurement', meas_name])
+                    _execute(select_cmd, ['--target', targ_name, 
+                                          '--application', app_name, 
+                                          '--measurement', meas_name])
                 except Error as err:
                     LOGGER.warning("An error occurred configuring TAU for experiment %s-%s-%s: %s.\n\n"
                                    "See '%s' for details.",
                                    targ_name, app_name, meas_name, err, logger.LOG_FILE)
     return proj
+
+
+def _configure_full(args):
+    """Proceedureally generated TAU configurations.
+    
+    Iterate over as many valid TAU projects as possible for the provided command line arguments.
+    For each project, iterate over possible experiments and select them to trigger TAU rebuild.
+    """    
+    # If ``features[key]==False`` then only projects without feature `key` will be generated.
+    # If True then projects both with and without the feature will be generated.
+    # There is a maximum of 2^len(features) possible TAU project configurations.
+    features = {'papi': HOST_ARCH is not DARWIN,
+                'openmp': HOST_ARCH is not DARWIN,
+                'mpi': (getattr(args, 'MPI_CC', False) and 
+                        getattr(args, 'MPI_CXX', False) and 
+                        getattr(args, 'MPI_FC', False)),
+                'shmem': (getattr(args, 'SHMEM_CC', False) and 
+                          getattr(args, 'SHMEM_CXX', False) and 
+                          getattr(args, 'SHMEM_FC', False)),
+                'cuda': (getattr(args, 'CUDA_CXX', False) and
+                         getattr(args, 'cuda_toolkit', False))}
+
+    # Build a bitmask to filter out TAU project configurations where ``features[key] == False``.
+    # From Python documentation: https://docs.python.org/2/library/stdtypes.html#dict.items
+    #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with 
+    #    no intervening modifications to the dictionary, the lists will directly correspond."
+    mask = 0
+    for i, val in enumerate(features.itervalues()):
+        mask |= (not val) << i
+    for j in xrange(1 << len(features)):
+        if not j & mask:
+            for i, key in enumerate(features.iterkeys()):
+                setattr(args, key, bool(j & (1 << i)))
+            _configure_project(args)
+    return _configure_minimal(args)
+
+
+def _configure_minimal(args):
+    tau = TauInstallation.minimal()
+    tau.install()
+    _configure_project(args)
+    return tau.install_prefix 
+
+
+def _configure_override_tau_source(args):
+    """Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation."""
+    with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source'), 'w') as fout:
+        fout.write(args.tau_config)
+    LOGGER.info("By default, targets will use '%s' as the TAU installation.", args.tau_config)
+    return args.tau_config
 
 
 def main(argv):
@@ -105,50 +185,24 @@ def main(argv):
     parser = arguments.get_parser(prog=prog, usage='%s [arguments]' % prog, 
                                   description="Pre-build TAU configurations.")
     parser.add_argument('--tau-config', help="Specify TAU configuration level.",
-                        default='minimal', action=ParseTauAction)
+                        default='full', action=ParseTauAction)
     parser.merge(initialize_cmd.parser, include_positional=False,
                  exclude_groups=['project arguments'],
                  exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name', 
                                     'tau-options', 'from-tau-makefile', 'bare'])
     args = parser.parse_args(argv)
     
-    if args.tau_config not in ('minimal', 'full'):
-        # Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation
-        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source'), 'w') as fout:
-            fout.write(args.tau_config)
-        LOGGER.info("By default, targets will use '%s' as the TAU installation.", args.tau_config)
-        return EXIT_SUCCESS
-    
-    os.chdir(util.mkdtemp())
-    TauInstallation.minimal().install()
-    proj = _configure_project(args)
-    if args.tau_config == 'full':
-        # Add papi configurations
-        for meas in proj['measurements']:
-            measurement_copy_cmd.main([meas['name'], meas['name']+'-papi', '--metrics=TIME,PAPI_TOT_CYC'])
-        # Add OpenMP measurement methods
-        if getattr(args, 'openmp', False):
-            for meas in proj['measurements']:
-                for pkg in 'ompt', 'opari':
-                    measurement_copy_cmd.main([meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
-        # Configure TAU for all combinations
-        have_openmp = True # Update as needed in future
-        have_mpi = bool(getattr(args, 'MPI_CC', False) and 
-                        getattr(args, 'MPI_CXX', False) and 
-                        getattr(args, 'MPI_FC', False))
-        have_shmem = bool(getattr(args, 'SHMEM_CC', False) and 
-                          getattr(args, 'SHMEM_CXX', False) and 
-                          getattr(args, 'SHMEM_FC', False))
-        have_cuda = bool(getattr(args, 'CUDA_CXX', False))    
-        for openmp in set([False, have_openmp]):
-            for mpi in set([False, have_mpi]):
-                for shmem in set([False, have_shmem]):
-                    for cuda in set([False, have_cuda]):
-                        args.openmp = openmp
-                        args.mpi = mpi
-                        args.shmem = shmem
-                        args.cuda = cuda
-                        _configure_project(args)
+    os.chdir(util.mkdtemp())   
+    if args.tau_config == 'minimal':
+        tau_prefix = _configure_minimal(args)
+    elif args.tau_config == 'full':
+        tau_prefix = _configure_full(args)
+    else:
+        tau_prefix = _configure_override_tau_source(args)
+
+    tau_makefiles = glob.glob('%s/*/lib/Makefile.tau*' % tau_prefix)
+    LOGGER.info('\n'.join(tau_makefiles))
+    LOGGER.info("%s TAU makefiles are available at %s", len(tau_makefiles), tau_prefix)
     return EXIT_SUCCESS
 
 
