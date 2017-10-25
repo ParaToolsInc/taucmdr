@@ -81,6 +81,10 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
     """
     # We're changing the behavior of the superclass so we need to access protected members
     # pylint: disable=protected-access
+    
+    def __init__(self, *args, **kwargs):
+        super(MutableArgumentGroupParser, self).__init__(*args, **kwargs)
+        self.actions = self._actions
 
     def __getitem__(self, option_string):
         return self._option_string_actions[option_string]
