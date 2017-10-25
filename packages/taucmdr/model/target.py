@@ -121,12 +121,16 @@ def papi_source_default():
 
 
 def cuda_toolkit_default():
-    default_path = '/usr/local/cuda'
+    for path in sorted(glob.glob('/usr/local/cuda*')):
+        if os.path.exists(os.path.join(path, 'bin', 'nvcc')):
+            return path
     nvcc = util.which('nvcc')
-    if not nvcc or os.path.dirname(nvcc) in ('/usr/bin', '/usr/local/bin'):
-        return default_path if os.path.exists(default_path) else None
-    else:
-        return os.path.dirname(os.path.dirname(nvcc))
+    if nvcc:
+        cuda_dir = os.path.dirname(os.path.dirname(nvcc))
+        if os.path.exists(os.path.join(cuda_dir, 'include', 'cuda.h')):
+            return cuda_dir
+    return None
+
 
 def tau_source_default():
     """"Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation.
