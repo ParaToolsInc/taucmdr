@@ -28,14 +28,10 @@
 """``trial create`` subcommand."""
 
 from taucmdr import util
-from taucmdr.error import ConfigurationError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
-
-
-_LAUNCHERS = 'mpirun', 'mpiexec', 'ibrun', 'aprun', 'qsub', 'srun', 'oshrun'
 
 
 class TrialCreateCommand(CreateCommand):
@@ -64,50 +60,16 @@ class TrialCreateCommand(CreateCommand):
                             help="Executable command arguments",
                             metavar='[command_arguments]',
                             nargs=arguments.REMAINDER)
-        parser.add_argument('--launcher',
-                            help="Launcher command with arguments, e.g. 'mpirun -np 4'",
-                            metavar='<command>',
-                            nargs=arguments.REMAINDER,
-                            default=arguments.SUPPRESS)
         return parser
     
-    def _detect_launcher(self, application_cmd):
-        cmd = application_cmd[0]
-        launcher_cmd = []
-        for launcher in _LAUNCHERS: 
-            if cmd.startswith(launcher):
-                try:
-                    idx = application_cmd.index('--')
-                except ValueError:
-                    exes = [item for item in enumerate(application_cmd[1:], 1) if util.which(item[1])]
-                    self.logger.debug("Executables on command line: %s", exes)
-                    if len(exes) == 1:
-                        idx = exes[0][0]
-                        launcher_cmd = application_cmd[:idx]
-                        application_cmd = application_cmd[idx:]
-                    else:
-                        raise ConfigurationError("TAU is having trouble parsing the command line arguments",
-                                                 "Check that the command is correct. Does it work without TAU?",
-                                                 ("Use '--' to seperate %s and its arguments from the application"
-                                                  " command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd))
-                else:
-                    launcher_cmd = application_cmd[:idx]
-                    application_cmd = application_cmd[idx+1:]
-                break
-        self.logger.debug('Launcher: %s', launcher_cmd)
-        self.logger.debug('Application: %s', application_cmd)
-        return launcher_cmd, application_cmd
-
     def main(self, argv):
         args = self._parse_args(argv)
         description = getattr(args, 'description', None)
-        application_cmd = [args.cmd] + args.cmd_args
-        try:
-            launcher_cmd = args.launcher
-        except AttributeError:
-            launcher_cmd, application_cmd = self._detect_launcher(application_cmd)
-        expr = Project.selected().experiment()
-        return expr.managed_run(launcher_cmd, application_cmd, description)
+        cmd = [args.cmd] + args.cmd_args
+        launcher_cmd, application_cmds = Trial.parse_launcher_cmd(cmd)
+        self.logger.debug("Launcher command: %s", launcher_cmd)
+        self.logger.debug("Application commands: %s", application_cmds)
+        return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Create new trial of the selected experiment.")

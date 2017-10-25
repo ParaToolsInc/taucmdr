@@ -37,6 +37,8 @@ import os
 import tarfile
 import glob
 import errno
+import base64
+import time
 from datetime import datetime
 
 import six
@@ -46,7 +48,7 @@ from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
-from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.cf.software.tau_installation import TauInstallation, PROGRAM_LAUNCHERS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 
@@ -84,8 +86,7 @@ def attributes():
         },
         'environment': {
             'type': 'string',
-            'required': True,
-            'description': "shell environment the trial was performed in",
+            'description': "shell environment in which the trial was performed, encoded as a base64 string",
             'hashed': True
         },
         'begin_time': {
@@ -117,12 +118,12 @@ def attributes():
         },
         'phase': {
             'type': 'string',
-            'description': "phase of trial",
+            'description': "phase of trial: initializing, executing, complete, or failed",
             'hashed': True
         },
-        'phase': {
-            'type': 'string',
-            'description': "phase of trial"
+        'elapsed': {
+            'type': 'float',
+            'description': "seconds spent executing the application command only (excludes all other operations)"
         },
     }
 
@@ -140,6 +141,13 @@ class TrialError(ConfigurationError):
 class TrialController(Controller):
     """Trial data controller."""
 
+    @staticmethod
+    def _mark_time(mark, expr):
+        timestamp = str(datetime.utcnow())
+        headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, expr['name'], timestamp), logger.LINE_WIDTH)
+        LOGGER.info(headline)
+        return timestamp
+
     def _perform_bluegene(self, expr, trial, cmd, cwd, env):
         if os.path.basename(cmd[0]) != 'qsub':
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
@@ -153,7 +161,7 @@ class TrialController(Controller):
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
         try:
-            self.update({'phase': 'running'}, trial.eid)
+            self.update({'phase': 'executing'}, trial.eid)
             retval = trial.queue_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
@@ -170,30 +178,24 @@ class TrialController(Controller):
         return retval
 
     def _perform_interactive(self, expr, trial, cmd, cwd, env):
-        def banner(mark, name, time):
-            headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, name, time), logger.LINE_WIDTH)
-            LOGGER.info(headline)
-
-        banner('BEGIN', expr.name, trial['begin_time'])
+        begin_time = self._mark_time('BEGIN', expr)
+        retval = None
         try:
-            self.update({'phase': 'running'}, trial.eid)
-            retval = trial.execute_command(expr, cmd, cwd, env)
+            self.update({'phase': 'executing', 'begin_time': begin_time}, trial.eid)
+            retval, elapsed = trial.execute_command(expr, cmd, cwd, env)
         except:
             self.delete(trial.eid)
             raise
-        else:
-            end_time = str(datetime.utcnow())
-            self.update({'end_time': end_time, 'return_code': retval}, trial.eid)
         finally:
-            end_time = str(datetime.utcnow())
-            banner('END', expr.name, end_time)
+            end_time = self._mark_time('END', expr)
 
-        self.update({'phase': 'post-processing'}, trial.eid)
+        fields = {'end_time': end_time, 'return_code': retval, 'elapsed': elapsed}
         data_size = 0
         for dir_path, _, file_names in os.walk(trial.prefix):
             for name in file_names:
                 data_size += os.path.getsize(os.path.join(dir_path, name))
-        self.update({'data_size': data_size}, trial.eid)
+        fields['data_size'] = data_size
+        self.update(fields, trial.eid)
         if retval != 0:
             if data_size != 0:
                 LOGGER.warning("Program exited with nonzero status code: %s", retval)
@@ -208,7 +210,7 @@ class TrialController(Controller):
         LOGGER.info('Command: %s', ' '.join(cmd))
         LOGGER.info('Current working directory: %s', cwd)
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
-        self.update({'phase': 'completed'}, trial.eid)
+        LOGGER.info('Elapsed seconds: %s', elapsed)
         return retval
 
     def perform(self, proj, cmd, cwd, env, description):
@@ -230,9 +232,7 @@ class TrialController(Controller):
                     'experiment': expr.eid,
                     'command': ' '.join(cmd),
                     'cwd': cwd,
-                    'environment': 'FIXME',
-                    'phase': 'initializing',
-                    'begin_time': str(datetime.utcnow())}
+                    'phase': 'initializing'}
             if description is not None:
                 data['description'] = str(description)
             trial = self.create(data)
@@ -242,11 +242,23 @@ class TrialController(Controller):
         measurement = expr.populate('measurement')
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
-        targ = expr.populate('target')
-        if targ.architecture().is_bluegene():
-            return self._perform_bluegene(expr, trial, cmd, cwd, env)
+        b64env = base64.b64encode(repr(env))
+        is_bluegene = expr.populate('target').architecture().is_bluegene()
+        try:
+            if is_bluegene:
+                retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
+            else:
+                retval = self._perform_interactive(expr, trial, cmd, cwd, env)
+        except Exception as err:
+            try:
+                self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
+            except KeyError:
+                # Trial record was deleted
+                pass
+            raise err
         else:
-            return self._perform_interactive(expr, trial, cmd, cwd, env)
+            self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
+            return retval
 
     def transport_record(self, src_record, destination, eid_map, mode, proj=None):
         remote_eid, already_present = super(TrialController, self).transport_record(src_record, destination,
@@ -301,7 +313,100 @@ class Trial(Model):
     __attributes__ = attributes
 
     __controller__ = TrialController
+
+    @classmethod
+    def _separate_launcher_cmd(cls, cmd):
+        """Separate the launcher command and it's arguments from the application command(s) and arguments.
         
+        Args:
+            cmd (list): Command line.
+        
+        Returns:
+            tuple: (Launcher command, Remainder of command line)
+            
+        Raises:
+            ConfigurationError: No application config files or executables found after a recognized launcher command.
+        """
+        cmd0 = cmd[0]
+        for launcher, appfile_flags in PROGRAM_LAUNCHERS.iteritems():
+            if launcher not in cmd0:
+                continue
+            try:
+                idx = cmd.index('--')
+                return cmd[:idx], cmd[idx+1:] 
+            except ValueError:
+                # No '--' to indicate start of application, so look for first executable
+                for idx, exe in enumerate(cmd[1:], 1):
+                    if util.which(exe):
+                        return cmd[:idx], cmd[idx:]
+                # No exectuables, so look for application config file
+                if appfile_flags:
+                    for i, arg in enumerate(cmd[1:], 1):
+                        try:
+                            arg, appfile = arg.split('=')
+                        except ValueError:
+                            try:
+                                appfile = cmd[i+1]
+                            except IndexError:
+                                # Reached the end of the command line without finding an application config file
+                                break
+                        if arg in appfile_flags and util.path_accessible(appfile):
+                            return cmd, []
+                raise ConfigurationError(("TAU is having trouble parsing the command line: no executable "
+                                          "commands or %s application files were found after "
+                                          "the launcher command '%s'") % (cmd0, cmd0),
+                                         "Check that the command is correct. Does it work without TAU?",
+                                         ("Use '--' to seperate '%s' and its arguments from the application "
+                                          "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
+        # No launcher command, just an application command
+        return [], cmd
+    
+    @classmethod
+    def parse_launcher_cmd(cls, cmd):
+        """Parses a command line to split the launcher command and application commands.
+        
+        Args:
+            cmd (list): Command line.
+            
+        Returns:
+            tuple: (Launcher command, possibly empty list of application commands).
+        """ 
+        cmd0 = cmd[0]
+        launcher_cmd, cmd = cls._separate_launcher_cmd(cmd)
+        num_exes = len([x for x in cmd if util.which(x)])
+        assert launcher_cmd or cmd
+        LOGGER.debug('Launcher: %s', launcher_cmd)
+        LOGGER.debug('Remainder: %s', cmd)
+        if not launcher_cmd:
+            if num_exes > 1:
+                LOGGER.warning("Multiple executables were found on the command line but none of them "
+                               "were recognized application launchers.  TAU will assume that the application "
+                               "executable is '%s' and subsequent executables are arguments to that command. "
+                               "If this is incorrect, use '--' to separate '%s' and its arguments from the "
+                               "application command, e.g. `mpirun -np 4 -- ./a.out -l hello`", cmd0, cmd0)
+            return [], [cmd]
+        if not cmd:
+            return launcher_cmd, []
+        if num_exes == 0:
+            raise InternalError("No launcher commands or application executables.")
+        elif num_exes == 1:
+            return launcher_cmd, [cmd]
+        elif num_exes > 1:
+            colons = [i for i, x in enumerate(cmd) if x == ':']
+            if not colons:
+                # Recognized launcher with multiple executables but not using ':' syntax.
+                LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
+                               "the application executable is '%s' and subsequent executables are arguments "
+                               "to that command. If this is incorrect, use ':' to separate each application "
+                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`", cmd0)
+                return launcher_cmd, [cmd]
+            # Split MPMD command on ':'.  Retain ':' as first element of each application command
+            colons.append(len(cmd))
+            application_cmds = [cmd[:colons[0]]]
+            for i, idx in enumerate(colons[:-1]):
+                application_cmds.append(cmd[idx:colons[i+1]])
+            return launcher_cmd, application_cmds
+
     @property
     def prefix(self):
         experiment = self.populate('experiment')
@@ -325,7 +430,7 @@ class Trial(Model):
         slog2 = os.path.join(self.prefix, 'tau.slog2')
         if os.path.exists(slog2):
             return
-        tau = TauInstallation.minimal()
+        tau = TauInstallation.get_minimal()
         merged_trc = os.path.join(self.prefix, 'tau.trc')
         merged_edf = os.path.join(self.prefix, 'tau.edf')
         if not os.path.exists(merged_trc) or not os.path.exists(merged_edf):
@@ -456,19 +561,21 @@ class Trial(Model):
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
         try:
+            begin_time = time.time()
             retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
+            elapsed = time.time() - begin_time
         except OSError as err:
             target = expr.populate('target')
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
-
+        
         measurement = expr.populate('measurement')
+
         profiles = []
         for pat in 'profile.*.*.*', 'MULTI__*/profile.*.*.*', 'tauprofile.xml', '*.cubex':
             profiles.extend(glob.glob(os.path.join(self.prefix, pat)))
-        
         if profiles:
             LOGGER.info("Trial %s produced %s profile files.", self['number'], len(profiles))
             negative_profiles = [prof for prof in profiles if 'profile.-1' in prof]
@@ -494,15 +601,14 @@ class Trial(Model):
         traces = []
         for pat in '*.slog2', '*.trc', '*.edf', 'traces/*.def', 'traces/*.evt', 'traces.otf2':
             traces.extend(glob.glob(os.path.join(self.prefix, pat)))
-        
         if traces:
             LOGGER.info("Trial %s produced %s trace files.", self['number'], len(traces))
         elif measurement['trace'] != 'none':
-            raise TrialError("Application completed successfuly but did not produce any traces.")            
+            raise TrialError("Application completed successfuly but did not produce any traces.")
 
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        return retval
+        return retval, elapsed
     
     def export(self, dest):
         """Export experiment trial data.
@@ -521,7 +627,7 @@ class Trial(Model):
         for fmt, path in six.iteritems(data):
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
-                tau = TauInstallation.minimal()
+                tau = TauInstallation.get_minimal()
                 tau.create_ppk_file(export_file, path)
             elif fmt == 'merged':
                 export_file = os.path.join(dest, stem+'.xml.gz')
@@ -541,4 +647,3 @@ class Trial(Model):
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)
-

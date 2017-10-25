@@ -81,7 +81,7 @@ class MainCommand(AbstractCommand):
                         _green("  %(command)s show") + "Show data from the most recent trial",
                         "                  - Alias for '%(command)s trial show'",
                         "",
-                        "See '%(command)s help <subcommand>' for more information on <subcommand>."]
+                        "See `%(command)s help <subcommand>` for more information on a subcommand."]
         epilog = '\n'.join(epilog_parts) % {'color_command': util.color_text(self.command, 'cyan'), 
                                             'command': self.command}
         parser = arguments.get_parser(prog=self.command,

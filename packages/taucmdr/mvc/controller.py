@@ -33,6 +33,14 @@ from taucmdr.error import InternalError, UniqueAttributeError, ModelError
 
 LOGGER = logger.get_logger(__name__)
 
+# Suppress debugging messages in optimized code
+if __debug__:
+    _heavy_debug = LOGGER.debug   # pylint: disable=invalid-name
+else:
+    def _heavy_debug(*args, **kwargs):
+        # pylint: disable=unused-argument
+        pass
+
 
 class Controller(object):
     """The "C" in `MVC`_.
@@ -173,10 +181,10 @@ class Controller(object):
             KeyError: `attribute` is undefined in the record. 
         """
         if attribute:
-            LOGGER.debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
+            _heavy_debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
             return self._populate_attribute(model, attribute, defaults)
         else:
-            LOGGER.debug("Populating %s(%s)", model.name, model.eid)
+            _heavy_debug("Populating %s(%s)", model.name, model.eid)
             if self.storage.is_remote():
                 return self._populate_remote(model, defaults=defaults)
             return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
@@ -229,6 +237,11 @@ class Controller(object):
         else:
             return foreign.controller(self.storage).one(value)
 
+    def _check_unique(self, data, match_any=True):
+        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
+        if unique and self.storage.contains(unique, match_any=match_any, table_name=self.model.name):
+            raise UniqueAttributeError(self.model, unique)
+    
     def create(self, data):
         """Atomically store a new record and update associations.
         
@@ -242,9 +255,7 @@ class Controller(object):
             Model: The newly created data. 
         """
         data = self.model.validate(data)
-        unique = {attr: data[attr] for attr, props in six.iteritems(self.model.attributes) if 'unique' in props}
-        if unique and self.storage.contains(unique, match_any=True, table_name=self.model.name):
-            raise UniqueAttributeError(self.model, unique)
+        self._check_unique(data)
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
             for attr, foreign in six.iteritems(self.model.associations):
@@ -375,14 +386,14 @@ class Controller(object):
                     foreign_model, via = foreign
                     affected_keys = model.get(attr, None)
                     if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)", 
+                        _heavy_debug("Deleting %s(%s) affects '%s' in %s(%s)", 
                                      self.model.name, model.eid, via, foreign_model.name, affected_keys)
                         self._disassociate(model, foreign_model, affected_keys, via)
                 for foreign_model, via in model.references:
                     affected = database.search_inside(via, model.eid, table_name=foreign_model.name)
                     affected_keys = [record.eid for record in affected]
                     if affected_keys:
-                        LOGGER.debug("Deleting %s(%s) affects '%s' in %s(%s)",
+                        _heavy_debug("Deleting %s(%s) affects '%s' in %s(%s)",
                                      self.model.name, model.eid, via, foreign_model.name, affected_keys)
                         self._disassociate(model, foreign_model, affected_keys, via)
                 removed_data.append(dict(model))
@@ -556,7 +567,7 @@ class Controller(object):
             affected (list): Identifiers for the records that will be updated to associate with `record`.
             via (str): The name of the associated foreign attribute.
         """ 
-        LOGGER.debug("Adding %s to '%s' in %s(eids=%s)", record.eid, via, foreign_model.name, affected)
+        _heavy_debug("Adding %s to '%s' in %s(eids=%s)", record.eid, via, foreign_model.name, affected)
         if not isinstance(affected, list):
             affected = [affected]
         with self.storage as database:
@@ -581,13 +592,13 @@ class Controller(object):
             affected (list): Identifiers for the records that will be updated to disassociate from `record`.
             via (str): The name of the associated foreign attribute.
         """ 
-        LOGGER.debug("Removing %s from '%s' in %s(eids=%s)", record.eid, via, foreign_model.name, affected)
+        _heavy_debug("Removing %s from '%s' in %s(eids=%s)", record.eid, via, foreign_model.name, affected)
         if not isinstance(affected, list):
             affected = [affected]
         foreign_props = foreign_model.attributes[via]
         if 'model' in foreign_props:
             if 'required' in foreign_props:
-                LOGGER.debug("Empty required attr '%s': deleting %s(keys=%s)", via, foreign_model.name, affected)
+                _heavy_debug("Empty required attr '%s': deleting %s(keys=%s)", via, foreign_model.name, affected)
                 foreign_model.controller(self.storage).delete(affected)
             else:
                 with self.storage as database:
@@ -598,7 +609,7 @@ class Controller(object):
                     foreign_record = database.get(key, table_name=foreign_model.name)
                     updated = list(set(foreign_record[via]) - set([record.eid]))
                     if 'required' in foreign_props and len(updated) == 0:
-                        LOGGER.debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
+                        _heavy_debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
                         foreign_model.controller(database).delete(key)
                     else:
                         database.update({via: updated}, key, table_name=foreign_model.name)

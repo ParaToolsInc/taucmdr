@@ -27,6 +27,12 @@
 #
 ###############################################################################
 
+# TAU configuration level:
+#   minimal: Install just enough to support the default project (`tau initialize` without any args).
+#   full   : Install as many TAU configurations as possible for the current environment.
+#   <path> : Use the TAU installation provided at <path>.
+TAU ?= minimal
+
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
@@ -35,6 +41,7 @@ VERBOSE = true
 RM = rm -f
 MV = mv -f
 MKDIR = mkdir -p
+CP = cp -fr
 
 VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
 
@@ -49,8 +56,6 @@ endif
 ifeq ($(INSTALLDIR),)
   INSTALLDIR=$(HOME)/taucmdr-$(VERSION)
 endif
-
-TAU = $(INSTALLDIR)/bin/tau
 
 # Get target OS and architecture
 ifeq ($(HOST_OS),)
@@ -74,11 +79,11 @@ endif
 # Usage: $(call download,source,dest)
 WGET = $(shell which wget)
 ifneq ($(WGET),)
-  download = $(WGET) $(WGET_FLAGS) -O "$(2)" "$(1)"
+  download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
   CURL = $(shell which curl)
   ifneq ($(CURL),)
-    download = $(CURL) $(CURL_FLAGS) -L "$(1)" > "$(2)"
+    download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
   else
     $(warning Either curl or wget must be in PATH to download packages)
   endif
@@ -119,8 +124,11 @@ ANACONDA_URL = $(ANACONDA_REPO)/$(ANACONDA_PKG)
 ANACONDA_SRC = packages/$(ANACONDA_PKG)
 ANACONDA_DEST = $(INSTALLDIR)/anaconda-$(ANACONDA_VERSION)
 ANACONDA_PYTHON = $(ANACONDA_DEST)/bin/python
+JUPYTERLAB_BUILD = $(BUILDDIR)/jupyterlab
 CONDA = $(ANACONDA_DEST)/bin/conda
 PIP = $(ANACONDA_DEST)/bin/pip
+JUPYTER = $(ANACONDA_DEST)/bin/jupyter
+NPM = $(ANACONDA_DEST)/bin/npm
 
 ifeq ($(USE_ANACONDA),true)
   PYTHON_EXE = $(ANACONDA_PYTHON)
@@ -137,7 +145,7 @@ else
 endif
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
-.PHONY: help build install clean python_check python_download
+.PHONY: help build install clean python_check python_download jupyterlab-install jupyterlab-extensions-install
 
 .DEFAULT: help
 
@@ -145,7 +153,7 @@ help:
 	@echo "-------------------------------------------------------------------------------"
 	@echo "TAU Commander installation"
 	@echo
-	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)]"
+	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)] [TAU=(minimal|full|<path>)]"
 	@echo "-------------------------------------------------------------------------------"
 
 build: python_check
@@ -154,7 +162,7 @@ build: python_check
 
 install: build
 	$(ECHO)$(PYTHON) setup.py install --prefix $(INSTALLDIR)
-	$(ECHO)$(INSTALLDIR)/system/configure --minimal
+	$(ECHO)$(INSTALLDIR)/system/configure --tau-config=$(TAU)
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
@@ -181,7 +189,7 @@ install: build
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
-python_check: $(PYTHON_EXE) jupyterlab-install
+python_check: $(PYTHON_EXE) jupyterlab-install jupyterlab-extensions-install
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
 
 python_download: $(CONDA_SRC)
@@ -196,12 +204,25 @@ $(ANACONDA_SRC):
 	$(ECHO)$(MKDIR) $(BUILDDIR)
 	$(call download,$(ANACONDA_URL),$(ANACONDA_SRC))
 
+$(JUPYTERLAB_BUILD):
+	$(ECHO)$(MKDIR) $(JUPYTERLAB_BUILD)
+	$(ECHO)$(CP) jupyterlab $(dir $(JUPYTERLAB_BUILD))
+
 jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f jupyterlab | grep jupyterlab | grep -q 0\.27\.0 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
 	$(ECHO)$(CONDA) list -f bokeh | grep bokeh | grep -q 0\.12\.9 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge bokeh
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
+	$(ECHO)$(CONDA) list -f cairo | grep -q cairo 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
+	$(ECHO)$(CONDA) list -f jpeg | grep -q jpeg 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jpeg
 	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
 
+jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab-manager || $(ECHO)$(JUPYTER) labextension install @jupyter-widgets/jupyterlab-manager@0.27.0 
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)cd $(JUPYTERLAB_BUILD)/jupyterlab_bokeh && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build . )
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) lab build
 
 clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION

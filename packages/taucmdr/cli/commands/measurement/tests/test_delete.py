@@ -33,6 +33,7 @@ Functions used for unit tests of delete.py.
 
 from taucmdr import tests
 from taucmdr.cli.commands.measurement import delete, create
+from taucmdr.cli.commands import select
 
 class DeleteTest(tests.TestCase):
     """Tests for :any:`measurement.delete`."""
@@ -51,3 +52,17 @@ class DeleteTest(tests.TestCase):
         self.assertIn('measurement delete <measurement_name> [arguments]', stderr)
         self.assertIn('measurement delete: error: No project-level measurement with name', stderr)
 
+    def test_issue187(self):
+        """https://github.com/ParaToolsInc/taucmdr/issues/187"""
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND, 
+                                                       ['profile2', '--profile', 'tau', '--trace', 'none',
+                                                        '--source-inst', 'automatic', '--sample', 'false'])
+        self.assertIn("Added measurement 'profile2' to project configuration", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, select.COMMAND, ['profile2'])
+        self.assertIn("Created a new experiment 'targ1-app1-profile2'", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, ['profile2'])
+        self.assertIn("Deleted measurement 'profile2'", stdout)
+        self.assertFalse(stderr)

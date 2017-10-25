@@ -31,6 +31,8 @@ Extensions to :any:`argparse` to support the TAU Commander command line interfac
 """
 
 import os
+import sys
+import re
 import argparse
 import textwrap
 from operator import attrgetter
@@ -38,9 +40,15 @@ from operator import attrgetter
 import six
 from taucmdr import logger, util
 from taucmdr.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS, ENTERPRISE_STORAGE, PROJECT_STORAGE
+from taucmdr.cli import USAGE_FORMAT
+from taucmdr.error import InternalError
+
 
 Action = argparse.Action
 """Action base class."""
+
+ArgumentError = argparse.ArgumentError
+"""Argument error exception base class."""
 
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
@@ -74,6 +82,10 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
     """
     # We're changing the behavior of the superclass so we need to access protected members
     # pylint: disable=protected-access
+    
+    def __init__(self, *args, **kwargs):
+        super(MutableArgumentGroupParser, self).__init__(*args, **kwargs)
+        self.actions = self._actions
 
     def __getitem__(self, option_string):
         return self._option_string_actions[option_string]
@@ -98,20 +110,39 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         self._action_groups.append(group)
         return group
     
-    def format_help(self):
+    def _format_help_markdown(self):
+        """Format command line help string."""
+        formatter = self._get_formatter()
+        formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
+        for action_group in self._sorted_groups():
+            title = ' '.join(x[0].upper() + x[1:] for x in action_group.title.split())
+            formatter.start_section(title)
+            formatter.add_arguments(sorted(action_group._group_actions, key=attrgetter('option_strings')))
+            formatter.end_section()
+        formatter.add_text(self.epilog)
+        return formatter.format_help()
+    
+    def _format_help_console(self):
         """Format command line help string."""
         formatter = self._get_formatter()
         formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
         formatter.add_text(self.description)
         for action_group in self._sorted_groups():
             title = ' '.join(x[0].upper() + x[1:] for x in action_group.title.split())
-            formatter.start_section(util.color_text(title, attrs=['bold']))
+            formatter.start_section(title)
             formatter.add_text(action_group.description)
             formatter.add_arguments(sorted(action_group._group_actions, key=attrgetter('option_strings')))
             formatter.end_section()
         formatter.add_text(self.epilog)
         return formatter.format_help()
-
+    
+    def format_help(self):
+        try:
+            func = getattr(self, '_format_help_'+USAGE_FORMAT.lower())
+        except AttributeError:
+            raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT)
+        return func()
+    
     def _sorted_groups(self):
         """Iterate over action groups."""
         positional_title = 'positional arguments'
@@ -165,7 +196,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
                 pass
 
 
-class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
+class HelpFormatter(argparse.RawDescriptionHelpFormatter):
     """Custom help string formatter for argument parser.
     
     Provide proper help message alignment, line width, and formatting.
@@ -178,21 +209,10 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
         max_help_position (int): Column on which to begin subsequent lines of wrapped help strings.
         width (int): Maximum help message length before wrapping.
     """
-
+    
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
-        super(ArgparseHelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
+        super(HelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
         
-    def add_argument(self, action):
-        if action.help is not SUPPRESS:
-            get_invocation = self._format_action_invocation
-            invocations = [get_invocation(action)]
-            for subaction in self._iter_indented_subactions(action):
-                invocations.append(get_invocation(subaction))
-            invocation_length = max([len(util.uncolor_text(s)) for s in invocations])
-            action_length = invocation_length + self._current_indent
-            self._action_max_length = max(self._action_max_length, action_length)
-            self._add_item(self._format_action, [action])
-            
     def _split_lines(self, text, width):
         parts = []
         for line in text.splitlines():
@@ -217,95 +237,209 @@ class ArgparseHelpFormatter(argparse.RawDescriptionHelpFormatter):
                     helpstr += '\n%s' % indent + '- default: %s' % default_str
         return helpstr
     
-
+    def _format_positional(self, argstr):
+        return argstr
+    
+    def _format_optional(self, argstr):
+        return argstr
+    
+    def _format_requred_arg(self, argstr):
+        return argstr
+    
+    def _format_optional_arg(self, argstr):
+        return argstr
+    
+    def _format_meta_arg(self, argstr):
+        return argstr
+    
     def _format_args(self, action, default_metavar):
-        _reqired = lambda x: util.color_text(x, 'blue')
-        _optional = lambda x: util.color_text(x, 'cyan')
         get_metavar = self._metavar_formatter(action, default_metavar)
         if action.nargs is None:
-            result = _reqired('%s' % get_metavar(1))
+            result = self._format_requred_arg('%s' % get_metavar(1))
         elif action.nargs == argparse.OPTIONAL:
-            result = _optional('[%s]' % get_metavar(1))
+            result = self._format_optional_arg('[%s]' % get_metavar(1))
         elif action.nargs == argparse.ZERO_OR_MORE:
-            result = _optional('[%s [%s ...]]' % get_metavar(2))
+            result = self._format_optional_arg('[%s [%s ...]]' % get_metavar(2))
         elif action.nargs == argparse.ONE_OR_MORE:
             tpl = get_metavar(2)
-            result = _reqired('%s' % tpl[0]) + _optional(' [%s ...]' % tpl[1])  
+            result = self._format_requred_arg('%s' % tpl[0]) + self._format_optional_arg(' [%s ...]' % tpl[1])  
         elif action.nargs == argparse.REMAINDER:
-            result = _reqired('...')
+            result = self._format_requred_arg('...')
         elif action.nargs == argparse.PARSER:
-            result = _reqired('%s ...' % get_metavar(1))
+            result = self._format_requred_arg('%s ...' % get_metavar(1))
         else:
             formats = ['%s' for _ in range(action.nargs)]
             result = ' '.join(formats) % get_metavar(action.nargs)
         return result
 
     def _format_action_invocation(self, action):
-        _red = lambda x: util.color_text(x, 'red')
         if not action.option_strings:
             metavar, = self._metavar_formatter(action, action.dest)(1)
-            return _red(metavar)
-
+            return self._format_positional(metavar)
         else:
             parts = []
             if action.nargs == 0:
-                parts.extend(_red(x) for x in action.option_strings)
+                parts.extend(self._format_optional(x) for x in action.option_strings)
             else:
                 default = action.dest.upper()
                 args_string = self._format_args(action, default)
                 for option_string in action.option_strings:
-                    parts.append('%s %s' % (_red(option_string), args_string))
-
+                    parts.append('%s %s' % (self._format_optional(option_string), args_string))
             return ', '.join(parts)
 
+
+class ConsoleHelpFormatter(HelpFormatter):
+    """Custom help string formatter for console output."""
+         
+    def start_section(self, heading):
+        return super(ConsoleHelpFormatter, self).start_section(util.color_text(heading, attrs=['bold']))
+
+    def add_argument(self, action):
+        if action.help is not SUPPRESS:
+            get_invocation = self._format_action_invocation
+            invocations = [get_invocation(action)]
+            for subaction in self._iter_indented_subactions(action):
+                invocations.append(get_invocation(subaction))
+            invocation_length = max([len(util.uncolor_text(s)) for s in invocations])
+            action_length = invocation_length + self._current_indent
+            self._action_max_length = max(self._action_max_length, action_length)
+            self._add_item(self._format_action, [action])
+     
+    def _format_positional(self, argstr):
+        return util.color_text(argstr, 'red')
+    
+    def _format_optional(self, argstr):
+        return util.color_text(argstr, 'red')
+    
+    def _format_requred_arg(self, argstr):
+        return util.color_text(argstr, 'blue')
+    
+    def _format_optional_arg(self, argstr):
+        return util.color_text(argstr, 'cyan')
+    
     def _format_action(self, action):
-        # determine the required width and the entry label
-        help_position = min(self._action_max_length + 2,
-                            self._max_help_position)
+        help_position = min(self._action_max_length + 2, self._max_help_position)
         help_width = max(self._width - help_position, 11)
         action_width = help_position - self._current_indent - 2
         action_header = self._format_action_invocation(action)
         action_header_nocolor = util.uncolor_text(action_header)
-
-        # ho nelp; start on same line and add a final newline
         if not action.help:
+            # No help; start on same line and add a final newline
             tup = self._current_indent, '', action_header
             action_header = '%*s%s\n' % tup
-
-        # short action name; start on the same line and pad two spaces
         elif len(action_header_nocolor) <= action_width:
+            # Short action name; start on the same line and pad two spaces
             # Adjust length to account for color control chars
             length = action_width+len(action_header)-len(action_header_nocolor)
             tup = self._current_indent, '', length, action_header
             action_header = '%*s%-*s  ' % tup
             indent_first = 0
-
-        # long action name; start on the next line
         else:
+            # Long action name; start on the next line
             tup = self._current_indent, '', action_header
             action_header = '%*s%s\n' % tup
             indent_first = help_position
-
-        # collect the pieces of the action help
         parts = [action_header]
-
-        # if there was help for the action, add lines of help text
         if action.help:
             help_text = self._expand_help(action)
             help_lines = self._split_lines(help_text, help_width)
             parts.append('%*s%s\n' % (indent_first, '', help_lines[0]))
             for line in help_lines[1:]:
                 parts.append('%*s%s\n' % (help_position, '', line))
-
-        # or add a newline if the description doesn't end with one
         elif not action_header.endswith('\n'):
             parts.append('\n')
+        for subaction in self._iter_indented_subactions(action):
+            parts.append(self._format_action(subaction))
+        return self._join_parts(parts)
 
+
+class MarkdownHelpFormatter(HelpFormatter):
+    """Custom help string formatter for markdown output."""
+    
+    first_col_width = 30
+    
+    def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
+        super(MarkdownHelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
+        trans = {'<': '*', 
+                 '>': '*', 
+                 '|': r'\|'}
+        self._escape_rep = {re.escape(k): v for k, v in trans.iteritems()}
+        self._escape_pattern = re.compile("|".join(self._escape_rep.keys()))
+
+    
+    class _Section(argparse.HelpFormatter._Section):
+        """Override section help formatting."""
+        # pylint: disable=protected-access
+        def format_help(self):
+            if self.parent is not None:
+                self.formatter._indent()
+            join = self.formatter._join_parts
+            for func, args in self.items:
+                func(*args)
+            item_help = join([func(*args) for func, args in self.items])
+            if self.parent is not None:
+                self.formatter._dedent()
+            if not self.items:
+                return ''
+            if self.heading is not SUPPRESS and self.heading is not None:
+                title = '{:<{}}'.format(self.heading, MarkdownHelpFormatter.first_col_width)
+                heading = ' \n%s | %s\n%s:| %s' % (title, 'Description',
+                                                   '-'*len(title), '-'*len('Description'))
+            else:
+                heading = ''
+            return join(['\n', heading, '\n', item_help, '\n'])
+        
+    def _escape_markdown(self, text):
+        return self._escape_pattern.sub(lambda m: self._escape_rep[re.escape(m.group(0))], text)
+
+    def _indent(self):
+        self._current_indent = 0
+        self._level = 0
+
+    def _dedent(self):
+        self._current_indent = 0
+        self._level = 0
+
+    def _split_lines(self, text, _):
+        return text.splitlines()
+
+    def _get_help_string(self, action):
+        helpstr = action.help
+        helpstr = helpstr[0].upper() + helpstr[1:] + "."
+        choices = getattr(action, 'choices', None)
+        if choices:
+            helpstr += self._escape_markdown('\n  - %s: %s' % (action.metavar, ', '.join(choices)))
+        return helpstr
+    
+    def _format_usage(self, usage, actions, groups, prefix):
+        usage = super(MarkdownHelpFormatter, self)._format_usage(usage, actions, groups, "")
+        return "`%s`" % usage.strip() + '\n\n'
+    
+    def _format_action_invocation(self, action):
+        invocation = super(MarkdownHelpFormatter, self)._format_action_invocation(action)
+        return '{}{:>{}}'.format(' '*self._indent_increment, self._escape_markdown(invocation),
+                                 MarkdownHelpFormatter.first_col_width - self._indent_increment)
+    
+    def _format_action(self, action):
+        # determine the required width and the entry label
+        help_position = min(self._action_max_length + 2, self._max_help_position)
+        help_width = max(self._width - help_position, 11)
+        action_header = self._format_action_invocation(action)
+        if not action.help:
+            action_header = action_header + '\n'
+        parts = [action_header]
+        if action.help:
+            help_text = self._expand_help(action)
+            help_lines = self._split_lines(help_text, help_width)
+            parts.append('%*s | %s\n' % (0, '', help_lines[0]))
+            for line in help_lines[1:]:
+                parts.append('%*s | %s\n' % (help_position, '', line))
+        elif not action_header.endswith('\n'):
+            # or add a newline if the description doesn't end with one
+            parts.append('%*s | \n' % (help_position, ''))
         # if there are any sub-actions, add their help as well
         for subaction in self._iter_indented_subactions(action):
             parts.append(self._format_action(subaction))
-
-        # return a single string
         return self._join_parts(parts)
 
 
@@ -384,11 +518,15 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
     Returns:
         MutableArgumentGroupParser: The customized argument parser object.
     """
+    try:
+        formatter = getattr(sys.modules[__name__], USAGE_FORMAT.capitalize() + 'HelpFormatter')
+    except AttributeError:
+        raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT)
     return MutableArgumentGroupParser(prog=prog,
                                       usage=usage,
                                       description=description,
                                       epilog=epilog,
-                                      formatter_class=ArgparseHelpFormatter)
+                                      formatter_class=formatter)
 
 
 def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None,
@@ -434,11 +572,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
     Returns:
         MutableArgumentGroupParser: The customized argument parser object.        
     """
-    parser = MutableArgumentGroupParser(prog=prog,
-                                        usage=usage,
-                                        description=description,
-                                        epilog=epilog,
-                                        formatter_class=ArgparseHelpFormatter)
+    parser = get_parser(prog, usage, description, epilog)
     groups = {}
     for attr, props in six.iteritems(model.attributes):
         try:

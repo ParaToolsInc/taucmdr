@@ -36,6 +36,9 @@ from taucmdr.cf.compiler import InstalledCompilerFamily
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
+from taucmdr.cf.software.tau_installation import TauInstallation
+
+
 class TargetCopyCommand(CopyCommand):
     """```target copy``` subcommand."""
 
@@ -97,6 +100,7 @@ class TargetCopyCommand(CopyCommand):
         return parser
 
     def main(self, argv):
+        TauInstallation.check_env_compat()
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         compilers = target_create_cmd.parse_compiler_flags(args)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2017, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,35 +25,28 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""``experiment`` subcommand."""
+"""Unit tests of the Analysis infrastructure."""
+import six
+from taucmdr import tests
+from taucmdr import analysis
+from taucmdr.analysis.analysis import AbstractAnalysis
 
-from taucmdr.cli.cli_view import RootCommand
-from taucmdr.model.experiment import Experiment
 
-HELP_PAGE = """
-TAU Commander Experiments:
-=========================================================================
-An experiment is defined by: a target, an application, a measurement. Create 
-experiments by entering: 
- 
-`tau select <profile_name> <target_name> <measurement_name>` 
- 
-If the target, application, or measurement name can be implied then it may be 
-omitted.  For example, if you have only one target and only one application in 
-your project then only the measurement name must be specified: 
- 
-`tau select my_profile` 
- 
-The select command will name the new experiment based on the names of the 
-selected objects.  You may rename the new experiment with the tau experiment 
-edit command, or take full control of experiment creation by explicitly 
-specifying each parameter: 
- 
-`tau experiment create <experiment_name> --application <application_name> 
---measurement <measurement_name> --target <target_name>`    The entities 
-experiment, application and measurement must already be defined.
+class AnalysisTests(tests.TestCase):
+    """Unit tests of the Analysis infrastructure."""
 
-_________________________________________________________________________
-"""
+    def test_get_analyses(self):
+        analyses = analysis.get_analyses()
+        self.assertTrue(analysis, "List of analyses should not be empty")
+        for name, analysis_class in six.iteritems(analyses):
+            self.assertIsInstance(analysis_class, AbstractAnalysis,
+                                  "Objects returned from get_analyses should be analyses")
+            self.assertEqual(name, analysis_class.name,
+                             "Analysis name should equal name in analysis dict")
 
-COMMAND = RootCommand(Experiment, __name__, group="configuration", help_page_fmt=HELP_PAGE)
+    def test_get_analysis(self):
+        analyses = analysis.get_analyses()
+        for name, analysis_class in six.iteritems(analyses):
+            from_get_analysis = analysis.get_analysis(name)
+            self.assertIs(analysis_class, from_get_analysis,
+                          "Object obtained from get_analysis should match object in get_analyses dict")

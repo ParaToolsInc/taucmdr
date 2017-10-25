@@ -32,16 +32,18 @@ from taucmdr.model.measurement import Measurement
 
 HELP_PAGE = """
 TAU Commander Measurements:
-Create a new measurement: Enter tau measurement create <profile_name> --profile or            
-tau measurement create <profile_name> --trace 
+=============================================================================
+Create a new measurement- enter: 
+`tau measurement create <profile_name> --profile` or            
+`tau measurement create <profile_name> --trace` 
  
 Edit TAU Commander Measurements. The following measurement data arguments 
-may be edited --callpath [depth] and –metrics [PAPI metrics] 
-e.g. tau measurement edit <measurement_name> --callpath 3 
+may be edited `--callpath [depth]` and `--metrics [PAPI metrics]` 
+e.g. `tau measurement edit <measurement_name> --callpath 3` 
  
 The following measurement instrumentation settings may be defined with commands: 
---compiler-inst [mode]   (valid  modes are: always, fallback, never ) 
---source-inst [mode] (valid modes are: automatic, manual, never ) 
+`--compiler-inst [mode]`   (valid  modes are: `always, fallback, never` ) 
+`--source-inst [mode]` (valid modes are: `automatic, manual, never` ) 
  
 The default is sampling, where TAU Commander will use the symbols in the binary 
 when built with -g to decipher code information.  Source instrumentation 
@@ -53,20 +55,22 @@ more information in the TAU User Guide
 (https://www.cs.uoregon.edu/research/tau/docs/newguide/index.html). 
  
 The following measurement instrumentation arguments can be set to True or False 
-(T/F) --keep-inst-files --link-only --reuse-inst-files --sample 
+(T/F) `--keep-inst-files --reuse-inst-files --sample` 
  
-The following measurement arguments are set to True or False --callsite 
+The following measurement arguments are set to True or False `--callsite 
 --comm-matrix --cuda --io --metadata-merge --mpi --opencl --shmem --throttle 
 The following measurement arguments may be set; --throttle-num-calls [count] 
---throttle-per-calls [us] (us=microseconds) 
+--throttle-per-calls [us] (us=microseconds)` 
  
 The following memory and output formats are set to True or False (T/F) 
---heap-usage --memory-alloc --profile --trace A measurement can be renamed with: 
-*Names and trademarks belong to their respective owners 
-Tau measurement --new-name <measurement_name> <new_measurement_name> 
-A measurement can be deleted with: Tau measurement --delete <measurement_name> 
-Measurements are listed with: Tau measurement list (optional --l or --s 
+`--heap-usage --memory-alloc --profile --trace`
+ A measurement can be renamed with: 
+`Tau measurement --new-name <measurement_name> <new_measurement_name>` 
+A measurement can be deleted with: `tau measurement --delete <measurement_name>`
+Measurements are listed with: `tau measurement list` (optional `--l` or `--s` 
 (long or short descriptions)).
+
+_____________________________________________________________________________
 """
 
 
