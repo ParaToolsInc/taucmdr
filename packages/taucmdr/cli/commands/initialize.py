@@ -223,8 +223,8 @@ class InitializeCommand(AbstractCommand):
                          '--measurement', measurement_names[0]])
 
     def main(self, argv):
-        args = self._parse_args(argv)
-        if not (args.profile or args.trace or args.sample):
+        args, argv = self.parser.parse_known_args(argv)
+        if not (args.baseline or args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
 
         proj_ctrl = Project.controller()
