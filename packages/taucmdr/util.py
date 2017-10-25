@@ -534,8 +534,9 @@ def get_command_output(cmd):
     Returns:
         str: Subprocess output.
     """
+    key = repr(cmd)
     try:
-        return get_command_output.cache[cmd]
+        return get_command_output.cache[key]
     except AttributeError:
         get_command_output.cache = {}
     except KeyError:
@@ -544,7 +545,7 @@ def get_command_output(cmd):
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
     stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    get_command_output.cache[cmd] = stdout
+    get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
