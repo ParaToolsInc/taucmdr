@@ -162,10 +162,9 @@ def _configure_full(args):
     return _configure_minimal(args)
 
 
-def _configure_minimal(args):
-    tau = TauInstallation.minimal()
+def _configure_minimal(_):
+    tau = TauInstallation.get_minimal()
     tau.install()
-    _configure_project(args)
     return tau.install_prefix 
 
 
