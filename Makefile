@@ -185,7 +185,7 @@ install: build
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
-python_check: $(PYTHON_EXE) jupyterlab-install
+python_check: $(PYTHON_EXE) jupyterlab-install jupyterlab-extensions-install
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
 
 python_download: $(CONDA_SRC)
@@ -208,14 +208,15 @@ jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f jupyterlab | grep jupyterlab | grep -q 0\.27\.0 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
 	$(ECHO)$(CONDA) list -f bokeh | grep bokeh | grep -q 0\.12\.9 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge bokeh
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
+	$(ECHO)$(CONDA) list -f cairo | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
 	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
 
 jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab-manager || $(ECHO)$(JUPYTER) labextension install @jupyter-widgets/jupyterlab-manager@0.27.0 
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)$(CD) $(JUPYTERLAB_BUILD)/jupyerlab_bokeh && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build)
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)$(CD) $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build)
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)$(CD) $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build)
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)$(CD) $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)cd $(JUPYTERLAB_BUILD)/jupyterlab_bokeh && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build . )
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) lab build
 
 clean:
