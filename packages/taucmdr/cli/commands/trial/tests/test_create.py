@@ -39,6 +39,7 @@ from taucmdr.cli.commands.measurement.create import COMMAND as measurement_creat
 from taucmdr.cli.commands.measurement.edit import COMMAND as measurement_edit_cmd
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_cmd
+from taucmdr.model.project import Project
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
@@ -105,10 +106,15 @@ class CreateTest(tests.TestCase):
         self.assertIn("TAU_SHOW_MEMORY_FUNCTIONS=1", stdout)
         self.assertIn("TAU_TRACK_HEAP=1", stdout)
         self.assertFalse(stderr)
+        self.assertInLastTrialData("<attribute><name>TAU_SHOW_MEMORY_FUNCTIONS</name><value>on</value></attribute>")
+        self.assertInLastTrialData("<attribute><name>TAU_TRACK_HEAP</name><value>on</value></attribute>")
         self.assertInLastTrialData("Heap Memory Used (KB) at Entry")
         self.assertInLastTrialData("Heap Memory Used (KB) at Exit")
+        self.assertInLastTrialData("Heap Memory Used (KB)")
+        self.assertInLastTrialData("Heap Allocate")
         self.assertInLastTrialData("compute_interchange")
         self.assertInLastTrialData("compute")
+        self.assertInLastTrialData("malloc")
 
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
@@ -120,12 +126,17 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['profile'])
         self.assertIn("Selected experiment 'targ1-app1-profile'", stdout)
         self.assertFalse(stderr)
+        meas = Project.selected().experiment().populate('measurement')
+        self.assertTrue(meas['heap_usage'])
+        self.assertTrue(meas['memory_alloc'])
         self.assertManagedBuild(0, CC, [], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         self.assertIn("Trial 0 produced 1 profile files", stdout)
         self.assertIn("TAU_SHOW_MEMORY_FUNCTIONS=1", stdout)
         self.assertIn("TAU_TRACK_HEAP=1", stdout)
         self.assertFalse(stderr)
+        self.assertInLastTrialData("<attribute><name>TAU_SHOW_MEMORY_FUNCTIONS</name><value>on</value></attribute>")
+        self.assertInLastTrialData("<attribute><name>TAU_TRACK_HEAP</name><value>on</value></attribute>")
         self.assertInLastTrialData("Heap Memory Used (KB) at Entry")
         self.assertInLastTrialData("Heap Memory Used (KB) at Exit")
         self.assertInLastTrialData("Heap Memory Used (KB)")
