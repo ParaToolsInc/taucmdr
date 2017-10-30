@@ -1,0 +1,4 @@
+#Tell tau to not profile these functions
+BEGIN_EXCLUDE_LIST
+int computeRandom()
+END_EXCLUDE_LIST
