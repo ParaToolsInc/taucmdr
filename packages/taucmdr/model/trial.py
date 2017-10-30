@@ -51,7 +51,6 @@ from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation, PROGRAM_LAUNCHERS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -86,7 +85,6 @@ def attributes():
         },
         'environment': {
             'type': 'string',
-            'required': True,
             'description': "shell environment in which the trial was performed, encoded as a base64 string",
             'hashed': True
         },
@@ -318,13 +316,13 @@ class Trial(Model):
     @classmethod
     def _separate_launcher_cmd(cls, cmd):
         """Separate the launcher command and it's arguments from the application command(s) and arguments.
-        
+
         Args:
             cmd (list): Command line.
-        
+
         Returns:
             tuple: (Launcher command, Remainder of command line)
-            
+
         Raises:
             ConfigurationError: No application config files or executables found after a recognized launcher command.
         """
@@ -334,7 +332,7 @@ class Trial(Model):
                 continue
             try:
                 idx = cmd.index('--')
-                return cmd[:idx], cmd[idx+1:] 
+                return cmd[:idx], cmd[idx + 1:]
             except ValueError:
                 # No '--' to indicate start of application, so look for first executable
                 for idx, exe in enumerate(cmd[1:], 1):
@@ -347,7 +345,7 @@ class Trial(Model):
                             arg, appfile = arg.split('=')
                         except ValueError:
                             try:
-                                appfile = cmd[i+1]
+                                appfile = cmd[i + 1]
                             except IndexError:
                                 # Reached the end of the command line without finding an application config file
                                 break
@@ -361,17 +359,17 @@ class Trial(Model):
                                           "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
         # No launcher command, just an application command
         return [], cmd
-    
+
     @classmethod
     def parse_launcher_cmd(cls, cmd):
         """Parses a command line to split the launcher command and application commands.
-        
+
         Args:
             cmd (list): Command line.
-            
+
         Returns:
             tuple: (Launcher command, possibly empty list of application commands).
-        """ 
+        """
         cmd0 = cmd[0]
         launcher_cmd, cmd = cls._separate_launcher_cmd(cmd)
         num_exes = len([x for x in cmd if util.which(x)])
@@ -405,7 +403,7 @@ class Trial(Model):
             colons.append(len(cmd))
             application_cmds = [cmd[:colons[0]]]
             for i, idx in enumerate(colons[:-1]):
-                application_cmds.append(cmd[idx:colons[i+1]])
+                application_cmds.append(cmd[idx:colons[i + 1]])
             return launcher_cmd, application_cmds
 
     @property
@@ -426,7 +424,7 @@ class Trial(Model):
         except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
-                
+
     def _postprocess_slog2(self):
         slog2 = os.path.join(self.prefix, 'tau.slog2')
         if os.path.exists(slog2):
@@ -469,13 +467,13 @@ class Trial(Model):
         return data
 
     def get_data_files(self):
-        """Return paths to the trial's data files or directories maped by data type. 
-        
-        Post-process trial data if necessary and return a dictionary mapping the types of data produced 
-        by this trial to paths to related data files or directories.  The paths should be suitable for 
-        passing on a command line to one of the known data analysis tools. For example, a trial producing 
+        """Return paths to the trial's data files or directories maped by data type.
+
+        Post-process trial data if necessary and return a dictionary mapping the types of data produced
+        by this trial to paths to related data files or directories.  The paths should be suitable for
+        passing on a command line to one of the known data analysis tools. For example, a trial producing
         SLOG2 traces and TAU profiles would return ``{"slog2": "/path/to/tau.slog2", "tau": "/path/to/directory/"}``.
-        
+
         Returns:
             dict: Keys are strings indicating the data type; values are filesystem paths.
         """
@@ -523,7 +521,7 @@ class Trial(Model):
         cmd_str = ' '.join(cmd)
         tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or
-                                  key.startswith('SCOREP_') or 
+                                  key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
@@ -556,8 +554,8 @@ class Trial(Model):
         """
         cmd_str = ' '.join(cmd)
         tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
-                              if (key.startswith('TAU_') or 
-                                  key.startswith('SCOREP_') or 
+                              if (key.startswith('TAU_') or
+                                  key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
@@ -571,7 +569,7 @@ class Trial(Model):
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
-        
+
         measurement = expr.populate('measurement')
 
         profiles = []
@@ -587,7 +585,7 @@ class Trial(Model):
                                " Check the compilation output and verify that MPI_Init (or similar) was called.",
                                self['number'])
                 for fname in negative_profiles:
-                    new_name = fname.replace(".-1.", ".0.") 
+                    new_name = fname.replace(".-1.", ".0.")
                     if not os.path.exists(new_name):
                         LOGGER.info("Renaming %s to %s", fname, new_name)
                         os.rename(fname, new_name)
@@ -610,13 +608,13 @@ class Trial(Model):
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval, elapsed
-    
+
     def export(self, dest):
         """Export experiment trial data.
- 
+
         Args:
             dest (str): Path to directory to contain exported data.
- 
+
         Raises:
             ConfigurationError: This trial has no data.
         """
@@ -627,22 +625,22 @@ class Trial(Model):
         stem = '%s.trial%d' % (expr['name'], self['number'])
         for fmt, path in six.iteritems(data):
             if fmt == 'tau':
-                export_file = os.path.join(dest, stem+'.ppk')
+                export_file = os.path.join(dest, stem + '.ppk')
                 tau = TauInstallation.get_minimal()
                 tau.create_ppk_file(export_file, path)
             elif fmt == 'merged':
-                export_file = os.path.join(dest, stem+'.xml.gz')
+                export_file = os.path.join(dest, stem + '.xml.gz')
                 util.create_archive('gz', export_file, [path])
             elif fmt == 'cubex':
-                export_file = os.path.join(dest, stem+'.cubex')
+                export_file = os.path.join(dest, stem + '.cubex')
                 LOGGER.info("Writing '%s'...", export_file)
                 util.copy_file(path, export_file)
             elif fmt == 'slog2':
-                export_file = os.path.join(dest, stem+'.slog2')
+                export_file = os.path.join(dest, stem + '.slog2')
                 LOGGER.info("Writing '%s'...", export_file)
                 util.copy_file(path, export_file)
             elif fmt == 'otf2':
-                export_file = os.path.join(dest, stem+'.tgz')
+                export_file = os.path.join(dest, stem + '.tgz')
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
                 items = [os.path.join(trial_dir, item) for item in ('traces', 'traces.def', 'traces.otf2')]
                 util.create_archive('tgz', export_file, items, expr_dir)

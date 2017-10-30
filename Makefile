@@ -212,6 +212,8 @@ jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f jupyterlab | grep jupyterlab | grep -q 0\.27\.0 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
 	$(ECHO)$(CONDA) list -f bokeh | grep bokeh | grep -q 0\.12\.9 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge bokeh
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
+	$(ECHO)$(CONDA) list -f cairo | grep -q cairo 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
+	$(ECHO)$(CONDA) list -f jpeg | grep -q jpeg 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jpeg
 	$(ECHO)$(CONDA) list -f cairo | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
 	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
 
