@@ -32,23 +32,31 @@ import inspect
 import nbformat
 
 from taucmdr.analysis.analyses.runtime_breakdown import RuntimeBreakdownVisualizer
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.model.trial import Trial
 
 
-def show_bqplot_runtime_breakdown(trials, metric):
+def show_bqplot_runtime_breakdown(trial_ids, metric):
     from bqplot import LinearScale, Lines, Figure, Axis
 
-    def build_runtime_breakdown(trials, metric):
+    def build_runtime_breakdown(trials_, metric_):
         sc_x = LinearScale()
         sc_y = LinearScale()
         ax_x = Axis(label='Number of Processors', scale=sc_x)
         ax_y = Axis(label='Percentage of Total Runtime', scale=sc_y, orientation='vertical')
-        patch_lists = BqplotRuntimeBreakdownVisualizer.trials_to_patch_lists(trials, metric)
+        patch_lists = BqplotRuntimeBreakdownVisualizer.trials_to_patch_lists(trials_, metric_)
         patches = Lines(x=patch_lists.data['x'], y=patch_lists.data['y'], fill='inside',
                         colors=patch_lists.data['color'], fill_colors=patch_lists.data['color'],
                         close_path=True, scales={'x': sc_x, 'y': sc_y})
-        fig = Figure(marks=[patches], axes=[ax_x, ax_y], title=trials[0].populate('experiment')['name'])
+        fig = Figure(marks=[patches], axes=[ax_x, ax_y], title=trials_[0].populate('experiment')['name'])
         return fig
 
+    if isinstance(trial_ids[0], str):
+        trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
+    elif isinstance(trial_ids[0], Trial):
+        trials = trial_ids
+    else:
+        raise ValueError("Inputs must be hashes or Trials")
     breakdown = build_runtime_breakdown(trials, metric)
     return breakdown
 
@@ -57,12 +65,13 @@ class BqplotRuntimeBreakdownVisualizer(RuntimeBreakdownVisualizer):
     def __init__(self, name='bqplot-runtime-breakdown', description='Runtime Breakdown (bqplot)'):
         super(RuntimeBreakdownVisualizer, self).__init__(name=name, description=description)
 
-    def get_cells(self, inputs, *args, **kwargs):
+    def get_cells(self, inputs, interactive=True, *args, **kwargs):
         """Get Jupyter input cells containing code which will create a stacked area chart
         showing the breakdown of runtime across trials.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize
+            interactive (bool): Whether to create an interactive visualization using IPyWidgets
 
         Keyword Args:
             metric (str): The name of the metric to visualize
@@ -83,7 +92,10 @@ class BqplotRuntimeBreakdownVisualizer(RuntimeBreakdownVisualizer):
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
         trials_list_str = "Trial.controller(PROJECT_STORAGE).search_hash([%s])" % (",".join(
             ['"%s"' % trial.hash_digest() for trial in trials]))
-        show_plot_str = 'show_bqplot_runtime_breakdown(%s, "%s")' % (trials_list_str, metric)
+        if interactive:
+            show_plot_str = self.get_interaction_code(inputs, 'show_bqplot_runtime_breakdown', *args, **kwargs)
+        else:
+            show_plot_str = 'show_bqplot_runtime_breakdown(%s, "%s")' % (trials_list_str, metric)
         notebook_cells.append(nbformat.v4.new_code_cell(show_plot_str))
         return notebook_cells
 

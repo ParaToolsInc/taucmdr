@@ -29,16 +29,14 @@
 
 from abc import ABCMeta, abstractmethod
 import uuid
-
 import os
-
-import sys
 
 import six
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
+from pandas.api.types import is_numeric_dtype
 
-from taucmdr import util
+from taucmdr.data.tauprofile import TauProfile
 
 
 class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
@@ -74,11 +72,12 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
         """
 
     @abstractmethod
-    def get_cells(self, inputs, *args, **kwargs):
+    def get_cells(self, inputs, interactive=True, *args, **kwargs):
         """Get Jupyter cells which, when executed in order, perform the analysis.
 
         Args:
             inputs (list of :obj:`Model`): The models containing the data to be analyzed.
+            interactive (bool): Whether to create an interactive visualization using IPyWidgets
 
         Returns:
             list of :obj:`nbformat.NotebookNode`: The cells which perform the analysis.
@@ -86,6 +85,14 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
         Raises:
             ConfigurationError: The provided models are not of the type required by the analysis.
 
+        """
+
+    @abstractmethod
+    def get_input_spec(self, inputs, *args, **kwargs):
+        """Get the input specification for the analysis.
+
+        Returns:
+            list of dict: {name, default, values, type}
         """
 
     @staticmethod
@@ -151,6 +158,75 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
         with open(file_path, 'w') as nb_file:
             nbformat.write(nb, nb_file)
         return file_path
+
+    def get_interaction_code(self, inputs, handler_name, *args, **kwargs):
+        """Get the code which, when inserted into a cell, produces widgets for specifying analysis parameters.
+
+        Args:
+            inputs (list of :obj:`Model`): The models containing the data to be analyzed.
+            handler_name (str): The name of the function that the widgets serve as input to.
+
+        Returns:
+            str: Code to create the widgets.
+
+        Raises:
+            ConfigurationError: The provided models are not of the type required by the analysis.
+        """
+        input_specs = self.get_input_spec(inputs, *args, **kwargs)
+        out_code = ['from ipywidgets import interact',
+                    'import ipywidgets as widgets']
+        interact_args = []
+        if input_specs:
+            # The first input spec is the `inputs` parameter
+            for index, spec in enumerate(input_specs):
+                if 'default' in spec:
+                    default = spec['default']
+                elif index == 0:
+                    default = inputs
+                elif spec['name'] in kwargs:
+                    default = kwargs[spec['name']]
+                else:
+                    default = None
+                if 'BoundedIntText' in spec['type']:
+                    out_code.append("%s = %s(min=%s, max=%s, value=%s)" %
+                                    (spec['name'], spec['type'], spec['values'][0], spec['values'][-1], repr(default)))
+                else:
+                    out_code.append("%s = %s(options=%s, value=%s)" % (spec['name'], spec['type'],
+                                                                       repr(spec['values']), repr(default)))
+                interact_args.append("%s = %s" % (spec['name'], spec['name']))
+            out_code.append("interact(%s, %s)" % (handler_name, ", ".join(interact_args)))
+            return "\n".join(out_code)
+        else:
+            return ""
+
+    @staticmethod
+    def get_timer_names(trials):
+        timer_names = set()
+        for trial in trials:
+            trial_num = trial['number']
+            trial_data = trial.get_data()
+            indices = TauProfile.indices(trial_data)
+            for n, c, t in indices:
+                df = trial_data[n][c][t].interval_data().loc[trial_num, n, c, t]
+                timer_names.update(df.index.get_values())
+        return sorted(list(timer_names))
+
+    @staticmethod
+    def get_metric_names(trials, numeric_only=False):
+        metric_names = set()
+        for trial in trials:
+            trial_num = trial['number']
+            trial_data = trial.get_data()
+            indices = TauProfile.indices(trial_data)
+            for n, c, t in indices:
+                df = trial_data[n][c][t].interval_data().loc[trial_num, n, c, t]
+                cols = []
+                for col in df.columns.get_values():
+                    if numeric_only and not is_numeric_dtype(df[col]):
+                        continue
+                    cols.append(col)
+                metric_names.update(cols)
+        return sorted(list(metric_names))
 
 
 class Recommendation(object):

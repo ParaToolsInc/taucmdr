@@ -74,7 +74,7 @@ class TauProfile(object):
         dataframe = pandas.DataFrame.from_dict(self.atomic_events, orient='index')
         dataframe.columns = index
         return dataframe
-        
+
     @classmethod
     def _parse_header(cls, fin):
         match = cls._interval_header_re.match(fin.readline())

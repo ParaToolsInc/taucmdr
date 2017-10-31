@@ -37,13 +37,14 @@ import numpy as np
 import nbformat
 
 from taucmdr.analysis.analysis import AbstractAnalysis
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
 
 
-def show_runtime_breakdown(trials, metric):
+def show_runtime_breakdown(trial_ids, metric):
     from bokeh.plotting import figure
     from bokeh.io import output_notebook
     from taucmdr.gui.interaction import InteractivePlotHandler
@@ -52,15 +53,21 @@ def show_runtime_breakdown(trials, metric):
     logger.set_log_level('WARN')
     output_notebook(hide_banner=True)
 
-    def build_runtime_breakdown(trials, metric):
-        patch_lists = RuntimeBreakdownVisualizer.trials_to_patch_lists(trials, metric)
-        title = trials[0].populate('experiment')['name']
+    def build_runtime_breakdown(trials_, metric_):
+        patch_lists = RuntimeBreakdownVisualizer.trials_to_patch_lists(trials_, metric_)
+        title = trials_[0].populate('experiment')['name']
         fig = figure(title=title, plot_width=80, plot_height=40, output_backend="webgl", toolbar_location="right")
         fig.xaxis.axis_label = 'Number of Processors'
-        fig.yaxis.axis_label = 'Percentage of Total Runtime'
+        fig.yaxis.axis_label = 'Percentage of Total Runtime (%s)' % (metric_, )
         fig.patches("x", "y", fill_color="color", line_color="color", alpha=0.9, source=patch_lists)
         return fig
 
+    if isinstance(trial_ids[0], str):
+        trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
+    elif isinstance(trial_ids[0], Trial):
+        trials = trial_ids
+    else:
+        raise ValueError("Inputs must be hashes or Trials")
     breakdown = build_runtime_breakdown(trials, metric)
     plot = InteractivePlotHandler(breakdown, tooltips=[("Timer", "@name")])
     plot.show()
@@ -142,12 +149,37 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
         metric = kwargs.get('metric', 'Exclusive')
         return inputs, metric
 
-    def get_cells(self, inputs, *args, **kwargs):
+    def get_input_spec(self, inputs, *args, **kwargs):
+        """Get the input specification for the analysis.
+
+        Returns:
+            list of dict: {name, default, values, type}
+        """
+        trials, metric = self._check_input(inputs, **kwargs)
+        default_trial_ids = [trial.hash_digest() for trial in trials]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_metrics = self.get_metric_names(trials, numeric_only=True)
+        result = [
+            {'name': 'trial_ids',
+             'values': all_trial_hashes,
+             'default': default_trial_ids,
+             'type': 'widgets.SelectMultiple'},
+
+            {'name': 'metric',
+             'values': all_metrics,
+             'default': metric,
+             'type': 'widgets.Dropdown'},
+
+        ]
+        return result
+
+    def get_cells(self, inputs, interactive=True, *args, **kwargs):
         """Get Jupyter input cells containing code which will create a stacked area chart
         showing the breakdown of runtime across trials.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize
+            interactive (bool): Whether to create an interactive visualization using IPyWidgets
 
         Keyword Args:
             metric (str): The name of the metric to visualize
@@ -168,7 +200,10 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
         trials_list_str = "Trial.controller(PROJECT_STORAGE).search_hash([%s])" % (",".join(
             ['"%s"' % trial.hash_digest() for trial in trials]))
-        show_plot_str = 'show_runtime_breakdown(%s, "%s")' % (trials_list_str, metric)
+        if interactive:
+            show_plot_str = self.get_interaction_code(inputs, 'show_runtime_breakdown', *args, **kwargs)
+        else:
+            show_plot_str = 'show_runtime_breakdown(%s, "%s")' % (trials_list_str, metric)
         notebook_cells.append(nbformat.v4.new_code_cell(show_plot_str))
         return notebook_cells
 

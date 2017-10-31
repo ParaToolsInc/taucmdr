@@ -31,6 +31,7 @@ from bokeh.models import ColumnDataSource
 
 import six
 from taucmdr.analysis.analysis import AbstractAnalysis
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.gui.color import ColorMapping
@@ -44,7 +45,7 @@ import inspect
 from math import sqrt
 
 
-def show_trial_bar_plot(trial, metric):
+def show_trial_bar_plot(trial_id, metric):
     from taucmdr import logger
     from taucmdr.data.tauprofile import TauProfile
     from taucmdr.gui.interaction import InteractivePlotHandler
@@ -57,8 +58,8 @@ def show_trial_bar_plot(trial, metric):
     logger.set_log_level('WARN')
     output_notebook(hide_banner=True)
 
-    def build_bar_plot(_trial):
-        data_source = TrialBarPlotVisualizer.trial_to_column_source(_trial, metric)
+    def build_bar_plot(_trial, _metric):
+        data_source = TrialBarPlotVisualizer.trial_to_column_source(_trial, _metric)
         indices = []
         indices.extend(map(lambda x: str(x), TauProfile.indices(_trial.get_data())[::-1]))
         indices.extend(['Min', 'Max', 'Mean', 'Std. Dev.'])
@@ -71,7 +72,13 @@ def show_trial_bar_plot(trial, metric):
         fig.js_on_event('tap', callback)
         return fig
 
-    bar = build_bar_plot(trial)
+    if isinstance(trial_id, str):
+        trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
+    elif isinstance(trial_id, Trial):
+        trial = trial_id
+    else:
+        raise ValueError("Input must be either a hash or a Trial")
+    bar = build_bar_plot(trial, metric)
     plot = InteractivePlotHandler(bar, tooltips=[("Timer", "@label"), (metric, "@value")])
     plot.show()
 
@@ -100,9 +107,8 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
             }
         }
         if(selected != null) {
-            console.log("Clicked on " + key);
             let trial_hash = "%s";
-            window.defaultExperimentPane.run_analysis_on_trials_with_args("profile-barplot", [trial_hash], "indices=" + key)
+            window.defaultExperimentPane.run_analysis_on_trials_with_args("profile-barplot", [trial_hash], "indices=" + key);
         }
         """ % digest
 
@@ -185,12 +191,36 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         metric = kwargs.get('metric', 'Exclusive')
         return inputs, metric
 
-    def get_cells(self, inputs, *args, **kwargs):
+    def get_input_spec(self, inputs, *args, **kwargs):
+        """Get the input specification for the analysis.
+
+        Returns:
+            list of dict: {name, default, values, type}
+        """
+        trials, metric = self._check_input(inputs, **kwargs)
+        trial = trials[0]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_metrics = self.get_metric_names(trials, numeric_only=True)
+        result = [
+            {'name': 'trial_id',
+             'values': all_trial_hashes,
+             'default': trial.hash_digest(),
+             'type': 'widgets.Dropdown'},
+
+            {'name': 'metric',
+             'values': all_metrics,
+             'default': metric,
+             'type': 'widgets.Dropdown'}
+        ]
+        return result
+
+    def get_cells(self, inputs, interactive=True, *args, **kwargs):
         """Get Jupyter input cells containing code which will create a barplot when
          executed for the trials in `inputs`.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize
+            interactive (bool): Whether to create an interactive visualization using IPyWidgets
 
         Keyword Args:
             metric (str): The name of the metric to visualize
@@ -210,10 +240,14 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
         for trial in trials:
-            digest = trial.hash_digest()
-            notebook_cells.append(nbformat.v4.new_code_cell(
-                'show_trial_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
-                % (digest, metric)))
+            if interactive:
+                notebook_cells.append(nbformat.v4.new_code_cell(
+                    self.get_interaction_code(inputs, 'show_trial_bar_plot', **kwargs)))
+            else:
+                digest = trial.hash_digest()
+                notebook_cells.append(nbformat.v4.new_code_cell(
+                    'show_trial_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
+                    % (digest, metric)))
         return notebook_cells
 
     def run(self, inputs, *args, **kwargs):

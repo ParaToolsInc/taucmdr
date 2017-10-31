@@ -120,7 +120,7 @@ class Controller(object):
         if self.storage.is_remote():
             return [self.model(record) for record in self.storage.search_hash(digests, table_name=self.model.name)]
         records = self.all()
-        if not isinstance(digests, list):
+        if not isinstance(digests, (list, tuple)):
             digests = [digests]
         results = []
         for digest in digests:
