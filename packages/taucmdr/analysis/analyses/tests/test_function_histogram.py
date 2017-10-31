@@ -25,20 +25,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Unit tests of the Runtime Breakdown analysis."""
+"""Unit tests of the Function Histogram analysis."""
 import os
 
 from taucmdr import tests, TAUCMDR_HOME, EXIT_SUCCESS
 from taucmdr import analysis
-from taucmdr.analysis.analyses.runtime_breakdown import ANALYSIS as runtime_breakdown_analysis
+from taucmdr.analysis.analyses.function_histogram import ANALYSIS as function_histogram_analysis
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.model.trial import Trial
 
 
-class RuntimeBreakdownAnalysisTests(tests.TestCase):
-    """Unit tests of the Runtime Breakdown analysis."""
+class FunctionHistogramVisualizerTests(tests.TestCase):
+    """Unit tests of the Function Histogram analysis."""
 
     def setUp(self):
         self.old_pythonpath = os.environ.get('PYTHONPATH', '')
@@ -48,17 +48,29 @@ class RuntimeBreakdownAnalysisTests(tests.TestCase):
     def tearDown(self):
         os.environ['PYTHONPATH'] = self.old_pythonpath
 
-    def test_get_runtime_breakdown_analysis(self):
-        analysis_from_get_analysis = analysis.get_analysis(runtime_breakdown_analysis.name)
-        self.assertIs(runtime_breakdown_analysis, analysis_from_get_analysis)
+    def test_get_function_histogram_analysis(self):
+        analysis_from_get_analysis = analysis.get_analysis(function_histogram_analysis.name)
+        self.assertIs(function_histogram_analysis, analysis_from_get_analysis)
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
-    def test_runtime_breakdown(self):
+    def test_function_histogram(self):
         self.reset_project_storage(['--mpi', '--profile', 'tau'])
         self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
         trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
-        path = runtime_breakdown_analysis.create_notebook(trial, '.', execute=True)
+        path = function_histogram_analysis.create_notebook(trial, '.', execute=True)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
 
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_function_histogram_multiple_profiles(self):
+        self.reset_project_storage(['--mpi', '--profile', 'tau'])
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        trials = []
+        for n in range(0,4):
+            self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', str(n + 1), './a.out'])
+            trial = Trial.controller(PROJECT_STORAGE).one({'number': n})
+            self.assertTrue(trial, "No trial found after run")
+            trials.append(trial)
+        path = function_histogram_analysis.create_notebook(trials, '.', execute=True, interactive=True)
+        self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
