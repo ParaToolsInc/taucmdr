@@ -40,21 +40,31 @@ export class AnalysisSidebarWidget extends TauCmdrPaneWidget {
         this.tableClassName = 'sidebar';
     }
 
-    protected insert_cell(text: string) {
-        if(this.app.shell.activeWidget instanceof NotebookPanel) {
-            let notebookPanel = this.app.shell.activeWidget as NotebookPanel;
-            let cell = notebookPanel.model.contentFactory.createCodeCell({});
+    protected insert_cell(text: Array<string>) {
+        if(this.app.shell.currentWidget instanceof NotebookPanel) {
+            let notebookPanel = this.app.shell.currentWidget as NotebookPanel;
+            let cellOptions = {cell: {source: text, metadata: {trusted: true}}};
+            let cell = notebookPanel.model.contentFactory.createCodeCell(cellOptions as any);
             notebookPanel.model.cells.insert(notebookPanel.notebook.activeCellIndex + 1, cell);
+            notebookPanel.notebook.activeCellIndex++;
         } else {
-            showErrorMessage("No notebook is active",
-                "An analysis can only be added to a notebook, but a notebook is not active.").then(()=>{});
+            throw new Error("No notebook is active");
         }
     }
 
     protected on_select_analysis(event: MouseEvent) : void {
         let id = (event.target as HTMLElement).id;
         console.log(`Should run analysis ${id}`);
-
+        let selected_trials = window.defaultExperimentPane.table.get_selected();
+        this.kernels.get_analysis_cells(id, selected_trials).then(response => {
+            let analysis_cells : Array<Kernels.JSONResult> = response.cells;
+            analysis_cells.forEach(analysis_cell => {
+                this.insert_cell([analysis_cell.source]);
+            });
+        }, reason => {
+            showErrorMessage("Unable to run analysis.", reason.toString()).then(()=>{});
+        });
+        this.insert_cell([id]);
     }
 
     /*

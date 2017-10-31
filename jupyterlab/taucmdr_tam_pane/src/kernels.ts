@@ -140,6 +140,29 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
         }
     }
 
+    /*
+     * Get the cells which when executed carry out an analysis as identified by `analysis_name`
+     * on the TAU Commander objects having hashes listed in `hashes`.
+     * Returns a JSON object indicating the path to the created notebook having the form:
+     *
+     *  [
+     *       {
+     *           source: string,
+     *           cell_type: string,
+     *           metadata: object,
+     *           execution_count: number,
+     *           output_cells: [object]
+     *       }
+     *  ]
+     */
+    get_analysis_cells(analysis_name : string, hashes : Array<string>) : Promise<Kernels.JSONResult> {
+        let kernelCode = `
+${Kernels.getAnalysisCellsKernel}
+print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)})) 
+`;
+        return this.handle_single_command(kernelCode);
+    }
+
     get_cwd() : Promise<string> {
         return this.handle_single_command(Kernels.getCwdKernel).then(result => {
             return result.cwd;
@@ -223,14 +246,7 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
     };
 
     protected runAnalysisKernelWithArgs(args : string) : string {
-        return `
-def run_analysis(name, hashes):
-    import json
-    from taucmdr.analysis import get_analysis
-    from taucmdr.model.trial import Trial
-    from taucmdr.cf.storage.levels import PROJECT_STORAGE
-    trials = [Trial.controller(PROJECT_STORAGE).search_hash(h)[0] for h in hashes]
-    analysis = get_analysis(name)
+        return Kernels.runAnalysisBase + `
     return json.dumps({"path": analysis.create_notebook(trials, '.', ${args})})
 `
     }
@@ -274,7 +290,7 @@ def get_analyses_as_table():
 print(get_analyses_as_table())
 `;
 
-    export const runAnalysisKernel = `
+    export const runAnalysisBase = `
 def run_analysis(name, hashes):
     import json
     from taucmdr.analysis import get_analysis
@@ -282,7 +298,14 @@ def run_analysis(name, hashes):
     from taucmdr.cf.storage.levels import PROJECT_STORAGE
     trials = [Trial.controller(PROJECT_STORAGE).search_hash(h)[0] for h in hashes]
     analysis = get_analysis(name)
+`;
+
+    export const runAnalysisKernel = runAnalysisBase + `
     return json.dumps({"path": analysis.create_notebook(trials, '.')})
+`;
+
+    export const getAnalysisCellsKernel = runAnalysisBase + `
+    return json.dumps({"cells": analysis.get_cells(trials, '.')})
 `;
 
     export const getCwdKernel = `
