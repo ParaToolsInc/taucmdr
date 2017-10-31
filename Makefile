@@ -127,7 +127,7 @@ CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
   PYTHON_EXE = $(CONDA)
-  PYTHON_FLAGS = -EO
+  PYTHON_FLAGS = -EOu
 else
   $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
   CONDA_SRC = 
