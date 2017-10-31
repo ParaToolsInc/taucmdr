@@ -125,10 +125,11 @@ ANACONDA_SRC = packages/$(ANACONDA_PKG)
 ANACONDA_DEST = $(INSTALLDIR)/anaconda-$(ANACONDA_VERSION)
 ANACONDA_PYTHON = $(ANACONDA_DEST)/bin/python
 JUPYTERLAB_BUILD = $(BUILDDIR)/jupyterlab
-CONDA = $(ANACONDA_DEST)/bin/conda
-PIP = $(ANACONDA_DEST)/bin/pip
-JUPYTER = $(ANACONDA_DEST)/bin/jupyter
-NPM = $(ANACONDA_DEST)/bin/npm
+ANACONDA_BIN = $(ANACONDA_DEST)/bin
+CONDA = $(ANACONDA_BIN)/conda
+PIP = $(ANACONDA_BIN)/pip
+JUPYTER = $(ANACONDA_BIN)/jupyter
+NPM = $(ANACONDA_BIN)/npm
 
 ifeq ($(USE_ANACONDA),true)
   PYTHON_EXE = $(ANACONDA_PYTHON)
@@ -214,7 +215,6 @@ jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
 	$(ECHO)$(CONDA) list -f cairo | grep -q cairo 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
 	$(ECHO)$(CONDA) list -f jpeg | grep -q jpeg 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jpeg
-	$(ECHO)$(CONDA) list -f cairo | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
 	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
 
 jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
@@ -223,7 +223,7 @@ jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
-	$(ECHO)$(JUPYTER) lab build
+	$(ECHO)PATH=$(ANACONDA_BIN):$(PATH) $(JUPYTER) lab build
 
 clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
