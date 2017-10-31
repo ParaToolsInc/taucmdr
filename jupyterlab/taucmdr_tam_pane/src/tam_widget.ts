@@ -20,13 +20,11 @@ import {
 
 import '../style/index.css';
 
-export const class_name = 'tam';
-
 export abstract class TauCmdrPaneWidget extends Widget {
     app: JupyterLab;
     kernels : Kernels;
-
-    mainContent: HTMLDivElement;
+    mainContent : HTMLDivElement;
+    tableClassName : string;
 
     /*
      * Returns the names of the tables the widget is to display. The class should contain
@@ -57,6 +55,7 @@ export abstract class TauCmdrPaneWidget extends Widget {
         this.mainContent = document.createElement('div');
         this.mainContent.className = 'main-content';
         this.node.appendChild(this.mainContent);
+        this.tableClassName = 'tam';
 
         this.get_table_names().forEach(table_name => {
             this[table_name] = document.createElement('div');
@@ -85,15 +84,17 @@ export abstract class TauCmdrPaneWidget extends Widget {
      * values from the JSON array `rows`.
      */
     protected update_table(div: HTMLDivElement, model: string, rows: Array<Kernels.JSONResult>, fields: Array<string>,
-                           selectable : boolean, primary_key: string): void {
-        this.table = new Table(rows, fields, class_name, selectable, primary_key);
+                           selectable : Table.SelectionType, primary_key: string,
+                           callback_handler? : (event: MouseEvent) => void): void {
+        this.table = new Table(rows, fields, this.tableClassName, selectable, primary_key, callback_handler);
         div.innerHTML = "";
         div.appendChild(document.createElement('h1').appendChild(
             document.createTextNode(model)));
         div.appendChild(this.table.get_table());
     }
 
-    protected update_handler(entries : Array<Kernels.JSONResult>, selectable : boolean, primary_key : string) : void {
+    protected update_handler(entries : Array<Kernels.JSONResult>, selectable : Table.SelectionType,
+                             primary_key : string) : void {
         entries.forEach(entry => {
             this.update_table(this[entry['model']+'TableDiv'], entry['model'],
                 entry['rows'], entry['headers'], selectable, primary_key);
@@ -105,3 +106,4 @@ export abstract class TauCmdrPaneWidget extends Widget {
         this.app.shell.addToMainArea(this);
     }
 }
+

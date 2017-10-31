@@ -48,14 +48,22 @@ import {
     ExperimentPaneWidget, experiment_widget_id
 } from "./experiment";
 
+import {
+    AnalysisSidebarWidget, analysis_widget_id
+} from "./analysis";
+
 import '../style/index.css';
 
 declare global {
     export interface Window {
         defaultProjectPane: ProjectPaneWidget;
         defaultExperimentPane: ExperimentPaneWidget;
+        defaultAnalysisSidebar: AnalysisSidebarWidget;
     }
 }
+
+// To prevent the compiler from complaining that Window is unused, even though it isn't.
+export let foo : Window;
 
 export let defaultTAMPane: ProjectPaneWidget = null;
 
@@ -143,6 +151,13 @@ function activate(app: JupyterLab, palette: ICommandPalette, restorer: ILayoutRe
         args: () => JSONExt.emptyObject,
         name: () => 'experiment-view'
     });
+
+    // Add a sidebar to select and run analyses
+    let analysisSidebarWidget : AnalysisSidebarWidget;
+    analysisSidebarWidget = new AnalysisSidebarWidget(app);
+    window.defaultAnalysisSidebar = analysisSidebarWidget;
+    app.shell.addToLeftArea(analysisSidebarWidget, {rank: 2000});
+    restorer.add(analysisSidebarWidget, analysis_widget_id);
 }
 
 const extension: JupyterLabPlugin<void> = {

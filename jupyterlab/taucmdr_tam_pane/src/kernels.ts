@@ -89,6 +89,20 @@ export class Kernels {
     }
 
     /*
+     * Get a list of the available analyses. These are returned as a JSON object having the form:
+     *
+     *  {
+     *      model: model name (string),
+     *      headers: the names of the column headers for the model (array of string),
+     *      rows: the data for each row, in the same order as listed in headers (array of array)
+     *  }
+     */
+
+    get_analyses_as_table() : Promise<Array<Kernels.JSONResult>> {
+        return this.handle_listing_command(Kernels.getAnalysesAsTableKernel);
+    }
+
+    /*
      * Run an analysis on the analysis identified by `analysis_name` on the TAU Commander
      * objects having hashes listed in `hashes`. Returns a JSON object indicating the path to
      * the created notebook having the form:
@@ -249,6 +263,15 @@ def get_analyses():
     import taucmdr.analysis as analysis
     return json.dumps([{'name': a.name, 'desc': a.description} for a in analysis.get_analyses().values()])
 print(get_analyses())
+`;
+
+    export const getAnalysesAsTableKernel = `
+def get_analyses_as_table():
+    import json
+    import taucmdr.analysis as analysis    
+    return json.dumps({'model': 'analysis', 'headers': ['Name', 'Description'], 'rows': [{'Name': a.name, 'Description': a.description} for a in analysis.get_analyses().values()]}) 
+
+print(get_analyses_as_table())
 `;
 
     export const runAnalysisKernel = `

@@ -42,6 +42,10 @@ import {
 } from "./kernels";
 
 import {
+    Table
+} from "./table";
+
+import {
     showErrorMessage
 } from "./error";
 
@@ -143,7 +147,7 @@ export class ExperimentPaneWidget extends TauCmdrPaneWidget {
     update(): void {
         this.clear();
         this.kernels.get_trials().then(project_entries => {
-            this.update_handler(project_entries, true, 'Hash');
+            this.update_handler(project_entries, Table.SelectionType.Multiple, 'Hash');
             this.update_analyses();
         });
     }

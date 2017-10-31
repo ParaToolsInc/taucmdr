@@ -6,6 +6,10 @@ import {
     TauCmdrPaneWidget
 } from "./tam_widget";
 
+import {
+    Table
+} from "./table";
+
 
 export const project_widget_id = 'taucmdr_tam_pane';
 
@@ -31,7 +35,7 @@ export class ProjectPaneWidget extends TauCmdrPaneWidget {
     update(): void {
         this.clear();
         this.kernels.get_project().then(project_entries => {
-            this.update_handler(project_entries, false, 'Hash');
+            this.update_handler(project_entries, Table.SelectionType.None, 'Hash');
         });
     }
 

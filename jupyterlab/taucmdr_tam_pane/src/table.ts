@@ -37,12 +37,14 @@ export class Table {
     protected table : HTMLTableElement;
     protected footer : HTMLTableRowElement;
     protected cols : number;
-    protected selectable : boolean;
+    protected selectable : Table.SelectionType;
     protected primary_key : string;
-    protected checkboxes : Array<HTMLInputElement>;
+    protected buttons : Array<HTMLInputElement>;
 
-    constructor(data : Array<JSONResult>, fields : Array<string>, table_class : string, selectable : boolean,
-                primary_key : string) {
+    on_button_click : (event : MouseEvent) => void;
+
+    constructor(data : Array<JSONResult>, fields : Array<string>, table_class : string, selectable : Table.SelectionType,
+                primary_key : string, callback_handler? : (event: MouseEvent) => void) {
         this.data = data;
         this.fields = fields;
         this.table_class = table_class;
@@ -52,7 +54,12 @@ export class Table {
         if(this.selectable) {
             ++this.cols;
         }
-        this.checkboxes = [];
+        this.buttons = [];
+        if(callback_handler) {
+           this.on_button_click = callback_handler;
+        } else {
+            this.on_button_click = () => {};
+        }
         this.update_table();
     }
 
@@ -70,14 +77,16 @@ export class Table {
             if(this.selectable) {
                 // Header column for checkbox
                 let cell = document.createElement('th');
-                let checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.addEventListener('click', () => {
-                    this.checkboxes.forEach(row_checkbox => {
-                        row_checkbox.checked = checkbox.checked;
+                if(this.selectable == Table.SelectionType.Multiple) {
+                    let checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.addEventListener('click', () => {
+                        this.buttons.forEach(row_checkbox => {
+                            row_checkbox.checked = checkbox.checked;
+                        });
                     });
-                });
-                cell.appendChild(checkbox);
+                    cell.appendChild(checkbox);
+                }
                 tHeadRow.appendChild(cell);
             }
             this.fields.forEach(field => {
@@ -88,17 +97,25 @@ export class Table {
 
             this.data.forEach(rowData => {
                 let row = tBody.insertRow();
-                let checkbox : HTMLInputElement;
+                let inputElement : HTMLInputElement;
                 if(this.selectable) {
-                    let checkboxCell = row.insertCell();
-                    checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = rowData[this.primary_key];
-                    checkbox.name = 'selection';
-                    checkbox.value = checkbox.id;
-                    checkboxCell.appendChild(checkbox);
-                    this.checkboxes.push(checkbox);
-                    row.appendChild(checkboxCell);
+                    let inputElementCell = row.insertCell();
+                    inputElement = document.createElement('input');
+                    if(this.selectable == Table.SelectionType.Multiple) {
+                        inputElement.type = 'checkbox';
+                        inputElement.value = rowData[this.primary_key];
+                    } else if(this.selectable == Table.SelectionType.Single) {
+                        inputElement.type = 'button';
+                        inputElement.value = 'Select';
+                        inputElement.addEventListener('click', event => {
+                            this.on_button_click(event);
+                        });
+                    }
+                    this.buttons.push(inputElement);
+                    inputElement.id = rowData[this.primary_key];
+                    inputElement.name = 'selection';
+                    inputElementCell.appendChild(inputElement);
+                    row.appendChild(inputElementCell);
                 }
                 this.fields.forEach(field => {
                     let cell = row.insertCell();
@@ -106,9 +123,9 @@ export class Table {
                     if (value == null) {
                         value = "N/A";
                     }
-                    if(this.selectable) {
+                    if(this.selectable == Table.SelectionType.Multiple) {
                         cell.addEventListener('click', () => {
-                            checkbox.checked = !checkbox.checked;
+                            inputElement.checked = !inputElement.checked;
                         });
                     }
                     cell.appendChild(document.createTextNode(value));
@@ -134,8 +151,8 @@ export class Table {
 
     get_selected() : Array<string> {
         let result : Array<string> = [];
-        if(this.selectable) {
-            this.checkboxes.forEach(checkbox => {
+        if(this.selectable == Table.SelectionType.Multiple) {
+            this.buttons.forEach(checkbox => {
                 if(checkbox.checked) {
                     result.push(checkbox.value);
                 }
@@ -144,4 +161,14 @@ export class Table {
         return result;
 
     }
+}
+
+export namespace Table {
+
+    export enum SelectionType {
+        None = 0,
+        Single = 1,
+        Multiple = 2
+    }
+
 }
