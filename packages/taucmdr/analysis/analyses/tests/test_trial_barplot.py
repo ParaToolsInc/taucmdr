@@ -28,13 +28,14 @@
 """Unit tests of the Trial Bar Plot analysis."""
 import os
 
-from taucmdr import tests, TAUCMDR_HOME
+from taucmdr import tests, TAUCMDR_HOME, EXIT_SUCCESS
 from taucmdr import analysis
 from taucmdr.analysis.analyses.tests import AnalysisTest
 from taucmdr.analysis.analyses.trial_barplot import ANALYSIS as trial_bar_plot_analysis
 from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
-from taucmdr.cli.commands.trial.create import COMMAND as create_cmd
+from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.model.trial import Trial
 
 
@@ -48,8 +49,33 @@ class TrialBarPlotVisualizerTests(AnalysisTest):
     def test_trial_bar_plot(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        self.assertCommandReturnValue(0, create_cmd, ['./a.out'])
+        self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
         path = trial_bar_plot_analysis.create_notebook(trial, '.', execute=True)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
+
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_summary_stats(self):
+        self.reset_project_storage(['--mpi', '--profile', 'tau'])
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
+        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        self.assertTrue(trial, "No trial found after run")
+        results = trial_bar_plot_analysis.run(trial, "Exclusive")
+        self.assertTrue(results, "Results from analysis run should be non-empty")
+        first_result = results[0]
+        trial_results = first_result[1]
+        self.assertTrue('Mean' in trial_results)
+        self.assertTrue('Min' in trial_results)
+        self.assertTrue('Max' in trial_results)
+        self.assertTrue('Std. Dev.' in trial_results)
+        self.assertTrue('.TAU application' in trial_results['Mean'])
+        self.assertTrue('.TAU application' in trial_results['Min'])
+        self.assertTrue('.TAU application' in trial_results['Max'])
+        self.assertTrue('.TAU application' in trial_results['Std. Dev.'])
+        self.assertTrue(trial_results['Min']['.TAU application'] <= trial_results['Max']['.TAU application'])
+        self.assertTrue(trial_results['Min']['.TAU application'] <= trial_results['Mean']['.TAU application'])
+        self.assertTrue(trial_results['Mean']['.TAU application'] <= trial_results['Max']['.TAU application'])
+        self.assertNotEqual(trial_results['Std. Dev.']['.TAU application'], 0.0)
+
