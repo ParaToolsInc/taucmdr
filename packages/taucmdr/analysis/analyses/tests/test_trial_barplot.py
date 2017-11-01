@@ -30,6 +30,7 @@ import os
 
 from taucmdr import tests, TAUCMDR_HOME
 from taucmdr import analysis
+from taucmdr.analysis.analyses.tests import AnalysisTest
 from taucmdr.analysis.analyses.trial_barplot import ANALYSIS as trial_bar_plot_analysis
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
@@ -37,16 +38,8 @@ from taucmdr.cli.commands.trial.create import COMMAND as create_cmd
 from taucmdr.model.trial import Trial
 
 
-class TrialBarPlotVisualizerTests(tests.TestCase):
+class TrialBarPlotVisualizerTests(AnalysisTest):
     """Unit tests of the Trial Bar Plot analysis."""
-
-    def setUp(self):
-        self.old_pythonpath = os.environ.get('PYTHONPATH', '')
-        os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
-                                   + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
-
-    def tearDown(self):
-        os.environ['PYTHONPATH'] = self.old_pythonpath
 
     def test_get_trial_bar_plot_analysis(self):
         analysis_from_get_analysis = analysis.get_analysis(trial_bar_plot_analysis.name)

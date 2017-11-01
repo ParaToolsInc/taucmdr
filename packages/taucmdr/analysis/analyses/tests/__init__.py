@@ -26,4 +26,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """Tests for concrete implementations of analyses"""
+import os
 
+from taucmdr import tests, TAUCMDR_HOME
+
+
+class AnalysisTest(tests.TestCase):
+    def setUp(self):
+        self.old_pythonpath = os.environ.get('PYTHONPATH', '')
+        os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') + (
+            (':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
+
+    def tearDown(self):
+        os.environ['PYTHONPATH'] = self.old_pythonpath

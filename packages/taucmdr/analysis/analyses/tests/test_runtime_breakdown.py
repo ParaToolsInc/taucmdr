@@ -31,22 +31,15 @@ import os
 from taucmdr import tests, TAUCMDR_HOME, EXIT_SUCCESS
 from taucmdr import analysis
 from taucmdr.analysis.analyses.runtime_breakdown import ANALYSIS as runtime_breakdown_analysis
+from taucmdr.analysis.analyses.tests import AnalysisTest
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.model.trial import Trial
 
 
-class RuntimeBreakdownAnalysisTests(tests.TestCase):
+class RuntimeBreakdownAnalysisTests(AnalysisTest):
     """Unit tests of the Runtime Breakdown analysis."""
-
-    def setUp(self):
-        self.old_pythonpath = os.environ.get('PYTHONPATH', '')
-        os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
-                                   + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
-
-    def tearDown(self):
-        os.environ['PYTHONPATH'] = self.old_pythonpath
 
     def test_get_runtime_breakdown_analysis(self):
         analysis_from_get_analysis = analysis.get_analysis(runtime_breakdown_analysis.name)
