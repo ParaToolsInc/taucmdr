@@ -45,21 +45,15 @@ import inspect
 from math import sqrt
 
 
-def show_trial_bar_plot(trial_id, metric):
-    from taucmdr import logger
+def run_trial_bar_plot(trial_id, metric):
     from taucmdr.data.tauprofile import TauProfile
-    from taucmdr.gui.interaction import InteractivePlotHandler
-    from bokeh.io import output_notebook
     from bokeh.models.callbacks import CustomJS
     from bokeh.models.glyphs import HBar
     from bokeh.models.ranges import DataRange1d
     from bokeh.plotting import figure
 
-    logger.set_log_level('WARN')
-    output_notebook(hide_banner=True)
-
     def build_bar_plot(_trial, _metric):
-        data_source = TrialBarPlotVisualizer.trial_to_column_source(_trial, _metric)
+        data_source, summary = TrialBarPlotVisualizer.trial_to_column_source(_trial, _metric)
         indices = []
         indices.extend(map(lambda x: str(x), TauProfile.indices(_trial.get_data())[::-1]))
         indices.extend(['Min', 'Max', 'Mean', 'Std. Dev.'])
@@ -70,7 +64,7 @@ def show_trial_bar_plot(trial_id, metric):
                             code=TrialBarPlotVisualizer.get_callback_code(_trial.hash_digest()))
 
         fig.js_on_event('tap', callback)
-        return fig
+        return fig, summary
 
     if isinstance(trial_id, str):
         trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
@@ -78,8 +72,18 @@ def show_trial_bar_plot(trial_id, metric):
         trial = trial_id
     else:
         raise ValueError("Input must be either a hash or a Trial")
-    bar = build_bar_plot(trial, metric)
-    plot = InteractivePlotHandler(bar, tooltips=[("Timer", "@label"), (metric, "@value")])
+    return build_bar_plot(trial, metric)
+
+
+def show_trial_bar_plot(trial_id, metric):
+    from taucmdr import logger
+    from taucmdr.gui.interaction import InteractivePlotHandler
+    from bokeh.io import output_notebook
+
+    logger.set_log_level('WARN')
+    output_notebook(hide_banner=True)
+    fig, _ = run_trial_bar_plot(trial_id, metric)
+    plot = InteractivePlotHandler(fig, tooltips=[("Timer", "@label"), (metric, "@value")])
     plot.show()
 
 
@@ -154,6 +158,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
                 colors.append(color)
                 last_time = next_time
                 stats[name].add(time)
+        summary = defaultdict(dict)
         extras = [('Max', lambda s: s.max), ('Min', lambda s: s.min), ('Mean', lambda s: s.mean),
                   ('Std. Dev.', lambda s: sqrt(s.variance))]
         for extra, func in extras:
@@ -171,13 +176,14 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
                 rights.append(next_time)
                 colors.append(color)
                 last_time = next_time
+                summary[extra][name] = time
 
         # It turns out that calling hbar with lists of elements to add is MUCH faster than repeatedly
         # calling hbar with single elements, which is why we build the lists above instead of just
         # calling hbar inside the loop.
         data_source = ColumnDataSource(dict(y=ys, height=heights, left=lefts, right=rights,
                                             color=colors, label=labels, value=values))
-        return data_source
+        return data_source, summary
 
     @staticmethod
     def _check_input(inputs, **kwargs):
@@ -236,6 +242,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    inspect.getsource(run_trial_bar_plot),
                     inspect.getsource(show_trial_bar_plot)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
@@ -263,8 +270,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
             ConfigurationError: The provided models are not Trials
         """
         trials, metric = self._check_input(inputs, **kwargs)
-        for trial in trials:
-            show_trial_bar_plot(trial, metric)
+        return [run_trial_bar_plot(trial, metric) for trial in trials]
 
 
 ANALYSIS = TrialBarPlotVisualizer()
