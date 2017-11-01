@@ -41,14 +41,8 @@ from taucmdr.error import ConfigurationError
 from taucmdr.model.trial import Trial
 
 
-def show_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
-    from taucmdr import logger
-    from taucmdr.gui.interaction import InteractivePlotHandler
-    from bokeh.io import output_notebook
+def run_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
     from bokeh.plotting import figure
-
-    logger.set_log_level('WARN')
-    output_notebook(hide_banner=True)
 
     def build_correlation_scatterplot(_trials, _metric_1, _timer_1, _metric_2, _timer_2):
         scatter_data_source = CorrelationAnalysis.trials_to_scatter_list(_trials, _metric_1, _timer_1, _metric_2, _timer_2)
@@ -67,9 +61,18 @@ def show_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
     else:
         raise ValueError("Inputs must be hashes or Trials")
     correlation_fig, r_value = build_correlation_scatterplot(trials, metric_1, timer_1, metric_2, timer_2)
+    return correlation_fig, r_value
+
+
+def show_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
+    from taucmdr import logger
+    from taucmdr.gui.interaction import InteractivePlotHandler
+    from bokeh.io import output_notebook
+    logger.set_log_level('WARN')
+    output_notebook(hide_banner=True)
+    correlation_fig, r_value = run_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2)
     plot = InteractivePlotHandler(correlation_fig)
     plot.show()
-    return plot, r_value
 
 
 class CorrelationAnalysis(AbstractAnalysis):
@@ -155,20 +158,21 @@ class CorrelationAnalysis(AbstractAnalysis):
         return result
 
     def get_cells(self, inputs, interactive=True, *args, **kwargs):
-        """Get Jupyter input cells containing code which will create a histogram showing
-        the distribution of timer values for a function over multiple profiles.
+        """Get Jupyter input cells containing code which will create a scatterplot
+        correlating two variables, with a linear regression line on top.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize
             interactive (bool): Whether to create an interactive visualization using IPyWidgets
 
         Keyword Args:
-            metric (str): The name of the metric to visualize
-            timer (str): The name of the timer for which to construct the histogram
-            bins (int): The number of bins to use for the histogram
+            metric_1 (str): The name of the metric to visualize on the X axis
+            timer_1 (str): The name of the timer to visualize on the X axis
+            metric_2 (str): The name of the metric to visualize on the Y axis
+            timer_2 (str): The name of the timer to visualize on the Y axis
 
         Returns:
-            list of :obj:`nbformat.NotebookNode`: The cells which show the histogram
+            list of :obj:`nbformat.NotebookNode`: The cells which show the correlation
 
         Raises:
             ConfigurationError: The provided models are not Trials
@@ -178,6 +182,7 @@ class CorrelationAnalysis(AbstractAnalysis):
         commands = ['from taucmdr.analysis.analyses.correlation import CorrelationAnalysis',
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    inspect.getsource(run_correlation),
                     inspect.getsource(show_correlation)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
@@ -192,25 +197,27 @@ class CorrelationAnalysis(AbstractAnalysis):
         return notebook_cells
 
     def run(self, inputs, *args, **kwargs):
-        """Create a histogram showing the distribution of timer values for a function over multiple profiles.
+        """Create a scatterplot correlating two variables with a linear regression line, and get
+        the R value for the correlation.
 
         Args:
-            inputs (list of :obj:`Trial`): The trials to visualize
+            inputs (list of :obj:`Trial`): The trials to analyze.
 
         Keyword Args:
-            metric (str): The name of the metric to visualize
-            timer (str): The name of the timer for which to construct the histogram
-            bins (int): The number of bins to use for the histogram
+            metric_1 (str): The name of the metric to visualize on the X axis
+            timer_1 (str): The name of the timer to visualize on the X axis
+            metric_2 (str): The name of the metric to visualize on the Y axis
+            timer_2 (str): The name of the timer to visualize on the Y axis
 
         Returns:
-            The histogram as a Jupyter-renderable object.
+            tuple: (The histogram as a Jupyter-renderable object, r-value of correlation)
 
         Raises:
             ConfigurationError: The provided models are not Trials
         """
 
         trials, metric_1, timer_1, metric_2, timer_2 = self._check_input(inputs, **kwargs)
-        return show_correlation(trials, metric_1, timer_1, metric_2, timer_2)
+        return run_correlation(trials, metric_1, timer_1, metric_2, timer_2)
 
 
 ANALYSIS = CorrelationAnalysis()

@@ -28,7 +28,7 @@
 """Unit tests of the Function Histogram analysis."""
 import os
 
-from taucmdr import tests, TAUCMDR_HOME, EXIT_SUCCESS
+from taucmdr import tests, EXIT_SUCCESS
 from taucmdr import analysis
 from taucmdr.analysis.analyses.correlation import ANALYSIS as correlation_analysis
 from taucmdr.analysis.analyses.tests import AnalysisTest
