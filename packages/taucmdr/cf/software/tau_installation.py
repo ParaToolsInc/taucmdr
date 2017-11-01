@@ -1135,7 +1135,7 @@ class TauInstallation(Installation):
         executes the compiler command.
 
         Args:
-            compiler (Compiler): A compiler command.
+            compiler (InstalledCompiler): A compiler command.
             compiler_args (list): Compiler command line arguments.
 
         Raises:
@@ -1146,6 +1146,8 @@ class TauInstallation(Installation):
         """
         self.install()
         opts, env = self.compiletime_config()
+        for flag in '-optAppCC', '-optAppCXX', '-optAppF90':
+            opts.append(flag+'='+compiler.absolute_path)
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
