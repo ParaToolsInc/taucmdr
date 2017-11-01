@@ -58,7 +58,7 @@ def show_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
         fig.line("x", "y", line_color="black", source=line_data_source)
         fig.xaxis.axis_label = "%s (%s)" % (_timer_1, _metric_1)
         fig.yaxis.axis_label = "%s (%s)" % (_timer_2, _metric_2)
-        return fig
+        return fig, r_value
 
     if isinstance(trial_ids[0], str):
         trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
@@ -66,9 +66,10 @@ def show_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
         trials = trial_ids
     else:
         raise ValueError("Inputs must be hashes or Trials")
-    hist_fig = build_correlation_scatterplot(trials, metric_1, timer_1, metric_2, timer_2)
-    plot = InteractivePlotHandler(hist_fig)
+    correlation_fig, r_value = build_correlation_scatterplot(trials, metric_1, timer_1, metric_2, timer_2)
+    plot = InteractivePlotHandler(correlation_fig)
     plot.show()
+    return plot, r_value
 
 
 class CorrelationAnalysis(AbstractAnalysis):
@@ -209,7 +210,7 @@ class CorrelationAnalysis(AbstractAnalysis):
         """
 
         trials, metric_1, timer_1, metric_2, timer_2 = self._check_input(inputs, **kwargs)
-        show_correlation(trials, metric_1, timer_1, metric_2, timer_2)
+        return show_correlation(trials, metric_1, timer_1, metric_2, timer_2)
 
 
 ANALYSIS = CorrelationAnalysis()
