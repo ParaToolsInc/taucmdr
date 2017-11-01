@@ -973,7 +973,7 @@ class TauInstallation(Installation):
                         '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
         return dict([item for item in env.iteritems() if item[0] not in dirt])
 
-    def compiletime_config(self, opts=None, env=None):
+    def compiletime_config(self, compiler, opts=None, env=None):
         """Configures environment for compilation with TAU.
 
         Modifies incoming command line arguments and environment variables
@@ -997,6 +997,9 @@ class TauInstallation(Installation):
                 tau_opts = set(env['TAU_OPTIONS'].split())
             except KeyError:
                 tau_opts = set()
+            if self.source_inst != 'never' or self.compiler_inst != 'never':
+                for flag in '-optAppCC', '-optAppCXX', '-optAppF90':
+                    tau_opts.add(flag+'='+compiler.absolute_path)
             if self.source_inst == 'manual' or (self.source_inst == 'never' and self.compiler_inst == 'never'):
                 tau_opts.add('-optLinkOnly')
             else:
@@ -1145,9 +1148,7 @@ class TauInstallation(Installation):
             int: Compiler return value (always 0 if no exception raised).
         """
         self.install()
-        opts, env = self.compiletime_config()
-        for flag in '-optAppCC', '-optAppCXX', '-optAppF90':
-            opts.append(flag+'='+compiler.absolute_path)
+        opts, env = self.compiletime_config(compiler)
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
