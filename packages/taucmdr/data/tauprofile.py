@@ -35,6 +35,8 @@ import os
 import re
 import xml.etree.ElementTree as ElementTree
 import pandas
+
+import six
 from taucmdr import logger
 from taucmdr.error import InternalError
 
@@ -113,7 +115,7 @@ class TauProfile(object):
             values['Inclusive'] = float(match.group(5))
             values['ProfileCalls'] = int(match.group(6))
             values['Group'] = match.group(7)
-            interval_data[match.group(1)] = values 
+            interval_data[match.group(1).strip()] = values
             i += 1
         return interval_data
             
@@ -135,7 +137,7 @@ class TauProfile(object):
             line = fin.readline()
             match = cls._atomic_re.match(line)
             values = [float(x) for x in match.group(2, 3, 4, 5, 6)]
-            atomic_data[match.group(1)] = values
+            atomic_data[match.group(1).strip()] = values
             i += 1
         return atomic_data
 
@@ -149,7 +151,7 @@ class TauProfile(object):
             interval_data = cls._parse_interval_data(fin, interval_count)
             atomic_data = cls._parse_atomic_data(fin)
             return cls(trial, node, context, thread, metric, metadata, interval_data, atomic_data)
-        
+
     @staticmethod
     def indices(data):
         """Get list of (node,context,thread) from Trial profile data as returned from Trial.get_data
@@ -161,8 +163,8 @@ class TauProfile(object):
             (list of tuple): List of 3-tuples of the form (node: int, context: int, thread: int)
         """
         indices = []
-        for node_num, node_data in data.iteritems():
-            for context_num, context_data in node_data.iteritems():
-                for thread_num, thread_data in context_data.iteritems():
+        for node_num, node_data in six.iteritems(data):
+            for context_num, context_data in six.iteritems(node_data):
+                for thread_num, thread_data in six.iteritems(context_data):
                     indices.append((node_num, context_num, thread_num))
         return indices
