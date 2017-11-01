@@ -67,3 +67,17 @@ class FunctionHistogramVisualizerTests(AnalysisTest):
             trials.append(trial)
         path = function_histogram_analysis.create_notebook(trials, '.', execute=True, interactive=True)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
+
+    @tests.skipUnlessHaveCompiler(MPI_CC)
+    def test_get_histogram_width(self):
+        self.reset_project_storage(['--mpi', '--profile', 'tau'])
+        self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
+        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        self.assertTrue(trial, "No trial found after run")
+        result = function_histogram_analysis.run(trial, "Exclusive", "MPI_Init()", 10)
+        self.assertTrue('fig' in result, "Histogram result should contain `fig`")
+        self.assertTrue('hist' in result, "Histogram result should contain `hist`")
+        self.assertTrue('edges' in result, "Histogram result should contain `edges`")
+        self.assertTrue('width' in result, "Histogram result should contain `width`")
+        self.assertAlmostEqual(result['edges'][0] + result['width'], result['edges'][-1])

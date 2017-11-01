@@ -39,22 +39,17 @@ from taucmdr.error import ConfigurationError
 from taucmdr.model.trial import Trial
 
 
-def show_function_histogram(trial_ids, metric, timer, bins):
-    from taucmdr import logger
-    from taucmdr.gui.interaction import InteractivePlotHandler
-    from bokeh.io import output_notebook
+def run_function_histogram(trial_ids, metric, timer, bins):
     from bokeh.plotting import figure
-
-    logger.set_log_level('WARN')
-    output_notebook(hide_banner=True)
 
     def build_histogram(_trials, _metric, _timer, _bins):
         hist, edges = FunctionHistogramVisualizer.trials_to_histogram(_trials, _metric, _timer, _bins)
+        width = edges[-1] - edges[0]
         fig = figure(plot_width=80, plot_height=40, title=timer, output_backend="webgl")
         fig.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], fill_color="red", line_color="black")
         fig.xaxis.axis_label = metric
         fig.yaxis.axis_label = 'Threads'
-        return fig
+        return {'fig': fig, 'hist': hist, 'edges': edges, 'width': width}
 
     if isinstance(trial_ids[0], str):
         trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
@@ -62,8 +57,19 @@ def show_function_histogram(trial_ids, metric, timer, bins):
         trials = trial_ids
     else:
         raise ValueError("Inputs must be hashes or Trials")
-    hist_fig = build_histogram(trials, metric, timer, bins)
-    plot = InteractivePlotHandler(hist_fig)
+    return build_histogram(trials, metric, timer, bins)
+
+
+def show_function_histogram(trial_ids, metric, timer, bins):
+    from taucmdr import logger
+    from taucmdr.gui.interaction import InteractivePlotHandler
+    from bokeh.io import output_notebook
+
+    logger.set_log_level('WARN')
+    output_notebook(hide_banner=True)
+
+    result = run_function_histogram(trial_ids, metric, timer, bins)
+    plot = InteractivePlotHandler(result['fig'])
     plot.show()
 
 
@@ -154,6 +160,7 @@ class FunctionHistogramVisualizer(AbstractAnalysis):
         commands = ['from taucmdr.analysis.analyses.function_histogram import FunctionHistogramVisualizer',
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    inspect.getsource(run_function_histogram),
                     inspect.getsource(show_function_histogram)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
@@ -178,14 +185,14 @@ class FunctionHistogramVisualizer(AbstractAnalysis):
             bins (int): The number of bins to use for the histogram
 
         Returns:
-            The histogram as a Jupyter-renderable object.
+            dict: {'fig': figure, 'hist': histogram counts, 'edges': histogram edges, 'width': histogram width)
 
         Raises:
             ConfigurationError: The provided models are not Trials
         """
 
         trials, metric, timer, bins = self._check_input(inputs, **kwargs)
-        show_function_histogram(trials, metric, timer, bins)
+        return run_function_histogram(trials, metric, timer, bins)
 
 
 ANALYSIS = FunctionHistogramVisualizer()
