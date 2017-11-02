@@ -41,7 +41,7 @@ from taucmdr.model.project import Project
 
 class ExportTest(tests.TestCase):
 
-    @tests.skipUnless(util.which('java'))
+    @tests.skipUnless(util.which('java'), "A java interpreter is required for this test")
     def test_export_tau_profile(self):
         self.reset_project_storage(['--profile', 'tau', '--trace', 'none'])
         expr = Project.selected().experiment()
@@ -80,7 +80,7 @@ class ExportTest(tests.TestCase):
         export_file = expr['name'] + '.trial0.cubex'
         self.assertTrue(os.path.exists(export_file))
 
-    @tests.skipUnless(util.which('java'))
+    @tests.skipUnless(util.which('java'), "A java interpreter is required for this test")
     def test_export_slog2(self):
         self.reset_project_storage(['--trace', 'slog2', '--profile', 'none'])
         expr = Project.selected().experiment()
