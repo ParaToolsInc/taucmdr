@@ -612,6 +612,10 @@ class Target(Model):
                         found.append(compiler_record)
                         break
         if not found:
+            if absolute_path:
+                __passed_compiler = absolute_path
+            else:
+                __passed_compiler = compiler_cmd
             parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path),
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
