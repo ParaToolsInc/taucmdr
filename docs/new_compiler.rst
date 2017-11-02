@@ -35,7 +35,7 @@ The assocations defined in the compiler knowlegebase are very powerful.  TAU Com
 compilers should be used, and which compiler flags should be used, at any point in the workflow given a relatively small
 ammount of information.  Consider this target creation command::
 
-   tau target create --compilers=Intel --mpi-compilers=System
+   tau target create --compilers=Intel --mpi-wrapper-style=System
 
 Because the knowledgebase specifies the individual compiler commands for each role in the Intel compiler family, that
 command is automatically expanded to::

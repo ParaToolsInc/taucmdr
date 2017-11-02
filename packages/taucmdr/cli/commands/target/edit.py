@@ -96,7 +96,7 @@ class TargetEditCommand(EditCommand):
         self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
         
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family')
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-wrapper-style', 'mpi_family')
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')

@@ -268,7 +268,7 @@ class TargetCreateCommand(CreateCommand):
         hint = host_family_name if HOST_OS is not CRAY_CNL else None
         
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
-        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-compilers', 'mpi_family', hint)
+        self._configure_argument_group(group, MPI_COMPILERS, '--mpi-wrapper-style', 'mpi_family', hint)
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family', hint)
