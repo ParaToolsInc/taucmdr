@@ -25,25 +25,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""ParaProf style horizontal bar chart"""
+"""Standard deviation-prioritized histogram"""
 
-from bokeh.models import ColumnDataSource
-
-import six
 from taucmdr.analysis.analysis import AbstractAnalysis
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
-from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
-from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
 
 import nbformat
-import faststat
 
-from collections import defaultdict
 import inspect
-from math import sqrt
-from operator import itemgetter
 
 
 def run_stddev_prioritized_analysis(trial_id, metric, top_n):
@@ -70,16 +61,21 @@ def run_stddev_prioritized_analysis(trial_id, metric, top_n):
     return figures
 
 
-def show_stddev_prioritized_analysis(trial_id, metric, top_n):
+def show_single_figure(fig):
     from taucmdr import logger
     from taucmdr.gui.interaction import InteractivePlotHandler
     from bokeh.io import output_notebook
 
     logger.set_log_level('WARN')
     output_notebook(hide_banner=True)
-    figs = run_stddev_prioritized_analysis(trial_id, metric, top_n)
-    plot = InteractivePlotHandler(figs, tooltips=[("Timer", "@label"), (metric, "@value")])
+    plot = InteractivePlotHandler(fig)
     plot.show()
+
+
+def show_stddev_prioritized_analysis(trial_id, metric, top_n):
+    figs = run_stddev_prioritized_analysis(trial_id, metric, top_n)
+    for fig in figs:
+        show_single_figure(fig)
 
 
 class StdDevPrioritizedAnalysis(AbstractAnalysis):
@@ -121,22 +117,23 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
              'type': 'widgets.Dropdown'},
 
             {'name': 'top_n',
-             'values': range(1,11),
+             'values': range(1, 11),
              'default': top_n,
              'type': 'widgets.BoundedIntText'}
         ]
         return result
 
-    def get_cells(self, inputs, interactive=True, *args, **kwargs):
-        """Get Jupyter input cells containing code which will create a barplot when
-         executed for the trials in `inputs`.
+    def get_cells(self, inputs, interactive=False, *args, **kwargs):
+        """Get Jupyter input cells containing code which displays histograms for the N functions
+        with the highest standard deviations.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize
             interactive (bool): Whether to create an interactive visualization using IPyWidgets
 
         Keyword Args:
-            metric (str): The name of the metric to visualize
+            metric (str): The name of the metric on which to calculate standard deviation
+            top_n (int): The number of functions to display per trial
 
         Returns:
             list of :obj:`nbformat.NotebookNode`: The cells which show the barplot.
@@ -150,6 +147,7 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
                     'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
                     inspect.getsource(run_stddev_prioritized_analysis),
+                    inspect.getsource(show_single_figure),
                     inspect.getsource(show_stddev_prioritized_analysis)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
@@ -159,25 +157,36 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
                     self.get_interaction_code(inputs, 'show_stddev_prioritized_analysis', **kwargs)))
             else:
                 digest = trial.hash_digest()
+                trial_num = trial['number']
+                exp_name = trial.populate()['experiment']['name']
+                notebook_cells.append(nbformat.v4.new_markdown_cell(
+                    "# Experiment %s, Trial %s" % (exp_name, trial_num)))
                 notebook_cells.append(nbformat.v4.new_code_cell(
-                    'show_stddev_prioritized_analysis(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s", %s)'
+                    'figs = run_stddev_prioritized_analysis(Trial.controller(PROJECT_STORAGE).'
+                    'search_hash("%s")[0], "%s", %s)'
                     % (digest, metric, top_n)))
+                for i in range(0, top_n):
+                    notebook_cells.append(nbformat.v4.new_code_cell('show_single_figure(figs[%s])' % i))
         return notebook_cells
 
     def run(self, inputs, *args, **kwargs):
-        """Create a barplot as direct notebook output for the trials in `inputs`.
+        """Create histograms for the N functions with the highest standard deviations.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize
 
         Keyword Args:
             metric (str): The name of the metric to visualize
+            top_n (int): The number of functions to display per trial
+
+        Returns:
+            list of figures
 
         Raises:
             ConfigurationError: The provided models are not Trials
         """
         trials, metric, top_n = self._check_input(inputs, **kwargs)
-        return [run_stddev_prioritized_analysis(trial, metric, ) for trial in trials]
+        return [run_stddev_prioritized_analysis(trial, metric, top_n) for trial in trials]
 
 
 ANALYSIS = StdDevPrioritizedAnalysis()
