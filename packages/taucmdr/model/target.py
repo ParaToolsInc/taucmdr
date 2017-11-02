@@ -612,11 +612,11 @@ class Target(Model):
                         found.append(compiler_record)
                         break
         if not found:
-            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path),
+            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path or compiler_cmd),
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
-                     "Create and select a new target configuration that uses the '%s' compiler" % absolute_path,
+                     "Create and select a new target configuration that uses the '%s' compiler" % (absolute_path or compiler_cmd),
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
         return found
