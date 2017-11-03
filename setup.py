@@ -463,6 +463,7 @@ class BuildMarkdown(Command):
 
         tocfile.write('<a href="')
         tocfile.write(usemanpath)
+        tocfile.write('introduction')
         tocfile.write('">')
         tocfile.write('TAU Commander User Manual Introduction')
         tocfile.write('</a>\n')
