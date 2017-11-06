@@ -1092,7 +1092,7 @@ class TauInstallation(Installation):
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
-        if self.select_file:
+        if self.select_file and self.application_linkage == 'dynamic':
             env['TAU_SELECT_FILE'] = os.path.realpath(os.path.abspath(self.select_file))
         if self.verbose:
             opts.append('-v')
