@@ -1376,8 +1376,13 @@ class TauInstallation(Installation):
         retval = 0
         for path in paths:
             if not os.path.exists(path):
-                raise ConfigurationError("Profile file '%s' does not exist" % path)
-            retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=path, env=env)
+                raise ConfigurationError("Profile directory '%s' does not exist" % path)
+            for thisdir, dirs, files in os.walk(path):
+                if any(file_name.startswith("profile") for file_name in files):
+                    LOGGER.info("\nCurrent trial/metric directory: %s" % os.path.basename(thisdir))
+                    retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=thisdir, env=env)
+                else:
+                    raise ConfigurationError("No profile files found in '%s'" % path)
         return retval
     
     def _show_jumpshot(self, fmt, paths, env):
