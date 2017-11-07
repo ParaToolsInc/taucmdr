@@ -351,7 +351,7 @@ def attributes():
             'argparse': {'flags': ('--force-tau-options',),
                          'nargs': '+',
                          'metavar': '<option>'},
-            'compat': {True: (Measurement.discourage('force_tau_options'),
+            'compat': {bool: (Measurement.discourage('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         }
     }
