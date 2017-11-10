@@ -166,14 +166,3 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['profile'])
         self.assertIn("Selected experiment 'targ1-app1-profile'", stdout)
         self.assertFalse(stderr)
-
-    def test_foo_launcher(self):
-        """https://github.com/ParaToolsInc/taucmdr/issues/210"""
-        self.reset_project_storage()
-        self.copy_testfile('foo_launcher')
-        self.assertManagedBuild(0, CC, [], 'matmult.c')
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', './a.out'])
-        self.assertFalse(stderr)
-        self.assertIn("FOO LAUNCHER\nDone.", stdout)
-        self.assertIn("produced 1 profile files.", stdout)
-        self.assertNotIn("Multiple executables were found", stdout)
