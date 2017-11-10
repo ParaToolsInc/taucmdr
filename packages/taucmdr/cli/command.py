@@ -28,8 +28,8 @@
 """Base class for TAU Commander commands"""
 
 from abc import ABCMeta, abstractmethod
-from argparse import Namespace
 from taucmdr import logger, cli
+from taucmdr.cli.arguments import Namespace
 
 
 class AbstractCommand(object):

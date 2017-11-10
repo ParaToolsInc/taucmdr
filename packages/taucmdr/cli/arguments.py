@@ -48,6 +48,9 @@ Action = argparse.Action
 ArgumentError = argparse.ArgumentError
 """Argument error exception base class."""
 
+Namespace = argparse.Namespace
+"""Generic container for parsed arguments."""
+
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
 
