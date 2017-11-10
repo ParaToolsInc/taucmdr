@@ -1,5 +1,18 @@
 #!/bin/bash
 
 echo "FOO LAUNCHER"
-"$@"
+
+args=()
+while [[ $# -gt 0 ]] ; do
+  case "$1" in
+  -np|-G|foo_file)
+    ;;
+  *)
+    args+=("$1")
+    ;;
+  esac
+  shift
+done
+
+${args[@]}
 

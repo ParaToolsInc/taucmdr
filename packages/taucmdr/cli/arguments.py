@@ -532,8 +532,7 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
                                       formatter_class=formatter)
 
 
-def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None,
-                          positional_primary_key=True):
+def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None):
     """Builds an argument parser from a model's attributes.
     
     The returned argument parser will accept arguments as defined by the model's `argparse` 
@@ -570,7 +569,6 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         usage (str): Description of the program's usage.
         description (str): Text to display before the argument help.
         epilog (str): Text to display after the argument help.
-        positional_primary_key (bool): If True, automatically add a positional argument for the primary key.
 
     Returns:
         MutableArgumentGroupParser: The customized argument parser object.        
@@ -581,7 +579,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         try:
             options = dict(props['argparse'])
         except KeyError:
-            if 'primary_key' in props and positional_primary_key:
+            if 'primary_key' in props:
                 options = {'metavar': '<%s_%s>' % (model.name.lower(), attr)}
             else:
                 continue
