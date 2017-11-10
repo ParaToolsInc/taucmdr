@@ -28,6 +28,7 @@
 """Base class for TAU Commander commands"""
 
 from abc import ABCMeta, abstractmethod
+from argparse import Namespace
 from taucmdr import logger, cli
 
 
@@ -81,7 +82,10 @@ class AbstractCommand(object):
         return self.parser.format_help()
 
     def _parse_args(self, argv):
-        args = self.parser.parse_args(args=argv)
+        if isinstance(argv, Namespace):
+            args = argv
+        else:
+            args = self.parser.parse_args(args=argv)
         self.logger.debug('%s args: %s', self.command, args)
         return args
 
