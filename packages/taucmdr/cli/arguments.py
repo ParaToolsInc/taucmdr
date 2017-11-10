@@ -33,6 +33,7 @@ Extensions to :any:`argparse` to support the TAU Commander command line interfac
 import os
 import sys
 import re
+import copy
 import argparse
 import textwrap
 from operator import attrgetter
@@ -166,10 +167,10 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
               exclude_groups=None, exclude_arguments=None):
         """Merge arguments from a parser into this parser.
         
-        Modify this parser by adding additional arguments taken from the supplied parser.
+        Modify this parser by adding additional arguments copied from the supplied parser.
         
         Args:
-            parser (ArgumentParser): Parser to pull arguments from.
+            parser (MutableArgumentGroupParser): Parser to pull arguments from.
             group_title (str): Optional group title for merged arguments.
             include_positional (bool): If True, include positional arguments.
             include_optional (bool): If True, include optional arguments.
@@ -177,7 +178,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             exclude_groups (list): Strings identifying argument groups that should be excluded.
             exclude_arguments (list): Strings identifying arguments that should be excluded.
         """
-        for action in parser._actions:
+        for action in parser.actions:
             if exclude_groups and action.container.title in exclude_groups:
                 continue
             dst_group = self.add_argument_group(group_title if group_title else action.container.title)
@@ -192,7 +193,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
                     (not include_positional and not optional)):
                 continue
             try:
-                dst_group._add_action(action)
+                dst_group._add_action(copy.copy(action))
             except argparse.ArgumentError:
                 # Argument is already in this parser.
                 pass
