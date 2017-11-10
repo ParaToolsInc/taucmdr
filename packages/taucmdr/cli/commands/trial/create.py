@@ -54,7 +54,8 @@ class TrialCreateCommand(CreateCommand):
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('launcher',
                             help="Application launcher command, e.g. mpirun",
-                            metavar='launcher')
+                            metavar='launcher',
+                            nargs='?')
         parser.add_argument('launcher_args',
                             help="Application launcher arguments",
                             metavar='launcher_arguments',
