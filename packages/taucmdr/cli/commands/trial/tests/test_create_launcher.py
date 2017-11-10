@@ -49,7 +49,7 @@ class CreateLauncherTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', './a.out'])
         self.assertFalse(stderr)
         self.assertIn("Multiple executables were found", stdout)
-        self.assertIn("TAU will assume that the application executable is './foo_launcher'", stdout)
+        self.assertIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
         self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./a.out')
  
@@ -60,7 +60,7 @@ class CreateLauncherTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', '--', './a.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
-        self.assertNotIn("TAU will assume that the application executable is './foo_launcher'", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
         self.assertRegexpMatches(stdout, r'./foo_launcher tau_exec .* ./a.out')
          
@@ -70,7 +70,7 @@ class CreateLauncherTest(tests.TestCase):
         stdout, stderr = self.assertNotCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', './invalid'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
-        self.assertNotIn("TAU will assume that the application executable is './foo_launcher'", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER", stdout)
         self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./invalid')
          
@@ -82,7 +82,7 @@ class CreateLauncherTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
-        self.assertNotIn("TAU will assume that the application executable is './foo_launcher'", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertRegexpMatches(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
@@ -93,7 +93,7 @@ class CreateLauncherTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['mpirun', '-np', '4', '--', './a.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
-        self.assertNotIn("TAU will assume that the application executable is './foo_launcher'", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
         self.assertRegexpMatches(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
 
@@ -107,7 +107,7 @@ class CreateLauncherTest(tests.TestCase):
                                                        ['mpirun', '-np', '2', './a.out', ':', '-np', '2', './b.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
-        self.assertNotIn("TAU will assume that the application executable is './foo_launcher'", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
         self.assertRegexpMatches(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
         
