@@ -228,6 +228,23 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
                 raise InternalError("%s is an invalid module." %mod)
     return all_commands
 
+
+def _resolve(cmd, c, d):
+    # pylint: disable=invalid-name
+    if not c:
+        return []
+    car, cdr = c[0], c[1:]
+    try:
+        matches = [(car, d[car])]
+    except KeyError:
+        matches = [i for i in d.iteritems() if i[0].startswith(car)]
+    if len(matches) == 1:
+        return [matches[0][0]] + _resolve(cmd, cdr, matches[0][1])
+    elif len(matches) == 0:
+        raise UnknownCommandError(' '.join(cmd))
+    elif len(matches) > 1:
+        raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
+    
 def find_command(cmd):
     """Import the command module and return its COMMAND member.
     
@@ -241,22 +258,6 @@ def find_command(cmd):
     Returns:
         AbstractCommand: Command object for the subcommand.
     """
-    # pylint: disable=invalid-name
-    def _resolve(c, d):
-        if not c:
-            return []
-        car, cdr = c[0], c[1:]
-        try:
-            matches = [(car, d[car])]
-        except KeyError:
-            matches = [i for i in d.iteritems() if i[0].startswith(car)]
-        if len(matches) == 1:
-            return [matches[0][0]] + _resolve(cdr, matches[0][1])
-        elif len(matches) == 0:
-            raise UnknownCommandError(' '.join(cmd))
-        elif len(matches) > 1:
-            raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
-
     if cmd:
         root = '.'.join([COMMANDS_PACKAGE_NAME] + cmd)
     else:
@@ -265,12 +266,22 @@ def find_command(cmd):
         return _get_commands(root)['__module__'].COMMAND
     except KeyError:
         LOGGER.debug('%r not recognized as a TAU command', cmd)
-        resolved = _resolve(cmd, _COMMANDS[SCRIPT_COMMAND])
+        resolved = _resolve(cmd, cmd, _COMMANDS[SCRIPT_COMMAND])
         LOGGER.debug('Resolved ambiguous command %r to %r', cmd, resolved)
         return find_command(resolved)
     except AttributeError:
         raise InternalError("'COMMAND' undefined in %r" % cmd)
 
+
+def _permute(cmd, cmd_args):
+    cmd_len = len(cmd)
+    full_len = len(cmd) + len(cmd_args)
+    yield cmd, cmd_args
+    for i in xrange(full_len):
+        for j in xrange(i+1, full_len):
+            perm = cmd + cmd_args
+            perm[i], perm[j] = perm[j], perm[i]
+            yield perm[:cmd_len], perm[cmd_len:]
 
 def execute_command(cmd, cmd_args=None, parent_module=None):
     """Import the command module and run its main routine.
@@ -291,20 +302,25 @@ def execute_command(cmd, cmd_args=None, parent_module=None):
     Returns:
         int: Command return code.
     """
+    if cmd_args is None:
+        cmd_args = []
     if parent_module:
         parent = _command_as_list(parent_module)[1:]
         cmd = parent + cmd
-    try:
-        main = find_command(cmd).main
-    except UnknownCommandError:
-        if len(cmd) <= 1:
-            LOGGER.debug("Unknown command %r has no parent module: giving up.", cmd)
-            raise  # We finally give up
-        if not parent_module:
-            parent = cmd[:-1]
-        LOGGER.debug('Getting help from parent command %r', parent)
-        parent_usage = util.uncolor_text(find_command(parent).usage)
-        LOGGER.error("Invalid %s subcommand: %s\n\n%s", parent[0], cmd[-1], parent_usage)
-        return EXIT_FAILURE
-    else:
-        return main(cmd_args or [])
+    for perm_cmd, perm_args in _permute(cmd, cmd_args):
+        LOGGER.debug('Trying %s(%s)', perm_cmd, perm_args)
+        try:
+            main = find_command(perm_cmd).main
+        except UnknownCommandError:
+            continue
+        return main(perm_args)
+    if len(cmd) <= 1:
+        # We finally give up
+        LOGGER.debug("Unknown command %r has no parent module: giving up.", cmd)
+        raise UnknownCommandError(' '.join(cmd))
+    if not parent_module:
+        parent = cmd[:-1]
+    LOGGER.debug('Getting help from parent command %r', parent)
+    parent_usage = util.uncolor_text(find_command(parent).usage)
+    LOGGER.error("Invalid %s subcommand: %s\n\n%s", parent[0], cmd[-1], parent_usage)
+    return EXIT_FAILURE
