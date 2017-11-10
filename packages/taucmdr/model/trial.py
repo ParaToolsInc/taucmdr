@@ -117,7 +117,6 @@ class TrialError(ConfigurationError):
     message_fmt = ("%(value)s\n"
                    "\n"
                    "%(hints)s\n"
-                   "\n"
                    "Please check the selected configuration for errors or"
                    " send '%(logfile)s' to  %(contact)s for assistance.")
 

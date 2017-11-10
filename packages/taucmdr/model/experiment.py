@@ -398,6 +398,16 @@ class Experiment(Model):
             int: Application subprocess return code.
         """
         tau = self.configure()
+        application = self.populate('application')
+        for application_cmd in application_cmds:
+            cmd0 = application_cmd[0]
+            linkage = util.get_binary_linkage(cmd0)
+            if linkage is None:
+                LOGGER.warning("Unable to check application linkage on '%s'", cmd0)
+                break
+            if linkage != application['linkage']:
+                LOGGER.warning("Application configuration %s specifies %s linkage but '%s' has %s linkage",
+                               application['name'], application['linkage'], cmd0, linkage)
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
         return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
