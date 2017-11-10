@@ -380,7 +380,7 @@ class Experiment(Model):
             LOGGER.warning("Measurement '%s' forces TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.force_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
-    def managed_run(self, launcher_cmd, application_cmds, description):
+    def managed_run(self, launcher_cmd, application_cmds, description=None): 
         """Uses this experiment to run an application command.
 
         Performs all relevent system preparation tasks to run the user's application
