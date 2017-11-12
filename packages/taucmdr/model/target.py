@@ -173,7 +173,7 @@ def attributes():
                                               "Try adding `--compilers=Intel` to the command line")
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
-                                                  "Try adding `--mpi-wrapper-style=Intel` to the command line")
+                                                  "Try adding `--mpi-wrappers=Intel` to the command line")
     
     return {
         'projects': {
