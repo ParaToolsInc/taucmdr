@@ -410,6 +410,7 @@ class Release(SDistCommand):
             subprocess.call(['python', 'setup.py', 'release', 
                              '--target-arch', str(targ_arch),
                              '--target-os', str(targ_os)])
+        subprocess.call(['python', 'setup.py', 'release', '--web'])
 
     def run(self):
         from taucmdr import util
@@ -423,7 +424,6 @@ class Release(SDistCommand):
             self._build_web_release()
         elif self.all:
             self._build_all()
-            self._build_web_release()
         else:
             self._build_target_release()
 
