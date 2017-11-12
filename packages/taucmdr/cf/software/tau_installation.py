@@ -988,6 +988,8 @@ class TauInstallation(Installation):
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
+        if self.baseline:
+            return opts, env
         for pkg in self.dependencies.itervalues():
             opts, env = pkg.compiletime_config(opts, env)
         try:
