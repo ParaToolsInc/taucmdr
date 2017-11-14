@@ -133,7 +133,7 @@ NPM = $(ANACONDA_BIN)/npm
 
 ifeq ($(USE_ANACONDA),true)
   PYTHON_EXE = $(ANACONDA_PYTHON)
-  PYTHON_FLAGS = -E
+  PYTHON_FLAGS = -EOu
 else
   $(warning WARNING: There are no anaconda packages for this system: $(OS), $(ARCH).)
   PYTHON_EXE = $(shell which python)

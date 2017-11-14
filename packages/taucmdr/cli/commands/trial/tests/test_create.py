@@ -54,29 +54,17 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
-         
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
-    def test_create_with_description(self):
-        self.reset_project_storage()
-        self.assertManagedBuild(0, CC, [], 'hello.c')
-        args = ['--description', 'Created by test_create_with_description', '--', './a.out']
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, args)
-        self.assertIn('BEGIN targ1-app1', stdout)
-        self.assertIn('END targ1-app1', stdout)
-        self.assertIn('Trial 0 produced', stdout)
-        self.assertIn('profile files', stdout)
-        self.assertFalse(stderr)
-         
+          
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
- 
+  
     def test_help_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
- 
+  
     def test_no_time_metric(self):
         self.reset_project_storage()
         argv = ['meas_no_time', '--metrics', 'PAPI_FP_INS', '--source-inst', 'never']
@@ -88,7 +76,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         self.assertIn("TAU_METRICS=TIME,", stdout)
         self.assertFalse(stderr)
-
+ 
     @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
     def test_heap_usage_memory_alloc_sample(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
@@ -115,7 +103,7 @@ class CreateTest(tests.TestCase):
         # TAU bug: the dynamic malloc wrapper (e.g. tau_exec -memory) doesn't always capture malloc().
         #self.assertInLastTrialData("Heap Allocate")
         #self.assertInLastTrialData("malloc")
-
+ 
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
@@ -143,7 +131,7 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("compute_interchange")
         self.assertInLastTrialData("compute")
         self.assertInLastTrialData("malloc")
-
+ 
     @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
     def test_system_load_sample(self):
         """Test TAU_TRACK_LOAD w/ sampling"""
@@ -155,7 +143,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
         self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
         self.assertFalse(stderr)
-
+ 
     def test_system_load_profile(self):
         """Test TAU_TRACK_LOAD w/ profiling"""
         self.reset_project_storage()

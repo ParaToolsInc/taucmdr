@@ -974,7 +974,7 @@ class TauInstallation(Installation):
                         '\n'.join(["%s=%s" % item for item in six.iteritems(dirt)]))
         return dict([item for item in six.iteritems(env) if item[0] not in dirt])
 
-    def compiletime_config(self, opts=None, env=None):
+    def compiletime_config(self, compiler, opts=None, env=None):
         """Configures environment for compilation with TAU.
 
         Modifies incoming command line arguments and environment variables
@@ -989,6 +989,8 @@ class TauInstallation(Installation):
         """
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
+        if self.baseline:
+            return opts, env
         for pkg in six.itervalues(self.dependencies):
             opts, env = pkg.compiletime_config(opts, env)
         try:
@@ -998,6 +1000,9 @@ class TauInstallation(Installation):
                 tau_opts = set(env['TAU_OPTIONS'].split())
             except KeyError:
                 tau_opts = set()
+            if self.source_inst != 'never' or self.compiler_inst != 'never':
+                for flag in '-optAppCC', '-optAppCXX', '-optAppF90':
+                    tau_opts.add(flag+'='+compiler.absolute_path)
             if self.source_inst == 'manual' or (self.source_inst == 'never' and self.compiler_inst == 'never'):
                 tau_opts.add('-optLinkOnly')
             else:
@@ -1090,6 +1095,8 @@ class TauInstallation(Installation):
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
+        if self.select_file and self.application_linkage == 'dynamic':
+            env['TAU_SELECT_FILE'] = os.path.realpath(os.path.abspath(self.select_file))
         if self.verbose:
             opts.append('-v')
         if self.sample:
@@ -1136,7 +1143,7 @@ class TauInstallation(Installation):
         executes the compiler command.
 
         Args:
-            compiler (Compiler): A compiler command.
+            compiler (InstalledCompiler): A compiler command.
             compiler_args (list): Compiler command line arguments.
 
         Raises:
@@ -1146,7 +1153,7 @@ class TauInstallation(Installation):
             int: Compiler return value (always 0 if no exception raised).
         """
         self.install()
-        opts, env = self.compiletime_config()
+        opts, env = self.compiletime_config(compiler)
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
         tau_env_opts = sorted('%s=%s' % item for item in six.iteritems(env) if item[0].startswith('TAU_'))
@@ -1372,8 +1379,13 @@ class TauInstallation(Installation):
         retval = 0
         for path in paths:
             if not os.path.exists(path):
-                raise ConfigurationError("Profile file '%s' does not exist" % path)
-            retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=path, env=env)
+                raise ConfigurationError("Profile directory '%s' does not exist" % path)
+            for thisdir, dirs, files in os.walk(path):
+                if any(file_name.startswith("profile") for file_name in files):
+                    LOGGER.info("\nCurrent trial/metric directory: %s" % os.path.basename(thisdir))
+                    retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=thisdir, env=env)
+                else:
+                    raise ConfigurationError("No profile files found in '%s'" % path)
         return retval
     
     def _show_jumpshot(self, fmt, paths, env):

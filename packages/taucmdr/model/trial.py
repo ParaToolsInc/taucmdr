@@ -132,7 +132,6 @@ class TrialError(ConfigurationError):
     message_fmt = ("%(value)s\n"
                    "\n"
                    "%(hints)s\n"
-                   "\n"
                    "Please check the selected configuration for errors or"
                    " send '%(logfile)s' to  %(contact)s for assistance.")
 
@@ -326,37 +325,41 @@ class Trial(Model):
         Raises:
             ConfigurationError: No application config files or executables found after a recognized launcher command.
         """
+        # If '--' appears in the command then everything before it is a launcher + args 
+        # and everything after is the application + args 
+        try:
+            idx = cmd.index('--')
+        except ValueError:
+            pass
+        else:
+            return cmd[:idx], cmd[idx+1:]
         cmd0 = cmd[0]
         for launcher, appfile_flags in PROGRAM_LAUNCHERS.iteritems():
             if launcher not in cmd0:
                 continue
-            try:
-                idx = cmd.index('--')
-                return cmd[:idx], cmd[idx + 1:]
-            except ValueError:
-                # No '--' to indicate start of application, so look for first executable
-                for idx, exe in enumerate(cmd[1:], 1):
-                    if util.which(exe):
-                        return cmd[:idx], cmd[idx:]
-                # No exectuables, so look for application config file
-                if appfile_flags:
-                    for i, arg in enumerate(cmd[1:], 1):
+            # No '--' to indicate start of application, so look for first executable
+            for idx, exe in enumerate(cmd[1:], 1):
+                if util.which(exe):
+                    return cmd[:idx], cmd[idx:]
+            # No exectuables, so look for application config file
+            if appfile_flags:
+                for i, arg in enumerate(cmd[1:], 1):
+                    try:
+                        arg, appfile = arg.split('=')
+                    except ValueError:
                         try:
-                            arg, appfile = arg.split('=')
-                        except ValueError:
-                            try:
-                                appfile = cmd[i + 1]
-                            except IndexError:
-                                # Reached the end of the command line without finding an application config file
-                                break
-                        if arg in appfile_flags and util.path_accessible(appfile):
-                            return cmd, []
-                raise ConfigurationError(("TAU is having trouble parsing the command line: no executable "
-                                          "commands or %s application files were found after "
-                                          "the launcher command '%s'") % (cmd0, cmd0),
-                                         "Check that the command is correct. Does it work without TAU?",
-                                         ("Use '--' to seperate '%s' and its arguments from the application "
-                                          "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
+                            appfile = cmd[i+1]
+                        except IndexError:
+                            # Reached the end of the command line without finding an application config file
+                            break
+                    if arg in appfile_flags and util.path_accessible(appfile):
+                        return cmd, []
+            raise ConfigurationError(("TAU is having trouble parsing the command line: no executable "
+                                      "commands or %s application files were found after "
+                                      "the launcher command '%s'") % (cmd0, cmd0),
+                                     "Check that the command is correct. Does it work without TAU?",
+                                     ("Use '--' to seperate '%s' and its arguments from the application "
+                                      "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
         # No launcher command, just an application command
         return [], cmd
 
@@ -381,14 +384,12 @@ class Trial(Model):
                 LOGGER.warning("Multiple executables were found on the command line but none of them "
                                "were recognized application launchers.  TAU will assume that the application "
                                "executable is '%s' and subsequent executables are arguments to that command. "
-                               "If this is incorrect, use '--' to separate '%s' and its arguments from the "
-                               "application command, e.g. `mpirun -np 4 -- ./a.out -l hello`", cmd0, cmd0)
+                               "If this is incorrect, use '--' to separate '%s' and its arguments "
+                               "from the application command, e.g. `mpirun -np 4 -- ./a.out -l hello`", cmd0, cmd0)
             return [], [cmd]
         if not cmd:
             return launcher_cmd, []
-        if num_exes == 0:
-            raise InternalError("No launcher commands or application executables.")
-        elif num_exes == 1:
+        if num_exes <= 1:
             return launcher_cmd, [cmd]
         elif num_exes > 1:
             colons = [i for i, x in enumerate(cmd) if x == ':']

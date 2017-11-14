@@ -411,6 +411,7 @@ class Release(SDistCommand):
             subprocess.call(['python', 'setup.py', 'release', 
                              '--target-arch', str(targ_arch),
                              '--target-os', str(targ_os)])
+        subprocess.call(['python', 'setup.py', 'release', '--web'])
 
     def run(self):
         from taucmdr import util
@@ -424,7 +425,6 @@ class Release(SDistCommand):
             self._build_web_release()
         elif self.all:
             self._build_all()
-            self._build_web_release()
         else:
             self._build_target_release()
 
@@ -454,9 +454,51 @@ class BuildMarkdown(Command):
         from taucmdr import cli
         cli.USAGE_FORMAT = "markdown"
         os.environ['ANSI_COLORS_DISABLED'] = '1'
+#setup toc file
+        tocfilename=os.path.join(self.dest,'tau-commander-user-manual-toc.md')
+        tocfile = open(tocfilename, 'w')
+        usemanpath ='http://taucommander.paratools.com/tau-commander-user-manual/'
+#write preliminary entries not based on commands
+        tocfile.write('TAU Commander User Manual\n')
+        tocfile.write('Table of Contents\n\n')
+
+        tocfile.write('<a href="')
+        tocfile.write(usemanpath)
+        tocfile.write('introduction')
+        tocfile.write('">')
+        tocfile.write('TAU Commander User Manual Introduction')
+        tocfile.write('</a>\n')
+
+        tocfile.write('<a href="')
+        tocfile.write(usemanpath)
+        tocfile.write('tau-commander-installation-2')
+        tocfile.write('">')
+        tocfile.write('TAU Commander Installation')
+        tocfile.write('</a>\n')
+        indentspace=''
+        bs=1
         for cmd_name in cli.get_all_commands():
             name = cli.command_from_module_name(cmd_name)
+            if (name.count(' ') > bs) : 
+               indentspace = ': '
+               bs = name.count(' ')
+            if (name.count(' ') == 1) :
+               if (bs > 1) :
+                   bs = 1
+                   indentspace=''
+                   tocfile.write('\n')
             cmd_obj = cli.find_command(name.split()[1:])
+            tocname=  cmd_name.replace('taucmdr.cli.commands.','tau-commander-')
+            tocfile.write(indentspace)
+            tocfile.write('<a href="')
+            tocfile.write(usemanpath)
+            tocfile.write(tocname.replace('.','-'))
+            tocfile.write('">')
+            tocname=  tocname.replace('tau-commander-','')
+            
+            tocname=tocname.replace('.',' ')
+            tocfile.write(tocname.capitalize())
+            tocfile.write('</a>\n')
             parts = [cmd_obj.help_page,
                      "", "",
                      "Command Line Usage", 
@@ -467,6 +509,9 @@ class BuildMarkdown(Command):
             with open(filename, 'w') as fout:
                 fout.write(unidecode('\n'.join(parts).decode('utf-8')))
             print('wrote %s' % filename)
+            indentspace=''
+#close tocfile
+        tocfile.close
 
 
 def _version():

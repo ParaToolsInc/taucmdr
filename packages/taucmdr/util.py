@@ -759,4 +759,14 @@ def _iter_modules(paths, prefix):
             if name not in yielded:
                 yielded[name] = True
                 yield importer, name, ispkg
- 
+
+
+def get_binary_linkage(cmd):
+    ldd = which('ldd')
+    if not ldd:
+        return None
+    proc = subprocess.Popen([ldd, cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout, _ = proc.communicate()
+    if proc.returncode:
+        return 'static' if stdout else None
+    return 'dynamic'

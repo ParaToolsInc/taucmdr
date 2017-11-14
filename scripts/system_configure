@@ -63,6 +63,14 @@ class ParseTauAction(arguments.Action):
 
 
 def _translate_arg(flag, arg):
+    # Handle OpenMP special case, see https://github.com/ParaToolsInc/taucmdr/issues/209
+    if flag == '--openmp':
+        if arg is True:
+            return [flag]
+        elif arg is False:
+            return [flag, 'ignore']
+        else:
+            return [flag, arg]
     if isinstance(arg, six.string_types):
         return [flag, arg]
     if isinstance(arg, bool):

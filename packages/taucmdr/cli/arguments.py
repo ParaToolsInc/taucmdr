@@ -33,6 +33,7 @@ Extensions to :any:`argparse` to support the TAU Commander command line interfac
 import os
 import sys
 import re
+import copy
 import argparse
 import textwrap
 from operator import attrgetter
@@ -49,6 +50,9 @@ Action = argparse.Action
 
 ArgumentError = argparse.ArgumentError
 """Argument error exception base class."""
+
+ArgumentsNamespace = argparse.Namespace
+"""Generic container for parsed arguments."""
 
 SUPPRESS = argparse.SUPPRESS
 """Suppress attribute creation in parsed argument namespace."""
@@ -164,10 +168,10 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
               exclude_groups=None, exclude_arguments=None):
         """Merge arguments from a parser into this parser.
         
-        Modify this parser by adding additional arguments taken from the supplied parser.
+        Modify this parser by adding additional arguments copied from the supplied parser.
         
         Args:
-            parser (ArgumentParser): Parser to pull arguments from.
+            parser (MutableArgumentGroupParser): Parser to pull arguments from.
             group_title (str): Optional group title for merged arguments.
             include_positional (bool): If True, include positional arguments.
             include_optional (bool): If True, include optional arguments.
@@ -175,7 +179,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             exclude_groups (list): Strings identifying argument groups that should be excluded.
             exclude_arguments (list): Strings identifying arguments that should be excluded.
         """
-        for action in parser._actions:
+        for action in parser.actions:
             if exclude_groups and action.container.title in exclude_groups:
                 continue
             dst_group = self.add_argument_group(group_title if group_title else action.container.title)
@@ -190,7 +194,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
                     (not include_positional and not optional)):
                 continue
             try:
-                dst_group._add_action(action)
+                dst_group._add_action(copy.copy(action))
             except argparse.ArgumentError:
                 # Argument is already in this parser.
                 pass
@@ -529,8 +533,7 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
                                       formatter_class=formatter)
 
 
-def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None,
-                          positional_primary_key=True):
+def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None):
     """Builds an argument parser from a model's attributes.
     
     The returned argument parser will accept arguments as defined by the model's `argparse` 
@@ -567,7 +570,6 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         usage (str): Description of the program's usage.
         description (str): Text to display before the argument help.
         epilog (str): Text to display after the argument help.
-        positional_primary_key (bool): If True, automatically add a positional argument for the primary key.
 
     Returns:
         MutableArgumentGroupParser: The customized argument parser object.        
@@ -578,7 +580,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
         try:
             options = dict(props['argparse'])
         except KeyError:
-            if 'primary_key' in props and positional_primary_key:
+            if 'primary_key' in props:
                 options = {'metavar': '<%s_%s>' % (model.name.lower(), attr)}
             else:
                 continue

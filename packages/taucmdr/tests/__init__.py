@@ -197,7 +197,7 @@ class TestCase(unittest.TestCase):
         PROJECT_STORAGE.destroy(ignore_errors=True)
 
     def exec_command(self, cmd, argv):
-        """Execute a command's main() routine and return the exit code, stdout, and stderr data.
+        """Execute a tau command's main() routine and return the exit code, stdout, and stderr data.
         
         Args:
             cmd (type): A command instance that has a `main` callable attribute.
@@ -228,6 +228,11 @@ class TestCase(unittest.TestCase):
             sys.stdout = orig_stdout
             sys.stderr = orig_stderr
             logger._STDOUT_HANDLER.stream = orig_stdout
+            
+    def copy_testfile(self, src, dst=None):
+        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
+        test_dst = os.path.join(get_test_workdir(), dst or src)
+        shutil.copy(test_src, test_dst)
 
     def assertCompiler(self, role, target_name='targ1'):
         from taucmdr.model.target import Target
@@ -250,9 +255,7 @@ class TestCase(unittest.TestCase):
     
     def assertManagedBuild(self, return_value, compiler_role, compiler_args, src):
         from taucmdr.cli.commands.build import COMMAND as build_command
-        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
-        test_dst = os.path.join(get_test_workdir(), src)
-        shutil.copyfile(test_src, test_dst)
+        self.copy_testfile(src)
         cc_cmd = self.assertCompiler(compiler_role)
         args = [cc_cmd] + compiler_args + [src]
         self.assertCommandReturnValue(return_value, build_command, args)

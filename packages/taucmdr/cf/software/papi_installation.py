@@ -148,7 +148,7 @@ class PapiInstallation(AutotoolsInstallation):
                                      "Use papi_avail to check metric availability.",
                                      "Spread the desired metrics over multiple measurements.",
                                      "Choose fewer metrics.",
-                                     "You may ignore this warning if you are cross-compiling")
+                                     "You may ignore this if you are cross-compiling.")
 
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         """List PAPI available metrics.

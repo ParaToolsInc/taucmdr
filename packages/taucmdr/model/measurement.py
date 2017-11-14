@@ -196,7 +196,9 @@ def attributes():
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
                          'metavar': 'library',
-                         'choices': ('ignore', 'opari', 'ompt')},
+                         'choices': ('ignore', 'opari', 'ompt'),
+                         'nargs': '?',
+                         'const': 'ompt'},
             'compat': {'opari':
                        (Application.require('openmp', True),
                         Measurement.exclude('baseline', True)),
@@ -384,7 +386,7 @@ def attributes():
             'argparse': {'flags': ('--force-tau-options',),
                          'nargs': '+',
                          'metavar': '<option>'},
-            'compat': {True: (Measurement.discourage('force_tau_options'),
+            'compat': {bool: (Measurement.discourage('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         }
     }

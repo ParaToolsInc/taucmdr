@@ -139,7 +139,8 @@ def attributes():
             'description': 'specify selective instrumentation file',
             'argparse': {'flags': ('--select-file',),
                          'metavar': 'path'},
-            'compat': {True: Measurement.exclude('source_inst', 'never')},
+            'compat': {bool: (Measurement.exclude('source_inst', 'never'),
+                              Application.discourage('linkage', 'static'))},
             'rebuild_required': True,
             'hashed': True
         },

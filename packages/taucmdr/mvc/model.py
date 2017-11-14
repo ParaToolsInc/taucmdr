@@ -633,3 +633,9 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                 hash_item(value, hasher)
         self._hash = hasher.hexdigest()
         return self._hash
+
+    @classmethod
+    def filter_arguments(cls, args):
+        from taucmdr.cli.arguments import ArgumentsNamespace
+        filtered = dict(item for item in vars(args).iteritems() if item[0] in cls.attributes)
+        return ArgumentsNamespace(**filtered)

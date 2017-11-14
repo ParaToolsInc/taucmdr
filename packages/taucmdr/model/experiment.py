@@ -395,7 +395,7 @@ class Experiment(Model):
             LOGGER.warning("Measurement '%s' forces TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.force_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
-    def managed_run(self, launcher_cmd, application_cmds, description):
+    def managed_run(self, launcher_cmd, application_cmds, description=None): 
         """Uses this experiment to run an application command.
 
         Performs all relevent system preparation tasks to run the user's application
@@ -413,6 +413,16 @@ class Experiment(Model):
             int: Application subprocess return code.
         """
         tau = self.configure()
+        application = self.populate('application')
+        for application_cmd in application_cmds:
+            cmd0 = application_cmd[0]
+            linkage = util.get_binary_linkage(cmd0)
+            if linkage is None:
+                LOGGER.warning("Unable to check application linkage on '%s'", cmd0)
+                break
+            if linkage != application['linkage']:
+                LOGGER.warning("Application configuration %s specifies %s linkage but '%s' has %s linkage",
+                               application['name'], application['linkage'], cmd0, linkage)
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
         return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)

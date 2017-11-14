@@ -50,26 +50,31 @@ class TrialCreateCommand(CreateCommand):
         return bool(util.which(cmd))
 
     def _construct_parser(self):
-        usage = "%s [arguments] [--] <command> [command_arguments]" % self.command
-        parser = arguments.get_parser_from_model(Trial, prog=self.command, usage=usage, description=self.summary,
-                                                 positional_primary_key=False)
+        usage = "%s [arguments] [launcher] [launcher_arguments] [--] <command> [command_arguments]" % self.command
+        parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('launcher',
+                            help="Application launcher command, e.g. mpirun",
+                            metavar='launcher',
+                            nargs='?')
+        parser.add_argument('launcher_args',
+                            help="Application launcher arguments",
+                            metavar='launcher_arguments',
+                            nargs=arguments.REMAINDER)
         parser.add_argument('cmd',
                             help="Executable command, e.g. './a.out'",
-                            metavar='<command>')
-        parser.add_argument('cmd_args', 
+                            metavar='command')
+        parser.add_argument('cmd_args',
                             help="Executable command arguments",
-                            metavar='[command_arguments]',
+                            metavar='command_arguments',
                             nargs=arguments.REMAINDER)
         return parser
     
     def main(self, argv):
-        args = self._parse_args(argv)
-        description = getattr(args, 'description', None)
-        cmd = [args.cmd] + args.cmd_args
-        launcher_cmd, application_cmds = Trial.parse_launcher_cmd(cmd)
+        self._parse_args(argv)
+        launcher_cmd, application_cmds = Trial.parse_launcher_cmd(argv)
         self.logger.debug("Launcher command: %s", launcher_cmd)
         self.logger.debug("Application commands: %s", application_cmds)
-        return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
+        return Project.selected().experiment().managed_run(launcher_cmd, application_cmds)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Create new trial of the selected experiment.")
