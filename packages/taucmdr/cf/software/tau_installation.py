@@ -425,11 +425,11 @@ class TauInstallation(Installation):
 
     def _get_max_threads(self):
         if self.target_arch in (INTEL_KNC, INTEL_KNL):
-            nprocs = 256
+            nprocs = 512
         else:
             nprocs = multiprocessing.cpu_count()
         # Round up to the next power of two, e.g. 160 => 256
-        return 1 << (nprocs-1).bit_length()
+        return max(64, 1 << (nprocs-1).bit_length())
 
     def _get_max_metrics(self):
         # Round up to the next power of two, e.g. 25 => 32
