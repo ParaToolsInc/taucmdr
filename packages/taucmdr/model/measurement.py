@@ -107,6 +107,7 @@ def attributes():
                          'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None),
                        'merged': _merged_profile_compat},
+            'rebuild_required': True
         },
         'trace': {
             'type': 'string',
@@ -119,7 +120,8 @@ def attributes():
                          'choices':('slog2', 'otf2', 'none'),
                          'const': 'otf2'},
             'compat': {'otf2': Target.exclude('libotf2_source', None),
-                       lambda x: x != 'none': _discourage_callpath}
+                       lambda x: x != 'none': _discourage_callpath},
+            'rebuild_required': True
         },
         'sample': {
             'type': 'boolean',
