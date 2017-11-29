@@ -53,7 +53,7 @@ from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
 
 _TEST_USER_NAME = "tautest"
-_TEST_USER_TOKEN = "7905233407184ba9a6602cdaef7907a9"
+_TEST_USER_TOKEN = "c08e3477ff784295947b0d30586fc362"
 
 
 class TauEnterpriseCLITests(tests.TestCase):

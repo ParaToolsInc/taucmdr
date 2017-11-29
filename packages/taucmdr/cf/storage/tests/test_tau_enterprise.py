@@ -38,7 +38,7 @@ from taucmdr import tests
 from taucmdr.cf.storage.tau_enterprise import _TauEnterpriseDatabase, TauEnterpriseStorage
 
 _DATABASE_URL = "https://east03.paratools.com:80"
-_TEST_USER_TOKEN = "7905233407184ba9a6602cdaef7907a9"
+_TEST_USER_TOKEN = "c08e3477ff784295947b0d30586fc362"
 
 
 class TauEnterpriseStorageTests(tests.TestCase):
