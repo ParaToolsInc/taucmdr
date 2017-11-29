@@ -209,6 +209,8 @@ $(JUPYTERLAB_BUILD):
 	$(ECHO)$(MKDIR) $(JUPYTERLAB_BUILD)
 	$(ECHO)$(CP) jupyterlab $(dir $(JUPYTERLAB_BUILD))
 
+PATH := $(ANACONDA_BIN):$(PATH)
+
 jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f jupyterlab | grep jupyterlab | grep -q 0\.27\.0 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab=0.27.0
 	$(ECHO)$(CONDA) list -f bokeh | grep bokeh | grep -q 0\.12\.9 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge bokeh
@@ -223,7 +225,7 @@ jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
-	$(ECHO)PATH=$(ANACONDA_BIN):$(PATH) $(JUPYTER) lab build
+	$(ECHO)$(JUPYTER) lab build
 
 clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
