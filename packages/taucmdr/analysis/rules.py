@@ -31,19 +31,63 @@ from abc import ABCMeta, abstractmethod
 
 import durable.interface
 import durable.lang
+import os
 from durable.lang import ruleset, when_start
+import werkzeug.routing
+from subprocess import Popen, PIPE
 from werkzeug.wrappers import Response
 
 import six
+from taucmdr import CONDA_HOME
 
 
 class _RuleClassifierApplication(durable.interface.Application):
     """Rule based classifier server derived from Durable Rules"""
+
+    _backend_process = None
+    _backend_count = 0
+
     def __init__(self, host, host_name, port, routing_rules=None, run=None):
         super(_RuleClassifierApplication, self).__init__(host, host_name, port, routing_rules, run)
+        # Durable Rules runs forever, which isn't usually what we want, so we add the ability to shut it down through
+        # a special endpoint.
+        self._url_map.add(werkzeug.routing.Rule('/shutdown', endpoint=self._shutdown_request))
 
-    # Durable Rules runs forever, which isn't usually what we want, so we add the ability to shut it down
-    # by posting to the special ruleset name 'shutdown'
+    def stop(self):
+        """Stop the rules engine."""
+        # When stopping the rules engine, we need to prevent existing periodic timers from attempting
+        # to contact the no-longer-running backend.
+        if self._host._d_timer: # pylint: disable=protected-access
+            self._host._d_timer.cancel() # pylint: disable=protected-access
+        if self._host._t_timer: # pylint: disable=protected-access
+            self._host._t_timer.cancel() # pylint: disable=protected-access
+        self.stop_backend()
+
+    @classmethod
+    def run_backend(cls):
+        """Run the rules engine backend as a subprocess, if not already running."""
+        cls._backend_count = cls._backend_count + 1
+        if cls._backend_process is None:
+            backend_path = os.path.join(CONDA_HOME, 'redis-server')
+            cls._backend_process = Popen([backend_path, '--save', '""', '--appendonly', 'no'], stdout=PIPE, stderr=PIPE)
+            while True:
+                line = cls._backend_process.stdout.readline()
+                if not line:
+                    break
+                if 'Ready to accept connections' in line:
+                    break
+        return cls._backend_process
+
+    @classmethod
+    def stop_backend(cls):
+        """Terminate the rules engine subprocess, if it is running."""
+        if cls._backend_count > 0:
+            cls._backend_count = cls._backend_count - 1
+        if cls._backend_count == 0:
+            cls._backend_process.terminate()
+            cls._backend_process.wait()
+            cls._backend_process = None
+
     @staticmethod
     def _shutdown_request(environ, start_response):
         func = environ.get('werkzeug.server.shutdown')
@@ -53,53 +97,18 @@ class _RuleClassifierApplication(durable.interface.Application):
         response = Response('Shutting down...', mimetype='plain/text')
         return response(environ, start_response)
 
-    def _ruleset_definition_request(self, environ, start_response, ruleset_name):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._ruleset_definition_request(
-            environ, start_response, ruleset_name)
-
-    def _state_request(self, environ, start_response, ruleset_name, sid):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._state_request(
-            environ, start_response, ruleset_name, sid)
-
-    def _default_state_request(self, environ, start_response, ruleset_name):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._default_state_request(
-            environ, start_response, ruleset_name)
-
-    def _events_request(self, environ, start_response, ruleset_name, sid):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._events_request(
-            environ, start_response, ruleset_name, sid)
-
-    def _default_events_request(self, environ, start_response, ruleset_name):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._default_events_request(
-            environ, start_response, ruleset_name)
-
-    def _facts_request(self, environ, start_response, ruleset_name, sid):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._facts_request(
-            environ, start_response, ruleset_name, sid)
-
-    def _default_facts_request(self, environ, start_response, ruleset_name):
-        if ruleset_name == 'shutdown':
-            return self._shutdown_request(environ, start_response)
-        return super(_RuleClassifierApplication, self)._default_facts_request(
-            environ, start_response, ruleset_name)
-
-    @staticmethod
-    def run_all(databases=None, host_name='127.0.0.1', port=5000, routing_rules=None, run=None, state_cache_size=1024):
+    @classmethod
+    def run_classifier_host(cls, databases=None, state_cache_size=1024):
+        cls.run_backend()
         main_host = durable.lang.create_host(databases, state_cache_size)
+        return main_host
+
+    @classmethod
+    def get_classifier_app(cls, databases=None, host_name='127.0.0.1', port=5000, routing_rules=None,
+                           run=None, state_cache_size=1024):
+        main_host = cls.run_classifier_host(databases, state_cache_size)
         main_app = _RuleClassifierApplication(main_host, host_name, port, routing_rules, run)
-        main_app.run()
+        return main_app
 
 
 class FactAsserter(six.with_metaclass(ABCMeta, object)):
@@ -109,7 +118,8 @@ class FactAsserter(six.with_metaclass(ABCMeta, object)):
         name (str): A name for this asserter to be displayed to the user.
         description (str): A description of the type of facts asserted by this object, to be displayed to the user.
         """
-    def __init__(self, name, description = None):
+
+    def __init__(self, name, description=None):
         self.name = name
         self.description = description
 
@@ -118,10 +128,10 @@ class FactAsserter(six.with_metaclass(ABCMeta, object)):
         """Process the models specified in `models`, extracting facts and posting assertions into the
         ruleset associated with this asserter instance.
 
-        Args:
-            models (list of :obj:`Model`): TAM objects to be processed.
-            ruleset (str): The name of the ruleset into which this asserter posts.
-            host (:obj:`durable.lang.host`): The Durable Rules host into which this asserter posts.
+        args:
+            models (list of :obj:`model`): tam objects to be processed.
+            ruleset (str): the name of the ruleset into which this asserter posts.
+            host (:obj:`durable.lang.host`): the durable rules host into which this asserter posts.
         """
 
 
@@ -133,7 +143,8 @@ class RuleAsserter(six.with_metaclass(ABCMeta, object)):
         description (str): A description of the type of facts asserted by this object, to be displayed to the user.
         ruleset (str): The name of the ruleset into which this asserter posts.
     """
-    def __init__(self, name, description = None):
+
+    def __init__(self, name, description=None):
         self.name = name
         self.description = description
 
@@ -153,17 +164,23 @@ class RuleBasedClassifier(object):
         name (str): A name for this asserter to be displayed to the user.
         description (str): A description of the type of facts asserted by this object, to be displayed to the user.
         ruleset (str): The name of the ruleset into which this asserter posts.
+        models (list of :obj:`Model`): The models from which facts will be derived
     """
-    def __init__(self, name, ruleset, fact_asserters = None, rule_asserters = None, description = None):
+
+    def __init__(self, name, ruleset, models, fact_asserters=None, rule_asserters=None, description=None):
         self.name = name
         self.description = description
         self.ruleset = ruleset
+        self.models = []
+        if models:
+            self.models.extend(models)
         self.fact_asserters = []
         if fact_asserters:
             self.append_fact_asserters(fact_asserters)
         self.rule_asserters = []
         if rule_asserters:
             self.rule_asserters.extend(fact_asserters)
+        self._app = None
 
     def append_fact_asserters(self, fact_asserters):
         """Add fact asserters to this classifier.
@@ -188,6 +205,7 @@ class RuleBasedClassifier(object):
             self.rule_asserters.append(rule_asserters)
 
     def run(self):
+        """Run the ruleset defined by this classifier."""
         current_ruleset = ruleset(self.ruleset)
         for rule_asserter in self.rule_asserters:
             rule_asserter.assert_rules(self.ruleset)
@@ -195,6 +213,10 @@ class RuleBasedClassifier(object):
             @when_start
             def on_start(host):
                 for fact_asserter in self.fact_asserters:
-                    fact_asserter.assert_facts(host, ruleset)
-                host.post()
-        _RuleClassifierApplication.run_all()
+                    fact_asserter.assert_facts(self.models, host, self.ruleset)
+        self._app = _RuleClassifierApplication.get_classifier_app()
+
+    def stop(self):
+        """Stop running the ruleset defined by this classifier"""
+        if self._app:
+            self._app.stop()

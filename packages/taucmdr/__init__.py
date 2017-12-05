@@ -104,6 +104,9 @@ PROJECT_DIR = '.tau'
 ENTERPRISE_URL = 'https://east03.paratools.com:80'
 """str: URL of the TAU Enterprise REST server."""
 
+CONDA_HOME = os.path.realpath(os.path.abspath(os.path.dirname(sys.executable)))
+"""str: Directory containing the conda executable and other executables installed through Anaconda"""
+
 
 def version_banner():
     """Return a human readable text banner describing the TAU Commander installation."""
