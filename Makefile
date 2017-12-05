@@ -217,7 +217,9 @@ jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
 	$(ECHO)$(CONDA) list -f cairo | grep -q cairo 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
 	$(ECHO)$(CONDA) list -f jpeg | grep -q jpeg 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jpeg
+	$(ECHO)$(CONDA) list -f redis | grep -q redis 2>&1 || $(ECHO)$(CONDA) install -y -c anaconda redis
 	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
+	$(ECHO)$(PIP) list --format=columns | grep durable_rules 2>&1 || $(ECHO)$(PIP) install durable_rules
 
 jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab-manager || $(ECHO)$(JUPYTER) labextension install @jupyter-widgets/jupyterlab-manager@0.27.0 
