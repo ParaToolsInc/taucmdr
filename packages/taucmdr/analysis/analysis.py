@@ -37,6 +37,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from pandas.api.types import is_numeric_dtype
 
 from taucmdr.data.tauprofile import TauProfile
+from taucmdr.model.trial import Trial
 
 
 class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
@@ -215,6 +216,8 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
     def get_metric_names(trials, numeric_only=False):
         metric_names = set()
         for trial in trials:
+            if not isinstance(trial, Trial):
+                continue
             trial_num = trial['number']
             trial_data = trial.get_data()
             indices = TauProfile.indices(trial_data)

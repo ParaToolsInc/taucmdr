@@ -241,7 +241,7 @@ def _resolve(cmd, c, d):
     except KeyError:
         matches = [i for i in six.iteritems(d) if i[0].startswith(car)]
     if len(matches) == 1:
-        return [matches[0][0]] + _resolve(cdr, matches[0][1])
+        return [matches[0][0]] + _resolve(cmd, cdr, matches[0][1])
     elif len(matches) == 0:
         raise UnknownCommandError(' '.join(cmd))
     elif len(matches) > 1:

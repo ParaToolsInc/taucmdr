@@ -141,7 +141,6 @@ class RuleAsserter(six.with_metaclass(ABCMeta, object)):
     Attributes:
         name (str): A name for this asserter to be displayed to the user.
         description (str): A description of the type of facts asserted by this object, to be displayed to the user.
-        ruleset (str): The name of the ruleset into which this asserter posts.
     """
 
     def __init__(self, name, description=None):
@@ -179,7 +178,7 @@ class RuleBasedClassifier(object):
             self.append_fact_asserters(fact_asserters)
         self.rule_asserters = []
         if rule_asserters:
-            self.rule_asserters.extend(fact_asserters)
+            self.append_rule_asserters(rule_asserters)
         self._app = None
 
     def append_fact_asserters(self, fact_asserters):
@@ -213,7 +212,7 @@ class RuleBasedClassifier(object):
             @when_start
             def on_start(host):
                 for fact_asserter in self.fact_asserters:
-                    fact_asserter.assert_facts(self.models, host, self.ruleset)
+                    fact_asserter.assert_facts(self.models, self.ruleset, host)
         self._app = _RuleClassifierApplication.get_classifier_app()
 
     def stop(self):

@@ -36,6 +36,9 @@ from taucmdr.analysis.analyses.trial_barplot import ANALYSIS as trial_barplot_an
 class TrialStatsFactAsserter(FactAsserter):
     """Asserts summary statistics about trials"""
 
+    def __init__(self, name='Trial Stats', description='Asserts summary statistics about trials'):
+        super(TrialStatsFactAsserter, self).__init__(name=name, description=description)
+
     def assert_facts(self, models, ruleset, host):
         """For each of the available summary statistics about a timer, this asserts a fact of the form
 
@@ -55,14 +58,15 @@ class TrialStatsFactAsserter(FactAsserter):
             host (:obj:`durable.lang.host`): the durable rules host into which this asserter posts.
 
         """
+        metrics = AbstractAnalysis.get_metric_names(models, numeric_only=True)
         for trial in models:
             if not isinstance(trial, Trial):
                 continue
-            metrics = AbstractAnalysis.get_metric_names(trial, numeric_only=True)
             for metric in metrics:
                 trial_summaries = [result[1] for result in trial_barplot_analysis.run(trial, metric=metric)]
                 for trial_summary in trial_summaries:
                     for stat_name, stat_values in six.iteritems(trial_summary):
                         for timer_name, timer_value in six.iteritems(stat_values):
-                            host.assert_fact(ruleset, {'trial': trial.hash_digest(), 'metric': metric,
-                                                       'timer': timer_name, stat_name: timer_value})
+                            fact = {'type': 'trial_stats', 'trial': trial.hash_digest(), 'metric': metric,
+                                    'timer': timer_name, 'stat': stat_name, 'value': str(timer_value)}
+                            host.assert_fact(ruleset, fact)
