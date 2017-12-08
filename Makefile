@@ -75,6 +75,13 @@ else
   WGET_FLAGS=
 endif
 
+JUPYTERLAB_TARGETS=jupyterlab-install jupyterlab-extensions-install
+ifneq ($(SKIP_JUPYTERLAB),)
+  ifneq ($(SKIP_JUPYTERLAB),0)
+    JUPYTERLAB_TARGETS=
+  endif
+endif
+
 # Build download macro
 # Usage: $(call download,source,dest)
 WGET = $(shell which wget)
@@ -190,7 +197,7 @@ install: build
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
-python_check: $(PYTHON_EXE) jupyterlab-install jupyterlab-extensions-install
+python_check: $(PYTHON_EXE) $(JUPYTERLAB_TARGETS)
 	@$(PYTHON) -c "import sys; import setuptools;" || (echo "ERROR: setuptools is required." && false)
 
 python_download: $(CONDA_SRC)
@@ -223,10 +230,10 @@ jupyterlab-install: $(CONDA)
 
 jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab-manager || $(ECHO)$(JUPYTER) labextension install @jupyter-widgets/jupyterlab-manager@0.27.0 
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)cd $(JUPYTERLAB_BUILD)/jupyterlab_bokeh && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build . )
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
-	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)cd $(JUPYTERLAB_BUILD)/jupyterlab_bokeh && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension install --no-build . )
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
 	$(ECHO)$(JUPYTER) lab build
 
 clean:
