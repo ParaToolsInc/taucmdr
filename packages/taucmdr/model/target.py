@@ -41,7 +41,7 @@ import glob
 import six
 import fasteners
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, IncompatibleRecordError 
+from taucmdr.error import ConfigurationError, IncompatibleRecordError, CompilerConfigurationError
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
@@ -514,9 +514,17 @@ class Target(Model):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
         
-    def on_create(self):
-        for comp in self.compilers().itervalues():
-            comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
+    def on_create(self, pulling):
+        try:
+            for comp in self.compilers().itervalues():
+                    comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
+        except CompilerConfigurationError as ex:
+            if pulling:
+                # Ignore errors if we're pulling
+                LOGGER.warning("Compilers in pulled Target '%s' are not usable locally: %s" % (self['name'], ex.value))
+                pass
+            else:
+                raise
             
     def on_delete(self):
         util.rmtree(os.path.join(self.storage.prefix, 'bin', self['name']))

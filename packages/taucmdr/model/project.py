@@ -99,10 +99,10 @@ def attributes():
 class ProjectController(Controller):
     """Project data controller."""
     
-    def create(self, data):
+    def create(self, data, pulling=False):
         if self.storage is not PROJECT_STORAGE:
             raise InternalError("Projects may only be created in project-level storage")
-        return super(ProjectController, self).create(data)
+        return super(ProjectController, self).create(data, pulling)
     
     def delete(self, keys):
         super(ProjectController, self).delete(keys)

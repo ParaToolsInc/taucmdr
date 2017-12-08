@@ -147,7 +147,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
         except KeyError:
             return self.attributes[key]['default']
 
-    def on_create(self):
+    def on_create(self, pulling):
         """Callback to be invoked after a new data record is created.""" 
 
     def on_update(self, changes): 

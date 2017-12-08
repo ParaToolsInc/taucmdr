@@ -172,7 +172,7 @@ class Application(Model):
             if select_file and not os.path.exists(select_file):
                 raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
 
-    def on_create(self):
+    def on_create(self, pulling):
         self._check_select_file()
 
     def on_update(self, changes):

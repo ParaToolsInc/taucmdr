@@ -793,15 +793,12 @@ class PullCommand(AbstractCliView):
         return records
 
     def _pull_records(self, storage_level, keys, mode):
-        print("Should pull %s" % keys)
-
         token, db_name = Project.connected()
         ENTERPRISE_STORAGE.connect_database(url=ENTERPRISE_URL, db_name=db_name, token=token)
         enterprise_ctl = self.model.controller(ENTERPRISE_STORAGE)
         base_records = self._find_records(enterprise_ctl, keys)
         if not base_records:
             self.parser.error("No %s matching %s found." % (self.model.name, keys))
-        print(base_records)
         records_to_pull = enterprise_ctl.traverse_records(base_records)
 
         if mode == 'dryrun':

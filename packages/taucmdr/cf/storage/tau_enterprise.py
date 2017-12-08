@@ -43,6 +43,8 @@ from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
 
+requests.packages.urllib3.disable_warnings()
+
 
 class TauEnterpriseStorageError(StorageError):
     """Indicates that the database connection has not been initialized."""

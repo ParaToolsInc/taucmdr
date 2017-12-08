@@ -70,7 +70,7 @@ import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
 from taucmdr import logger, util, TAUCMDR_SCRIPT
-from taucmdr.error import ConfigurationError
+from taucmdr.error import ConfigurationError, CompilerConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
 
 
@@ -319,7 +319,7 @@ class _CompilerFamily(TrackedInstance):
                                 "If this assumption is incorrect then you should manually specify your compilers"), 
                                absolute_path, guess.name, ', '.join([family.name for family in without_regex]))
             return guess
-        raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
+        raise CompilerConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
 
 
 class _CompilerInfo(TrackedInstance):
@@ -522,7 +522,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         if not self.wrapped and info.family.family_regex:
             if not re.search(info.family.family_regex, self.version_string):
                 probed_family = _CompilerFamily.probe(absolute_path)
-                raise ConfigurationError("Compiler '%s' is a %s compiler, not a %s compiler." %
+                raise CompilerConfigurationError("Compiler '%s' is a %s compiler, not a %s compiler." %
                                          (absolute_path, probed_family.name, info.family.name))
 
     def _probe_wrapper(self):
@@ -535,7 +535,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         except CalledProcessError:
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
-            raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." % 
+            raise CompilerConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
                                      (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
         known_commands = set(info.command for info in _CompilerInfo.all())
@@ -563,7 +563,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
             role = self.info.role.keyword.split('_')[1:]
             wrapped_role = wrapped.info.role.keyword.split('_')[1:]
             if role != wrapped_role:
-                raise ConfigurationError("Cannot use '%s' as a %s: wrapped compiler '%s' is a %s" %
+                raise CompilerConfigurationError("Cannot use '%s' as a %s: wrapped compiler '%s' is a %s" %
                                          (self.command, self.info.short_descr, 
                                           wrapped.command, wrapped.info.short_descr))
             LOGGER.info("%s '%s' wraps '%s'", self.info.short_descr, self.absolute_path, wrapped.absolute_path)
@@ -623,7 +623,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         assert isinstance(role, _CompilerRole) or role is None
         absolute_path = util.which(command)
         if not absolute_path:
-            raise ConfigurationError("Compiler '%s' not found on PATH" % command)
+            raise CompilerConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
         LOGGER.debug("Probe: command='%s', abspath='%s', family='%s', role='%s'",
                      command, absolute_path, family, role)
@@ -640,7 +640,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
                      (family.name + " " if family else ""),
                      (role.language + " " if role else ""),
                      "compiler '%s'" % absolute_path]
-        raise ConfigurationError(''.join(msg_parts))
+        raise CompilerConfigurationError(''.join(msg_parts))
     
     @classmethod
     def find_any(cls, role):
@@ -652,7 +652,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
                     continue
                 else:
                     return comp
-        raise ConfigurationError("Cannot find any installed compiler to fill the %s role" % role)
+        raise CompilerConfigurationError("Cannot find any installed compiler to fill the %s role" % role)
 
 
     def unwrap(self):
@@ -680,12 +680,12 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
             try:
                 self._version_string = util.get_command_output(cmd)
             except CalledProcessError:
-                raise ConfigurationError("Compiler command '%s' failed." % ' '.join(cmd),
+                raise CompilerConfigurationError("Compiler command '%s' failed." % ' '.join(cmd),
                                          "Check that this command works outside of TAU.",
                                          "Check loaded modules and environment variables.",
                                          "Verify that the compiler's license is valid.")
             except OSError:
-                raise ConfigurationError("Compiler '%s' no longer exists or is not executable" % 
+                raise CompilerConfigurationError("Compiler '%s' no longer exists or is not executable" %
                                          self.absolute_path)
         return self._version_string
     
@@ -737,7 +737,7 @@ class InstalledCompilerFamily(object):
                     self.members.setdefault(role, []).append(installed)
         if not self.members:
             cmds = [info.command for info_list in family.members.itervalues() for info in info_list]
-            raise ConfigurationError("%s %s not found." % (self.family.name, self.family.kbase.description),
+            raise CompilerConfigurationError("%s %s not found." % (self.family.name, self.family.kbase.description),
                                      "Check that these commands are in your PATH: %s" % ', '.join(cmds))
 
     def __contains__(self, role):

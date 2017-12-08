@@ -29,7 +29,7 @@
 import six
 from taucmdr import logger
 from taucmdr.cf.storage import StorageRecord
-from taucmdr.error import InternalError, UniqueAttributeError, ModelError
+from taucmdr.error import InternalError, UniqueAttributeError, ModelError, CompilerConfigurationError
 
 LOGGER = logger.get_logger(__name__)
 
@@ -242,7 +242,7 @@ class Controller(object):
         if unique and self.storage.contains(unique, match_any=match_any, table_name=self.model.name):
             raise UniqueAttributeError(self.model, unique)
     
-    def create(self, data):
+    def create(self, data, pulling=False):
         """Atomically store a new record and update associations.
         
         Invokes the `on_create` callback **after** the data is recorded.  If this callback raises
@@ -250,6 +250,7 @@ class Controller(object):
         
         Args:
             data (dict): Data to record.
+            pulling (bool): Whether this creation is part of a pull operation.
             
         Returns:
             Model: The newly created data. 
@@ -266,7 +267,7 @@ class Controller(object):
                         self._associate(record, foreign_cls, affected, via)
             model = self.model(record)
             model.check_compatibility(model)
-            model.on_create()
+            model.on_create(pulling)
             return model
     
     def update(self, data, keys):
@@ -498,7 +499,7 @@ class Controller(object):
             # If pulling into an existing project, add it to projects refs
             if mode == 'pull' and proj is not None and 'projects' in data_for_server:
                 data_for_server['projects'].append(proj.eid)
-            new_remote_record = destination.create(data_for_server)
+            new_remote_record = destination.create(data_for_server, pulling=True)
         LOGGER.debug("Inserted new record in %s as %s." % (destination.name, new_remote_record.eid))
         return new_remote_record.eid, False
 

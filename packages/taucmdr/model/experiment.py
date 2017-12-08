@@ -157,9 +157,9 @@ class ExperimentController(Controller):
         """Default match_any to False to prevent matches outside the selected project."""
         return super(ExperimentController, self)._check_unique(data, match_any)
  
-    def create(self, data):
+    def create(self, data, pulling=False):
         data['project'] = self._project_eid
-        return super(ExperimentController, self).create(data)
+        return super(ExperimentController, self).create(data, pulling)
  
     def update(self, data, keys):
         return super(ExperimentController, self).update(data, self._restrict_project(keys))
@@ -258,7 +258,7 @@ class Experiment(Model):
             for rhs in [targ, app, meas]:
                 lhs.check_compatibility(rhs)
 
-    def on_create(self):
+    def on_create(self, pulling):
         self.verify()
         try:
             util.mkdirp(self.prefix)

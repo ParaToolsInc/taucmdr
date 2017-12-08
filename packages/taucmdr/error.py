@@ -127,6 +127,20 @@ class ConfigurationError(Error):
         return self.value
 
 
+class CompilerConfigurationError(ConfigurationError):
+    """Indicates that TAU Commander cannot succeed with the given parameters due to a
+    problem with an installed compiler."""
+
+    def __init__(self, value, *hints):
+        """Initialize the Error instance.
+
+        Args:
+            value (str): Message describing the error.
+            *hints: Hint messages to help the user resolve this error.
+        """
+        super(CompilerConfigurationError, self).__init__(value, *hints)
+
+
 class ModelError(InternalError):
     """Indicates an error in model data or the model itself."""
 

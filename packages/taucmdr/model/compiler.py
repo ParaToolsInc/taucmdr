@@ -34,7 +34,7 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 import os
 from taucmdr import logger
-from taucmdr.error import InternalError, ConfigurationError
+from taucmdr.error import InternalError, CompilerConfigurationError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompiler
@@ -213,7 +213,7 @@ class Compiler(Model):
                         msg_parts.append('Linked libraries have changed.')
         msg = "\n  ".join(msg_parts)
         if fatal:
-            raise ConfigurationError(msg, 
+            raise CompilerConfigurationError(msg,
                                      "Check loaded environment modules", 
                                      "Check environment variables, especially PATH",
                                      "Contact your system administrator")

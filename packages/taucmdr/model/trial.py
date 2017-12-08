@@ -412,7 +412,7 @@ class Trial(Model):
         experiment = self.populate('experiment')
         return os.path.join(experiment.prefix, str(self['number']))
 
-    def on_create(self):
+    def on_create(self, pulling):
         try:
             util.mkdirp(self.prefix)
         except Exception as err:
