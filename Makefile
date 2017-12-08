@@ -227,6 +227,7 @@ jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_tam_pane || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_tam_pane && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension link --no-build .)
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_renderer || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_renderer && $(ECHO)$(NPM) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
 	$(ECHO)$(JUPYTER) lab build
 
 clean:
