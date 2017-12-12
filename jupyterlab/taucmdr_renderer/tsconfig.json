@@ -10,8 +10,7 @@
     "target": "ES6",
     "outDir": "./lib",
     "lib": ["es6", "es2015.promise", "dom"],
-    "types": ["node"],
-    "allowJs": true
+    "types": ["node"]
   },
   "include": ["src/*"]
 }

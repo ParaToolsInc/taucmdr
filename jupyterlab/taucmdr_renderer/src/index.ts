@@ -24,21 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {
-  Widget
-} from '@phosphor/widgets';
+import {Widget} from '@phosphor/widgets';
 
-import {
-  Message
-} from '@phosphor/messaging';
+import {Message} from '@phosphor/messaging';
 
-import {
-  IRenderMime
-} from '@jupyterlab/rendermime-interfaces';
+import {IRenderMime} from '@jupyterlab/rendermime-interfaces';
 
-import {
-    BarChart3D
-} from "./bar_chart_3d";
+import {ReadonlyJSONObject} from '@phosphor/coreutils';
+
+import {BarChart3D} from "./bar_chart_3d";
 
 import '../style/index.css';
 
@@ -47,87 +41,85 @@ export const MIME_TYPE = 'application/tau';
 /**
  * A widget for rendering data, for usage with rendermime.
  */
-export
-class RenderedTAUData extends Widget implements IRenderMime.IRenderer {
+export class RenderedTAUData extends Widget implements IRenderMime.IRenderer {
 
 
-  private _mimeType : string;
-  private renderDiv : HTMLDivElement;
+    private _mimeType: string;
+    private renderDiv: HTMLDivElement;
 
-  constructor(options: IRenderMime.IRendererOptions) {
-    super();
-    console.log("TAU Renderer created");
-    this.addClass('jp-RenderedTAUData');
-    this._mimeType = options.mimeType;
-    this.renderDiv = document.createElement('div');
-    this.node.appendChild(this.renderDiv);
-  }
+    constructor(options: IRenderMime.IRendererOptions) {
+        super();
+        console.log("TAU Renderer created");
+        this.addClass('jp-RenderedTAUData');
+        this._mimeType = options.mimeType;
+        this.renderDiv = document.createElement('div');
+        this.node.appendChild(this.renderDiv);
+    }
 
-  /**
-   * Render into this widget's node.
-   */
-  renderModel(model: IRenderMime.IMimeModel): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      let data = model.data[this._mimeType];
-      let barchart = new BarChart3D(data);
-      barchart.renderTo(this.renderDiv);
-      this.update();
-      resolve();
-    });
-  }
-    
-  /**
-   * A message handler invoked on an `'after-show'` message.
-   */
-  protected onAfterShow(msg: Message): void {
-    this.update();
-  }
-    
-  /**
-   * A message handler invoked on a `'resize'` message.
-   */
-  protected onResize(msg: Widget.ResizeMessage): void {
-    this.update();
-  }
+    /**
+     * Render into this widget's node.
+     */
+    renderModel(model: IRenderMime.IMimeModel): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let data = JSON.parse(model.data[this._mimeType] as string) as ReadonlyJSONObject;
+            let barchart = new BarChart3D(data);
+            barchart.renderTo(this.renderDiv);
+            this.update();
+            resolve();
+        });
+    }
 
-  /**
-   * A message handler invoked on an `'update-request'` message.
-   */
-  protected onUpdateRequest(msg: Message): void {
+    /**
+     * A message handler invoked on an `'after-show'` message.
+     */
+    protected onAfterShow(msg: Message): void {
+        this.update();
+    }
 
-  }
+    /**
+     * A message handler invoked on a `'resize'` message.
+     */
+    protected onResize(msg: Widget.ResizeMessage): void {
+        this.update();
+    }
+
+    /**
+     * A message handler invoked on an `'update-request'` message.
+     */
+    protected onUpdateRequest(msg: Message): void {
+
+    }
 
 }
 
 /**
  * A mime renderer factory for TAU data.
  */
-export
-const rendererFactory: IRenderMime.IRendererFactory = {
-  safe: true,
-  mimeTypes: [MIME_TYPE],
-  createRenderer: options => new RenderedTAUData(options)
+export const rendererFactory: IRenderMime.IRendererFactory = {
+    safe: true,
+    mimeTypes: [MIME_TYPE],
+    createRenderer: options => new RenderedTAUData(options)
 };
 
 
 const extensions: IRenderMime.IExtension | IRenderMime.IExtension[] = [
-  {
-    id: 'taucmdr_renderer:factory',
-    rendererFactory,
-    rank: 0,
-    dataType: 'json',
-    fileTypes: [{
-      name: 'tau',
-      mimeTypes: [MIME_TYPE],
-      extensions: ['.tau'],
-    }],
-    documentWidgetFactoryOptions: {
-      name: 'tau',
-      primaryFileType: 'tau',
-      fileTypes: ['tau'],
-      defaultFor: ['tau']
+    {
+        id: 'taucmdr_renderer:factory',
+        rendererFactory,
+        rank: 0,
+        dataType: 'json',
+        fileTypes: [{
+            name: 'tau',
+            mimeTypes: [MIME_TYPE],
+            extensions: ['.tau'],
+        }],
+        documentWidgetFactoryOptions: {
+            name: 'tau',
+            primaryFileType: 'tau',
+            fileTypes: ['tau'],
+            defaultFor: ['tau']
+        }
     }
-  }
 ];
 
 

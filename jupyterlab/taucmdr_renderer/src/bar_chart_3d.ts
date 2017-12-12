@@ -36,8 +36,15 @@ import {
     PerspectiveCamera,
     PointLight,
     Scene,
+    Vector3,
     WebGLRenderer,
 } from 'three';
+
+import {
+    DragControls,
+    Draggable,
+    Zoomable
+} from "./drag_controls";
 
 const DEFAULT_HEIGHT: number = 400;
 const DEFAULT_WIDTH: number = 400;
@@ -47,6 +54,8 @@ const DEFAULT_FAR_CLIP: number = 1000;
 const DEFAULT_BG_COLOR: number = 0x000000;
 const DEFAULT_BG_ALPHA: number = 1.0;
 const DEFAULT_ANTIALIAS: boolean = true;
+const DEFAULT_DRAG_SPEED : number = 450;
+const DEFAULT_ZOOM_SPEED : number = 0.05;
 
 /* Input settings for the 3D bar chart */
 export interface BarChart3DData {
@@ -58,6 +67,8 @@ export interface BarChart3DData {
     bgColor?: number;
     bgAlpha?: number;
     antialias?: boolean;
+    dragSpeed? : number;
+    zoomSpeed? : number;
     xLabels?: Array<string>;
     yLabels?: Array<string>;
     zMin?: number;
@@ -66,7 +77,7 @@ export interface BarChart3DData {
 }
 
 /* Renderer for the 3D bar chart */
-export class BarChart3D {
+export class BarChart3D implements Draggable, Zoomable {
 
     protected data: BarChart3DData;
 
@@ -74,11 +85,13 @@ export class BarChart3D {
     protected camera : PerspectiveCamera;
     protected renderer : WebGLRenderer;
 
+    protected center : Vector3;
+    protected dragControls : DragControls;
+
     /* This needs to be a lambda because we need to call it from outside the
     class context but need to access `this`. We create this once at instance creation
     to avoid allocating a new lambda each time through the event loop. */
     protected renderLoop = () => {
-        //this.controls.update();
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.renderLoop);
     };
@@ -169,6 +182,22 @@ export class BarChart3D {
         return this.data.antialias || DEFAULT_ANTIALIAS;
     }
 
+    public get zoomSpeed(): number {
+        return this.data.zoomSpeed || DEFAULT_ZOOM_SPEED;
+    }
+
+    public set zoomSpeed(newZoomSpeed: number) {
+        this.data.zoomSpeed = newZoomSpeed;
+    }
+
+    public get dragSpeed(): number {
+        return this.data.dragSpeed || DEFAULT_DRAG_SPEED;
+    }
+
+    public set dragSpeed(newDragSpeed: number) {
+        this.data.dragSpeed = newDragSpeed;
+    }
+
     public get xLabels(): Array<string> {
         return this.data.xLabels || [];
     }
@@ -198,6 +227,7 @@ export class BarChart3D {
         this.scene = new Scene();
         this.camera = new PerspectiveCamera(this.fieldOfView, this.width / this.height, this.nearClip, this.farClip);
         this.renderer = new WebGLRenderer({antialias: this.antialias});
+        this.center = new Vector3(0, 0, 0);
 
         this.renderer.setClearColor(this.bgColor, this.bgAlpha);
         this.renderer.setSize(this.width, this.height);
@@ -221,22 +251,53 @@ export class BarChart3D {
         cube.position.set(-4, 3, 0);
 
         this.scene.add(cube);
-        this.camera.position.set(-30, 40, 30);
-        this.camera.lookAt(this.scene.position);
+        this.camera.up = new Vector3(0, 0, 1);
+        this.camera.position.set(30, 40, 30);
+        this.camera.lookAt(this.center);
+
+
         div.appendChild(this.renderer.domElement);
 
-        /*this.controls = new TrackballControlsModule(this.camera);
-        this.controls.rotateSpeed = 1.0;
-        this.controls.zoomSpeed = 1.2;
-        this.controls.panSpeed = 0.8;
-        this.controls.noZoom = false;
-        this.controls.noPan = false;
-        this.controls.staticMoving = true;
-        this.controls.dynamicDampingFactor = 0.3;
-        */
+        this.dragControls = new DragControls(div);
+        this.dragControls.addDragListener(this);
+        this.dragControls.addZoomListener(this);
 
         // start rendering the scene
         this.renderLoop();
+    }
+
+    public drag(deltaX : number, deltaY: number) : void {
+        let radPerPixel = (Math.PI / this.dragSpeed);
+	    let deltaPhi = radPerPixel * deltaX;
+	    let deltaTheta = radPerPixel * deltaY;
+	    let pos = this.camera.position.sub(this.center);
+	    let radius = pos.length();
+	    let theta = Math.acos(pos.z / radius);
+	    let phi = Math.atan2(pos.y, pos.x);
+
+        theta = Math.min(Math.max(theta - deltaTheta, 0), Math.PI);
+        phi -= deltaPhi;
+
+        pos.x = radius * Math.sin(theta) * Math.cos(phi);
+        pos.y = radius * Math.sin(theta) * Math.sin(phi);
+        pos.z = radius * Math.cos(theta);
+
+        this.camera.position.add(this.center);
+        this.camera.lookAt(this.center);
+    }
+
+    public zoom(amount : number) : void {
+        let scale : number;
+        if(amount < 0) {
+            scale = 1.0 - this.zoomSpeed;
+        } else {
+            scale = 1.0 + this.zoomSpeed;
+        }
+        let radius = this.camera.position.length();
+        if(radius <= this.nearClip || radius >= this.farClip) {
+            return;
+        }
+        this.camera.position.sub(this.center).multiplyScalar(scale).add(this.center);
     }
 
     protected updateCamera(): void {
