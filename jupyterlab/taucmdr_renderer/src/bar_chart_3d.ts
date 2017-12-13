@@ -41,6 +41,10 @@ import {
 } from 'three';
 
 import {
+    zip
+} from 'lodash-es';
+
+import {
     DragControls,
     Draggable,
     Zoomable
@@ -56,24 +60,29 @@ const DEFAULT_BG_ALPHA: number = 1.0;
 const DEFAULT_ANTIALIAS: boolean = true;
 const DEFAULT_DRAG_SPEED : number = 450;
 const DEFAULT_ZOOM_SPEED : number = 0.05;
+const DEFAULT_BAR_SIZE : number = 5;
+const DEFAULT_BAR_SPACING : number = 10;
 
 /* Input settings for the 3D bar chart */
 export interface BarChart3DData {
-    height?: number;
-    width?: number;
-    fieldOfView?: number;
-    nearClip?: number;
-    farClip?: number;
-    bgColor?: number;
-    bgAlpha?: number;
-    antialias?: boolean;
+    height? : number;
+    width? : number;
+    fieldOfView? : number;
+    nearClip? : number;
+    farClip? : number;
+    bgColor? : number;
+    bgAlpha? : number;
+    antialias? : boolean;
     dragSpeed? : number;
     zoomSpeed? : number;
-    xLabels?: Array<string>;
-    yLabels?: Array<string>;
-    zMin?: number;
-    zMax?: number;
-    values?: Array<number>;
+    barSize? : number;
+    barSpacing? : number;
+    xLabels? : Array<string>;
+    yLabels? : Array<string>;
+    zMin? : number;
+    zMax? : number;
+    heights? : Array<number>;
+    colors? : Array<number>;
 }
 
 /* Renderer for the 3D bar chart */
@@ -198,6 +207,22 @@ export class BarChart3D implements Draggable, Zoomable {
         this.data.dragSpeed = newDragSpeed;
     }
 
+    public get barSize(): number {
+        return this.data.barSize || DEFAULT_BAR_SIZE;
+    }
+
+    public set barSize(newBarSize: number) {
+        this.data.barSize = newBarSize;
+    }
+
+    public get barSpacing(): number {
+        return this.data.barSpacing || DEFAULT_BAR_SPACING;
+    }
+
+    public set barSpacing(newBarSpacing: number) {
+        this.data.barSpacing = newBarSpacing;
+    }
+
     public get xLabels(): Array<string> {
         return this.data.xLabels || [];
     }
@@ -214,8 +239,12 @@ export class BarChart3D implements Draggable, Zoomable {
         return this.data.zMax || 0;
     }
 
-    public get values(): Array<number> {
-        return this.data.values || [];
+    public get heights(): Array<number> {
+        return this.data.heights || [];
+    }
+
+    public get colors(): Array<number> {
+        return this.data.colors || Array(this.heights.length).fill(0xFF0000);
     }
 
     /* Rendering Functions */
@@ -244,17 +273,11 @@ export class BarChart3D implements Draggable, Zoomable {
         pointLight.position.set(50, 50, 50);
         this.scene.add(pointLight);
 
+        this.renderData();
 
-        let cubeGeometry = new BoxGeometry(4, 4, 4);
-        let cubeMaterial = new MeshLambertMaterial({color: 0xff0000, wireframe: false});
-        let cube = new Mesh(cubeGeometry, cubeMaterial);
-        cube.position.set(-4, 3, 0);
-
-        this.scene.add(cube);
         this.camera.up = new Vector3(0, 0, 1);
         this.camera.position.set(30, 40, 30);
         this.camera.lookAt(this.center);
-
 
         div.appendChild(this.renderer.domElement);
 
@@ -266,12 +289,35 @@ export class BarChart3D implements Draggable, Zoomable {
         this.renderLoop();
     }
 
+    public renderData() : void {
+        const y_size = this.yLabels.length;
+        let x = 0;
+        let y = 0;
+        zip(this.heights, this.colors).forEach(bar => {
+            const height = bar[0];
+            const color = bar[1];
+            const barGeometry = new BoxGeometry(this.barSize, this.barSize, height);
+            const barMaterial = new MeshLambertMaterial({color: color});
+            let mesh = new Mesh(barGeometry, barMaterial);
+            mesh.position.set((x * this.barSpacing) + (this.barSize/2.0),
+                (y * this.barSpacing) + (this.barSize/2.0), height/2.0);
+            this.scene.add(mesh);
+            y++;
+            if(y >= y_size) {
+                y = 0;
+                x++;
+            }
+        });
+    }
+
+    /* Mouse Controls */
+
     public drag(deltaX : number, deltaY: number) : void {
-        let radPerPixel = (Math.PI / this.dragSpeed);
-	    let deltaPhi = radPerPixel * deltaX;
-	    let deltaTheta = radPerPixel * deltaY;
+        const radPerPixel = (Math.PI / this.dragSpeed);
+	    const deltaPhi = radPerPixel * deltaX;
+	    const deltaTheta = radPerPixel * deltaY;
 	    let pos = this.camera.position.sub(this.center);
-	    let radius = pos.length();
+	    const radius = pos.length();
 	    let theta = Math.acos(pos.z / radius);
 	    let phi = Math.atan2(pos.y, pos.x);
 

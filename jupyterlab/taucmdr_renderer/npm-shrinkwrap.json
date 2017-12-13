@@ -72,6 +72,16 @@
       "from": "@phosphor/widgets@>=1.5.0 <2.0.0",
       "resolved": "https://registry.npmjs.org/@phosphor/widgets/-/widgets-1.5.0.tgz"
     },
+    "@types/lodash": {
+      "version": "4.14.88",
+      "from": "@types/lodash@*",
+      "resolved": "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.88.tgz"
+    },
+    "@types/lodash-es": {
+      "version": "4.17.0",
+      "from": "@types/lodash-es@latest",
+      "resolved": "https://registry.npmjs.org/@types/lodash-es/-/lodash-es-4.17.0.tgz"
+    },
     "@types/three": {
       "version": "0.84.35",
       "from": "@types/three@>=0.84.35 <0.85.0",
@@ -81,6 +91,11 @@
       "version": "0.0.31",
       "from": "@types/webvr-api@*",
       "resolved": "https://registry.npmjs.org/@types/webvr-api/-/webvr-api-0.0.31.tgz"
+    },
+    "lodash-es": {
+      "version": "4.17.4",
+      "from": "lodash-es@latest",
+      "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.4.tgz"
     },
     "moremath": {
       "version": "1.1.6",
