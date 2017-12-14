@@ -45,7 +45,7 @@ class InteractivePlotHandler(Handler):
         self.plots = plots
         self.tooltips = tooltips
         self.app = None
-        self.size = size
+        self.size = size or 'scale_width'
 
     def add_plots(self, plots):
         """Add new plots to the handler"""
@@ -72,10 +72,7 @@ class InteractivePlotHandler(Handler):
             tap_tool = TapTool()
             plot.add_tools(tap_tool)
             plot.toolbar.active_tap = tap_tool
-        if self.size:
             view = layout(self.plots, sizing_mode=self.size)
-        else:
-            view = layout(self.plots, responsive=True)
         doc.add_root(view)
 
     def _create_app(self):
