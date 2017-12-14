@@ -21,7 +21,8 @@
     "extension": true
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.10.0"
+    "@jupyterlab/application": "^0.10.0",
+    "typescript": "~2.4.0"
   },
   "devDependencies": {
     "rimraf": "^2.6.1",

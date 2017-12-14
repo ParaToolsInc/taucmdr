@@ -38,7 +38,12 @@ import {
     Scene,
     Vector3,
     WebGLRenderer,
-} from 'three';
+} from 'three'
+
+import {
+    MeshText2D,
+    textAlign
+} from "three-text2d";
 
 import {
     zip
@@ -284,6 +289,11 @@ export class BarChart3D implements Draggable, Zoomable {
         this.dragControls = new DragControls(div);
         this.dragControls.addDragListener(this);
         this.dragControls.addZoomListener(this);
+
+        let text = new MeshText2D("FOO", {align: textAlign.left, font: '30px Arial', fillStyle: '#FFFFFF', antialias: true});
+        text.rotation.x = Math.PI / 2;
+
+        this.scene.add(text);
 
         // start rendering the scene
         this.renderLoop();
