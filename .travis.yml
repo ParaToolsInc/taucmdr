@@ -17,7 +17,7 @@ env:
     - INSTALLDIR="$HOME/taucmdr-test"
     - __TAUCMDR_PROGRESS_BARS__="minimal"
     - __TAUCMDR_PROFILE_TAUCMDR__="stdout"
-    - ANACONDA_VERSION="4.4.0"
+    - ANACONDA_VERSION="5.0.1"
   matrix:
     - OS='Ubuntu Precise' # Add more python versions to this array to expand test matrix
 
