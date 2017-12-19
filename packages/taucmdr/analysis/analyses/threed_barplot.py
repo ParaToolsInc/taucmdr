@@ -27,23 +27,19 @@
 #
 """ParaProf style 3D bar chart"""
 
-import six
 from taucmdr.analysis.analysis import AbstractAnalysis
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
-from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
-from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
 
 import nbformat
 
-from collections import defaultdict
 import inspect
-from math import sqrt
 
 
 def get_3d_bar_plot_data(trial_id, metric):
     from taucmdr.data.tauprofile import TauProfile
+    from bokeh import palettes
     import pandas as pd
 
     def build_bar_plot(_trial, _metric):
@@ -59,8 +55,10 @@ def get_3d_bar_plot_data(trial_id, metric):
         overall.sort_index(inplace=True)
         max_height = overall.max().max()
         overall = (overall / max_height) * 100
-        result = {'xLabels': overall.columns.tolist(), 'yLabels': overall.index.tolist(),
-                  'heights': overall.values.flatten().tolist()}
+        palette = palettes.viridis(101)
+        heights = overall.values.flatten().tolist()
+        colors = [palette[int(x)] for x in heights]
+        result = {'xLabels': overall.columns.tolist(), 'yLabels': overall.index.tolist(), 'heights': heights, 'colors': colors}
         return result
 
     if isinstance(trial_id, str):
@@ -72,15 +70,17 @@ def get_3d_bar_plot_data(trial_id, metric):
     return build_bar_plot(trial, metric)
 
 
-def show_3d_bar_plot(trial_id, metric):
+def show_3d_bar_plot(trial_id, metric, height=700, width=900):
     from IPython.display import display
     import json
     data = get_3d_bar_plot_data(trial_id, metric)
+    data['height'] = height
+    data['width'] = width
     return display({'application/tau': json.dumps(data)}, raw=True)
 
 
 class ThreeDBarPlotVisualizer(AbstractAnalysis):
-    def __init__(self, name='trial-barplot', description='Trial Bar Plot'):
+    def __init__(self, name='trial-3d-barplot', description='Trial 3D Bar Plot'):
         super(ThreeDBarPlotVisualizer, self).__init__(name=name, description=description)
 
     @staticmethod
@@ -156,7 +156,7 @@ class ThreeDBarPlotVisualizer(AbstractAnalysis):
         return notebook_cells
 
     def run(self, inputs, *args, **kwargs):
-        """Create a barplot as direct notebook output for the trials in `inputs`.
+        """Create a 3D barplot as direct notebook output for the trials in `inputs`.
 
         Args:
             inputs (list of :obj:`Trial`): The trials to visualize

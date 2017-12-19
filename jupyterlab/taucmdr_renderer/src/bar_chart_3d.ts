@@ -30,7 +30,7 @@ import {ReadonlyJSONObject} from '@phosphor/coreutils';
 import {
     AmbientLight,
     AxisHelper, Box3,
-    BoxGeometry,
+    BoxGeometry, Geometry, Line, LineBasicMaterial,
     Mesh,
     MeshLambertMaterial,
     PerspectiveCamera,
@@ -42,6 +42,7 @@ import {
 
 import {
     MeshText2D,
+    SpriteText2D,
     textAlign
 } from "three-text2d";
 
@@ -54,6 +55,7 @@ import {
     Draggable,
     Zoomable
 } from "./drag_controls";
+import {Text2D} from "three-text2d/lib/Text2D";
 
 const DEFAULT_HEIGHT: number = 400;
 const DEFAULT_WIDTH: number = 400;
@@ -67,8 +69,12 @@ const DEFAULT_DRAG_SPEED : number = 450;
 const DEFAULT_ZOOM_SPEED : number = 0.05;
 const DEFAULT_BAR_SIZE : number = 5;
 const DEFAULT_BAR_SPACING : number = 10;
-const DEFAULT_TEXT_SCALE : number = 0.016;
+const DEFAULT_TEXT_SCALE : number = 0.15;
 const DEFAULT_TEXT_OFFSET : number = -3;
+const DEFAULT_FONT : string = "30px Arial";
+const DEFAULT_FONT_COLOR : string = "#FFFFFF";
+const DEFAULT_FONT_ANTIALIAS : boolean = true;
+const DEFAULT_TEXT_TYPE : string = "mesh";
 
 /* Input settings for the 3D bar chart */
 export interface BarChart3DData {
@@ -92,9 +98,10 @@ export interface BarChart3DData {
     colors? : Array<number>;
     textScale? : number;
     textOffset? : number;
-    rotx? : number;
-    roty? : number;
-    rotz? : number;
+    font? : string;
+    fontColor? : string;
+    fontAntialias? : boolean;
+    textType? : string;
 }
 
 /* Renderer for the 3D bar chart */
@@ -157,16 +164,16 @@ export class BarChart3D implements Draggable, Zoomable {
         return this.data.nearClip || DEFAULT_NEAR_CLIP;
     }
 
-    public set nearClip(newFarClip: number) {
-        this.data.nearClip = newFarClip;
+    public set nearClip(newNearClip: number) {
+        this.data.nearClip = newNearClip;
         if (this.camera) {
-            this.camera.near = this.farClip;
+            this.camera.near = this.nearClip;
             this.updateCamera();
         }
     }
 
     public get farClip(): number {
-        return this.data.nearClip || DEFAULT_FAR_CLIP;
+        return this.data.farClip || DEFAULT_FAR_CLIP;
     }
 
     public set farClip(newFarClip: number) {
@@ -275,20 +282,60 @@ export class BarChart3D implements Draggable, Zoomable {
         return this.data.colors || Array(this.heights.length).fill(0xFF0000);
     }
 
+    public get font(): string {
+        return this.data.font || DEFAULT_FONT;
+    }
+
+    public set font(newFont: string) {
+        this.data.font = newFont;
+    }
+
+    public get fontColor(): string {
+        return this.data.fontColor || DEFAULT_FONT_COLOR;
+    }
+
+    public set fontColor(newFontColor: string) {
+        this.data.fontColor = newFontColor;
+    }
+
+    public get fontAntialias(): boolean {
+        return this.data.fontAntialias || DEFAULT_FONT_ANTIALIAS;
+    }
+
+    public set fontAntialias(newFontAntialias: boolean) {
+        this.data.fontAntialias = newFontAntialias;
+    }
+
+    public get textType(): string {
+        return this.data.textType || DEFAULT_TEXT_TYPE;
+    }
+
+    public set textType(newTextType: string) {
+        if(newTextType == "mesh" || newTextType == "sprite") {
+            this.data.textType = newTextType;
+        } else {
+            throw new RangeError("Text type may only be 'mesh' or 'sprite'");
+        }
+    }
+
     /* Rendering Functions */
 
     fitViewToScene() : void {
        const boundingSphere = new Box3().setFromObject(this.scene).getBoundingSphere();
-       console.log("Bounding sphere center = " + boundingSphere.center + ", radius = " + boundingSphere.radius);
+       console.log("Bounding sphere radius = " + boundingSphere.radius);
 
        const objectAngularSize = ( this.camera.fov * Math.PI / 180 );
        const distanceToCamera = boundingSphere.radius / Math.tan( objectAngularSize / 2 );
        const len = Math.sqrt( Math.pow( distanceToCamera, 2 ) + Math.pow( distanceToCamera, 2 ) ) * 0.8;
+       console.log("camera len = " + len);
 
        this.camera.position.set(len, len, len);
        this.camera.lookAt( boundingSphere.center );
        this.center = boundingSphere.center;
        this.camera.updateProjectionMatrix();
+       if(len * 2 > this.farClip) {
+           this.farClip = len * 2;
+       }
     }
 
     public renderTo(div: HTMLDivElement): void {
@@ -297,6 +344,8 @@ export class BarChart3D implements Draggable, Zoomable {
 
         this.scene = new Scene();
         this.camera = new PerspectiveCamera(this.fieldOfView, this.width / this.height, this.nearClip, this.farClip);
+        console.log("Creating camera with fov = " + this.camera.fov + ", aspect = " + this.camera.aspect +
+            ", near = " + this.camera.near + ", far = " + this.camera.far);
         this.renderer = new WebGLRenderer({antialias: this.antialias});
         this.center = new Vector3(0, 0, 0);
 
@@ -312,7 +361,7 @@ export class BarChart3D implements Draggable, Zoomable {
 
         // The point light illuminates from above the chart
         let pointLight = new PointLight(0xFFFFFF, 1, 0);
-        pointLight.position.set(50, 50, 50);
+        pointLight.position.set(50, 50, 200);
         this.scene.add(pointLight);
 
         this.renderData();
@@ -327,11 +376,9 @@ export class BarChart3D implements Draggable, Zoomable {
         this.dragControls.addDragListener(this);
         this.dragControls.addZoomListener(this);
 
-        this.renderLabels();
-
-
-
         this.fitViewToScene();
+
+        this.renderLabels();
 
         // start rendering the scene
         this.renderLoop();
@@ -340,44 +387,80 @@ export class BarChart3D implements Draggable, Zoomable {
     public renderLabels() : void {
         let i = 0;
         this.yLabels.forEach( yLabel => {
-            let text = new MeshText2D(yLabel, {align: textAlign.right, font: '270px Arial',
-                fillStyle: '#FFFFFF', antialias: true});
+            let text : Text2D;
+            if(this.textType == 'mesh') {
+                text = new MeshText2D(yLabel, {
+                    align: textAlign.right, font: this.font,
+                    fillStyle: this.fontColor, antialias: this.fontAntialias
+                });
+            } else if(this.textType == 'sprite') {
+                text = new SpriteText2D(yLabel, {
+                    align: textAlign.right, font: this.font,
+                    fillStyle: this.fontColor, antialias: this.fontAntialias
+                });
+            } else {
+                throw new RangeError("Text type must be either 'mesh' or 'sprite'");
+            }
             text.rotation.z = Math.PI / 2.0;
             text.scale.set(this.textScale, this.textScale, this.textScale);
             text.position.set(i * this.barSpacing, this.textOffset,  0);
             this.scene.add(text);
             i++;
         });
+        let yGeom = new Geometry();
+        yGeom.vertices.push(new Vector3(0, 0, 0));
+        yGeom.vertices.push(new Vector3(i * this.barSpacing, 0, 0));
+        let yMat = new LineBasicMaterial();
+        let yLine = new Line(yGeom, yMat);
+        this.scene.add(yLine);
 
         i = 0;
         this.xLabels.forEach( xLabel => {
-            let text = new MeshText2D(xLabel, {align: textAlign.left, font: '270px Arial',
-                fillStyle: '#FFFFFF', antialias: true});
+            let text : Text2D;
+            if(this.textType == 'mesh') {
+                text = new MeshText2D(xLabel, {
+                    align: textAlign.left, font: this.font,
+                    fillStyle: this.fontColor, antialias: this.fontAntialias
+                });
+            } else if(this.textType == 'sprite') {
+                text = new SpriteText2D(xLabel, {
+                    align: textAlign.left, font: this.font,
+                    fillStyle: this.fontColor, antialias: this.fontAntialias
+                });
+            } else {
+                throw new RangeError("Text type must be either 'mesh' or 'sprite'");
+            }
             text.rotation.z = Math.PI;
             text.scale.set(this.textScale, this.textScale, this.textScale);
             text.position.set(this.textOffset, i * this.barSpacing,0);
             this.scene.add(text);
             i++;
         });
+        let xGeom = new Geometry();
+        xGeom.vertices.push(new Vector3(0, 0, 0));
+        xGeom.vertices.push(new Vector3(0, i * this.barSpacing, 0));
+        let xMat = new LineBasicMaterial();
+        let xLine = new Line(xGeom, xMat);
+        this.scene.add(xLine);
     }
 
     public renderData() : void {
-        const y_size = this.yLabels.length;
-        let x = 0;
-        let y = 0;
+        const x_size = this.xLabels.length;
+        let i = 0;
+        let j = 0;
         zip(this.heights, this.colors).forEach(bar => {
             const height = bar[0];
             const color = bar[1];
             const barGeometry = new BoxGeometry(this.barSize, this.barSize, height);
             const barMaterial = new MeshLambertMaterial({color: color});
             let mesh = new Mesh(barGeometry, barMaterial);
-            mesh.position.set((x * this.barSpacing) + (this.barSize/2.0),
-                (y * this.barSpacing) + (this.barSize/2.0), height/2.0);
+            mesh.position.set((i * this.barSpacing) + (this.barSize/2.0),
+                (j * this.barSpacing) + (this.barSize/2.0), height/2.0);
             this.scene.add(mesh);
-            y++;
-            if(y >= y_size) {
-                y = 0;
-                x++;
+            j++;
+            if(j >= x_size) {
+                j = 0;
+                i++;
             }
         });
     }
@@ -415,6 +498,7 @@ export class BarChart3D implements Draggable, Zoomable {
         this.camera.position.sub(this.center).multiplyScalar(scale).add(this.center);
         let radius = this.camera.position.length();
         if(radius <= this.nearClip || radius >= this.farClip) {
+            console.log("radius " + radius + " out of bounds");
             this.camera.position.copy(oldPos);
         }
     }
