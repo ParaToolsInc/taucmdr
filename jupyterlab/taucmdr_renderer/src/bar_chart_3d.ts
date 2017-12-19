@@ -29,7 +29,7 @@ import {ReadonlyJSONObject} from '@phosphor/coreutils';
 
 import {
     AmbientLight,
-    AxisHelper,
+    AxisHelper, Box3,
     BoxGeometry,
     Mesh,
     MeshLambertMaterial,
@@ -37,7 +37,7 @@ import {
     PointLight,
     Scene,
     Vector3,
-    WebGLRenderer,
+    WebGLRenderer
 } from 'three'
 
 import {
@@ -67,6 +67,8 @@ const DEFAULT_DRAG_SPEED : number = 450;
 const DEFAULT_ZOOM_SPEED : number = 0.05;
 const DEFAULT_BAR_SIZE : number = 5;
 const DEFAULT_BAR_SPACING : number = 10;
+const DEFAULT_TEXT_SCALE : number = 0.016;
+const DEFAULT_TEXT_OFFSET : number = -3;
 
 /* Input settings for the 3D bar chart */
 export interface BarChart3DData {
@@ -88,6 +90,11 @@ export interface BarChart3DData {
     zMax? : number;
     heights? : Array<number>;
     colors? : Array<number>;
+    textScale? : number;
+    textOffset? : number;
+    rotx? : number;
+    roty? : number;
+    rotz? : number;
 }
 
 /* Renderer for the 3D bar chart */
@@ -228,6 +235,22 @@ export class BarChart3D implements Draggable, Zoomable {
         this.data.barSpacing = newBarSpacing;
     }
 
+    public get textScale(): number {
+        return this.data.textScale || DEFAULT_TEXT_SCALE;
+    }
+
+    public set textScale(newTextScale: number) {
+        this.data.textScale = newTextScale;
+    }
+
+    public get textOffset(): number {
+        return this.data.textOffset || DEFAULT_TEXT_OFFSET;
+    }
+
+    public set textOffset(newTextOffset: number) {
+        this.data.textOffset = newTextOffset;
+    }
+
     public get xLabels(): Array<string> {
         return this.data.xLabels || [];
     }
@@ -253,6 +276,20 @@ export class BarChart3D implements Draggable, Zoomable {
     }
 
     /* Rendering Functions */
+
+    fitViewToScene() : void {
+       const boundingSphere = new Box3().setFromObject(this.scene).getBoundingSphere();
+       console.log("Bounding sphere center = " + boundingSphere.center + ", radius = " + boundingSphere.radius);
+
+       const objectAngularSize = ( this.camera.fov * Math.PI / 180 );
+       const distanceToCamera = boundingSphere.radius / Math.tan( objectAngularSize / 2 );
+       const len = Math.sqrt( Math.pow( distanceToCamera, 2 ) + Math.pow( distanceToCamera, 2 ) ) * 0.8;
+
+       this.camera.position.set(len, len, len);
+       this.camera.lookAt( boundingSphere.center );
+       this.center = boundingSphere.center;
+       this.camera.updateProjectionMatrix();
+    }
 
     public renderTo(div: HTMLDivElement): void {
         console.log("Rendering");
@@ -290,13 +327,38 @@ export class BarChart3D implements Draggable, Zoomable {
         this.dragControls.addDragListener(this);
         this.dragControls.addZoomListener(this);
 
-        let text = new MeshText2D("FOO", {align: textAlign.left, font: '30px Arial', fillStyle: '#FFFFFF', antialias: true});
-        text.rotation.x = Math.PI / 2;
+        this.renderLabels();
 
-        this.scene.add(text);
+
+
+        this.fitViewToScene();
 
         // start rendering the scene
         this.renderLoop();
+    }
+
+    public renderLabels() : void {
+        let i = 0;
+        this.yLabels.forEach( yLabel => {
+            let text = new MeshText2D(yLabel, {align: textAlign.right, font: '270px Arial',
+                fillStyle: '#FFFFFF', antialias: true});
+            text.rotation.z = Math.PI / 2.0;
+            text.scale.set(this.textScale, this.textScale, this.textScale);
+            text.position.set(i * this.barSpacing, this.textOffset,  0);
+            this.scene.add(text);
+            i++;
+        });
+
+        i = 0;
+        this.xLabels.forEach( xLabel => {
+            let text = new MeshText2D(xLabel, {align: textAlign.left, font: '270px Arial',
+                fillStyle: '#FFFFFF', antialias: true});
+            text.rotation.z = Math.PI;
+            text.scale.set(this.textScale, this.textScale, this.textScale);
+            text.position.set(this.textOffset, i * this.barSpacing,0);
+            this.scene.add(text);
+            i++;
+        });
     }
 
     public renderData() : void {
@@ -349,11 +411,12 @@ export class BarChart3D implements Draggable, Zoomable {
         } else {
             scale = 1.0 + this.zoomSpeed;
         }
+        let oldPos = this.camera.position.clone();
+        this.camera.position.sub(this.center).multiplyScalar(scale).add(this.center);
         let radius = this.camera.position.length();
         if(radius <= this.nearClip || radius >= this.farClip) {
-            return;
+            this.camera.position.copy(oldPos);
         }
-        this.camera.position.sub(this.center).multiplyScalar(scale).add(this.center);
     }
 
     protected updateCamera(): void {
