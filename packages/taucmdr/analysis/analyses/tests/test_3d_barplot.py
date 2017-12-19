@@ -36,6 +36,7 @@ from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.model.trial import Trial
+from jupyter_client import channels
 
 
 class ThreeDBarPlotVisualizerTests(AnalysisTest):
@@ -69,4 +70,5 @@ class ThreeDBarPlotVisualizerTests(AnalysisTest):
         self.assertTrue(len(data['yLabels']) > 0)
         self.assertTrue(len(data['heights']) > 0)
         self.assertTrue(len(data['colors']) > 0)
+        channels.HBChannel._exiting = False
 
