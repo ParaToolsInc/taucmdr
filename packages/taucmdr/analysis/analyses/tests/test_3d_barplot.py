@@ -31,6 +31,7 @@ import os
 from taucmdr import analysis
 from taucmdr.analysis.analyses.tests import AnalysisTest
 from taucmdr.analysis.analyses.threed_barplot import ANALYSIS as threed_bar_plot_analysis
+from taucmdr.analysis.analyses.threed_barplot import get_3d_bar_plot_data
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
@@ -50,6 +51,22 @@ class ThreeDBarPlotVisualizerTests(AnalysisTest):
         self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
-        path = threed_bar_plot_analysis.create_notebook(trial, '.', execute=True)
+        path = threed_bar_plot_analysis.create_notebook(trial, '.', execute=False)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
+
+    def test_build_bar_plot(self):
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        self.assertTrue(trial, "No trial found after run")
+        data = get_3d_bar_plot_data(trial, 'Exclusive')
+        self.assertTrue('xLabels' in data)
+        self.assertTrue('yLabels' in data)
+        self.assertTrue('heights' in data)
+        self.assertTrue('colors' in data)
+        self.assertTrue(len(data['xLabels']) > 0)
+        self.assertTrue(len(data['yLabels']) > 0)
+        self.assertTrue(len(data['heights']) > 0)
+        self.assertTrue(len(data['colors']) > 0)
 
