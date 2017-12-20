@@ -35,7 +35,8 @@ import {
     MeshLambertMaterial,
     PerspectiveCamera,
     PointLight,
-    Scene,
+    Raycaster,
+    Scene, Vector2,
     Vector3,
     WebGLRenderer
 } from 'three'
@@ -53,7 +54,8 @@ import {
 import {
     DragControls,
     Draggable,
-    Zoomable
+    Zoomable,
+    Selectable,
 } from "./drag_controls";
 import {Text2D} from "three-text2d/lib/Text2D";
 
@@ -105,7 +107,7 @@ export interface BarChart3DData {
 }
 
 /* Renderer for the 3D bar chart */
-export class BarChart3D implements Draggable, Zoomable {
+export class BarChart3D implements Draggable, Zoomable, Selectable {
 
     protected data: BarChart3DData;
 
@@ -375,6 +377,7 @@ export class BarChart3D implements Draggable, Zoomable {
         this.dragControls = new DragControls(div);
         this.dragControls.addDragListener(this);
         this.dragControls.addZoomListener(this);
+        this.dragControls.addSelectListener(this);
 
         this.fitViewToScene();
 
@@ -456,6 +459,7 @@ export class BarChart3D implements Draggable, Zoomable {
             let mesh = new Mesh(barGeometry, barMaterial);
             mesh.position.set((i * this.barSpacing) + (this.barSize/2.0),
                 (j * this.barSpacing) + (this.barSize/2.0), height/2.0);
+            mesh.name = i + "," + j;
             this.scene.add(mesh);
             j++;
             if(j >= x_size) {
@@ -500,6 +504,24 @@ export class BarChart3D implements Draggable, Zoomable {
         if(radius <= this.nearClip || radius >= this.farClip) {
             console.log("radius " + radius + " out of bounds");
             this.camera.position.copy(oldPos);
+        }
+    }
+
+    public select(x: number, y: number): void {
+        const cameraX = (x / this.width) * 2 - 1;
+        const cameraY = -(y / this.height) * 2 + 1;
+        const mousePos = new Vector2(cameraX, cameraY);
+        const raycaster = new Raycaster();
+        raycaster.setFromCamera(mousePos, this.camera);
+        const intersects = raycaster.intersectObjects(this.scene.children);
+        if(intersects.length > 0) {
+            const selected = intersects[0].object;
+            if(selected instanceof Mesh) {
+                const mesh = selected as Mesh;
+                if(mesh.name) {
+                    console.log(mesh.name);
+                }
+            }
         }
     }
 
