@@ -447,12 +447,10 @@ class Experiment(Model):
             ConfigurationError: Invalid trial number or no trials in selected experiment.
         """
         if trial_numbers:
-            trials = []
-            for num in trial_numbers:
-                found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
-                if not found:
-                    raise ConfigurationError("Experiment '%s' has no trial with number %s" % (self.name, num))
-                trials.append(found)
+            trials = [Trial.controller(self.storage).one({'experiment': self.eid, 'number': num}) for num in trial_numbers]
+            not_found = [str(trial_numbers[trial_num]) for trial_num, trial in enumerate(trials) if trial == None]
+            if not_found:
+                raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." % (self.name, ", ".join(not_found)))
             return trials
         else:
             trials = self.populate('trials')
