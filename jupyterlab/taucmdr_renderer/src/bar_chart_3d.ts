@@ -29,35 +29,32 @@ import {ReadonlyJSONObject} from '@phosphor/coreutils';
 
 import {
     AmbientLight,
-    AxisHelper, Box3,
-    BoxGeometry, Geometry, Line, LineBasicMaterial,
+    AxisHelper,
+    Box3,
+    BoxGeometry, Font,
+    FontLoader,
+    Geometry,
+    Line,
+    LineBasicMaterial,
     Mesh,
     MeshLambertMaterial,
     PerspectiveCamera,
     PointLight,
     Raycaster,
-    Scene, Vector2,
+    Scene, TextGeometry,
+    Vector2,
     Vector3,
-    WebGLRenderer
+    WebGLRenderer,
 } from 'three'
 
-import {
-    MeshText2D,
-    SpriteText2D,
-    textAlign
-} from "three-text2d";
+import {MeshText2D, SpriteText2D, textAlign} from "three-text2d";
 
-import {
-    zip
-} from 'lodash-es';
+import {zip} from 'lodash-es';
 
-import {
-    DragControls,
-    Draggable,
-    Zoomable,
-    Selectable,
-} from "./drag_controls";
+import {DragControls, Draggable, Selectable, Zoomable,} from "./drag_controls";
+
 import {Text2D} from "three-text2d/lib/Text2D";
+
 
 const DEFAULT_HEIGHT: number = 400;
 const DEFAULT_WIDTH: number = 400;
@@ -71,9 +68,9 @@ const DEFAULT_DRAG_SPEED : number = 450;
 const DEFAULT_ZOOM_SPEED : number = 0.05;
 const DEFAULT_BAR_SIZE : number = 5;
 const DEFAULT_BAR_SPACING : number = 10;
-const DEFAULT_TEXT_SCALE : number = 0.15;
+const DEFAULT_TEXT_SCALE : number = 0.05;
 const DEFAULT_TEXT_OFFSET : number = -3;
-const DEFAULT_FONT : string = "30px Arial";
+const DEFAULT_FONT : string = "bold 90px Arial";
 const DEFAULT_FONT_COLOR : string = "#FFFFFF";
 const DEFAULT_FONT_ANTIALIAS : boolean = true;
 const DEFAULT_TEXT_TYPE : string = "mesh";
@@ -118,6 +115,12 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
     protected center : Vector3;
     protected dragControls : DragControls;
 
+    protected xSelectRects : Array<Mesh>;
+    protected ySelectRects : Array<Mesh>;
+
+
+    protected threeFont : Font;
+
     /* This needs to be a lambda because we need to call it from outside the
     class context but need to access `this`. We create this once at instance creation
     to avoid allocating a new lambda each time through the event loop. */
@@ -128,6 +131,8 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
 
     constructor(data?: ReadonlyJSONObject) {
         this.data = data || {};
+        this.xSelectRects = [];
+        this.ySelectRects = [];
     }
 
     /* Accessors */
@@ -273,7 +278,7 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
     }
 
     public get zMax(): number {
-        return this.data.zMax || 0;
+        return this.data.zMax || 100;
     }
 
     public get heights(): Array<number> {
@@ -313,7 +318,7 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
     }
 
     public set textType(newTextType: string) {
-        if(newTextType == "mesh" || newTextType == "sprite") {
+        if(newTextType == "mesh" || newTextType == "sprite" || newTextType == "3d") {
             this.data.textType = newTextType;
         } else {
             throw new RangeError("Text type may only be 'mesh' or 'sprite'");
@@ -363,8 +368,9 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
 
         // The point light illuminates from above the chart
         let pointLight = new PointLight(0xFFFFFF, 1, 0);
-        pointLight.position.set(50, 50, 200);
+        pointLight.position.set(this.barSpacing*this.yLabels.length, this.barSpacing*this.xLabels.length, 400);
         this.scene.add(pointLight);
+
 
         this.renderData();
 
@@ -381,70 +387,93 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
 
         this.fitViewToScene();
 
-        this.renderLabels();
+        if(this.textType == '3d') {
+            let loader = new FontLoader();
+            loader.load("https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json", font => {
+                this.threeFont = font;
+                this.renderLabels();
+            });
+        } else {
+            this.renderLabels();
+        }
+
 
         // start rendering the scene
         this.renderLoop();
     }
 
+    public renderLabel(label : string, align: Vector2, rotation: number, x : number, y : number, z: number) : void {
+        let text : Text2D | Mesh;
+        if(this.textType == 'mesh') {
+            text = new MeshText2D(label, {
+                align: align, font: this.font,
+                fillStyle: this.fontColor, antialias: this.fontAntialias
+            });
+        } else if(this.textType == 'sprite') {
+            text = new SpriteText2D(label, {
+                align: align, font: this.font,
+                fillStyle: this.fontColor, antialias: this.fontAntialias
+            });
+        } else if(this.textType == '3d') {
+            let textGeom = new TextGeometry(label, {font: this.threeFont, size: 5, height: 1});
+            let textMat = new MeshLambertMaterial();
+            text = new Mesh(textGeom, textMat);
+        } else {
+            throw new RangeError("Text type must be 'mesh', 'sprite', or '3d'");
+        }
+        text.rotation.z = rotation;
+        text.scale.set(this.textScale, this.textScale, this.textScale);
+        text.position.set(x, y,  z);
+        this.scene.add(text);
+    }
+
+    public renderSelectBar(x: number, y: number, xSize : number, ySize: number, arr: Array<Mesh>) {
+        const selectGeometry = new BoxGeometry(xSize, ySize, 0.01);
+        const selectMaterial = new MeshLambertMaterial();
+        let selectMesh = new Mesh(selectGeometry, selectMaterial);
+        selectMesh.position.set(x, y, -1);
+        selectMesh.visible = false;
+        this.scene.add(selectMesh);
+        arr.push(selectMesh);
+    }
+
+    public renderAxis(x: number, y: number, z: number) : void {
+        let geom = new Geometry();
+        geom.vertices.push(new Vector3(0, 0, 0));
+        geom.vertices.push(new Vector3(x, y, z));
+        let mat = new LineBasicMaterial();
+        let line = new Line(geom, mat);
+        this.scene.add(line);
+    }
+
     public renderLabels() : void {
         let i = 0;
         this.yLabels.forEach( yLabel => {
-            let text : Text2D;
-            if(this.textType == 'mesh') {
-                text = new MeshText2D(yLabel, {
-                    align: textAlign.right, font: this.font,
-                    fillStyle: this.fontColor, antialias: this.fontAntialias
-                });
-            } else if(this.textType == 'sprite') {
-                text = new SpriteText2D(yLabel, {
-                    align: textAlign.right, font: this.font,
-                    fillStyle: this.fontColor, antialias: this.fontAntialias
-                });
-            } else {
-                throw new RangeError("Text type must be either 'mesh' or 'sprite'");
-            }
-            text.rotation.z = Math.PI / 2.0;
-            text.scale.set(this.textScale, this.textScale, this.textScale);
-            text.position.set(i * this.barSpacing, this.textOffset,  0);
-            this.scene.add(text);
+            const barLen = this.xLabels.length * this.barSpacing;
+            this.renderLabel(yLabel, textAlign.right, Math.PI / 2, i * this.barSpacing, this.textOffset, 0);
+            this.renderLabel(yLabel, textAlign.left, Math.PI / 2, i * this.barSpacing, barLen + this.textOffset, 0);
+            this.renderSelectBar((i * this.barSpacing) + (this.barSize/2), barLen / 2, this.barSize,
+                barLen, this.ySelectRects);
             i++;
         });
-        let yGeom = new Geometry();
-        yGeom.vertices.push(new Vector3(0, 0, 0));
-        yGeom.vertices.push(new Vector3(i * this.barSpacing, 0, 0));
-        let yMat = new LineBasicMaterial();
-        let yLine = new Line(yGeom, yMat);
-        this.scene.add(yLine);
+        this.renderAxis(i * this.barSpacing, 0, 0);
 
         i = 0;
         this.xLabels.forEach( xLabel => {
-            let text : Text2D;
-            if(this.textType == 'mesh') {
-                text = new MeshText2D(xLabel, {
-                    align: textAlign.left, font: this.font,
-                    fillStyle: this.fontColor, antialias: this.fontAntialias
-                });
-            } else if(this.textType == 'sprite') {
-                text = new SpriteText2D(xLabel, {
-                    align: textAlign.left, font: this.font,
-                    fillStyle: this.fontColor, antialias: this.fontAntialias
-                });
-            } else {
-                throw new RangeError("Text type must be either 'mesh' or 'sprite'");
-            }
-            text.rotation.z = Math.PI;
-            text.scale.set(this.textScale, this.textScale, this.textScale);
-            text.position.set(this.textOffset, i * this.barSpacing,0);
-            this.scene.add(text);
+            const barLen = this.yLabels.length * this.barSpacing;
+            this.renderLabel(xLabel, textAlign.left, Math.PI, this.textOffset, i * this.barSpacing,0);
+            this.renderLabel(xLabel, textAlign.right, Math.PI, barLen + this.textOffset, i * this.barSpacing, 0);
+            this.renderSelectBar(barLen / 2, (i * this.barSpacing) + (this.barSize/2), barLen,
+                this.barSize, this.xSelectRects);
             i++;
         });
-        let xGeom = new Geometry();
-        xGeom.vertices.push(new Vector3(0, 0, 0));
-        xGeom.vertices.push(new Vector3(0, i * this.barSpacing, 0));
-        let xMat = new LineBasicMaterial();
-        let xLine = new Line(xGeom, xMat);
-        this.scene.add(xLine);
+        this.renderAxis(0, i * this.barSpacing, 0);
+
+        const hMax = this.heights.reduce( (prev, cur) => {
+            return Math.max(prev, cur);
+        }, 10);
+        this.renderAxis(0, 0, hMax);
+
     }
 
     public renderData() : void {
@@ -514,12 +543,25 @@ export class BarChart3D implements Draggable, Zoomable, Selectable {
         const raycaster = new Raycaster();
         raycaster.setFromCamera(mousePos, this.camera);
         const intersects = raycaster.intersectObjects(this.scene.children);
+        this.xSelectRects.forEach(rect => {
+            rect.visible = false;
+        });
+        this.ySelectRects.forEach(rect => {
+            rect.visible = false;
+        });
         if(intersects.length > 0) {
             const selected = intersects[0].object;
             if(selected instanceof Mesh) {
                 const mesh = selected as Mesh;
                 if(mesh.name) {
                     console.log(mesh.name);
+                    let coords = mesh.name.split(",");
+                    if(coords.length == 2) {
+                        let i = parseInt(coords[0], 10);
+                        let j = parseInt(coords[1], 10);
+                        this.xSelectRects[j].visible = true;
+                        this.ySelectRects[i].visible = true;
+                    }
                 }
             }
         }
