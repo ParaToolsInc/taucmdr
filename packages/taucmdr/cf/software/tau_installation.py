@@ -355,14 +355,17 @@ class TauInstallation(Installation):
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        if 'TIME' in self.metrics[0]:
+            pass
+        else:
         # TAU assumes the first metric is always some kind of wallclock timer
         # so move the first wallclock metric to the front of the list
-        for i, metric in enumerate(self.metrics):
-            if 'TIME' in metric and 'TIME' not in self.metrics[0]:
-                self.metrics.insert(0, self.metrics.pop(i))
-                break
-        else:
-            self.metrics.insert(0, 'TIME')        
+            for i, metric in enumerate(self.metrics):
+                if 'TIME' in metric and 'TIME' not in self.metrics[0]:
+                    self.metrics.insert(0, self.metrics.pop(i))
+                    break
+            else:
+                self.metrics.insert(0, 'TIME')
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg) 
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
             if uses(pkg):
