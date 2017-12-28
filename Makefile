@@ -232,6 +232,7 @@ jupyterlab-install: $(CONDA)
 
 jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab-manager || $(ECHO)$(JUPYTER) labextension install @jupyter-widgets/jupyterlab-manager@0.31.3
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q hub-extension || $(ECHO)$(JUPYTER) labextension install @jupyterlab/hub-extension@0.7.0
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)cd $(JUPYTERLAB_BUILD)/jupyterlab_bokeh && $(ECHO)$(YARN) install && $(ECHO)$(JUPYTER) labextension install --no-build . )
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(YARN) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(YARN) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
