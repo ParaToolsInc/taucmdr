@@ -154,6 +154,10 @@ class ProjectController(Controller):
             if not token:
                 raise KeyError
         except KeyError:
+            token = os.environ.get('JUPYTERHUB_API_KEY', None)
+            db_name = os.environ.get('TAU_ENTERPRISE_DB_NAME', 'default')
+            if token:
+                return token, db_name
             raise NotConnectedError("Project not connected to remote storage")
         else:
             return token, db_name
