@@ -231,6 +231,7 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
             }, () => {
                 let options: Session.IOptions = {
                     kernelName: 'python',
+                    type: 'python2',
                     path: Kernels.session_path
                 };
                 return Session.startNew(options).then(s => {

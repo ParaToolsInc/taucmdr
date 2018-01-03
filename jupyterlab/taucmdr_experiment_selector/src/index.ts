@@ -144,6 +144,7 @@ print(json.dumps(entries))
             }, () => {
                 let options: Session.IOptions = {
                     kernelName: 'python',
+                    type: 'python2',
                     path: this.session_path
                 };
                 return Session.startNew(options).then(s => {
