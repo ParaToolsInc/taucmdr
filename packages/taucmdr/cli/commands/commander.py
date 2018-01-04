@@ -28,11 +28,11 @@
 """``commander`` subcommand."""
 
 import os
-import jupyterlab.labapp
 
 from taucmdr import TAUCMDR_HOME
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
+from taucmdr.error import ConfigurationError
 
 
 class CommanderCommand(AbstractCommand):
@@ -44,20 +44,24 @@ class CommanderCommand(AbstractCommand):
         return parser
 
     def main(self, argv):
-        # Add TAUCMDR_HOME/packages to PYTHONPATH so JupyterLab environment has access to
-        # the taucmdr package
-        os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
-                                   + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
+        try:
+            import jupyterlab.labapp
+            # Add TAUCMDR_HOME/packages to PYTHONPATH so JupyterLab environment has access to
+            # the taucmdr package
+            os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
+                                       + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
 
-        # Prevent Bokeh from printing debug or info level warnings, which otherwise show up in
-        # the output cell along with the chart
-        os.environ['BOKEH_LOG_LEVEL'] = 'warn'
-        os.environ['BOKEH_PY_LOG_LEVEL'] = 'warn'
+            # Prevent Bokeh from printing debug or info level warnings, which otherwise show up in
+            # the output cell along with the chart
+            os.environ['BOKEH_LOG_LEVEL'] = 'warn'
+            os.environ['BOKEH_PY_LOG_LEVEL'] = 'warn'
 
-        # ANSI escape sequences aren't supported by Jupyter OutputCells
-        os.environ['ANSI_COLORS_DISABLED'] = "1"
+            # ANSI escape sequences aren't supported by Jupyter OutputCells
+            os.environ['ANSI_COLORS_DISABLED'] = "1"
 
-        return jupyterlab.labapp.main(argv)
+            return jupyterlab.labapp.main(argv)
+        except ImportError:
+            raise ConfigurationError("JupyterLab was not found in your Python environment.")
 
 
 COMMAND = CommanderCommand(__name__, summary_fmt="Launch the TAU Commander computational environment.")
