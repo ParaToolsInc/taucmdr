@@ -37,9 +37,10 @@ import os
 import json
 import requests
 import six
-from taucmdr import logger, util
-from taucmdr.error import AuthenticationError
+from taucmdr import logger, util, ENTERPRISE_URL
+from taucmdr.error import AuthenticationError, NotConnectedError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
+from taucmdr.model.project import Project
 
 LOGGER = logger.get_logger(__name__)
 
@@ -480,13 +481,26 @@ class TauEnterpriseStorage(AbstractStorage):
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing.
 
-        Args:
+        Keyword Args:
             url (str): URL of the database to connect to.
             db_name (str): The name of the database to use
 
         Returns:
             bool: True if a new connection was made, false otherwise.
         """
+        # Use default URL if not specified
+        if 'url' not in kwargs:
+            kwargs['url'] = ENTERPRISE_URL
+        # Use token and db_name from project if not specified.
+        try:
+            if 'token' not in kwargs:
+                proj_token, _ = Project.connected()
+                kwargs['token'] = proj_token
+            if 'db_name' not in kwargs:
+                _, proj_db = Project.connected()
+                kwargs['db_name'] = proj_db
+        except (NotConnectedError, StorageError):
+            pass
         if self._database is None:
             self._database = _TauEnterpriseDatabase(kwargs['url'], kwargs['db_name'],
                                                     token=kwargs['token'] if 'token' in kwargs else None,
