@@ -154,7 +154,7 @@ class ProjectController(Controller):
             if not token:
                 raise KeyError
         except KeyError:
-            token = os.environ.get('JUPYTERHUB_API_KEY', None)
+            token = os.environ.get('JUPYTERHUB_API_TOKEN', None)
             db_name = os.environ.get('TAU_ENTERPRISE_DB_NAME', 'default')
             if token:
                 return token, db_name
