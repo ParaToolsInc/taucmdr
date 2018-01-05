@@ -355,11 +355,9 @@ class TauInstallation(Installation):
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
-        if 'TIME' in self.metrics[0]:
-            pass
-        else:
-        # TAU assumes the first metric is always some kind of wallclock timer
-        # so move the first wallclock metric to the front of the list
+        if 'TIME' not in self.metrics[0]:
+            # TAU assumes the first metric is always some kind of wallclock timer
+            # so move the first wallclock metric to the front of the list
             for i, metric in enumerate(self.metrics):
                 if 'TIME' in metric and 'TIME' not in self.metrics[0]:
                     self.metrics.insert(0, self.metrics.pop(i))
@@ -375,7 +373,7 @@ class TauInstallation(Installation):
                                 uses('binutils'), uses('libunwind'), uses('papi'), uses('pdt'))
         self.check_env_compat()
 
-    @classmethod    
+    @classmethod
     def get_minimal(cls):
         """Creates a minimal TAU configuration for working with legacy data analysis tools.
     
@@ -989,6 +987,8 @@ class TauInstallation(Installation):
         Returns:
             tuple: (opts, env) updated to support TAU.
         """
+        # The additional `compiler` argument is needed to TAU falls back to the right compiler
+        # pylint: disable=arguments-differ
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
         if self.baseline:
@@ -1382,9 +1382,9 @@ class TauInstallation(Installation):
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Profile directory '%s' does not exist" % path)
-            for thisdir, dirs, files in os.walk(path):
+            for thisdir, _, files in os.walk(path):
                 if any(file_name.startswith("profile") for file_name in files):
-                    LOGGER.info("\nCurrent trial/metric directory: %s" % os.path.basename(thisdir))
+                    LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(thisdir))
                     retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=thisdir, env=env)
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
