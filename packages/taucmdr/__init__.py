@@ -101,7 +101,7 @@ USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PR
 PROJECT_DIR = '.tau'
 """str: Name of the project-level directory containing TAU Commander project files."""
 
-ENTERPRISE_URL = 'https://east03.paratools.com:80'
+ENTERPRISE_URL = os.environ.get('TAUCMDR_ENTERPRISE_URL', 'https://east03.paratools.com:80')
 """str: URL of the TAU Enterprise REST server."""
 
 CONDA_HOME = os.path.realpath(os.path.abspath(os.path.dirname(sys.executable)))
