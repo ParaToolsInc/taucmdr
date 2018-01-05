@@ -1084,6 +1084,14 @@ class TauInstallation(Installation):
             env['TAU_TRACE'] = '0'
             env['SCOREP_ENABLE_TRACING'] = 'false'
         env['TAU_SAMPLING'] = str(int(self.sample))
+        if self.sample:
+            # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
+            arch_period = {INTEL_KNC: 50000,
+                           INTEL_KNL: 50000,
+                           IBM_BGL: 20000,
+                           IBM_BGP: 20000,
+                           IBM_BGQ: 50000}
+            env['TAU_EBS_PERIOD'] = str(arch_period.get(self.target_arch, 10000))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
