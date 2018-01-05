@@ -32,6 +32,8 @@ export class AnalysisSidebarWidget extends TauCmdrPaneWidget {
 
     analysisTableDiv : HTMLDivElement;
 
+
+
     constructor(app: JupyterLab) {
         super(app, analysis_widget_id, 'Analysis');
         this.removeClass('taucmdr_tam_pane');

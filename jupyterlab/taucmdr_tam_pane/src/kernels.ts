@@ -41,8 +41,11 @@ export class Kernels {
 
     session: Session.ISession;
 
+    startNew: any;
+
     constructor() {
         this.start_session().then(r=>{});
+        this.startNew = Session.startNew;
     }
 
     /*
@@ -230,7 +233,6 @@ print(run_analysis('${analysis_name}', ${JSON.stringify(hashes)}))
                 });
             }, () => {
                 let options: Session.IOptions = {
-                    kernelName: 'python',
                     type: 'python2',
                     path: Kernels.session_path
                 };
