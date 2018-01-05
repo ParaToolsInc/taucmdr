@@ -86,11 +86,13 @@ export abstract class TauCmdrPaneWidget extends Widget {
     protected update_table(div: HTMLDivElement, model: string, rows: Array<Kernels.JSONResult>, fields: Array<string>,
                            selectable : Table.SelectionType, primary_key: string,
                            callback_handler? : (event: MouseEvent) => void): void {
-        this.table = new Table(rows, fields, this.tableClassName, selectable, primary_key, callback_handler);
-        div.innerHTML = "";
-        div.appendChild(document.createElement('h1').appendChild(
-            document.createTextNode(model)));
-        div.appendChild(this.table.get_table());
+        if(div) {
+            this.table = new Table(rows, fields, this.tableClassName, selectable, primary_key, callback_handler);
+            div.innerHTML = "";
+            div.appendChild(document.createElement('h1').appendChild(
+                document.createTextNode(model)));
+            div.appendChild(this.table.get_table());
+        }
     }
 
     protected update_handler(entries : Array<Kernels.JSONResult>, selectable : Table.SelectionType,
