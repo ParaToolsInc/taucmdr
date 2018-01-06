@@ -47,6 +47,7 @@ class ShowTest(tests.TestCase):
         self.assertCommandReturnValue(None, show.COMMAND, argv)
 
     def test_multiple_trials(self):
+        """Issue #240"""
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
@@ -54,6 +55,7 @@ class ShowTest(tests.TestCase):
         self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
         argv = ['0', '2', '--profile-tool', 'pprof']
         stdout, stderr = self.assertCommandReturnValue(None, show.COMMAND, argv)
+        self.assertFalse(stderr)
         self.assertIn('Current trial/metric directory: 0', stdout)
         self.assertIn('Current trial/metric directory: 2', stdout)
         self.assertNotIn('Current trial/metric directory: 1', stdout)
