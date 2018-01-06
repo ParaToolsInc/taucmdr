@@ -40,7 +40,6 @@ import six
 from taucmdr import logger, util, ENTERPRISE_URL
 from taucmdr.error import AuthenticationError, NotConnectedError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
-from taucmdr.model.project import Project
 
 LOGGER = logger.get_logger(__name__)
 
@@ -493,6 +492,7 @@ class TauEnterpriseStorage(AbstractStorage):
             kwargs['url'] = ENTERPRISE_URL
         # Use token and db_name from project if not specified.
         try:
+            from taucmdr.model.project import Project
             if 'token' not in kwargs:
                 proj_token, _ = Project.connected()
                 kwargs['token'] = proj_token

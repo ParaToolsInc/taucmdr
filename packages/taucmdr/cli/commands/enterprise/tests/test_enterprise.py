@@ -83,6 +83,15 @@ class TauEnterpriseCLITests(tests.TestCase):
         self.assertEqual(token, _TEST_USER_TOKEN, "Project API key not equal to input")
         self.assertEqual(db_name, self.db_name, "Project DB Name not equal to input")
 
+    def test_db_connect_from_project(self):
+        self.test_connect()
+        self.storage.disconnect_database()
+        self.assertTrue(self.storage.connect_database(), "Connect with no parameters should succeed")
+        self.assertEqual(self.storage._database.db_name, self.db_name, "DB_name should match requested name")
+        self.assertEqual(self.storage._database.session.headers['Authorization'], 'token ' + _TEST_USER_TOKEN,
+                         "Authentication token should match requested token")
+
+
     def test_disconnect(self):
         self.test_connect()
         stdout, stderr = self.assertCommandReturnValue(0, disconnect_cmd, [])
