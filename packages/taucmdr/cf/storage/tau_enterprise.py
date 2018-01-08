@@ -517,7 +517,12 @@ class TauEnterpriseStorage(AbstractStorage):
     @property
     def prefix(self):
         if self._prefix is None:
-            raise StorageError("The remote database %s has no local filesystem component." % self.name)
+            from taucmdr.cf.storage.levels import PROJECT_STORAGE
+            from taucmdr.cf.storage.project import ProjectStorageError
+            try:
+                return PROJECT_STORAGE.prefix
+            except ProjectStorageError:
+                raise StorageError("The remote database %s has no local filesystem component." % self.name)
         return self._prefix
 
     def __str__(self):

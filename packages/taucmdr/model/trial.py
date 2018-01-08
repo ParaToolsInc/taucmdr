@@ -258,51 +258,74 @@ class TrialController(Controller):
             self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
             return retval
 
+    @staticmethod
+    def push_files(src_record, destination, remote_eid):
+        """Uploads the data files associated with a trial record to the destination remote storage indicated.
+
+        Args:
+            src_record (Trial): The local Trial record from which data files will be uploaded
+            destination (AbstractStorage): The remote storage to which files will be uploaded
+            remote_eid (str): The eid of the remote Trial record to which the uploaded file will be associated
+        """
+        data_files = src_record.get_data_files()
+        paths_to_upload = []
+        temp_files = []
+        hash_digest = src_record.hash_digest()
+        for kind, data_file in six.iteritems(data_files):
+            if os.path.isdir(data_file) or kind == 'otf2':
+                # otf2 trace data file entries point to the anchor file rather than the directory
+                if kind == 'otf2':
+                    data_file = os.path.dirname(data_file)
+                tar_path = os.path.join(data_file, "..", "%s-%s.tar" % (hash_digest, kind))
+                with tarfile.open(tar_path, mode="w") as tar:
+                    cwd = os.getcwd()
+                    os.chdir(os.path.join(data_file, ".."))
+                    tar.add(os.path.join(".", os.path.basename(data_file)))
+                    os.chdir(cwd)
+                paths_to_upload.append(tar_path)
+                temp_files.append(tar_path)
+            else:
+                paths_to_upload.append(data_file)
+
+        for path in paths_to_upload:
+            destination.put_file(os.path.basename(path), path, linked_id=remote_eid, table_name='file')
+            LOGGER.info("Uploaded file %s for trial %s." % (path, hash_digest))
+
+        for temp_file in temp_files:
+            os.remove(temp_file)
+
+    @staticmethod
+    def pull_files(src_record, destination, local_eid=None, local_record=None):
+        """Downloads the data files associated with a trial record to the destination remote storage indicated.
+
+        Args:
+            src_record (Trial): The remote Trial record from which data files will be downloaded
+            destination (AbstractStorage): The local storage to which files will be downloaded
+            local_eid (str): The eid of the Trial record to which the downloaded file will be associated
+        """
+        if local_record is None:
+            local_record = destination.one(local_eid)
+        prefix = local_record.prefix
+        files = src_record.storage.get_file({'trial': src_record.eid}, prefix, table_name='file')
+        for f in files:
+            if f.endswith('tar'):
+                tar_path = os.path.join(prefix, f)
+                with tarfile.open(tar_path, mode="r") as tar:
+                    tar.extractall(path=os.path.join(prefix, ".."))
+                os.remove(tar_path)
+            LOGGER.info("Downloaded file %s for trial %s." % (f, local_eid))
+
     def transport_record(self, src_record, destination, eid_map, mode, proj=None):
-        remote_eid, already_present = super(TrialController, self).transport_record(src_record, destination,
+        destination_eid, already_present = super(TrialController, self).transport_record(src_record, destination,
                                                                                     eid_map, mode, proj)
         if already_present:
-            return remote_eid, already_present
+            return destination_eid, already_present
         if mode == 'push':
-            data_files = src_record.get_data_files()
-            paths_to_upload = []
-            temp_files = []
-            hash_digest = src_record.hash_digest()
-            for kind, data_file in six.iteritems(data_files):
-                if os.path.isdir(data_file) or kind == 'otf2':
-                    # otf2 trace data file entries point to the anchor file rather than the directory
-                    if kind == 'otf2':
-                        data_file = os.path.dirname(data_file)
-                    tar_path = os.path.join(data_file, "..", "%s-%s.tar" % (hash_digest, kind))
-                    with tarfile.open(tar_path, mode="w") as tar:
-                        cwd = os.getcwd()
-                        os.chdir(os.path.join(data_file, ".."))
-                        tar.add(os.path.join(".", os.path.basename(data_file)))
-                        os.chdir(cwd)
-                    paths_to_upload.append(tar_path)
-                    temp_files.append(tar_path)
-                else:
-                    paths_to_upload.append(data_file)
-
-            for path in paths_to_upload:
-                destination.put_file(os.path.basename(path), path, linked_id=remote_eid, table_name='file')
-                LOGGER.info("Uploaded file %s for trial %s." % (path, hash_digest))
-
-            for temp_file in temp_files:
-                os.remove(temp_file)
+            self.push_files(src_record, destination, destination_eid)
         elif mode == 'pull':
-            local_record = destination.one(remote_eid)
-            prefix = local_record.prefix
-            files = src_record.storage.get_file({'trial': src_record.eid}, prefix, table_name='file')
-            for f in files:
-                if f.endswith('tar'):
-                    tar_path = os.path.join(prefix, f)
-                    with tarfile.open(tar_path, mode="r") as tar:
-                        tar.extractall(path=os.path.join(prefix, ".."))
-                    os.remove(tar_path)
-                LOGGER.info("Downloaded file %s for trial %s." % (f, remote_eid))
+            self.pull_files(src_record, destination, local_eid=destination_eid)
 
-        return remote_eid, already_present
+        return destination_eid, already_present
 
 
 class Trial(Model):
@@ -415,6 +438,7 @@ class Trial(Model):
     def on_create(self, pulling):
         try:
             util.mkdirp(self.prefix)
+
         except Exception as err:
             raise ConfigurationError('Cannot create directory %r: %s' % (self.prefix, err),
                                      'Check that you have write access')
