@@ -33,7 +33,7 @@ import numpy as np
 import nbformat
 
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.model.trial import Trial
@@ -52,7 +52,7 @@ def run_function_histogram(trial_ids, metric, timer, bins):
         return {'fig': fig, 'hist': hist, 'edges': edges, 'width': width}
 
     if isinstance(trial_ids[0], str):
-        trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
+        trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
         trials = trial_ids
     else:
@@ -110,7 +110,7 @@ class FunctionHistogramVisualizer(AbstractAnalysis):
         """
         trials, metric, timer, bins = self._check_input(inputs, **kwargs)
         default_trial_ids = [trial.hash_digest() for trial in trials]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
         all_timers = self.get_timer_names(trials)
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
@@ -159,12 +159,12 @@ class FunctionHistogramVisualizer(AbstractAnalysis):
         notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.function_histogram import FunctionHistogramVisualizer',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(run_function_histogram),
                     inspect.getsource(show_function_histogram)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
-        trials_list_str = "Trial.controller(PROJECT_STORAGE).search_hash([%s])" % (",".join(
+        trials_list_str = "Trial.controller(ANALYSIS_STORAGE).search_hash([%s])" % (",".join(
             ['"%s"' % trial.hash_digest() for trial in trials]))
         if interactive:
             show_plot_str = self.get_interaction_code(inputs, 'show_function_histogram', *args, **kwargs)

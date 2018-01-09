@@ -33,7 +33,7 @@ from taucmdr import analysis
 from taucmdr.analysis.analyses.function_histogram import ANALYSIS as function_histogram_analysis
 from taucmdr.analysis.analyses.tests import AnalysisTest
 from taucmdr.cf.compiler.mpi import MPI_CC
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.model.trial import Trial
 
@@ -50,7 +50,7 @@ class FunctionHistogramVisualizerTests(AnalysisTest):
         self.reset_project_storage(['--mpi', '--profile', 'tau'])
         self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
-        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        trial = Trial.controller(ANALYSIS_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
         path = function_histogram_analysis.create_notebook(trial, '.', execute=True)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
@@ -62,7 +62,7 @@ class FunctionHistogramVisualizerTests(AnalysisTest):
         trials = []
         for n in range(0,4):
             self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', str(n + 1), './a.out'])
-            trial = Trial.controller(PROJECT_STORAGE).one({'number': n})
+            trial = Trial.controller(ANALYSIS_STORAGE).one({'number': n})
             self.assertTrue(trial, "No trial found after run")
             trials.append(trial)
         path = function_histogram_analysis.create_notebook(trials, '.', execute=True, interactive=True)
@@ -73,7 +73,7 @@ class FunctionHistogramVisualizerTests(AnalysisTest):
         self.reset_project_storage(['--mpi', '--profile', 'tau'])
         self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
-        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        trial = Trial.controller(ANALYSIS_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
         result = function_histogram_analysis.run(trial, "Exclusive", "MPI_Init()", 10)
         self.assertTrue('fig' in result, "Histogram result should contain `fig`")

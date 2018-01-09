@@ -263,16 +263,18 @@ export namespace Kernels {
     export const getProjectKernel = `
 def get_project():
     from taucmdr.model.project import Project
-    selected = Project.selected()
+    from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
+    selected = Project.selected(storage=ANALYSIS_STORAGE)
     from taucmdr.cli.commands.project.list import COMMAND as project_list_command
-    return project_list_command.main([selected['name'], '--json'])
+    return project_list_command.main([selected['name'], '--json', '@'+ANALYSIS_STORAGE.name])
 get_project()
 `;
 
     export const getTrialsKernel = `
 def get_trials():
     from taucmdr.cli.commands.trial.list import COMMAND as trial_list_command
-    return trial_list_command.main(['--json'])
+    from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
+    return trial_list_command.main(['--json', '@'+ANALYSIS_STORAGE.name])
 get_trials()    
 `;
 
@@ -298,8 +300,8 @@ def run_analysis(name, hashes):
     import json
     from taucmdr.analysis import get_analysis
     from taucmdr.model.trial import Trial
-    from taucmdr.cf.storage.levels import PROJECT_STORAGE
-    trials = [Trial.controller(PROJECT_STORAGE).search_hash(h)[0] for h in hashes]
+    from taucmdr.cf.storage.levels import ANALYSIS_STORAGE 
+    trials = [Trial.controller(ANALYSIS_STORAGE).search_hash(h)[0] for h in hashes]
     analysis = get_analysis(name)
 `;
 

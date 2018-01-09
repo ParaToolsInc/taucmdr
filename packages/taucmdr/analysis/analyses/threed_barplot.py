@@ -28,7 +28,7 @@
 """ParaProf style 3D bar chart"""
 
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.error import ConfigurationError
 from taucmdr.model.trial import Trial
 
@@ -62,7 +62,7 @@ def get_3d_bar_plot_data(trial_id, metric):
         return result
 
     if isinstance(trial_id, str):
-        trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
+        trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
     else:
@@ -103,7 +103,7 @@ class ThreeDBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_id',
@@ -139,7 +139,7 @@ class ThreeDBarPlotVisualizer(AbstractAnalysis):
         notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(get_3d_bar_plot_data),
                     inspect.getsource(show_3d_bar_plot)]
         def_cell_source = "\n".join(commands)
@@ -151,7 +151,7 @@ class ThreeDBarPlotVisualizer(AbstractAnalysis):
             else:
                 digest = trial.hash_digest()
                 notebook_cells.append(nbformat.v4.new_code_cell(
-                    'show_3d_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
+                    'show_3d_bar_plot(Trial.controller(ANALYSIS_STORAGE).search_hash("%s")[0], "%s")'
                     % (digest, metric)))
         return notebook_cells
 

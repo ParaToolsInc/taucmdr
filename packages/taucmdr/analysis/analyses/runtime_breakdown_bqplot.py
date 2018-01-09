@@ -32,7 +32,7 @@ import inspect
 import nbformat
 
 from taucmdr.analysis.analyses.runtime_breakdown import RuntimeBreakdownVisualizer
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.model.trial import Trial
 
 
@@ -52,7 +52,7 @@ def show_bqplot_runtime_breakdown(trial_ids, metric):
         return fig
 
     if isinstance(trial_ids[0], str):
-        trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
+        trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
         trials = trial_ids
     else:
@@ -86,11 +86,11 @@ class BqplotRuntimeBreakdownVisualizer(RuntimeBreakdownVisualizer):
         notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.runtime_breakdown_bqplot import BqplotRuntimeBreakdownVisualizer',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(show_bqplot_runtime_breakdown)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
-        trials_list_str = "Trial.controller(PROJECT_STORAGE).search_hash([%s])" % (",".join(
+        trials_list_str = "Trial.controller(ANALYSIS_STORAGE).search_hash([%s])" % (",".join(
             ['"%s"' % trial.hash_digest() for trial in trials]))
         if interactive:
             show_plot_str = self.get_interaction_code(inputs, 'show_bqplot_runtime_breakdown', *args, **kwargs)

@@ -35,7 +35,7 @@ from bokeh.models import ColumnDataSource
 from scipy import stats
 
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.model.trial import Trial
@@ -55,7 +55,7 @@ def run_correlation(trial_ids, metric_1, timer_1, metric_2, timer_2):
         return fig, r_value
 
     if isinstance(trial_ids[0], str):
-        trials = Trial.controller(PROJECT_STORAGE).search_hash(trial_ids)
+        trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
         trials = trial_ids
     else:
@@ -125,7 +125,7 @@ class CorrelationAnalysis(AbstractAnalysis):
         """
         trials, metric_1, timer_1, metric_2, timer_2 = self._check_input(inputs, **kwargs)
         default_trial_ids = [trial.hash_digest() for trial in trials]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
         all_timers = self.get_timer_names(trials)
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
@@ -181,12 +181,12 @@ class CorrelationAnalysis(AbstractAnalysis):
         notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.correlation import CorrelationAnalysis',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(run_correlation),
                     inspect.getsource(show_correlation)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
-        trials_list_str = "Trial.controller(PROJECT_STORAGE).search_hash([%s])" % (",".join(
+        trials_list_str = "Trial.controller(ANALYSIS_STORAGE).search_hash([%s])" % (",".join(
             ['"%s"' % trial.hash_digest() for trial in trials]))
         if interactive:
             show_plot_str = self.get_interaction_code(inputs, 'show_correlation', *args, **kwargs)

@@ -28,7 +28,7 @@
 """Standard deviation-prioritized histogram"""
 
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.error import ConfigurationError
 from taucmdr.model.trial import Trial
 
@@ -45,7 +45,7 @@ def run_stddev_prioritized_analysis(trial_id, metric, top_n):
     import six
 
     if isinstance(trial_id, str):
-        trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
+        trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
     else:
@@ -103,7 +103,7 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
         """
         trials, metric, top_n = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_id',
@@ -145,7 +145,7 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
         notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(run_stddev_prioritized_analysis),
                     inspect.getsource(show_single_figure),
                     inspect.getsource(show_stddev_prioritized_analysis)]
@@ -162,7 +162,7 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
                 notebook_cells.append(nbformat.v4.new_markdown_cell(
                     "# Experiment %s, Trial %s" % (exp_name, trial_num)))
                 notebook_cells.append(nbformat.v4.new_code_cell(
-                    'figs = run_stddev_prioritized_analysis(Trial.controller(PROJECT_STORAGE).'
+                    'figs = run_stddev_prioritized_analysis(Trial.controller(ANALYSIS_STORAGE).'
                     'search_hash("%s")[0], "%s", %s)'
                     % (digest, metric, top_n)))
                 for i in range(0, top_n):

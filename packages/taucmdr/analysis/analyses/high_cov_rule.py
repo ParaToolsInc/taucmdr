@@ -38,13 +38,13 @@ import inspect
 
 def run_cov_analysis(trial_id):
     from taucmdr.model.trial import Trial
-    from taucmdr.cf.storage.levels import PROJECT_STORAGE
+    from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
     from taucmdr.analysis.asserters.trial_stats_asserter import TrialStatsFactAsserter
     from taucmdr.analysis.asserters.high_cov_rule_asserter import HighCoVRuleAsserter
     from taucmdr.analysis.rules import RuleBasedClassifier
 
     if isinstance(trial_id, str):
-        trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
+        trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
     else:
@@ -95,7 +95,7 @@ class HighCoVRule(AbstractAnalysis):
         commands = [inspect.getsource(run_cov_analysis)]
         for trial in trials:
             digest = trial.hash_digest()
-            commands.append('run_cov_analysis(Trial.controller(PROJECT_STORAGE).'
+            commands.append('run_cov_analysis(Trial.controller(ANALYSIS_STORAGE).'
                             'search_hash("%s")[0])' % digest)
         cell_source = "\n".join(commands)
         return [nbformat.v4.new_code_cell(cell_source)]

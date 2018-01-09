@@ -28,7 +28,7 @@
 """ParaProf style horizontal bar chart for an individual profile"""
 
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.gui.color import ColorMapping
@@ -69,7 +69,7 @@ def show_profile_bar_plot(trial_id, indices, metric):
         return fig
 
     if isinstance(trial_id, str):
-        trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
+        trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
     else:
@@ -132,7 +132,7 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric, indices = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
         all_indices = TauProfile.indices(trial.get_data())
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
@@ -174,15 +174,15 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
         trials, metric, indices = self._check_input(inputs, **kwargs)
         commands = ['from taucmdr.analysis.analyses.profile_barplot import ProfileBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(show_profile_bar_plot)]
         for trial in trials:
             digest = trial.hash_digest()
             if interactive:
                 commands.append(self.get_interaction_code(inputs, 'show_profile_bar_plot', *args, **kwargs))
             else:
-                commands.append('show_profile_bar_plot(Trial.controller(PROJECT_STORAGE).'
+                commands.append('show_profile_bar_plot(Trial.controller(ANALYSIS_STORAGE).'
                                 'search_hash("%s")[0], %s, "%s")'
                                 % (digest, indices, metric))
         cell_source = "\n".join(commands)

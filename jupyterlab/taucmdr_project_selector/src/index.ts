@@ -78,13 +78,14 @@ class ProjectSelectorWidget extends Widget {
 
     readonly get_projects_kernel: string = `
 import json
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.model.project import Project
 selected_name = ""
 try:
-    selected_name = Project.selected()['name']
+    selected_name = Project.selected(storage=ANALYSIS_STORAGE)['name']
 except:
     pass
-projects = [(proj.hash_digest(), proj.populate()) for proj in Project.controller().all()]
+projects = [(proj.hash_digest(), proj.populate()) for proj in Project.controller(storage=ANALYSIS_STORAGE).all()]
 entries = []
 for (digest, proj) in projects:
     entry = {}
@@ -174,9 +175,10 @@ print(json.dumps(entries))
 
     select_project(name: string): void {
         let kernel_code = `
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.model.project import Project
-proj = Project.controller().one({"name": "${name}"})
-Project.controller().select(proj)
+proj = Project.controller(storage=ANALYSIS_STORAGE).one({"name": "${name}"})
+Project.controller(storage=ANALYSIS_STORAGE).select(proj)
 `;
         this.start_session().then(s => {
             let future = this.session.kernel.requestExecute({code: kernel_code});

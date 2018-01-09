@@ -34,7 +34,7 @@ from taucmdr.analysis.analyses.profile_barplot import ANALYSIS as profile_bar_pl
 from taucmdr.analysis.analyses.tests import AnalysisTest
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.model.trial import Trial
 
@@ -50,7 +50,7 @@ class ProfileBarPlotVisualizerTests(AnalysisTest):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
-        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        trial = Trial.controller(ANALYSIS_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
         path = profile_bar_plot_analysis.create_notebook(trial, '.', execute=True, interactive=False)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
@@ -59,7 +59,7 @@ class ProfileBarPlotVisualizerTests(AnalysisTest):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
-        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        trial = Trial.controller(ANALYSIS_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
         path = profile_bar_plot_analysis.create_notebook(trial, '.', execute=True, interactive=True)
         self.assertTrue(os.path.exists(path), "Notebook should exist after call to create_notebook")
@@ -69,7 +69,7 @@ class ProfileBarPlotVisualizerTests(AnalysisTest):
         self.reset_project_storage(['--mpi', '--profile', 'tau'])
         self.assertManagedBuild(0, MPI_CC, [], 'mpi_hello.c')
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
-        trial = Trial.controller(PROJECT_STORAGE).one({'number': 0})
+        trial = Trial.controller(ANALYSIS_STORAGE).one({'number': 0})
         self.assertTrue(trial, "No trial found after run")
         for node in range(1, 4):
             path = profile_bar_plot_analysis.create_notebook(trial, '.', execute=True,

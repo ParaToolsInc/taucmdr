@@ -31,7 +31,7 @@ from bokeh.models import ColumnDataSource
 
 import six
 from taucmdr.analysis.analysis import AbstractAnalysis
-from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
 from taucmdr.gui.color import ColorMapping
@@ -67,7 +67,7 @@ def run_trial_bar_plot(trial_id, metric):
         return fig, summary
 
     if isinstance(trial_id, str):
-        trial = Trial.controller(PROJECT_STORAGE).search_hash(trial_id)[0]
+        trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
     else:
@@ -205,7 +205,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(PROJECT_STORAGE).all()]
+        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_id',
@@ -241,7 +241,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         notebook_cells = []
         commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
                     'from taucmdr.model.trial import Trial',
-                    'from taucmdr.cf.storage.levels import PROJECT_STORAGE',
+                    'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(run_trial_bar_plot),
                     inspect.getsource(show_trial_bar_plot)]
         def_cell_source = "\n".join(commands)
@@ -253,7 +253,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
             else:
                 digest = trial.hash_digest()
                 notebook_cells.append(nbformat.v4.new_code_cell(
-                    'show_trial_bar_plot(Trial.controller(PROJECT_STORAGE).search_hash("%s")[0], "%s")'
+                    'show_trial_bar_plot(Trial.controller(ANALYSIS_STORAGE).search_hash("%s")[0], "%s")'
                     % (digest, metric)))
         return notebook_cells
 

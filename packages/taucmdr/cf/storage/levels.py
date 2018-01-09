@@ -40,6 +40,8 @@ want to install software packages at the project level to avoid quotas or in sit
 where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
+import os
+
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.local_file import LocalFileStorage
@@ -63,6 +65,10 @@ ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE, ENTERPRISE_STOR
 
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
+
+ANALYSIS_STORAGE = STORAGE_LEVELS[os.environ.get('TAUCMDR_ANALYSIS_STORAGE', PROJECT_STORAGE.name)]
+"""The storage level to use for TAU Enterprise analyses"""
+
 
 def highest_writable_storage():
     try:

@@ -74,10 +74,11 @@ class ExperimentSelectorWidget extends Widget {
 
     readonly get_experiments_kernel: string = `
 import json
+from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
 from taucmdr.model.experiment import Experiment
 from taucmdr.model.project import Project
-experiments = Experiment.controller().all()
-selected_eid = Project.selected().get('experiment', None)
+experiments = Experiment.controller(storage=ANALYSIS_STORAGE).all()
+selected_eid = Project.selected(storage=ANALYSIS_STORAGE).get('experiment', None)
 entries = []
 for exp in experiments:
     entry = {}
@@ -164,10 +165,11 @@ print(json.dumps(entries))
         // we don't care that its compilers aren't available on this system.
         let kernel_code = `
 def select_experiment(name):
+    from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
     from taucmdr.model.experiment import Experiment
     from taucmdr.error import ConfigurationError
     try:
-        Experiment.select(name)
+        Experiment.select(name, storage=ANALYSIS_STORAGE)
     except ConfigurationError:
         pass
 select_experiment("${name}")
