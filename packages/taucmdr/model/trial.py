@@ -306,6 +306,12 @@ class TrialController(Controller):
         if local_record is None:
             local_record = destination.one(local_eid)
         prefix = local_record.prefix
+        # Ensure that the path being pulled into exists
+        try:
+            os.makedirs(prefix)
+        except OSError as ex:
+            if ex.errno != errno.EEXIST:
+                raise
         files = src_record.storage.get_file({'trial': src_record.eid}, prefix, table_name='file')
         for f in files:
             if f.endswith('tar'):
@@ -505,6 +511,8 @@ class Trial(Model):
         expr = self.populate('experiment')
         if self.get('data_size', 0) <= 0:
             raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+        if self.storage.is_remote() and not os.path.isdir(self.prefix):
+            self.controller(self.storage).pull_files(self, self.storage, local_eid=self.eid, local_record=self)
         meas = self.populate('experiment').populate('measurement')
         profile_fmt = meas.get('profile', 'none')
         trace_fmt = meas.get('trace', 'none')

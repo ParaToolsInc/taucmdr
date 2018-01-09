@@ -549,8 +549,19 @@ class TauEnterpriseStorage(AbstractStorage):
         return False
 
     def table(self, table_name):
+        """Get a reference to the named table in this database.
+
+        Args:
+            table_name (str): The name of the table in the remote database to use.
+        """
         if self._database is None:
-            raise TauEnterpriseStorageError(table_name)
+            # If not already connected, try to connect to the default for this project.
+            try:
+                did_connect = self.connect_database()
+                if not did_connect:
+                    raise TauEnterpriseStorageError("No database connected and failed to connect to default.")
+            except (NotConnectedError, StorageError):
+                raise TauEnterpriseStorageError(table_name)
         if table_name is None:
             return _TauEnterpriseTable(self._database, 'key')
         else:
