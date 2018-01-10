@@ -26,7 +26,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """Wrapper around a plot, providing interactivity support"""
-from bokeh.application import Application
 from bokeh.application.handlers import Handler
 from bokeh.models.tools import HoverTool, TapTool
 from bokeh.layouts import layout
@@ -53,13 +52,9 @@ class InteractivePlotHandler(Handler):
             plots = [plots]
         self.plots.extend(plots)
 
-    def modify_document(self, doc):
+    def modify_document(self):
         """This callback performs any necessary modifications to the Document
-        to display the required figures
-
-        Args:
-            doc (bokeh.document.Document): The document to be rendered
-        """
+        to display the required figures"""
         for plot in self.plots:
             # Enable Hover Tool (shows tooltips on mouseover)
             if self.tooltips:
@@ -72,14 +67,9 @@ class InteractivePlotHandler(Handler):
             tap_tool = TapTool()
             plot.add_tools(tap_tool)
             plot.toolbar.active_tap = tap_tool
-            view = layout(self.plots, sizing_mode=self.size)
-        doc.add_root(view)
-
-    def _create_app(self):
-        if self.app is None:
-            self.app = Application(self)
+        self.view = layout(self.plots, sizing_mode=self.size)
 
     def show(self):
         """Display the plots added to this object"""
-        self._create_app()
-        plotting.show(self.app)
+        self.modify_document()
+        plotting.show(self.view)

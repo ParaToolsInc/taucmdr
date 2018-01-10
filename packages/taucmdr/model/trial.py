@@ -289,7 +289,7 @@ class TrialController(Controller):
 
         for path in paths_to_upload:
             destination.put_file(os.path.basename(path), path, linked_id=remote_eid, table_name='file')
-            LOGGER.info("Uploaded file %s for trial %s." % (path, hash_digest))
+            LOGGER.debug("Uploaded file %s for trial %s." % (path, hash_digest))
 
         for temp_file in temp_files:
             os.remove(temp_file)
@@ -319,7 +319,7 @@ class TrialController(Controller):
                 with tarfile.open(tar_path, mode="r") as tar:
                     tar.extractall(path=os.path.join(prefix, ".."))
                 os.remove(tar_path)
-            LOGGER.info("Downloaded file %s for trial %s." % (f, local_eid))
+            LOGGER.debug("Downloaded file %s for trial %s." % (f, local_eid))
 
     def transport_record(self, src_record, destination, eid_map, mode, proj=None):
         destination_eid, already_present = super(TrialController, self).transport_record(src_record, destination,
