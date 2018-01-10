@@ -68,6 +68,7 @@ class ProjectListCommand(ListCommand):
         style_args = ['--' + args.style] if hasattr(args, 'style') else []
         json_out = '--json' in style_args
         levels = arguments.parse_storage_flag(args)
+        level_args = ['-@' + level.name for level in levels]
         keys = getattr(args, 'keys', [])
         single = (len(keys) == 1 and len(levels) == 1)
 
@@ -92,7 +93,7 @@ class ProjectListCommand(ListCommand):
                 primary_key = proj.attributes[prop]['collection'].key_attribute
                 records = proj.populate(prop)
                 if records:
-                    cmd.main([record[primary_key] for record in records] + style_args)
+                    cmd.main([record[primary_key] for record in records] + style_args + level_args)
                 else:
                     if json_out:
                         print("{}")

@@ -266,7 +266,7 @@ def get_project():
     from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
     selected = Project.selected(storage=ANALYSIS_STORAGE)
     from taucmdr.cli.commands.project.list import COMMAND as project_list_command
-    return project_list_command.main([selected['name'], '--json', '@'+ANALYSIS_STORAGE.name])
+    return project_list_command.main([selected['name'], '--json', '-@'+ANALYSIS_STORAGE.name])
 get_project()
 `;
 
@@ -274,7 +274,7 @@ get_project()
 def get_trials():
     from taucmdr.cli.commands.trial.list import COMMAND as trial_list_command
     from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
-    return trial_list_command.main(['--json', '@'+ANALYSIS_STORAGE.name])
+    return trial_list_command.main(['--json', '-@'+ANALYSIS_STORAGE.name])
 get_trials()    
 `;
 
