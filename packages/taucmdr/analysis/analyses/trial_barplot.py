@@ -46,6 +46,7 @@ from math import sqrt
 
 
 def run_trial_bar_plot(trial_id, metric):
+    import six
     from taucmdr.data.tauprofile import TauProfile
     from bokeh.models.callbacks import CustomJS
     from bokeh.models.glyphs import HBar
@@ -66,7 +67,7 @@ def run_trial_bar_plot(trial_id, metric):
         fig.js_on_event('tap', callback)
         return fig, summary
 
-    if isinstance(trial_id, str):
+    if isinstance(trial_id, six.string_types):
         trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
@@ -205,7 +206,7 @@ class TrialBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
+        all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_id',

@@ -37,6 +37,7 @@ from taucmdr.model.trial import Trial
 
 
 def show_bqplot_runtime_breakdown(trial_ids, metric):
+    import six
     from bqplot import LinearScale, Lines, Figure, Axis
 
     def build_runtime_breakdown(trials_, metric_):
@@ -51,7 +52,7 @@ def show_bqplot_runtime_breakdown(trial_ids, metric):
         fig = Figure(marks=[patches], axes=[ax_x, ax_y], title=trials_[0].populate('experiment')['name'])
         return fig
 
-    if isinstance(trial_ids[0], str):
+    if isinstance(trial_ids[0], six.string_types):
         trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
         trials = trial_ids

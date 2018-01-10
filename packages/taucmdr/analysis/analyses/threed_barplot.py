@@ -38,6 +38,7 @@ import inspect
 
 
 def get_3d_bar_plot_data(trial_id, metric):
+    import six
     from taucmdr.data.tauprofile import TauProfile
     from bokeh import palettes
     import pandas as pd
@@ -61,7 +62,7 @@ def get_3d_bar_plot_data(trial_id, metric):
         result = {'xLabels': overall.columns.tolist(), 'yLabels': overall.index.tolist(), 'heights': heights, 'colors': colors}
         return result
 
-    if isinstance(trial_id, str):
+    if isinstance(trial_id, six.string_types):
         trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
@@ -103,7 +104,7 @@ class ThreeDBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
+        all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_id',

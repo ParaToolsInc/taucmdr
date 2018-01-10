@@ -41,6 +41,7 @@ from taucmdr.model.trial import Trial
 
 def run_function_histogram(trial_ids, metric, timer, bins):
     from bokeh.plotting import figure
+    import six
 
     def build_histogram(_trials, _metric, _timer, _bins):
         hist, edges = FunctionHistogramVisualizer.trials_to_histogram(_trials, _metric, _timer, _bins)
@@ -51,7 +52,7 @@ def run_function_histogram(trial_ids, metric, timer, bins):
         fig.yaxis.axis_label = 'Threads'
         return {'fig': fig, 'hist': hist, 'edges': edges, 'width': width}
 
-    if isinstance(trial_ids[0], str):
+    if isinstance(trial_ids[0], six.string_types):
         trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
         trials = trial_ids
@@ -109,8 +110,8 @@ class FunctionHistogramVisualizer(AbstractAnalysis):
             list of dict: {name, default, values, type}
         """
         trials, metric, timer, bins = self._check_input(inputs, **kwargs)
-        default_trial_ids = [trial.hash_digest() for trial in trials]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
+        default_trial_ids = [t.hash_digest() for t in trials]
+        all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_timers = self.get_timer_names(trials)
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [

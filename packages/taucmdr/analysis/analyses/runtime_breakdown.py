@@ -45,6 +45,7 @@ from taucmdr.model.trial import Trial
 
 
 def show_runtime_breakdown(trial_ids, metric):
+    import six
     from bokeh.plotting import figure
     from bokeh.io import output_notebook
     from taucmdr.gui.interaction import InteractivePlotHandler
@@ -62,7 +63,7 @@ def show_runtime_breakdown(trial_ids, metric):
         fig.patches("x", "y", fill_color="color", line_color="color", alpha=0.9, source=patch_lists)
         return fig
 
-    if isinstance(trial_ids[0], str):
+    if isinstance(trial_ids[0], six.string_types):
         trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
         trials = trial_ids
@@ -156,8 +157,8 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
             list of dict: {name, default, values, type}
         """
         trials, metric = self._check_input(inputs, **kwargs)
-        default_trial_ids = [trial.hash_digest() for trial in trials]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
+        default_trial_ids = [t.hash_digest() for t in trials]
+        all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_ids',

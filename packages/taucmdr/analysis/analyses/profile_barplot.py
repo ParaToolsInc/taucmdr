@@ -41,6 +41,7 @@ import inspect
 
 
 def show_profile_bar_plot(trial_id, indices, metric):
+    import six
     from taucmdr.gui.interaction import InteractivePlotHandler
     from taucmdr import logger
     from bokeh.plotting import figure
@@ -68,7 +69,7 @@ def show_profile_bar_plot(trial_id, indices, metric):
         fig.add_layout(time_labels)
         return fig
 
-    if isinstance(trial_id, str):
+    if isinstance(trial_id, six.string_types):
         trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
@@ -132,7 +133,7 @@ class ProfileBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric, indices = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
+        all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_indices = TauProfile.indices(trial.get_data())
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [

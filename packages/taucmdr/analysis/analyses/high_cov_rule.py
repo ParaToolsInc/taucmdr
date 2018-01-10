@@ -37,13 +37,14 @@ import inspect
 
 
 def run_cov_analysis(trial_id):
+    import six
     from taucmdr.model.trial import Trial
     from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
     from taucmdr.analysis.asserters.trial_stats_asserter import TrialStatsFactAsserter
     from taucmdr.analysis.asserters.high_cov_rule_asserter import HighCoVRuleAsserter
     from taucmdr.analysis.rules import RuleBasedClassifier
 
-    if isinstance(trial_id, str):
+    if isinstance(trial_id, six.string_types):
         trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id

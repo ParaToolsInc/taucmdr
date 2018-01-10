@@ -38,13 +38,14 @@ import inspect
 
 
 def run_stddev_prioritized_analysis(trial_id, metric, top_n):
+    import six
     from taucmdr.analysis.analyses.trial_barplot import ANALYSIS as trial_barplot_analysis
     from taucmdr.analysis.analyses.function_histogram import ANALYSIS as histogram_analysis
     from itertools import islice
     from operator import itemgetter
     import six
 
-    if isinstance(trial_id, str):
+    if isinstance(trial_id, six.string_types):
         trial = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_id)[0]
     elif isinstance(trial_id, Trial):
         trial = trial_id
@@ -103,7 +104,7 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
         """
         trials, metric, top_n = self._check_input(inputs, **kwargs)
         trial = trials[0]
-        all_trial_hashes = [trial.hash_digest() for trial in Trial.controller(ANALYSIS_STORAGE).all()]
+        all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
         result = [
             {'name': 'trial_id',
