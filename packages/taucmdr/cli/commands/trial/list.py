@@ -53,7 +53,7 @@ class TrialListCommand(ListCommand):
                 keys = [int(key) for key in keys]
             except ValueError:
                 self.parser.error("Invalid trial number '%s'.  Trial numbers are positive integers starting from 0.")
-        expr = Project.selected().experiment()
+        expr = Project.selected(storage=ctrl.storage).experiment()
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
         return [rec for rec in records if rec['experiment'] == expr.eid]
     
@@ -75,7 +75,7 @@ class TrialListCommand(ListCommand):
         self.logger.debug("Dashboard format")
         title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(),
                                              'storage_path': records[0].storage}, 'cyan')
-        expr = Project.selected().experiment()
+        expr = Project.selected(storage=records[0].storage).experiment()
         subtitle = util.color_text("Selected experiment: ", 'cyan') + expr['name']
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
