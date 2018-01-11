@@ -175,7 +175,9 @@ class AbstractAnalysis(six.with_metaclass(ABCMeta, object)):
         """
         input_specs = self.get_input_spec(inputs, *args, **kwargs)
         out_code = ['from ipywidgets import interact',
-                    'import ipywidgets as widgets']
+                    'import ipywidgets as widgets',
+                    'from IPython.display import display',
+                    'display(widgets.Label(visible=False))']
         interact_args = []
         if input_specs:
             # The first input spec is the `inputs` parameter
