@@ -63,6 +63,8 @@ def show_runtime_breakdown(trial_ids, metric):
         fig.patches("x", "y", fill_color="color", line_color="color", alpha=0.9, source=patch_lists)
         return fig
 
+    if not isinstance(trial_ids, list):
+        trial_ids = list(trial_ids)
     if isinstance(trial_ids[0], six.string_types):
         trials = Trial.controller(ANALYSIS_STORAGE).search_hash(trial_ids)
     elif isinstance(trial_ids[0], Trial):
