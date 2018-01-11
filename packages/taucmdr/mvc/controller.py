@@ -469,7 +469,7 @@ class Controller(object):
                     destination.update(changes, dest_record[0].eid, table_name=self.model.name, propagate=True)
                 else:
                     destination.update(changes, dest_record[0].eid)
-                LOGGER.info("Updated %s %s." % (self.model.name, dest_record[0].hash_digest()))
+                LOGGER.info("Updated %s %s." % (self.model.name, dest_record[0].eid))
             return dest_record[0].eid, True
 
         full_record = src_record.populate()
