@@ -152,6 +152,12 @@ class StdDevPrioritizedAnalysis(AbstractAnalysis):
                     inspect.getsource(show_stddev_prioritized_analysis)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
+        checkboxes = ['%%html']
+        checkboxes.extend(
+            ['<input type="checkbox">Trial %d has timers with a high coefficient of variation</input><br/>'
+             % t['number'] for t in trials])
+        checkbox_cell_source = "\n".join(checkboxes)
+        notebook_cells.append(nbformat.v4.new_code_cell(checkbox_cell_source))
         for trial in trials:
             if interactive:
                 notebook_cells.append(nbformat.v4.new_code_cell(
