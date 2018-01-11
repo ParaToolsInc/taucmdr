@@ -477,6 +477,19 @@ class Trial(Model):
                 count += 1
                 progress_bar.update(count)
 
+    def get_profile_data(self):
+        """Returns a profile data file containing multi-index Pandas dataframes."""
+        profile_data = None
+        data_files = self.get_data_files()
+        tau_profile_prefix = data_files.get('tau')
+        if not tau_profile_prefix:
+            raise InternalError('Attempt to get profile data from trial with no TAU profiles')
+        else:
+            from taucmdr.data.tau_trial_data import TauTrialProfileData
+            for path, _, files in os.walk(tau_profile_prefix):
+                profile_data = TauTrialProfileData.parse(path, files, self)
+        return profile_data
+
     def get_data(self):
         data_files = self.get_data_files()
         tau_profile_prefix = data_files.get('tau')

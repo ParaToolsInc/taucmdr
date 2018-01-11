@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2015, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+"""TAU trial data for TAU Profile.x.y.z format profiles
+
+Parses a set of TAU profile files and yields multi-indexed Pandas dataframes for the
+interval and atomic events.
+"""
+
+import mmap
+import os
+import re
+import xml.etree.ElementTree as ElementTree
+
+import pandas
+
+from taucmdr import logger
+from taucmdr.error import InternalError
+
+LOGGER = logger.get_logger(__name__)
+
+
+class TauTrialProfileData(object):
+    """Tau trial data."""
+
+    _interval_header_re = re.compile(r'(\d+) templated_functions_MULTI_(.+)')
+
+    _atomic_header_re = re.compile(r'(\d+) userevents')
+
+    def __init__(self, trial, metric, metadata, indices, interval_data, atomic_events):
+        self.trial = trial
+        self.metric = metric
+        self.metadata = metadata
+        self.indices = indices
+        self._interval_data = interval_data
+        self._atomic_data = atomic_events
+
+    def interval_data(self):
+        return self._interval_data
+
+    def atomic_data(self):
+        return self._atomic_data
+
+    @classmethod
+    def _parse_header(cls, fin):
+        match = cls._interval_header_re.match(fin.readline())
+        interval_count, metric = match.groups()
+        return int(interval_count), metric
+
+    @classmethod
+    def _parse_metadata(cls, fin):
+        fields, xml_wanabe = fin.readline().split('<metadata>')
+        xml_wanabe = '<metadata>' + xml_wanabe
+        if (fields != "# Name Calls Subrs Excl Incl ProfileCalls" and
+                    fields != '# Name Calls Subrs Excl Incl ProfileCalls # '):
+            raise InternalError('Invalid profile file: %s' % fin.name)
+        try:
+            metadata_tree = ElementTree.fromstring(xml_wanabe)
+        except ElementTree.ParseError as err:
+            raise InternalError('Invalid profile file: %s' % err)
+        metadata = {}
+        for attribute in metadata_tree.iter('attribute'):
+            name = attribute.find('name').text
+            value = attribute.find('value').text
+            metadata[name] = value
+        return metadata
+
+    @classmethod
+    def _parse_interval_data(cls, fin, count):
+        pass
+
+    @classmethod
+    def _parse_atomic_header(cls, fin):
+        aggregates = fin.readline().split(' aggregates')[0]
+        if aggregates != '0':
+            LOGGER.warning("aggregates != 0")
+        match = cls._atomic_header_re.match(fin.readline())
+        try:
+            count = int(match.group(1))
+            if fin.readline() != "# eventname numevents max min mean sumsqr\n":
+                raise InternalError('Invalid profile file: %s' % fin.name)
+        except AttributeError:
+            count = 0
+        return count
+
+    @classmethod
+    def parse(cls, dir_path, filenames, trial):
+        intervals = []
+        atomics = []
+        indices = []
+        trial_data_metric = None
+        trial_data_metadata = None
+        for filename in sorted(filenames,
+                               key=lambda s: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', s)]):
+            location = os.path.basename(filename).replace('profile.', '')
+            node, context, thread = (int(x) for x in location.split('.'))
+            file_path = os.path.join(dir_path, filename)
+            with open(file_path) as fin:
+                mm = mmap.mmap(fin.fileno(), 0, mmap.MAP_PRIVATE, mmap.PROT_READ)
+                interval_count, metric = cls._parse_header(mm)
+                if not trial_data_metric:
+                    trial_data_metric = metric
+                metadata = cls._parse_metadata(mm)
+                if not trial_data_metadata:
+                    trial_data_metadata = metadata
+                interval = pandas.read_table(mm, nrows=interval_count, delim_whitespace=True,
+                                             names=['Calls', 'Subcalls', 'Exclusive',
+                                                    'Inclusive', 'ProfileCalls', 'Group'],
+                                             engine='c')
+                mm.seek(0)
+                for i in range(0, interval_count + 2):
+                    mm.readline()
+                cls._parse_atomic_header(mm)
+                atomic = pandas.read_table(mm, names=['Count', 'Maximum', 'Minimum', 'Mean', 'SumSq'],
+                                           delim_whitespace=True, engine='c')
+                mm.close()
+                intervals.append(interval)
+                atomics.append(atomic)
+                indices.append((node, context, thread))
+        interval_df = pandas.concat(intervals, keys=indices)
+        atomic_df = pandas.concat(atomics, keys=indices)
+        return cls(trial, trial_data_metric, trial_data_metadata, indices, interval_df, atomic_df)
