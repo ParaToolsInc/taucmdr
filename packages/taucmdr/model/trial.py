@@ -341,6 +341,11 @@ class Trial(Model):
 
     __controller__ = TrialController
 
+    def __init__(self, record):
+        super(Trial, self).__init__(record)
+        # Cache profile data to avoid re-parsing
+        self._profile_data = None
+
     @classmethod
     def _separate_launcher_cmd(cls, cmd):
         """Separate the launcher command and it's arguments from the application command(s) and arguments.
@@ -479,16 +484,16 @@ class Trial(Model):
 
     def get_profile_data(self):
         """Returns a profile data file containing multi-index Pandas dataframes."""
-        profile_data = None
-        data_files = self.get_data_files()
-        tau_profile_prefix = data_files.get('tau')
-        if not tau_profile_prefix:
-            raise InternalError('Attempt to get profile data from trial with no TAU profiles')
-        else:
-            from taucmdr.data.tau_trial_data import TauTrialProfileData
-            for path, _, files in os.walk(tau_profile_prefix):
-                profile_data = TauTrialProfileData.parse(path, files, self)
-        return profile_data
+        if self._profile_data is None:
+            data_files = self.get_data_files()
+            tau_profile_prefix = data_files.get('tau')
+            if not tau_profile_prefix:
+                raise InternalError('Attempt to get profile data from trial with no TAU profiles')
+            else:
+                from taucmdr.data.tau_trial_data import TauTrialProfileData
+                for path, _, files in os.walk(tau_profile_prefix):
+                    self._profile_data = TauTrialProfileData.parse(path, files, self)
+        return self._profile_data
 
     def get_data(self):
         data_files = self.get_data_files()

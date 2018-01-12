@@ -27,17 +27,22 @@
 #
 """Tools for dealing with colors in plots"""
 
-import bokeh.palettes
+import bokeh.palettes as bp
 import six
 
 from collections import Mapping
-from itertools import cycle
+from itertools import cycle, chain
 
 
 class ColorMapping(Mapping):
     """Maps names to colors, such as function names to colors for bar plots"""
 
-    def __init__(self, source_palette=bokeh.palettes.Category20[20]):
+    @staticmethod
+    def get_default_palette():
+        return chain(bp.Category20[20], bp.Accent[8], bp.Dark2[8], bp.Pastel1[9],
+                     bp.Category20b[20], bp.Set3[12], bp.Category20c[20])
+
+    def __init__(self, source_palette=bp.Category20[20]):
         self._source_palette = source_palette
         self._source_iter = cycle(self._source_palette)
         self._map = {}

@@ -65,6 +65,10 @@ class TauTrialProfileData(object):
     def atomic_data(self):
         return self._atomic_data
 
+    def get_value_types(self):
+        return [key for key in dict(self._interval_data.dtypes)
+                if dict(self._interval_data.dtypes)[key] in ['float64', 'int64']]
+
     @classmethod
     def _parse_header(cls, fin):
         match = cls._interval_header_re.match(fin.readline())
