@@ -44,13 +44,16 @@ def run_plotly_trial_bar_plot(trial_id, metric, top_n = 100):
     def build_bar_plot(_trial, _metric):
         metric_data = trial.get_profile_data().interval_data()[[_metric]]
         idata = metric_data.unstack().sort_values((0, 0, 0), axis=1, ascending=False).transpose().fillna(0)
-        plotframe = pd.concat([idata[:top_n], idata[top_n:].sum(level=0).rename({_metric: 'MISC'})])
+        plotframe = pd.concat([idata[:top_n], idata[top_n:].sum(level=0).rename({_metric: 'MISC'})], copy=False)
         indices = [str(i) for i in plotframe.columns.values]
+        num_indices = len(indices)
         data = [go.Bar(
             y=indices[::-1],
             x=row.values[::-1],
             name=index[1],
-            orientation='h'
+            orientation='h',
+            hoverinfo='text',
+            text=["<br>".join([index[1][i:i + 75] for i in range(0, len(index[1]), 75)])] * num_indices
         ) for index, row in plotframe.iterrows()]
         data[-1]['marker'] = {'color': '#000000'}
         layout = go.Layout(
