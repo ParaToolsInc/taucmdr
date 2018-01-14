@@ -243,6 +243,18 @@ class TrialController(Controller):
             self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
             return retval
 
+    def renumber(self, old_trial, new_trial):
+        """Renumbers trial id of an experiment.
+
+        Args:
+            old_trial (int): old trial number.
+            new_trial (int): new trial number.
+        """
+        #self.update({'number': new_trial}, {'number': old_trial})
+        record = dict(self.one({'number': old_trial}))
+        record['number'] = new_trial
+        self.create(record)
+        self.delete({'number': old_trial})
 
 class Trial(Model):
     """Trial data model."""

@@ -51,12 +51,6 @@ class TrialRenumberCommand(AbstractCommand):
                              default=arguments.SUPPRESS)
         return parser
 
-    def trial_exists(self, trial_id):
-        proj_ctrl = Project.controller()
-        trial_ctrl = Trial.controller(proj_ctrl.storage)
-        records = trial_ctrl.search({'number': trial_id})
-        return (records != [])
-
     def create_new_trial(self, old, new):
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
@@ -82,13 +76,14 @@ class TrialRenumberCommand(AbstractCommand):
         if len(trial_numbers) != len(new_trial_numbers):
             self.parser.error("Invalid number of trials. Number of old trials ids should be equal to number of new trial ids.")
 
+        proj_ctrl = Project.controller()
+        trial_ctrl = Trial.controller(proj_ctrl.storage)
         for trial_pair in range(0,len(trial_numbers)):
             old = trial_numbers[trial_pair]
             new = new_trial_numbers[trial_pair]
-            if self.trial_exists(new):
+            if trial_ctrl.exists({'number': new}):
                 self.parser.error("Cannot move trial %s to trial %s. Trial %s already exists." %(old, new, new))
             else:
-                self.create_new_trial(old, new)
-                trial_delete_cmd.main([str(old)])
+                trial_ctrl.renumber(old, new)
 
 COMMAND = TrialRenumberCommand(__name__, summary_fmt="Renumber trial numbers.")
