@@ -31,24 +31,23 @@ from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
-from taucmdr.cli.commands.trial.delete import COMMAND as trial_delete_cmd
 
 class TrialRenumberCommand(AbstractCommand):
     """``trial renumber`` subcommand."""
 
     def _construct_parser(self):
-        usage = "%s [trial_number...] --renumber [new_trial_number...]"
+        usage = "%s [trial_number...] --to [new_trial_number...]"
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('trial_numbers',
-                             help="Trials to renumber",
-                             metavar='<trial_number>',
-                             nargs='+',
-                             default=arguments.SUPPRESS)
+                            help="Trials to renumber",
+                            metavar='<trial_number>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
         parser.add_argument('--to',
-                             help="New trial numbers",
-                             metavar='<new_trial_number>',
-                             nargs='+',
-                             default=arguments.SUPPRESS)
+                            help="New trial numbers",
+                            metavar='<new_trial_number>',
+                            nargs='+',
+                            default=arguments.SUPPRESS)
         return parser
 
     def create_new_trial(self, old, new):
@@ -74,13 +73,17 @@ class TrialRenumberCommand(AbstractCommand):
             except ValueError:
                 self.parser.error("Invalid trial trial number: %s" %num)
         if len(trial_numbers) != len(new_trial_numbers):
-            self.parser.error("Invalid number of trials. Number of old trials ids should be equal to number of new trial ids.")
+            self.parser.error("Invalid number of trials."
+                              " Number of old trials ids should be equal to number of new trial ids.")
 
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
-        for trial_pair in range(0,len(trial_numbers)):
-            old = trial_numbers[trial_pair]
-            new = new_trial_numbers[trial_pair]
-            trial_ctrl.renumber(old, new)
+        # Check that no trials deleted with this renumbering
+        for trial_pair in range(0, len(trial_numbers)):
+            if new_trial_numbers[trial_pair] not in trial_numbers \
+               and trial_ctrl.exists({'number': new_trial_numbers[trial_pair]}):
+                self.parser.error("This renumbering would delete trial %s. If you would like to delete"
+                                  " this trial use the `trial delete` subcommand." %new_trial_numbers[trial_pair])
+        trial_ctrl.renumber(trial_numbers, new_trial_numbers)
 
 COMMAND = TrialRenumberCommand(__name__, summary_fmt="Renumber trial numbers.")
