@@ -81,9 +81,6 @@ class TrialRenumberCommand(AbstractCommand):
         for trial_pair in range(0,len(trial_numbers)):
             old = trial_numbers[trial_pair]
             new = new_trial_numbers[trial_pair]
-            if trial_ctrl.exists({'number': new}):
-                self.parser.error("Cannot move trial %s to trial %s. Trial %s already exists." %(old, new, new))
-            else:
-                trial_ctrl.renumber(old, new)
+            trial_ctrl.renumber(old, new)
 
 COMMAND = TrialRenumberCommand(__name__, summary_fmt="Renumber trial numbers.")

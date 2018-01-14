@@ -250,11 +250,16 @@ class TrialController(Controller):
             old_trial (int): old trial number.
             new_trial (int): new trial number.
         """
-        #self.update({'number': new_trial}, {'number': old_trial})
-        record = dict(self.one({'number': old_trial}))
-        record['number'] = new_trial
-        self.create(record)
+        trial_exists = self.exists({'number': new_trial})
+        record1 = dict(self.one({'number': old_trial}))
+        record1['number'] = new_trial
         self.delete({'number': old_trial})
+        if trial_exists:
+            record2 = dict(self.one({'number': new_trial}))
+            record2['number'] = old_trial
+            self.create(record2)
+            self.delete({'number': new_trial})
+        self.create(record1)
 
 class Trial(Model):
     """Trial data model."""
