@@ -27,6 +27,7 @@
 #
 """``trial renumber`` subcommand."""
 
+from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.trial import Trial
@@ -59,6 +60,7 @@ class TrialRenumberCommand(AbstractCommand):
 
 
     def main(self, argv):
+        print argv
         args = self._parse_args(argv)
         trial_numbers = []
         for num in getattr(args, 'trial_numbers', []):
@@ -85,5 +87,6 @@ class TrialRenumberCommand(AbstractCommand):
                 self.parser.error("This renumbering would delete trial %s. If you would like to delete"
                                   " this trial use the `trial delete` subcommand." %new_trial_numbers[trial_pair])
         trial_ctrl.renumber(trial_numbers, new_trial_numbers)
+        return EXIT_SUCCESS
 
 COMMAND = TrialRenumberCommand(__name__, summary_fmt="Renumber trial numbers.")
