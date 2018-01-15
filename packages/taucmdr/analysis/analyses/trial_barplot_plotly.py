@@ -138,8 +138,7 @@ class PlotlyTrialBarPlotVisualizer(AbstractAnalysis):
         """
         trials, metric = self._check_input(inputs, **kwargs)
         notebook_cells = []
-        commands = ['from taucmdr.analysis.analyses.trial_barplot import TrialBarPlotVisualizer',
-                    'from taucmdr.model.trial import Trial',
+        commands = [ 'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(run_plotly_trial_bar_plot),
                     inspect.getsource(show_plotly_trial_bar_plot)]

@@ -159,8 +159,7 @@ class PlotlyProfileBarPlotVisualizer(AbstractAnalysis):
             ConfigurationError: The provided model is not a Trial, or more than one provided
         """
         trials, metric, indices = self._check_input(inputs, **kwargs)
-        commands = ['from taucmdr.analysis.analyses.profile_barplot import ProfileBarPlotVisualizer',
-                    'from taucmdr.model.trial import Trial',
+        commands = [ 'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
                     inspect.getsource(show_plotly_profile_bar_plot)]
         for trial in trials:
