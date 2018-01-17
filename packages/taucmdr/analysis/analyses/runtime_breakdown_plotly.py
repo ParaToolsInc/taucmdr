@@ -25,42 +25,58 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""PerfExplorer-style runtime breakdown chart"""
+"""PerfExplorer-style runtime breakdown chart using Plotly"""
 
-import operator
-from collections import defaultdict
 import inspect
-
-from bokeh.models import ColumnDataSource
-import pandas as pd
-import numpy as np
 import nbformat
 
 from taucmdr.analysis.analysis import AbstractAnalysis
 from taucmdr.cf.storage.levels import ANALYSIS_STORAGE
-from taucmdr.data.tauprofile import TauProfile
 from taucmdr.error import ConfigurationError
-from taucmdr.gui.color import ColorMapping
 from taucmdr.model.trial import Trial
 
 
-def show_runtime_breakdown(trial_ids, metric):
+def run_runtime_breakdown_plotly(trial_ids, metric, top_n):
     import six
-    from bokeh.plotting import figure
-    from bokeh.io import output_notebook
-    from taucmdr.gui.interaction import InteractivePlotHandler
     from taucmdr import logger
 
     logger.set_log_level('WARN')
-    output_notebook(hide_banner=True)
 
     def build_runtime_breakdown(trials_, metric_):
-        patch_lists = RuntimeBreakdownVisualizer.trials_to_patch_lists(trials_, metric_)
-        title = trials_[0].populate('experiment')['name']
-        fig = figure(title=title, plot_width=80, plot_height=40, output_backend="webgl", toolbar_location="right")
-        fig.xaxis.axis_label = 'Number of Processors'
-        fig.yaxis.axis_label = 'Percentage of Total Runtime (%s)' % (metric_, )
-        fig.patches("x", "y", fill_color="color", line_color="color", alpha=0.9, source=patch_lists)
+        import pandas as pd
+        import plotly.graph_objs as go
+        from itertools import izip, cycle
+        from taucmdr.gui.color import ColorMapping
+        profile_sums = []
+        for trial in trials_:
+            metric_by_profile = trial.get_profile_data().interval_data()[[metric_]].unstack()
+            num_cores = metric_by_profile.shape[0]
+            profile_sum = metric_by_profile.sum(level=1).transpose().rename(columns={0: num_cores})
+            profile_sums.append(profile_sum)
+        timer_by_cores = pd.concat(profile_sums, axis=1).sort_values(1, axis=0, ascending=False).loc[metric_]
+        top_profile_sum = timer_by_cores[:top_n].append(timer_by_cores[top_n:].sum().rename("MISC"))
+        percent_time = top_profile_sum.divide(top_profile_sum.sum()).cumsum()
+        x_vals = timer_by_cores.columns.values
+        data = [go.Scatter(
+            name=abs_row[0],
+            x=x_vals,
+            y=percent_row[1].values,
+            text=["%d<br>%s" % (v, "<br>".join([abs_row[0][i:i + 75] for i in range(0, len(abs_row[0]), 75)])) for v in
+                  abs_row[1].values],
+            mode='lines',
+            line=dict(
+                color=color,
+            ),
+            fill='tonexty',
+            hoverinfo='text',
+        ) for abs_row, percent_row, color in
+            izip(timer_by_cores.iterrows(), percent_time.iterrows(), cycle(ColorMapping.get_default_palette()))]
+        data[-1]['line']['color'] = '#000000'
+        layout = go.Layout(
+            showlegend=False,
+            hovermode='closest',
+        )
+        fig = go.Figure(data=data, layout=layout)
         return fig
 
     if not isinstance(trial_ids, list):
@@ -72,75 +88,18 @@ def show_runtime_breakdown(trial_ids, metric):
     else:
         raise ValueError("Inputs must be hashes or Trials")
     breakdown = build_runtime_breakdown(trials, metric)
-    plot = InteractivePlotHandler(breakdown, tooltips=[("Timer", "@name")])
-    plot.show()
+    return breakdown
 
 
-class RuntimeBreakdownVisualizer(AbstractAnalysis):
-    def __init__(self, name='runtime-breakdown', description='Runtime Breakdown'):
-        super(RuntimeBreakdownVisualizer, self).__init__(name=name, description=description)
+def show_runtime_breakdown_plotly(trial_ids, metric, top_n):
+    import plotly.offline as py
+    fig = run_runtime_breakdown_plotly(trial_ids=trial_ids, metric=metric, top_n=top_n)
+    py.iplot(fig)
 
-    @staticmethod
-    def trials_to_patch_lists(trials, metric):
-        sum_times = defaultdict(lambda: pd.DataFrame([], columns=[metric], dtype=np.float64))
-        timer_names = set()
-        # We need to get:
-        #     - Names for all of the timers in all of the trials (as we need a line for each timer)
-        #     - The total times for each trial across all processors
-        for trial in trials:
-            trial_num = trial['number']
-            trial_data = trial.get_data()
-            indices = TauProfile.indices(trial_data)
-            num_processors = len(indices)
-            trial_total_time = 0
-            trial_times = pd.DataFrame([], columns=[metric], dtype=np.float64)
-            for n, c, t in indices:
-                df = trial_data[n][c][t].interval_data()[[metric]].loc[trial_num, n, c, t]
-                trial_times = trial_times.add(df, fill_value=0.0)
-            for name, value in trial_times.itertuples():
-                timer_names.add(name)
-            # If there are multiple trials with the same num_processors, we aggregate them
-            sum_times[num_processors] = sum_times[num_processors].add(trial_times, fill_value=0.0)
-        # Convert the times to percentages
-        for num_processors in sum_times.keys():
-            sum_times[num_processors] = (sum_times[num_processors] / (sum_times[num_processors].sum())) * 100.0
-        # Now we need to convert the percentages to 'patches' for Bokeh to render.
-        # We need, for each timer, a list of x- and y-coordinates for the shape to be drawn.
-        # From x = 1 to num_processors, we trace out the line with y, then drop down to the
-        # previous line and draw it from x = num_processors to 1.
-        mapping = ColorMapping()
-        raw_xs = []
-        raw_ys = []
-        colors = []
-        names = []
-        sorted_sum_times = sorted(sum_times.items())
-        for timer_name in timer_names:
-            timer_xs = []
-            timer_ys = []
-            for num_processors, df in sorted_sum_times:
-                timer_xs.append(num_processors)
-                timer_ys.append(float(df.loc[timer_name]))
-            raw_xs.append(timer_xs)
-            raw_ys.append(timer_ys)
-            colors.append(mapping[timer_name])
-            names.append(timer_name)
-        # Postprocess the y values to stack the lines
-        ys = []
-        last = [0.0] * len(sorted_sum_times)
-        for row in raw_ys:
-            # Draw the line from left-to-right above the last line
-            processed_row = map(operator.add, row, last)
-            # Then complete the polygon by drawing along the top of the last line
-            return_row = last[::-1]
-            last = processed_row
-            ys.append(processed_row + return_row)
-        # Postprocess the x values for the return
-        xs = []
-        for row in raw_xs:
-            xs.append(row + row[::-1])
-        # Package everything into a data source
-        data_source = ColumnDataSource(dict(x=xs, y=ys, color=colors, name=names))
-        return data_source
+
+class PlotlyRuntimeBreakdownVisualizer(AbstractAnalysis):
+    def __init__(self, name='runtime-breakdown-plotly', description='Runtime Breakdown (Plotly)'):
+        super(PlotlyRuntimeBreakdownVisualizer, self).__init__(name=name, description=description)
 
     @staticmethod
     def _check_input(inputs, **kwargs):
@@ -150,7 +109,8 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
             if not isinstance(trial, Trial):
                 raise ConfigurationError("Runtime breakdowns can only be built for plots")
         metric = kwargs.get('metric', 'Exclusive')
-        return inputs, metric
+        top_n = kwargs.get('top_n', 50)
+        return inputs, metric, top_n
 
     def get_input_spec(self, inputs, *args, **kwargs):
         """Get the input specification for the analysis.
@@ -158,7 +118,7 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
         Returns:
             list of dict: {name, default, values, type}
         """
-        trials, metric = self._check_input(inputs, **kwargs)
+        trials, metric, top_n = self._check_input(inputs, **kwargs)
         default_trial_ids = [t.hash_digest() for t in trials]
         all_trial_hashes = [t.hash_digest() for t in Trial.controller(ANALYSIS_STORAGE).all()]
         all_metrics = self.get_metric_names(trials, numeric_only=True)
@@ -172,6 +132,11 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
              'values': all_metrics,
              'default': metric,
              'type': 'widgets.Dropdown'},
+
+            {'name': 'top_n',
+             'values': range(1, 200),
+             'default': top_n,
+             'type': 'widgets.BoundedIntText'}
 
         ]
         return result
@@ -193,20 +158,20 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
         Raises:
             ConfigurationError: The provided models are not Trials
         """
-        trials, metric = self._check_input(inputs, **kwargs)
+        trials, metric, top_n = self._check_input(inputs, **kwargs)
         notebook_cells = []
-        commands = ['from taucmdr.analysis.analyses.runtime_breakdown import RuntimeBreakdownVisualizer',
-                    'from taucmdr.model.trial import Trial',
+        commands = [ 'from taucmdr.model.trial import Trial',
                     'from taucmdr.cf.storage.levels import ANALYSIS_STORAGE',
-                    inspect.getsource(show_runtime_breakdown)]
+                     inspect.getsource(run_runtime_breakdown_plotly),
+                    inspect.getsource(show_runtime_breakdown_plotly)]
         def_cell_source = "\n".join(commands)
         notebook_cells.append(nbformat.v4.new_code_cell(def_cell_source))
         trials_list_str = "Trial.controller(ANALYSIS_STORAGE).search_hash([%s])" % (",".join(
             ['"%s"' % trial.hash_digest() for trial in trials]))
         if interactive:
-            show_plot_str = self.get_interaction_code(inputs, 'show_runtime_breakdown', *args, **kwargs)
+            show_plot_str = self.get_interaction_code(inputs, 'show_runtime_breakdown_plotly', *args, **kwargs)
         else:
-            show_plot_str = 'show_runtime_breakdown(%s, "%s")' % (trials_list_str, metric)
+            show_plot_str = 'show_runtime_breakdown_plotly(%s, "%s", %s)' % (trials_list_str, metric, top_n)
         notebook_cells.append(nbformat.v4.new_code_cell(show_plot_str))
         return notebook_cells
 
@@ -222,8 +187,8 @@ class RuntimeBreakdownVisualizer(AbstractAnalysis):
         Raises:
             ConfigurationError: The provided models are not Trials
         """
-        trials, metric = self._check_input(inputs, **kwargs)
-        show_runtime_breakdown(trials, metric)
+        trials, metric, top_n = self._check_input(inputs, **kwargs)
+        run_runtime_breakdown_plotly(trials, metric, top_n)
 
 
-ANALYSIS = RuntimeBreakdownVisualizer()
+ANALYSIS = PlotlyRuntimeBreakdownVisualizer()

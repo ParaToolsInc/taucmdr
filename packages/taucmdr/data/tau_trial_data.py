@@ -30,7 +30,7 @@
 Parses a set of TAU profile files and yields multi-indexed Pandas dataframes for the
 interval and atomic events.
 """
-
+import glob
 import mmap
 import os
 import re
@@ -112,12 +112,14 @@ class TauTrialProfileData(object):
         return count
 
     @classmethod
-    def parse(cls, dir_path, filenames, trial):
+    def parse(cls, dir_path, filenames=None, trial=None):
         intervals = []
         atomics = []
         indices = []
         trial_data_metric = None
         trial_data_metadata = None
+        if filenames is None:
+            filenames = [os.path.basename(x) for x in glob.glob(os.path.join(dir_path, 'profile.*'))]
         for filename in sorted(filenames,
                                key=lambda s: [int(t) if t.isdigit() else t.lower() for t in re.split('(\d+)', s)]):
             location = os.path.basename(filename).replace('profile.', '')
