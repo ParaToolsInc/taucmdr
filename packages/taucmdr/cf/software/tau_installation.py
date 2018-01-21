@@ -1540,6 +1540,7 @@ class TauInstallation(Installation):
         LOGGER.info("Converting TAU trace files to SLOG2 format...")
         cmd = [os.path.join(self.bin_path, 'tau2slog2'), trc, edf, '-o', slog2]
         if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
+            os.remove(slog2)
             raise InternalError("Nonzero return code from tau2slog2")
         if not os.path.exists(slog2):
             raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")                
