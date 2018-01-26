@@ -1,6 +1,18 @@
 Packaging and Releasing TAU Commander
 =====================================
 
+Versioning
+----------
+
+TAU Commander follows semantic versioning (https://semver.org/).  
+The version number is MAJOR.MINOR.PATCH.COMMIT where COMMIT is the number of 
+commits since the last tag.  E.g. version 1.3.0.5 is five unreleased commits 
+after the version 1.3.0 release.
+
+The ``VERSION`` file is created automatically and shows the current version.
+It might be out of date.  It's always a good idea to ``make clean`` before
+performing any task that depends on a version number.
+
 setup.py
 --------
 
@@ -19,7 +31,17 @@ TAU Commander.  The important ones are:
    
 :test:
    Run all unit tests and pylint.
-   
+
+:release:
+   Generate distributable release packages in the ``dist`` directory.  
+   See the ``--web`` and ``--all`` flags.  You probably want the ``--all`` flag.
+   E.g. for a new version release:
+.. code-block:: bash
+
+      git tag v1.3.1
+      make clean
+      python setup.py release --all
+
 :install:
    Install a TAU Commander distribution. End users must **NEVER** use ``python setup.py install``!  TAU Commander needs
    its own, private, un-shared Python installation to avoid environment contamination when profiling a user's code.  
