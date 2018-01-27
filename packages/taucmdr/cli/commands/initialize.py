@@ -234,7 +234,7 @@ class InitializeCommand(AbstractCommand):
                 raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
-            err.value = "The project has been initialized but no project configuration is selected."
+            err.value = "The project has been initialized in %s but no project configuration is selected." %proj_ctrl.storage.prefix
             raise err
         else:
             self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
