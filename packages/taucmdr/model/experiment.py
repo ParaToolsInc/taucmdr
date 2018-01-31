@@ -312,7 +312,7 @@ class Experiment(Model):
                     compiler_inst=measurement.get_or_default('compiler_inst'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
-                    select_file=application.get('select_file', None),
+                    select_file=measurement.get('select_file', None),
                     # Measurement methods and options
                     baseline=baseline,
                     profile=measurement.get_or_default('profile'),

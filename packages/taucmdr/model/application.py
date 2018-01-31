@@ -35,7 +35,6 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
-import os
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.cf.compiler.host import HOST_COMPILERS
@@ -121,15 +120,6 @@ def attributes():
             'argparse': {'flags': ('--mpc',)},
             'rebuild_required': True
         },
-        'select_file': {
-            'type': 'string',
-            'description': 'specify selective instrumentation file',
-            'argparse': {'flags': ('--select-file',),
-                         'metavar': 'path'},
-            'compat': {bool: (Measurement.exclude('source_inst', 'never'),
-                              Application.discourage('linkage', 'static'))},
-            'rebuild_required': True
-        },
         'linkage': {
             'type': 'string',
             'default': 'static' if HOST_OS is CRAY_CNL else 'dynamic',
@@ -148,18 +138,6 @@ class Application(Model):
 
     __attributes__ = attributes
 
-    def _check_select_file(self):
-        try:
-            select_file = self['select_file']
-        except KeyError:
-            pass
-        else:
-            if select_file and not os.path.exists(select_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
-
-    def on_create(self):
-        self._check_select_file()
-
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
@@ -176,7 +154,6 @@ class Application(Model):
                 raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-        self._check_select_file()
         if self.is_selected():
             for attr, change in changes.iteritems():
                 if self.attributes[attr].get('rebuild_required'):

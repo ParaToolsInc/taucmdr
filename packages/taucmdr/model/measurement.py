@@ -33,6 +33,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+import os
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -348,6 +349,15 @@ def attributes():
                               Target.exclude('host_os', DARWIN),
                               Measurement.exclude('baseline', True))}
         },
+        'select_file': {
+            'type': 'string',
+            'description': 'specify selective instrumentation file',
+            'argparse': {'flags': ('--select-file',),
+                         'metavar': 'path'},
+            'compat': {bool: (Measurement.exclude('source_inst', 'never'),
+                              Application.discourage('linkage', 'static'))},
+            'rebuild_required': True
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
@@ -366,6 +376,19 @@ class Measurement(Model):
     
     __attributes__ = attributes
 
+    def _check_select_file(self):
+        print 'check select file'
+        try:
+            select_file = self['select_file']
+        except KeyError:
+            pass
+        else:
+            if select_file and not os.path.exists(select_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+
+    def on_create(self):
+        self._check_select_file()
+
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
@@ -382,6 +405,7 @@ class Measurement(Model):
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
+        self._check_select_file()
         if self.is_selected():
             for attr, change in changes.iteritems():
                 if self.attributes[attr].get('rebuild_required'):
