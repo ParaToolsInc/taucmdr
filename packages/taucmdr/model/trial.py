@@ -333,6 +333,27 @@ class TrialController(Controller):
 
         return destination_eid, already_present
 
+    def renumber(self, old_trials, new_trials):
+        """Renumbers trial id of an experiment.
+
+        Args:
+            old_trials (list): old trial numbers.
+            new_trials (list): new trial numbers.
+        """
+        new_records = []
+        for trial_pair,_ in enumerate(old_trials):
+            old = old_trials[trial_pair]
+            new = new_trials[trial_pair]
+            record = dict(self.one({'number': old}))
+            record['number'] = new
+            new_records.append(record)
+        for trial in old_trials:
+            self.delete({'number': trial})
+        for trial in new_trials:
+            if self.exists({'number': trial}):
+                self.delete({'number': trial})
+        for rec in new_records:
+            self.create(rec)
 
 class Trial(Model):
     """Trial data model."""

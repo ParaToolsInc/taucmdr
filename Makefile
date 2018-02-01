@@ -222,6 +222,7 @@ PATH := $(ANACONDA_BIN):$(PATH)
 jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f jupyterlab | grep jupyterlab | grep -q 0\.30\.6 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge jupyterlab_launcher=0.6.0 jupyterlab=0.30.6
 	$(ECHO)$(CONDA) list -f bokeh | grep bokeh | grep -q 0\.12\.13 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge bokeh=0.12.13
+	$(ECHO)$(CONDA) list -f plotly | grep -q plotly 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge plotly
 	$(ECHO)$(CONDA) list -f nodejs | grep -q nodejs 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge nodejs
 	$(ECHO)$(CONDA) list -f yarn | grep -q yarn 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge yarn
 	$(ECHO)$(CONDA) list -f cairo | grep -q cairo 2>&1 || $(ECHO)$(CONDA) install -y -c conda-forge cairo
@@ -229,10 +230,12 @@ jupyterlab-install: $(CONDA)
 	$(ECHO)$(CONDA) list -f redis | grep -q redis 2>&1 || $(ECHO)$(CONDA) install -y -c anaconda redis
 	$(ECHO)$(PIP) list --format=columns | grep faststat 2>&1 || $(ECHO)$(PIP) install faststat
 	$(ECHO)$(PIP) list --format=columns | grep durable_rules 2>&1 || $(ECHO)$(PIP) install durable_rules
+	$(ECHO)$(PIP) list --format=columns | grep cufflinks 2>&1 || $(ECHO)$(PIP) install cufflinks
 
 jupyterlab-extensions-install: jupyterlab-install $(JUPYTERLAB_BUILD)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab-manager || $(ECHO)$(JUPYTER) labextension install @jupyter-widgets/jupyterlab-manager@0.31.3
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q hub-extension || $(ECHO)$(JUPYTER) labextension install @jupyterlab/hub-extension@0.7.0
+	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q plotly-extension || $(ECHO)$(JUPYTER) labextension install @jupyterlab/plotly-extension
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q jupyterlab_bokeh || ($(ECHO)cd $(JUPYTERLAB_BUILD)/jupyterlab_bokeh && $(ECHO)$(YARN) install && $(ECHO)$(JUPYTER) labextension install --no-build . )
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_project_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_project_selector && $(ECHO)$(YARN) install && $(ECHO)$(JUPYTER) labextension install --no-build .)
 	$(ECHO)$(JUPYTER) labextension list 2>&1 | grep -q taucmdr_experiment_selector || ($(ECHO)cd $(JUPYTERLAB_BUILD)/taucmdr_experiment_selector && $(ECHO)$(YARN) install && $(ECHO)$(JUPYTER) labextension install --no-build .)

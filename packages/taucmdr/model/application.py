@@ -191,7 +191,6 @@ class Application(Model):
                 raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-        self._check_select_file()
         if self.is_selected():
             for attr, change in six.iteritems(changes):
                 if self.attributes[attr].get('rebuild_required'):

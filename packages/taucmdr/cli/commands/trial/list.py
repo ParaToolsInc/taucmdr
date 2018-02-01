@@ -55,7 +55,8 @@ class TrialListCommand(ListCommand):
                 self.parser.error("Invalid trial number '%s'.  Trial numbers are positive integers starting from 0.")
         expr = Project.selected(storage=ctrl.storage).experiment()
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
-        return [rec for rec in records if rec['experiment'] == expr.eid]
+        recs = [rec for rec in records if rec['experiment'] == expr.eid]
+        return sorted(recs, key=lambda recs: recs['number'])
     
     def _format_long_item(self, key, val):
         key, val, flags, description = super(TrialListCommand, self)._format_long_item(key, val)
