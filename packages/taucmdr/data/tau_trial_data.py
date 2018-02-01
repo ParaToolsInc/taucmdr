@@ -69,6 +69,13 @@ class TauTrialProfileData(object):
         return [key for key in dict(self._interval_data.dtypes)
                 if dict(self._interval_data.dtypes)[key] in ['float64', 'int64']]
 
+    def summarize_samples(self, across_threads=False):
+        groups = 'Timer Name' if across_threads else ['Node', 'Context', 'Thread', 'Timer Name']
+        summary = self._interval_data.loc[self._interval_data['Timer Type'] == 'SAMPLE'].groupby(groups).sum()
+        summary.index = summary.index.map(
+            lambda x: '[SUMMARY] ' + x if across_threads else (x[0], x[1], x[2], '[SUMMARY] ' + x[3]))
+        return summary
+
     @classmethod
     def _parse_header(cls, fin):
         match = cls._interval_header_re.match(fin.readline())
@@ -111,6 +118,15 @@ class TauTrialProfileData(object):
             count = 0
         return count
 
+    @staticmethod
+    def extract_from_timer_name(name):
+        import re
+        tag_search = re.search('^\[(\w+)\]\s+(.*)', name)
+        timer_type, rest = tag_search.groups() if tag_search else (None, name)
+        name_search = re.search('(.+)\[({.*)\]', rest)
+        func_name, location = name_search.groups() if name_search else (rest, None)
+        return func_name, location, timer_type
+
     @classmethod
     def parse(cls, dir_path, filenames=None, trial=None):
         intervals = []
@@ -137,6 +153,9 @@ class TauTrialProfileData(object):
                                              names=['Calls', 'Subcalls', 'Exclusive',
                                                     'Inclusive', 'ProfileCalls', 'Group'],
                                              engine='c')
+                split_index = interval.reset_index()['index'].apply(cls.extract_from_timer_name)
+                for n, col in enumerate(['Timer Name', 'Timer Location', 'Timer Type']):
+                    interval[col] = split_index.apply(lambda l: l[n]).values
                 mm.seek(0)
                 for i in range(0, interval_count + 2):
                     mm.readline()
@@ -148,5 +167,7 @@ class TauTrialProfileData(object):
                 atomics.append(atomic)
                 indices.append((node, context, thread))
         interval_df = pandas.concat(intervals, keys=indices)
+        interval_df.index.rename(['Node', 'Context', 'Thread', 'Timer'], inplace=True)
         atomic_df = pandas.concat(atomics, keys=indices)
+        atomic_df.index.rename(['Node', 'Context', 'Thread', 'Timer'], inplace=True)
         return cls(trial, trial_data_metric, trial_data_metadata, indices, interval_df, atomic_df)

@@ -48,7 +48,7 @@ def run_function_histogram(trial_ids, metric, timer, bins):
         width = edges[-1] - edges[0]
         fig = figure(plot_width=80, plot_height=40, title=timer, output_backend="webgl")
         fig.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], fill_color="red", line_color="black")
-        fig.xaxis.axis_label = metric
+        fig.xaxis.axis_label = metric + " Time (microseconds)"
         fig.yaxis.axis_label = 'Threads'
         return {'fig': fig, 'hist': hist, 'edges': edges, 'width': width}
 
