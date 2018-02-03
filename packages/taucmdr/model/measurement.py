@@ -377,7 +377,6 @@ class Measurement(Model):
     __attributes__ = attributes
 
     def _check_select_file(self):
-        print 'check select file'
         try:
             select_file = self['select_file']
         except KeyError:
