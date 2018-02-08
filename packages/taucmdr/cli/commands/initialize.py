@@ -246,15 +246,9 @@ class InitializeCommand(AbstractCommand):
             err.value = "The project has been initialized in %s but no project configuration is selected." %proj_ctrl.storage.prefix
             raise err
         else:
-            if args.force:
-                self._create_project(args)
-                if not args.bare:
-                    self._populate_project(args)
-                return dashboard_cmd.main([])
-            else:
-                self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
-                                    " `tau application edit` to edit the selected project or delete"
-                                    " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
-                return EXIT_WARNING
+            self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
+                                " `tau application edit` to edit the selected project or delete"
+                                " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
+            return EXIT_WARNING
 
 COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.") 
