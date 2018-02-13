@@ -52,6 +52,10 @@ class TrialCreateCommand(CreateCommand):
     def _construct_parser(self):
         usage = "%s [arguments] [launcher] [launcher_arguments] [--] <command> [command_arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
+        parser.add_argument('--tau-dir',
+                            help="Project directory location",
+                            metavar='tau_dir',
+                            nargs='?')
         parser.add_argument('launcher',
                             help="Application launcher command, e.g. mpirun",
                             metavar='launcher',
@@ -70,11 +74,19 @@ class TrialCreateCommand(CreateCommand):
         return parser
     
     def main(self, argv):
-        self._parse_args(argv)
+        args = self._parse_args(argv)
+        if args.tau_dir:
+            # Link to tau directory
+            ind = argv.index('--tau-dir')
+            del argv[ind:ind+2]
         launcher_cmd, application_cmds = Trial.parse_launcher_cmd(argv)
         self.logger.debug("Launcher command: %s", launcher_cmd)
         self.logger.debug("Application commands: %s", application_cmds)
-        return Project.selected().experiment().managed_run(launcher_cmd, application_cmds)
+        if args.tau_dir:
+            Project.controller().storage.tau_dir(args.tau_dir)
+            return Project.selected().experiment().managed_run(launcher_cmd, application_cmds)
+        else:
+            return Project.selected().experiment().managed_run(launcher_cmd, application_cmds)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Create new trial of the selected experiment.")
