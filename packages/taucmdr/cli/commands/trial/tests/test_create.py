@@ -30,6 +30,9 @@
 Functions used for unit tests of create.py.
 """
 
+import os
+import shutil
+import tempfile
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN
 from taucmdr.cf.compiler.host import CC
@@ -154,3 +157,19 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['profile'])
         self.assertIn("Selected experiment 'targ1-app1-profile'", stdout)
         self.assertFalse(stderr)
+
+    def test_tau_dir(self):
+        """Test --tau_dir option"""
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        test_dir = os.getcwd()
+        path = tempfile.mkdtemp()
+        os.chdir(path)
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, [test_dir+'/a.out', '--tau-dir', test_dir])
+        self.assertIn('BEGIN targ1-app1', stdout)
+        self.assertIn('END targ1-app1', stdout)
+        self.assertIn('Trial 0 produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+        os.chdir(test_dir)
+        shutil.rmtree(path)
