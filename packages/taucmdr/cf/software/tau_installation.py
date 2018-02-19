@@ -1086,8 +1086,8 @@ class TauInstallation(Installation):
         env['TAU_SAMPLING'] = str(int(self.sample))
         if self.sample:
             # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
-            arch_period = {INTEL_KNC: 50000,
-                           INTEL_KNL: 50000,
+            arch_period = {INTEL_KNC: 100000,
+                           INTEL_KNL: 100000,
                            IBM_BGL: 20000,
                            IBM_BGP: 20000,
                            IBM_BGQ: 50000}
