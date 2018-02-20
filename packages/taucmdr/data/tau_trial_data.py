@@ -71,7 +71,7 @@ class TauTrialProfileData(object):
 
     def summarize_samples(self, across_threads=False):
         groups = 'Timer Name' if across_threads else ['Node', 'Context', 'Thread', 'Timer Name']
-        summary = self._interval_data.loc[self._interval_data['Timer Type'] == 'SAMPLE'].groupby(groups).sum()
+        summary = self._interval_data.loc[self._interval_data['Group'].str.contains("TAU_SAMPLE")].groupby(groups).sum()
         summary.index = summary.index.map(
             lambda x: '[SUMMARY] ' + x if across_threads else (x[0], x[1], x[2], '[SUMMARY] ' + x[3]))
         return summary
