@@ -426,14 +426,15 @@ class TauInstallation(Installation):
 
     def _get_max_threads(self):
         if self.target_arch in (INTEL_KNC, INTEL_KNL):
-            nprocs = 512
+            nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
+            return nprocs
         else:
             nprocs = multiprocessing.cpu_count()
-        # Round up to the next power of two, e.g. 160 => 256
-        return max(64, 1 << (nprocs-1).bit_length())
+            # Assume 2 HTs/core
+            return max(64, 2*nprocs)
 
     def _get_max_metrics(self):
-        # Round up to the next power of two, e.g. 25 => 32
+        # Round up to the next  of two, e.g. 25 => 32
         nmetrics = 1 << (len(self.metrics)-1).bit_length()
         return max(nmetrics, 32)
     
