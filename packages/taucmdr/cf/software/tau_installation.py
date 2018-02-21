@@ -426,18 +426,25 @@ class TauInstallation(Installation):
         return uid_parts
 
     def _get_max_threads(self):
-        if self.target_arch in (INTEL_KNC, INTEL_KNL):
-            nprocs = 512
+        if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
+            if self.target_arch in (INTEL_KNC, INTEL_KNL):
+                nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
+                return nprocs
+            else:
+                nprocs = multiprocessing.cpu_count()
+                # Assume 2 HTs/core
+                return max(64, 2*nprocs)
         else:
-            nprocs = multiprocessing.cpu_count()
-        # Round up to the next power of two, e.g. 160 => 256
-        return max(64, 1 << (nprocs-1).bit_length())
+            return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
-        # Round up to the next power of two, e.g. 25 => 32
-        nmetrics = 1 << (len(self.metrics)-1).bit_length()
-        return max(nmetrics, 32)
-    
+        # Round up to the next multiple of 4
+        nmetrics = len(self.metrics) + len(self.metrics) % 4
+        if self.target_arch in (INTEL_KNC, INTEL_KNL):
+            return max(nmetrics, 32)
+        else:
+            return(nmetrics)
+
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
