@@ -435,7 +435,7 @@ class TauInstallation(Installation):
 
     def _get_max_metrics(self):
         # Round up to the next multiple of 4
-        nmetrics = self.metrics + self.metrics % 4
+        nmetrics = len(self.metrics) + len(self.metrics) % 4
         if self.target_arch in (INTEL_KNC, INTEL_KNL):
             return max(nmetrics, 32)
         else:
