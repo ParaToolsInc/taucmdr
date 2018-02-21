@@ -434,10 +434,13 @@ class TauInstallation(Installation):
             return max(64, 2*nprocs)
 
     def _get_max_metrics(self):
-        # Round up to the next  of two, e.g. 25 => 32
-        nmetrics = 1 << (len(self.metrics)-1).bit_length()
-        return max(nmetrics, 32)
-    
+        # Round up to the next multiple of 4
+        nmetrics = self.metrics + self.metrics % 4
+        if self.target_arch in (INTEL_KNC, INTEL_KNL):
+            return max(nmetrics, 32)
+        else:
+            return(nmetrics)
+
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
