@@ -69,9 +69,13 @@ class TauTrialProfileData(object):
         return [key for key in dict(self._interval_data.dtypes)
                 if dict(self._interval_data.dtypes)[key] in ['float64', 'int64']]
 
-    def summarize_samples(self, across_threads=False):
+    def summarize_samples(self, across_threads=False, callpaths=True):
         groups = 'Timer Name' if across_threads else ['Node', 'Context', 'Thread', 'Timer Name']
-        summary = self._interval_data.loc[self._interval_data['Group'].str.contains("TAU_SAMPLE")].groupby(groups).sum()
+        if callpaths:
+            base_data = self._interval_data.loc[self._interval_data['Group'].str.contains("TAU_SAMPLE")]
+        else:
+            base_data = self._interval_data.loc[self._interval_data['Timer Type'] == 'SAMPLE']
+        summary = base_data.groupby(groups).sum()
         summary.index = summary.index.map(
             lambda x: '[SUMMARY] ' + x if across_threads else (x[0], x[1], x[2], '[SUMMARY] ' + x[3]))
         return summary
