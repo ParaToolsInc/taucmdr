@@ -437,12 +437,7 @@ class TauInstallation(Installation):
             return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
-        # Round up to the next multiple of 4
-        nmetrics = len(self.metrics) + len(self.metrics) % 4
-        if self.target_arch in (INTEL_KNC, INTEL_KNL):
-            return max(nmetrics, 32)
-        else:
-            return(nmetrics)
+        return len(self.metrics)
 
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
