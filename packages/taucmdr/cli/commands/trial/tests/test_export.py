@@ -31,7 +31,7 @@ Functions used for unit tests of export.py.
 """
 
 import os
-from taucmdr import tests, EXIT_SUCCESS
+from taucmdr import tests, util, EXIT_SUCCESS
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
@@ -40,7 +40,8 @@ from taucmdr.model.project import Project
 
 
 class ExportTest(tests.TestCase):
-    
+
+    @tests.skipUnless(util.which('java'), "A java interpreter is required for this test")
     def test_export_tau_profile(self):
         self.reset_project_storage(['--profile', 'tau', '--trace', 'none'])
         expr = Project.selected().experiment()
@@ -79,6 +80,7 @@ class ExportTest(tests.TestCase):
         export_file = expr['name'] + '.trial0.cubex'
         self.assertTrue(os.path.exists(export_file))
 
+    @tests.skipUnless(util.which('java'), "A java interpreter is required for this test")
     def test_export_slog2(self):
         self.reset_project_storage(['--trace', 'slog2', '--profile', 'none'])
         expr = Project.selected().experiment()

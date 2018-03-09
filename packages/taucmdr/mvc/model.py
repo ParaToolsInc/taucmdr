@@ -595,3 +595,9 @@ class Model(StorageRecord):
                 if (callable(value) and value(attr_value)) or attr_value == value: 
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
+
+    @classmethod
+    def filter_arguments(cls, args):
+        from taucmdr.cli.arguments import ArgumentsNamespace
+        filtered = dict(item for item in vars(args).iteritems() if item[0] in cls.attributes)
+        return ArgumentsNamespace(**filtered)

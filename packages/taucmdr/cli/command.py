@@ -29,6 +29,7 @@
 
 from abc import ABCMeta, abstractmethod
 from taucmdr import logger, cli
+from taucmdr.cli.arguments import ArgumentsNamespace
 
 
 class AbstractCommand(object):
@@ -81,7 +82,10 @@ class AbstractCommand(object):
         return self.parser.format_help()
 
     def _parse_args(self, argv):
-        args = self.parser.parse_args(args=argv)
+        if isinstance(argv, ArgumentsNamespace):
+            args = argv
+        else:
+            args = self.parser.parse_args(args=argv)
         self.logger.debug('%s args: %s', self.command, args)
         return args
 

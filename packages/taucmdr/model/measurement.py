@@ -33,6 +33,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+import os
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -107,6 +108,7 @@ def attributes():
                          'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None),
                        'merged': _merged_profile_compat},
+            'rebuild_required': True
         },
         'trace': {
             'type': 'string',
@@ -119,7 +121,8 @@ def attributes():
                          'choices':('slog2', 'otf2', 'none'),
                          'const': 'otf2'},
             'compat': {'otf2': Target.exclude('libotf2_source', None),
-                       lambda x: x != 'none': _discourage_callpath}
+                       lambda x: x != 'none': _discourage_callpath},
+            'rebuild_required': True
         },
         'sample': {
             'type': 'boolean',
@@ -187,7 +190,9 @@ def attributes():
             'description': 'use specified library to measure time spent in OpenMP directives',
             'argparse': {'flags': ('--openmp',),
                          'metavar': 'library',
-                         'choices': ('ignore', 'opari', 'ompt')},
+                         'choices': ('ignore', 'opari', 'ompt'),
+                         'nargs': '?',
+                         'const': 'ompt'},
             'compat': {'opari':
                        (Application.require('openmp', True),
                         Measurement.exclude('baseline', True)),
@@ -355,6 +360,15 @@ def attributes():
                               Target.exclude('host_os', DARWIN),
                               Measurement.exclude('baseline', True))}
         },
+        'select_file': {
+            'type': 'string',
+            'description': 'specify selective instrumentation file',
+            'argparse': {'flags': ('--select-file',),
+                         'metavar': 'path'},
+            'compat': {bool: (Measurement.exclude('source_inst', 'never'),
+                              Application.discourage('linkage', 'static'))},
+            'rebuild_required': True
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
@@ -362,7 +376,7 @@ def attributes():
             'argparse': {'flags': ('--force-tau-options',),
                          'nargs': '+',
                          'metavar': '<option>'},
-            'compat': {True: (Measurement.discourage('force_tau_options'),
+            'compat': {bool: (Measurement.discourage('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         }
     }
@@ -372,6 +386,18 @@ class Measurement(Model):
     """Measurement data model."""
     
     __attributes__ = attributes
+
+    def _check_select_file(self):
+        try:
+            select_file = self['select_file']
+        except KeyError:
+            pass
+        else:
+            if select_file and not os.path.exists(select_file):
+                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+
+    def on_create(self):
+        self._check_select_file()
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
@@ -389,6 +415,7 @@ class Measurement(Model):
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
+        self._check_select_file()
         if self.is_selected():
             for attr, change in changes.iteritems():
                 if self.attributes[attr].get('rebuild_required'):

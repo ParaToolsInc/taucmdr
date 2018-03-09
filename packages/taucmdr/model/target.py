@@ -173,7 +173,7 @@ def attributes():
                                               "Try adding `--compilers=Intel` to the command line")
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
-                                                  "Try adding `--mpi-compilers=Intel` to the command line")
+                                                  "Try adding `--mpi-wrappers=Intel` to the command line")
     
     return {
         'projects': {
@@ -612,11 +612,11 @@ class Target(Model):
                         found.append(compiler_record)
                         break
         if not found:
-            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path),
+            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path or compiler_cmd),
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
-                     "Create and select a new target configuration that uses the '%s' compiler" % absolute_path,
+                     "Create and select a new target configuration that uses the '%s' compiler" % (absolute_path or compiler_cmd),
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
         return found

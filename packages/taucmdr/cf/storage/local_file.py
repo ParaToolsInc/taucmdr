@@ -35,6 +35,7 @@ both the database and the key/value store.
 import os
 import json
 import tinydb
+import tempfile
 from tinydb import operations
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
@@ -140,9 +141,23 @@ class LocalFileStorage(AbstractStorage):
             yield item['key'], item['value']
     
     def is_writable(self):
-        """Check if the storage filesystem is writable."""
+        """Check if the storage filesystem is writable.
+        
+        Attempts to create and delete a file in ``prefix``.
+        See https://github.com/ParaToolsInc/taucmdr/issues/231.
+        
+        Returns:
+            bool: True if a file could be created and deleted in ``prefix``, False otherwise.
+        """
         self.connect_filesystem()
-        return os.access(self.prefix, os.W_OK)
+        if not os.access(self.prefix, os.W_OK):
+            return False
+        try:
+            with tempfile.NamedTemporaryFile(dir=self.prefix, delete=True) as tmp_file:
+                tmp_file.write("Write test. Delete this file.")
+        except (OSError, IOError):
+            return False
+        return True
     
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
