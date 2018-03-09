@@ -236,6 +236,17 @@ def attributes():
                          'nargs': '?',
                          'const': 100}
         },
+        'ebs_unwind': {
+            'type': 'integer',
+            'default': 0,
+            'description': 'maximum depth for EBS unwinding',
+            'argparse': {'flags': ('--ebs-unwind',),
+                         'group': 'data',
+                         'metavar': 'depth',
+                         'nargs': '?',
+                         'const': 0},
+            'compat': {(lambda unwind: unwind > 0): Measurement.exclude('sample', False)}
+        },
         'io': {
             'type': 'boolean',
             'default': False,

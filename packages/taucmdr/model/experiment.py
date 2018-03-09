@@ -335,7 +335,8 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    forced_makefile=target.get('forced_makefile', None))
+                    forced_makefile=target.get('forced_makefile', None),
+                    ebs_unwind=measurement.get_or_default('ebs_unwind'))
         tau.install()
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)

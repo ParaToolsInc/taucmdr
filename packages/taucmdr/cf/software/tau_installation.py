@@ -201,7 +201,8 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
-                 forced_makefile=None):
+                 forced_makefile=None,
+                 ebs_unwind=0):
         """Initialize the TAU installation wrapper class.
 
         Args:
@@ -346,6 +347,7 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
+        self.ebs_unwind = ebs_unwind
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN)
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
@@ -1089,6 +1091,9 @@ class TauInstallation(Installation):
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
+        if self.ebs_unwind > 0:
+            env['TAU_EBS_UNWIND'] = '1'
+            env['TAU_EBS_UNWIND_DEPTH'] = str(self.ebs_unwind)
         if self.verbose:
             opts.append('-v')
         if self.sample:
