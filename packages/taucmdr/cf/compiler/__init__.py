@@ -301,7 +301,7 @@ class _CompilerFamily(TrackedInstance):
             cmd = [absolute_path] + family.version_flags
             try:
                 stdout = util.get_command_output(cmd)
-            except CalledProcessError as err:
+            except CalledProcessorError as err:
                 messages.append(err.output)
                 LOGGER.debug("%s returned %d: %s", cmd, err.returncode, err.output)
                 # Keep going: Cray compilers return nonzero on version flag
