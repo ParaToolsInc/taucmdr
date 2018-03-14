@@ -463,7 +463,7 @@ class Installation(object):
         if os.path.isdir(self.install_prefix):
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-        with new_os_environ(), util.umask(002):
+        with new_os_environ(), util.umask(0o002):
             try:
                 self._src_prefix = self._prepare_src()
                 self.installation_sequence()
