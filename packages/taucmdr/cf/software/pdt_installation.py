@@ -35,7 +35,8 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK
+from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK,\
+    ARM64
 from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 
@@ -120,6 +121,30 @@ COMMANDS = {None:
             {LINUX:
              ['cparse',
               'cparse4101',
+              'cxxparse',
+              'cxxparse4101',
+              'edgcpfe',
+              'edgcpfe4101',
+              'f90parse',
+              'f95parse',
+              'gfparse',
+              'gfparse48',
+              'gfparse485',
+              'pdbcomment',
+              'pdbconv',
+              'pdbhtml',
+              'pdbmerge',
+              'pdbstmt',
+              'pdbtree',
+              'pdtflint',
+              'taucpdisp',
+              'taucpdisp4101',
+              'tau_instrumentor',
+              'xmlgen']},
+            ARM64:
+            {LINUX:
+             ['cparse',
+              'cparse410',
               'cxxparse',
               'cxxparse4101',
               'edgcpfe',
