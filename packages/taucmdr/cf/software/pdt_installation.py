@@ -168,6 +168,9 @@ class PdtInstallation(AutotoolsInstallation):
     def _configure_edg4x_rose(self):
         LOGGER.info('edg4x-rose parser configuration failed.  Retrying...')
         cwd = os.path.join(self.install_prefix, 'contrib', 'rose', 'edg44', self.tau_magic.name, 'roseparse')
+        if not os.path.exists(cwd):
+            LOGGER.info("roseparse not available on %s.  Good luck!", self.tau_magic.name)
+            return
         if util.create_subprocess(['./configure'], cwd=cwd, stdout=False, show_progress=True):
             raise SoftwarePackageError('Unable to configure edg4x-rose parsers')
         LOGGER.info("'edg4x-rose parser configuration successful.  Continuing %s verification...", self.title)
