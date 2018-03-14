@@ -244,7 +244,7 @@ def attributes():
         'unwind_depth': {
             'type': 'integer',
             'default': 0,
-            'description': '',
+            'description': 'Record callstack to specified depth',
             'argparse': {'flags': ('--unwind-depth',),
                          'group': 'data',
                          'metavar': 'depth',
