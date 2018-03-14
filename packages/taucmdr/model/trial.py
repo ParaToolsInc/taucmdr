@@ -227,6 +227,9 @@ class TrialController(Controller):
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
         b64env = base64.b64encode(repr(env))
         is_bluegene = expr.populate('target').architecture().is_bluegene()
+	is_cray_login = expr.populate('target').operating_system().is_cray_login()
+	if is_cray_login:
+	    LOGGER.warning('Running on a Cray head node. This may produce incorrect results. Try running on a compute node.')
         try:
             if is_bluegene:
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)

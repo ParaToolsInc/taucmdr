@@ -31,7 +31,7 @@ I'd rather call this module "taucmdr.cf.platform" but that would conflict with :
 """
 
 import os
-from taucmdr import logger
+from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import KeyedRecord
 from taucmdr.cf.compiler import host, mpi, shmem
@@ -146,6 +146,15 @@ class OperatingSystem(KeyedRecord):
     def __init__(self, name, description):
         self.name = name
         self.description = description
+
+    def is_cray_login(self):
+	if self is CRAY_CNL:
+            if util.which('aprun'):
+                return False
+	    else:
+                return True
+        else:
+            return False
         
     @classmethod
     def detect(cls):
