@@ -93,6 +93,12 @@ def attributes():
         'tau_makefile': {
             'type': 'string',
             'description': 'TAU Makefile used during this experiment, if any.'
+        },
+        'record_output': {
+            'type': 'boolean',
+            'default': False,
+            'description': "Record application stdout",
+            'argparse': {'flags': ('--record-output',)},
         }
     }
 
@@ -411,7 +417,8 @@ class Experiment(Model):
                                application['name'], application['linkage'], cmd0, linkage)
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
-        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
+        record_output = self.populate(attribute='record_output', defaults=True)
+        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description, record_output)
 
     def trials(self, trial_numbers=None):
         """Get a list of modeled trial records.

@@ -109,6 +109,10 @@ def attributes():
             'type': 'float',
             'description': "seconds spent executing the application command only (excludes all other operations)"
         },
+        'output': {
+            'type': 'string',
+            'description': "stdout and stderr of program"
+        },
     }
 
 
@@ -160,12 +164,15 @@ class TrialController(Controller):
             LOGGER.info("The job has been added to the queue.")
         return retval
 
-    def _perform_interactive(self, expr, trial, cmd, cwd, env):
+    def _perform_interactive(self, expr, trial, cmd, cwd, env, record_output=False):
         begin_time = self._mark_time('BEGIN', expr)
         retval = None
         try:
             self.update({'phase': 'executing', 'begin_time': begin_time}, trial.eid)
-            retval, elapsed = trial.execute_command(expr, cmd, cwd, env)
+            if record_output:
+                retval, output, elapsed =  trial.execute_command(expr, cmd, cwd, env, record_output)
+            else:
+                retval, elapsed = trial.execute_command(expr, cmd, cwd, env, record_output)
         except:
             self.delete(trial.eid)
             raise
@@ -178,6 +185,8 @@ class TrialController(Controller):
             for name in file_names:
                 data_size += os.path.getsize(os.path.join(dir_path, name))
         fields['data_size'] = data_size
+        if record_output:
+            fields['output'] = output
         self.update(fields, trial.eid)
         if retval != 0:
             if data_size != 0:
@@ -194,9 +203,12 @@ class TrialController(Controller):
         LOGGER.info('Current working directory: %s', cwd)
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
         LOGGER.info('Elapsed seconds: %s', elapsed)
-        return retval
+        if record_output:
+            return retval, output
+        else:
+            return retval
 
-    def perform(self, proj, cmd, cwd, env, description):
+    def perform(self, proj, cmd, cwd, env, description, record_output=False):
         """Performs a trial of an experiment.
 
         Args:
@@ -234,7 +246,10 @@ class TrialController(Controller):
             if is_bluegene:
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
             else:
-                retval = self._perform_interactive(expr, trial, cmd, cwd, env)
+                if record_output:
+                    retval, output = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
+                else:
+                    retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
         except Exception as err:
             try:
                 self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
@@ -481,7 +496,7 @@ class Trial(Model):
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
 
-    def execute_command(self, expr, cmd, cwd, env):
+    def execute_command(self, expr, cmd, cwd, env, record_output=False):
         """Execute a command as part of an experiment trial.
 
         Creates a new subprocess for the command and checks for TAU data files
@@ -505,8 +520,13 @@ class Trial(Model):
         LOGGER.info(cmd_str)
         try:
             begin_time = time.time()
-            retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
+            ret = util.create_subprocess(cmd, cwd=cwd, env=env, log=False, record_output=record_output)
             elapsed = time.time() - begin_time
+            if record_output:
+                retval = ret[0]
+                output = base64.b64encode(repr(ret[1]))
+            else:
+                retval = ret
         except OSError as err:
             target = expr.populate('target')
             errno_hint = {errno.EPERM: "Check filesystem permissions",
@@ -551,7 +571,10 @@ class Trial(Model):
 
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        return retval, elapsed
+        if record_output:
+            return retval, output, elapsed
+        else:
+            return retval, elapsed
     
     def export(self, dest):
         """Export experiment trial data.
