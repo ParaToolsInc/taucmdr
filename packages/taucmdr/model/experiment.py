@@ -106,6 +106,12 @@ def attributes():
             'type': 'string',
             'description': 'TAU Makefile used during this experiment, if any.',
             'hashed': True
+        },
+        'record_output': {
+            'type': 'boolean',
+            'default': False,
+            'description': "Record application stdout",
+            'argparse': {'flags': ('--record-output',)},
         }
     }
 
@@ -350,7 +356,8 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    forced_makefile=target.get('forced_makefile', None))
+                    forced_makefile=target.get('forced_makefile', None),
+                    unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
@@ -425,7 +432,8 @@ class Experiment(Model):
                                application['name'], application['linkage'], cmd0, linkage)
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
-        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
+        record_output = self.populate(attribute='record_output', defaults=True)
+        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description, record_output)
 
     @property
     def num_trials(self):

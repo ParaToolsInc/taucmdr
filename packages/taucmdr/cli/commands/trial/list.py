@@ -60,7 +60,7 @@ class TrialListCommand(ListCommand):
     
     def _format_long_item(self, key, val):
         key, val, flags, description = super(TrialListCommand, self)._format_long_item(key, val)
-        if key == 'environment':
+        if key == 'environment' or key == 'output':
             val = '(base64 encoded, %d bytes)' % len(val)
         return [key, val, flags, description]
 

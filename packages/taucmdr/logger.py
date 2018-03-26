@@ -361,7 +361,7 @@ width cannot be determined, the default is 80.
 """
 
 _ROOT_LOGGER = logging.getLogger()
-if not len(_ROOT_LOGGER.handlers):
+if not _ROOT_LOGGER.handlers:
     _ROOT_LOGGER.setLevel(logging.DEBUG)
     _LOG_FILE_PREFIX = os.path.dirname(LOG_FILE)
     try:

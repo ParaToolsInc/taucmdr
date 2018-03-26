@@ -256,6 +256,17 @@ def attributes():
                          'const': 100},
             'hashed': True
         },
+        'unwind_depth': {
+            'type': 'integer',
+            'default': 0,
+            'description': 'Record callstack to specified depth',
+            'argparse': {'flags': ('--unwind-depth',),
+                         'group': 'data',
+                         'metavar': 'depth',
+                         'nargs': '?',
+                         'const': 10},
+            'compat': {(lambda unwind: unwind > 0): Measurement.exclude('sample', False)}
+        },
         'io': {
             'type': 'boolean',
             'default': False,

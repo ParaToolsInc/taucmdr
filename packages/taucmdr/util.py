@@ -473,7 +473,7 @@ def _null_context():
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50):
+def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False):
     """Create a subprocess.
     
     See :any:`subprocess.Popen`.
@@ -487,6 +487,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         error_buf (int): If non-zero, stdout is not already being sent, and return value is
                           non-zero then send last `error_buf` lines of subprocess stdout and stderr
                           to this processes' stdout.
+        record_output (bool): If True return output.
         
     Returns:
         int: Subprocess return code.
@@ -505,6 +506,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
     with context():
         if error_buf:
             buf = deque(maxlen=error_buf)
+        output = []
         proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
@@ -515,13 +517,20 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
                     LOGGER.debug(line[:-1])
                 if stdout:
                     print(line, end="")
+                if error_buf:
+                    buf.append(line)
+                if record_output:
+                    output.append(line)
         proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     if retval and error_buf and not stdout:
         for line in buf:
             print(line, end = "")
-    return retval
+    if record_output:
+        return retval, output
+    else:
+        return retval
 
 
 def get_command_output(cmd):

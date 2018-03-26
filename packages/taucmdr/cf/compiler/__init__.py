@@ -307,9 +307,24 @@ class _CompilerFamily(TrackedInstance):
                 # Keep going: Cray compilers return nonzero on version flag
             if stdout:
                 if re.search(family.family_regex, stdout):
-                    LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
-                    cls._probe_cache[absolute_path] = family
-                    return family
+                    if family.show_wrapper_flags:
+                        cmd = [absolute_path] + family.show_wrapper_flags
+                        try:
+                            stdout = util.get_command_output(cmd)
+                        except CalledProcessError as err:
+                            messages.append(err.output)
+                            LOGGER.debug("%s returned %d: %s", cmd, err.returncode, err.output)
+                        if stdout:
+                            if re.search(family.family_regex, stdout):
+                                LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
+                                cls._probe_cache[absolute_path] = family
+                                return family
+                            else:
+                                LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
+                    else:
+                        LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
+                        cls._probe_cache[absolute_path] = family
+                        return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
         if len(without_regex) > 0:
