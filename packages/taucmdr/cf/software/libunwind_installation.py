@@ -33,6 +33,7 @@ instrumentation, and other measurement approaches.
 
 import os
 import sys
+import shutil
 import fileinput
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
@@ -68,6 +69,7 @@ class LibunwindInstallation(AutotoolsInstallation):
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
+        """Configure libunwind."""
         os.environ['CC'] = self.compilers[CC].unwrap().absolute_path
         os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
         if self.target_arch is IBM_BGQ:
@@ -80,10 +82,12 @@ class LibunwindInstallation(AutotoolsInstallation):
             os.environ['CXXFLAGS'] = '-fPIC'
             flags.append('--disable-shared')
             flags.append('--disable-minidebuginfo')
-        # Fix test so `make install` succeeds more frequently 
-        for line in fileinput.input(os.path.join(self._src_prefix, 'tests', 'crasher.c'), inplace=1):
-            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-            sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
+        # If needed, fix test so `make install` succeeds more frequently.
+        crasher_c = os.path.join(self._src_prefix, 'tests', 'crasher.c')
+        if os.path.exists(crasher_c):
+            for line in fileinput.input(crasher_c, inplace=1):
+                # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+                sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
         return super(LibunwindInstallation, self).configure(flags)
 
     def make(self, flags):
@@ -104,3 +108,10 @@ class LibunwindInstallation(AutotoolsInstallation):
         if self.target_arch in [PPC64, PPC64LE]:
             flags.append('-i')
         super(LibunwindInstallation, self).make_install(flags)
+
+    def installation_sequence(self):
+        if self.target_arch is ARM64:
+            LOGGER.info("Using pre-built libunwind package from U. Oregon Performance Research Laboratory")
+            shutil.move(self._src_prefix, self.install_prefix)
+        else:
+            super(LibunwindInstallation, self).installation_sequence()

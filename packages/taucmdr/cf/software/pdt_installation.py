@@ -35,7 +35,8 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK
+from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK,\
+    ARM64
 from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 
@@ -139,6 +140,30 @@ COMMANDS = {None:
               'taucpdisp',
               'taucpdisp4101',
               'tau_instrumentor',
+              'xmlgen']},
+            ARM64:
+            {LINUX:
+             ['cparse',
+              'cparse410',
+              'cxxparse',
+              'cxxparse4101',
+              'edgcpfe',
+              'edgcpfe4101',
+              'f90parse',
+              'f95parse',
+              'gfparse',
+              'gfparse48',
+              'gfparse485',
+              'pdbcomment',
+              'pdbconv',
+              'pdbhtml',
+              'pdbmerge',
+              'pdbstmt',
+              'pdbtree',
+              'pdtflint',
+              'taucpdisp',
+              'taucpdisp4101',
+              'tau_instrumentor',
               'xmlgen']}}
 
 class PdtInstallation(AutotoolsInstallation):
@@ -168,6 +193,9 @@ class PdtInstallation(AutotoolsInstallation):
     def _configure_edg4x_rose(self):
         LOGGER.info('edg4x-rose parser configuration failed.  Retrying...')
         cwd = os.path.join(self.install_prefix, 'contrib', 'rose', 'edg44', self.tau_magic.name, 'roseparse')
+        if not os.path.exists(cwd):
+            LOGGER.info("roseparse not available on %s.  Good luck!", self.tau_magic.name)
+            return
         if util.create_subprocess(['./configure'], cwd=cwd, stdout=False, show_progress=True):
             raise SoftwarePackageError('Unable to configure edg4x-rose parsers')
         LOGGER.info("'edg4x-rose parser configuration successful.  Continuing %s verification...", self.title)
