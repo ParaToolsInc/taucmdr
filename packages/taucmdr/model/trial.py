@@ -418,7 +418,7 @@ class Trial(Model):
         edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
         count_trc_edf = len(trc_files) + len(edf_files)
         LOGGER.info('Cleaning up TAU trace files...')
-        with ProgressIndicator(count_trc_edf) as progress_bar:
+        with ProgressIndicator("", total_size=count_trc_edf) as progress_bar:
             count = 0
             for path in trc_files + edf_files:
                 os.remove(path)
