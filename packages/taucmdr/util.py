@@ -53,7 +53,7 @@ from termcolor import termcolor
 from unidecode import unidecode
 from taucmdr import logger
 from taucmdr.error import InternalError
-from taucmdr.progress import ProgressIndicator, progress_spinner
+from taucmdr.progress import ProgressIndicator
 
 
 LOGGER = logger.get_logger(__name__)
@@ -113,8 +113,8 @@ def mkdtemp(*args, **kwargs):
 
 def copy_file(src, dest, show_progress=True):
     """Works just like :any:`shutil.copy` except with progress bars."""
-    context = progress_spinner if show_progress else _null_context
-    with context():
+    context = ProgressIndicator if show_progress else _null_context
+    with context(""):
         shutil.copy(src, dest)
 
 
@@ -253,7 +253,7 @@ def download(src, dest, timeout=8):
         # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
         if timeout:
             raise IOError("Failed to download '%s'" % src)
-        with ProgressIndicator() as progress_bar:
+        with ProgressIndicator("Downloading") as progress_bar:
             try:
                 urllib.urlretrieve(src, dest, reporthook=progress_bar.update)
             except Exception as err:
@@ -280,7 +280,7 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
     except (ValueError, IndexError):
         LOGGER.warning("Invalid response while retrieving download file size")
         file_size = -1
-    with ProgressIndicator(file_size) as progress_bar:
+    with ProgressIndicator("Downloading", total_size=file_size) as progress_bar:
         with open(os.devnull, 'wb') as devnull:
             proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT)
             while proc.poll() is None:
@@ -342,7 +342,7 @@ def archive_toplevel(archive):
 
 
 def _show_extract_progress(members):
-    with ProgressIndicator(len(members), show_cpu=False) as progress_bar:
+    with ProgressIndicator("Extracting", total_size=len(members), show_cpu=False) as progress_bar:
         for i, member in enumerate(members):
             progress_bar.update(i)
             yield member
@@ -369,7 +369,7 @@ def extract_archive(archive, dest, show_progress=True):
     with tarfile.open(archive) as fin:
         if show_progress:
             LOGGER.info("Checking contents of '%s'", archive)
-            with progress_spinner(show_cpu=False):
+            with ProgressIndicator("Extracting archive", show_cpu=False):
                 members = fin.getmembers()
             LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
             fin.extractall(dest, members=_show_extract_progress(members))
@@ -395,10 +395,10 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
         os.chdir(cwd)
     if show_progress:
         LOGGER.info("Writing '%s'...", dest)
-        context = progress_spinner
+        context = ProgressIndicator
     else:
         context = _null_context
-    with context():
+    with context(""):
         try:
             if fmt == 'zip':
                 with ZipFile(dest, 'w') as archive:
@@ -462,7 +462,7 @@ def path_accessible(path, mode='r'):
         return False
 
 @contextmanager
-def _null_context():
+def _null_context(label):
     yield
 
 
@@ -495,8 +495,8 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
                 subproc_env[key] = val
                 _heavy_debug("%s=%s", key, val)
     LOGGER.debug("Creating subprocess: cmd=%s, cwd='%s'\n", cmd, cwd)
-    context = progress_spinner if show_progress else _null_context
-    with context():
+    context = ProgressIndicator if show_progress else _null_context
+    with context(""):
         if error_buf:
             buf = deque(maxlen=error_buf)
         output = []
