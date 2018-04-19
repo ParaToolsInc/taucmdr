@@ -40,6 +40,7 @@ from taucmdr.cf.compiler.host import HOST_COMPILERS, FC
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
+from taucmdr.cf.compiler.caf import CAF_COMPILERS
 from taucmdr.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
 from taucmdr.cf.software.tau_installation import TauInstallation, TAU_MINIMAL_COMPILERS
 
@@ -299,7 +300,7 @@ class TargetCreateCommand(CreateCommand):
             dict: InstalledCompiler instances indexed by role keyword.
         """
         compilers = {}
-        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS, CUDA_COMPILERS:
+        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS, CUDA_COMPILERS, CAF_COMPILERS:
             for role in kbase.roles.itervalues():
                 try:
                     command = getattr(args, role.keyword)
