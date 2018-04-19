@@ -42,6 +42,7 @@ from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
+from taucmdr.cf.compiler.caf import CAF_COMPILERS
 
 
 def attributes():
@@ -88,6 +89,15 @@ def attributes():
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
             'compat': {True: Measurement.encourage('mpi', True)},
+            'rebuild_required': True
+        },
+        'caf': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'application uses Coarray Fortran',
+            'argparse': {'flags': ('--caf',)},
+            'compat': {True: (Measurement.encourage('mpi', True),
+                              Measurement.require('source_inst', 'never'))},
             'rebuild_required': True
         },
         'cuda': {
@@ -209,7 +219,8 @@ class Application(Model):
             is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword) and self['mpi']
             is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword) and self['shmem']
             is_cuda = compiler['role'].startswith(CUDA_COMPILERS.keyword) and self['cuda']
-            if is_host or is_mpi or is_shmem or is_cuda:
+            is_caf = compiler['role'].startswith(CAF_COMPILERS.keyword) and self['caf']
+            if is_host or is_mpi or is_shmem or is_cuda or is_caf:
                 found.append(compiler)
         if not found:
             raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" %

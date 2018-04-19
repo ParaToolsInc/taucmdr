@@ -52,6 +52,7 @@ from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
 from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
 
@@ -131,7 +132,8 @@ TAU_COMPILER_WRAPPERS = {CC: 'tau_cc.sh',
                          SHMEM_CXX: 'tau_cxx.sh',
                          SHMEM_FC: 'tau_f90.sh',
                          CUDA_CXX: 'tau_cxx.sh',
-                         CUDA_FC: 'tau_ftn.sh'}
+                         CUDA_FC: 'tau_ftn.sh',
+                         CAF_FC: 'tau_caf.sh'}
 
 TAU_MINIMAL_COMPILERS = [CC, CXX]
 
@@ -145,7 +147,8 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'aprun': [], 
                      'qsub': [], 
                      'srun': ['--multi-prog'], 
-                     'oshrun': []}
+                     'oshrun': [],
+                     'cafrun': ['-np']}
 
 
 class TauInstallation(Installation):
@@ -166,6 +169,7 @@ class TauInstallation(Installation):
                  tbb_support=False,
                  mpi_support=False,
                  mpi_libraries=None,
+                 caf_support=False,
                  cuda_support=False,
                  cuda_prefix=None,
                  opencl_support=False,
@@ -314,6 +318,7 @@ class TauInstallation(Installation):
         self.tbb_support = tbb_support
         self.mpi_support = mpi_support
         self.mpi_libraries = mpi_libraries if mpi_libraries is not None else []
+        self.caf_support = caf_support
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
@@ -640,6 +645,8 @@ class TauInstallation(Installation):
                             host_compilers.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
+                if self.caf_support:
+                    fortran_magic=self.compilers[CAF_FC].info.command
             except KeyError:
                 LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)

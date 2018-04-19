@@ -34,6 +34,7 @@ import shutil
 from taucmdr import tests, util
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
+from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 
 class CreateLauncherTest(tests.TestCase):
@@ -110,4 +111,28 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
         self.assertRegexpMatches(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
-        
+         
+    @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
+    @tests.skipUnlessHaveCompiler(CAF_FC)
+    def test_cafrun(self):
+        self.reset_project_storage(['--caf','--caf-fc','caf','--source-inst','never','--compiler-inst','always','--mpi'])
+        self.assertManagedBuild(0, CAF_FC, [], 'blockmatrix-coarray.f90')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['cafrun', '-np', '9', './a.out'])
+        self.assertFalse(stderr)
+        self.assertNotIn("Multiple executables were found", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
+        self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
+
+    @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
+    @tests.skipUnlessHaveCompiler(CAF_FC)
+    def test_cafrun_with_flag(self):
+        self.reset_project_storage(['--caf','--caf-fc','caf','--source-inst','never','--compiler-inst','always','--mpi'])
+        self.assertManagedBuild(0, CAF_FC, [], 'blockmatrix-coarray.f90')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['cafrun', '-np', '9', '--', './a.out'])
+        self.assertFalse(stderr)
+        self.assertNotIn("Multiple executables were found", stdout)
+        self.assertNotIn("executable is './foo_launcher'", stdout)
+        self.assertIn("produced 9 profile files", stdout)
+        self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
+
+
