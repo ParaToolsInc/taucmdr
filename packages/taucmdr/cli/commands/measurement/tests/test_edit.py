@@ -32,6 +32,7 @@ Functions used for unit tests of edit.py.
 
 
 from taucmdr import tests
+from taucmdr.error import IncompatibleRecordError
 from taucmdr.model.project import Project
 from taucmdr.model.measurement import Measurement
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
@@ -114,3 +115,64 @@ class EditTest(tests.TestCase):
         meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
         self.assertIsNotNone(meas)
         self.assertListEqual(meas['force_tau_options'], [tau_options])
+
+    def test_set_tau_force_options_none(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        self.assertFalse('force-tau-options' in expr.populate('measurement'))
+        tau_options = "none"
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
+        # Check that 'force-tau-options' is now a list containing the expected options in the project record
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        self.assertIsNotNone(meas)
+        self.assertNotIn('force_tau_options', meas)
+
+    def test_set_tau_extra_options(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        self.assertFalse('extra-tau-options' in expr.populate('measurement'))
+        tau_options = "-optKeepFiles"
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
+        # Check that 'extra-tau-options' is now a list containing the expected options in the project record
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        self.assertIsNotNone(meas)
+        self.assertListEqual(meas['extra_tau_options'], [tau_options])
+
+    def test_set_tau_extra_options_none(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        self.assertFalse('extra-tau-options' in expr.populate('measurement'))
+        tau_options = "none"
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
+        # Check that 'extra-tau-options' is now a list containing the expected options in the project record
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        self.assertIsNotNone(meas)
+        self.assertNotIn('extra_tau_options', meas)
+
+    def test_set_tau_forced_extra_options(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        self.assertFalse('extra-tau-options' in expr.populate('measurement'))
+        self.assertFalse('forced-tau-options' in expr.populate('measurement'))
+        tau_options = "-optKeepFiles"
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
+        with self.assertRaises(IncompatibleRecordError):
+            self.assertNotCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        self.assertIsNotNone(meas)
+        #self.assertListEqual(meas['extra_tau_options'], [tau_options])
+
+    def test_set_tau_forced_extra_options_none(self):
+        self.reset_project_storage()
+        expr = Project.selected().experiment()
+        self.assertFalse('extra-tau-options' in expr.populate('measurement'))
+        self.assertFalse('forced-tau-options' in expr.populate('measurement'))
+        tau_options = "none"
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
+        self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        self.assertIsNotNone(meas)
+        self.assertNotIn('extra_tau_options', meas)
+        self.assertNotIn('force_tau_options', meas)
+
+

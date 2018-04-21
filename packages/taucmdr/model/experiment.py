@@ -379,6 +379,12 @@ class Experiment(Model):
             pass
         else:
             LOGGER.warning("Measurement '%s' forces TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.force_tau_options))
+        try:
+            tau.extra_tau_options = meas['extra_tau_options']
+        except KeyError:
+            pass
+        else:
+            LOGGER.warning("Measurement '%s' adds extra options TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.extra_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
     def managed_run(self, launcher_cmd, application_cmds, description=None): 

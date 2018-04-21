@@ -354,6 +354,18 @@ def attributes():
                          'nargs': '+',
                          'metavar': '<option>'},
             'compat': {bool: (Measurement.discourage('force_tau_options'),
+                              Measurement.exclude('extra_tau_options'),
+                              Measurement.exclude('baseline', True))}
+        },
+        'extra_tau_options': {
+            'type': 'array',
+            'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
+            'rebuild_on_change': True,
+            'argparse': {'flags': ('--extra-tau-options',),
+                         'nargs': '+',
+                         'metavar': '<option>'},
+            'compat': {bool: (Measurement.discourage('extra_tau_options'),
+                              Measurement.exclude('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         }
     }
