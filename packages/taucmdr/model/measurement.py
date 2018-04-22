@@ -369,6 +369,16 @@ def attributes():
                               Application.discourage('linkage', 'static'))},
             'rebuild_required': True
         },
+        'extra_tau_options': {
+            'type': 'string',
+            'description': 'forcibly add to the TAU_OPTIONS environment variable (not recommended)',
+            'rebuild_on_change': True,
+            'argparse': {'flags': ('--extra-tau-options',),
+                         'nargs': '+',
+                         'metavar': '<option>'},
+            'compat': {bool: (Measurement.discourage('extra_tau_options'),
+                              Measurement.exclude('baseline', True))}
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",

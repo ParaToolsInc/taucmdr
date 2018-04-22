@@ -1047,6 +1047,11 @@ class TauInstallation(Installation):
                 opts.append('-g')
             if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
                 opts.append('-DTAU_ENABLED=1')
+        try:
+            extra_tau_opts = set(self.extra_tau_options)
+            tau_opts |= extra_tau_opts
+        except AttributeError:
+            pass
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         makefile = self.get_makefile()
         tags = self._makefile_tags(makefile)
