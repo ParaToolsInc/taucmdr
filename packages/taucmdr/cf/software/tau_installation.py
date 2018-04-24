@@ -1006,12 +1006,17 @@ class TauInstallation(Installation):
             return opts, env
         for pkg in self.dependencies.itervalues():
             opts, env = pkg.compiletime_config(opts, env)
+
         try:
             tau_opts = set(self.force_tau_options)
         except AttributeError:
             try:
                 tau_opts = set(env['TAU_OPTIONS'].split())
             except KeyError:
+                tau_opts = set()
+            try:
+                tau_opts = set(self.extra_tau_options)
+            except AttributeError:
                 tau_opts = set()
             if self.source_inst != 'never' or self.compiler_inst != 'never':
                 for flag in '-optAppCC', '-optAppCXX', '-optAppF90':

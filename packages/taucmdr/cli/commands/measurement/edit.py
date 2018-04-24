@@ -65,8 +65,11 @@ class MeasurementEditCommand(EditCommand):
             # Unset force_tau_options if it was already set and --force-tau-options=none 
             if data.pop('force_tau_options', False) and [i.lower().strip() for i in force_tau_options] == ['none']:
                 meas_ctrl = Measurement.controller(store)
-                meas_ctrl.unset(['force_tau_options'], {'name': meas_name})
-                self.logger.info("Removed 'force-tau-options' from measurement '%s'.", meas_name)
+                if 'force_tau_options' in meas_ctrl.one({"name": meas_name}):
+                    meas_ctrl.unset(['force_tau_options'], {'name': meas_name})
+                    self.logger.info("Removed 'force-tau-options' from measurement '%s'.", meas_name)
+                else:
+                    self.logger.info("'force-tau-options' was not present in measurement '%s'.", meas_name)
             else:
                 data['force_tau_options'] = force_tau_options
                 self.logger.info("Added 'force-tau-options' to measurement '%s'.", meas_name)
@@ -75,14 +78,19 @@ class MeasurementEditCommand(EditCommand):
         except AttributeError:
             pass
         else:
-            # Unset extra_tau_options if it was already set and --extra-tau-options=none
+            # Unset extra_tau_options if it was already set and --extra-tau-options=none 
             if data.pop('extra_tau_options', False) and [i.lower().strip() for i in extra_tau_options] == ['none']:
                 meas_ctrl = Measurement.controller(store)
-                meas_ctrl.unset(['force_tau_options'], {'name': meas_name})
-                self.logger.info("Removed 'extra-tau-options' from measurement '%s'.", meas_name)
+                if 'extra_tau_options' in meas_ctrl.one({"name": meas_name}):
+                    meas_ctrl.unset(['extra_tau_options'], {'name': meas_name})
+                    self.logger.info("Removed 'extra-tau-options' from measurement '%s'.", meas_name)
+                else:
+                    self.logger.info("'extra-tau-options' was not present in measurement '%s'.", meas_name)
+
             else:
                 data['extra_tau_options'] = extra_tau_options
                 self.logger.info("Added 'extra-tau-options' to measurement '%s'.", meas_name)
+
         key_attr = self.model.key_attribute
         try:
             data[key_attr] = args.new_key
