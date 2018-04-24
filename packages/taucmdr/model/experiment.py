@@ -93,6 +93,12 @@ def attributes():
         'tau_makefile': {
             'type': 'string',
             'description': 'TAU Makefile used during this experiment, if any.'
+        },
+        'record_output': {
+            'type': 'boolean',
+            'default': False,
+            'description': "Record application stdout",
+            'argparse': {'flags': ('--record-output',)},
         }
     }
 
@@ -313,7 +319,7 @@ class Experiment(Model):
                     compiler_inst=measurement.get_or_default('compiler_inst'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
-                    select_file=application.get('select_file', None),
+                    select_file=measurement.get('select_file', None),
                     # Measurement methods and options
                     baseline=baseline,
                     profile=measurement.get_or_default('profile'),
@@ -336,7 +342,8 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    forced_makefile=target.get('forced_makefile', None))
+                    forced_makefile=target.get('forced_makefile', None),
+                    unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
@@ -384,7 +391,8 @@ class Experiment(Model):
         except KeyError:
             pass
         else:
-            LOGGER.warning("Measurement '%s' adds extra options TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.extra_tau_options))
+            #LOGGER.warning("Measurement '%s' adds extra options TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.extra_tau_options))
+            LOGGER.warning("Measurement '%s' forces adds '%s' to TAU_OPTIONS", meas['name'], ' '.join(tau.extra_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
     def managed_run(self, launcher_cmd, application_cmds, description=None): 
@@ -417,7 +425,8 @@ class Experiment(Model):
                                application['name'], application['linkage'], cmd0, linkage)
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
-        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
+        record_output = self.populate(attribute='record_output', defaults=True)
+        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description, record_output)
 
     def trials(self, trial_numbers=None):
         """Get a list of modeled trial records.
@@ -434,21 +443,19 @@ class Experiment(Model):
         Raises:
             ConfigurationError: Invalid trial number or no trials in selected experiment.
         """
+        trials = self.populate('trials')
+        if not trials:
+            raise ConfigurationError("No trials in experiment %s" % self['name'])
         if trial_numbers:
-            for num in trial_numbers:
-                trials = []
-                found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
-                if not found:
-                    raise ConfigurationError("Experiment '%s' has no trial with number %s" % (self.name, num))
-                trials.append(found)
-            return trials
+            all_numbers = set(trial['number'] for trial in trials)
+            not_found = [i for i in trial_numbers if i not in all_numbers]
+            if not_found:
+                raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." % 
+                                         (self['name'], ", ".join(not_found)))
+            return [trial for trial in trials if trial['number'] in trial_numbers]
         else:
-            trials = self.populate('trials')
-            if not trials:
-                raise ConfigurationError("No trials in experiment %s" % self['name'])
             found = trials[0]
             for trial in trials[1:]:
                 if trial['begin_time'] > found['begin_time']:
                     found = trial
             return [found]
-

@@ -71,6 +71,8 @@ class ProjectStorage(LocalFileStorage):
     
     def __init__(self):
         super(ProjectStorage, self).__init__('project', None)
+        self._force_cwd = False
+        self._tau_directory = None
     
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
@@ -124,8 +126,23 @@ class ProjectStorage(LocalFileStorage):
         if self._prefix:
             return self._prefix
         cwd = os.getcwd()
+        if self._force_cwd:
+            # Only check current working directory for project directory
+            prefix = os.path.realpath(os.path.join(cwd, PROJECT_DIR))
+            if os.path.isdir(prefix):
+                for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
+                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                        break
+                else:
+                    LOGGER.debug("Located project storage prefix '%s'", prefix)
+                    self._prefix = prefix
+                    return prefix
+            raise ProjectStorageError(cwd)
         LOGGER.debug("Searching upwards from '%s' for '%s'", cwd, PROJECT_DIR)
-        root = cwd
+        if self._tau_directory:
+            root = os.path.realpath(self._tau_directory)
+        else:
+            root = cwd
         lastroot = None
         while root and root != lastroot:
             prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
@@ -141,3 +158,8 @@ class ProjectStorage(LocalFileStorage):
             root = os.path.dirname(root)
         raise ProjectStorageError(cwd)
         
+    def force_cwd(self, force):
+        self._force_cwd = force
+
+    def tau_dir(self, taudir):
+        self._tau_directory = taudir

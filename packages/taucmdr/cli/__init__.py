@@ -276,9 +276,14 @@ def find_command(cmd):
 def _permute(cmd, cmd_args):
     cmd_len = len(cmd)
     full_len = len(cmd) + len(cmd_args)
+    skip = [x[0] == '-' or os.path.isfile(x) for x in (cmd+cmd_args)]
     yield cmd, cmd_args
     for i in xrange(full_len):
+        if skip[i]:
+            continue
         for j in xrange(i+1, full_len):
+            if skip[j]:
+                continue
             perm = cmd + cmd_args
             perm[i], perm[j] = perm[j], perm[i]
             yield perm[:cmd_len], perm[cmd_len:]

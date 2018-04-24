@@ -31,7 +31,7 @@ I'd rather call this module "taucmdr.cf.platform" but that would conflict with :
 """
 
 import os
-from taucmdr import logger
+from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import KeyedRecord
 from taucmdr.cf.compiler import host, mpi, shmem
@@ -146,6 +146,15 @@ class OperatingSystem(KeyedRecord):
     def __init__(self, name, description):
         self.name = name
         self.description = description
+
+    def is_cray_login(self):
+	if self is CRAY_CNL:
+            if util.which('aprun'):
+                return False
+	    else:
+                return True
+        else:
+            return False
         
     @classmethod
     def detect(cls):
@@ -240,8 +249,8 @@ IBM_BGQ = Architecture('BGQ', 'IBM BlueGene/Q')
 IBM64 = Architecture('ibm64', 'IBM 64-bit Power')
 PPC64 = Architecture('ppc64', 'IBM 64-bit PowerPC')
 PPC64LE = Architecture('ppc64le', 'IBM 64-bit PowerPC (Little Endian)')
-ARM32 = Architecture('arm32', '32-bit ARM')
-ARM64 = Architecture('arm64', '64-bit ARM')
+ARM32 = Architecture('aarch32', '32-bit ARM')
+ARM64 = Architecture('aarch64', '64-bit ARM')
 
 DARWIN = OperatingSystem('Darwin', 'Darwin')
 LINUX = OperatingSystem('Linux', 'Linux')

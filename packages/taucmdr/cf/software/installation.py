@@ -33,7 +33,7 @@ from subprocess import CalledProcessError
 from contextlib import contextmanager
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
-from taucmdr.progress import ProgressIndicator, progress_spinner
+from taucmdr.progress import ProgressIndicator
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.levels import ORDERED_LEVELS
 from taucmdr.cf.storage.levels import highest_writable_storage 
@@ -303,11 +303,11 @@ class Installation(object):
             gid = parent_stat.st_gid
         paths = [self.install_prefix]
         LOGGER.info("Checking installed files...")
-        with progress_spinner():
+        with ProgressIndicator(""):
             for root, dirs, _ in os.walk(self.install_prefix):
                 paths.extend((os.path.join(root, x) for x in dirs))
         LOGGER.info("Setting file permissions...")
-        with ProgressIndicator(len(paths)) as progress_bar:
+        with ProgressIndicator("", total_size=len(paths)) as progress_bar:
             for i, path in enumerate(paths):
                 try:
                     os.chown(path, -1, gid)
@@ -463,7 +463,7 @@ class Installation(object):
         if os.path.isdir(self.install_prefix):
             LOGGER.info("Cleaning %s installation prefix '%s'", self.title, self.install_prefix)
             util.rmtree(self.install_prefix, ignore_errors=True)
-        with new_os_environ(), util.umask(002):
+        with new_os_environ(), util.umask(0o002):
             try:
                 self._src_prefix = self._prepare_src()
                 self.installation_sequence()

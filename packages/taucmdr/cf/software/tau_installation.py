@@ -205,7 +205,8 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
-                 forced_makefile=None):
+                 forced_makefile=None,
+                 unwind_depth=0):
         """Initialize the TAU installation wrapper class.
 
         Args:
@@ -351,6 +352,7 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.forced_makefile = forced_makefile
+        self.unwind_depth = unwind_depth
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN)
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
@@ -360,14 +362,15 @@ class TauInstallation(Installation):
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
-        # TAU assumes the first metric is always some kind of wallclock timer
-        # so move the first wallclock metric to the front of the list
-        for i, metric in enumerate(self.metrics):
-            if 'TIME' in metric and 'TIME' not in self.metrics[0]:
-                self.metrics.insert(0, self.metrics.pop(i))
-                break
-        else:
-            self.metrics.insert(0, 'TIME')        
+        if 'TIME' not in self.metrics[0]:
+            # TAU assumes the first metric is always some kind of wallclock timer
+            # so move the first wallclock metric to the front of the list
+            for i, metric in enumerate(self.metrics):
+                if 'TIME' in metric and 'TIME' not in self.metrics[0]:
+                    self.metrics.insert(0, self.metrics.pop(i))
+                    break
+            else:
+                self.metrics.insert(0, 'TIME')
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg) 
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
             if uses(pkg):
@@ -377,7 +380,7 @@ class TauInstallation(Installation):
                                 uses('binutils'), uses('libunwind'), uses('papi'), uses('pdt'))
         self.check_env_compat()
 
-    @classmethod    
+    @classmethod
     def get_minimal(cls):
         """Creates a minimal TAU configuration for working with legacy data analysis tools.
     
@@ -429,18 +432,20 @@ class TauInstallation(Installation):
         return uid_parts
 
     def _get_max_threads(self):
-        if self.target_arch in (INTEL_KNC, INTEL_KNL):
-            nprocs = 256
+        if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
+            if self.target_arch in (INTEL_KNC, INTEL_KNL):
+                nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
+                return nprocs
+            else:
+                nprocs = multiprocessing.cpu_count()
+                # Assume 2 HTs/core
+                return max(64, 2*nprocs)
         else:
-            nprocs = multiprocessing.cpu_count()
-        # Round up to the next power of two, e.g. 160 => 256
-        return 1 << (nprocs-1).bit_length()
+            return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
-        # Round up to the next power of two, e.g. 25 => 32
-        nmetrics = 1 << (len(self.metrics)-1).bit_length()
-        return max(nmetrics, 32)
-    
+        return len(self.metrics)
+
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
@@ -993,6 +998,8 @@ class TauInstallation(Installation):
         Returns:
             tuple: (opts, env) updated to support TAU.
         """
+        # The additional `compiler` argument is needed to TAU falls back to the right compiler
+        # pylint: disable=arguments-differ
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
         if self.baseline:
@@ -1045,6 +1052,11 @@ class TauInstallation(Installation):
                 opts.append('-g')
             if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
                 opts.append('-DTAU_ENABLED=1')
+        try:
+            extra_tau_opts = set(self.extra_tau_options)
+            tau_opts |= extra_tau_opts
+        except AttributeError:
+            pass
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         makefile = self.get_makefile()
         tags = self._makefile_tags(makefile)
@@ -1093,6 +1105,14 @@ class TauInstallation(Installation):
             env['TAU_TRACE'] = '0'
             env['SCOREP_ENABLE_TRACING'] = 'false'
         env['TAU_SAMPLING'] = str(int(self.sample))
+        if self.sample:
+            # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
+            arch_period = {INTEL_KNC: 100000,
+                           INTEL_KNL: 100000,
+                           IBM_BGL: 20000,
+                           IBM_BGP: 20000,
+                           IBM_BGQ: 50000}
+            env['TAU_EBS_PERIOD'] = str(arch_period.get(self.target_arch, 10000))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
@@ -1106,6 +1126,9 @@ class TauInstallation(Installation):
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
+        if self.unwind_depth > 0:
+            env['TAU_EBS_UNWIND'] = '1'
+            env['TAU_EBS_UNWIND_DEPTH'] = str(self.unwind_depth)
         if self.select_file and self.application_linkage == 'dynamic':
             env['TAU_SELECT_FILE'] = os.path.realpath(os.path.abspath(self.select_file))
         if self.verbose:
@@ -1391,9 +1414,9 @@ class TauInstallation(Installation):
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Profile directory '%s' does not exist" % path)
-            for thisdir, dirs, files in os.walk(path):
+            for thisdir, _, files in os.walk(path):
                 if any(file_name.startswith("profile") for file_name in files):
-                    LOGGER.info("\nCurrent trial/metric directory: %s" % os.path.basename(thisdir))
+                    LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(thisdir))
                     retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=thisdir, env=env)
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
@@ -1541,6 +1564,7 @@ class TauInstallation(Installation):
         LOGGER.info("Converting TAU trace files to SLOG2 format...")
         cmd = [os.path.join(self.bin_path, 'tau2slog2'), trc, edf, '-o', slog2]
         if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
+            os.remove(slog2)
             raise InternalError("Nonzero return code from tau2slog2")
         if not os.path.exists(slog2):
             raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")                

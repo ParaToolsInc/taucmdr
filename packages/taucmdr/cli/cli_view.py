@@ -160,6 +160,7 @@ class DeleteCommand(AbstractCliView):
                                       epilog=epilog)
         parser.add_argument(key_attr,
                             help="%s of %s configuration to delete" % (key_attr.capitalize(), self.model_name),
+                            nargs="+",
                             metavar='<%s_%s>' % (self.model_name, key_attr))
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "delete", self.model_name)
@@ -177,8 +178,10 @@ class DeleteCommand(AbstractCliView):
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
-        key = getattr(args, self.model.key_attribute)
-        return self._delete_record(store, key)
+        keys = getattr(args, self.model.key_attribute)
+        for key in keys:
+            self._delete_record(store, key)
+        return EXIT_SUCCESS
 
 
 class EditCommand(AbstractCliView):

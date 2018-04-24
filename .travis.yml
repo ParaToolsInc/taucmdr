@@ -15,7 +15,7 @@ sudo: false
 env:
   global:
     - INSTALLDIR="$HOME/taucmdr-test"
-    - __TAUCMDR_PROGRESS_BARS__="minimal"
+    - __TAUCMDR_PROGRESS_BARS__="disabled"
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`

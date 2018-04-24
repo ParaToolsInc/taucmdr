@@ -73,7 +73,6 @@ class MeasurementEditCommand(EditCommand):
             else:
                 data['force_tau_options'] = force_tau_options
                 self.logger.info("Added 'force-tau-options' to measurement '%s'.", meas_name)
-
         try:
             extra_tau_options = args.extra_tau_options
         except AttributeError:

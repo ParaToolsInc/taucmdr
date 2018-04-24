@@ -34,7 +34,13 @@ It should be as short and simple.
 
 import os
 import sys
-
+# Python3 compatibility
+try:
+    basestring
+except NameError:
+    # pylint: disable=invalid-name
+    basestring = str
+    
 __version__ = "0.0.0"
 """str: TAU Commander Version"""
 
