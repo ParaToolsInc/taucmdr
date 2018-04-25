@@ -213,7 +213,9 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
         width (int): Maximum help message length before wrapping.
     """
     
-    def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
+    def __init__(self, prog, indent_increment=2, max_help_position=30, width=None):
+        if width is None:
+            width = logger.LINE_WIDTH
         super(HelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
         
     def _split_lines(self, text, width):
