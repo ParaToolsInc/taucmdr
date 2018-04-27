@@ -18,15 +18,21 @@ env:
     - __TAUCMDR_PROGRESS_BARS__="disabled"
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d # encrypted with `travis encrypt-file`
-  - unset -v ${!encrypted_@} # unset secret encrypted variables
-  - chmod 600 id_rsa_Travis2GH
+  - |
+    if ${TRAVIS_SECURE_ENV_VARS} ; then
+      # encrypted with `travis encrypt-file`
+      openssl aes-256-cbc -K $encrypted_c48b4c75cf28_key -iv $encrypted_c48b4c75cf28_iv -in id_rsa_Travis2GH.enc -out id_rsa_Travis2GH -d
+      chmod 600 id_rsa_Travis2GH
+      encrypted_canary="Still have encrypted vars!"
+      unset -v ${!encrypted_@} # unset secret encrypted variables
+      echo "${encrypted_canary:-Ecrypted vars successfully unset.}"
+    fi
+  - git --version
   - if [[ ! -d "${HOME}/bin" ]] ; then mkdir "${HOME}/bin" && export PATH="${HOME}/bin:${PATH}"; fi
   - printf '#!/usr/bin/env bash\nssh -i %s/id_rsa_Travis2GH "$@"\n' "$(pwd)" > "${HOME}/bin/ssh_to_GH"
   - chmod +x "${HOME}/bin/ssh_to_GH"
   - export GIT_SSH="${HOME}/bin/ssh_to_GH"
   - echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
-  - git --version
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
 
