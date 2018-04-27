@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0.50
+        VERSION:     '1.3.0.66
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -68,7 +68,7 @@ The selected experiment will be used for application compilation and trial visua
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.attributes">
-<code class="descname">attributes</code><em class="property"> = {'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'taucmdr.model.trial.Trial'&gt;}, 'project': {'model': &lt;class 'taucmdr.model.project.Project'&gt;, 'required': True, 'unique': True, 'description': 'Project this experiment belongs to'}, 'application': {'argparse': {'flags': ('--application',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'measurement': {'argparse': {'flags': ('--measurement',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'target': {'argparse': {'flags': ('--target',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.target.Target'&gt;, 'required': True, 'description': &quot;The experiment's hardware/software configuration&quot;}}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attributes</code><em class="property"> = {'project': {'model': &lt;class 'taucmdr.model.project.Project'&gt;, 'required': True, 'unique': True, 'description': 'Project this experiment belongs to'}, 'application': {'argparse': {'flags': ('--application',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.application.Application'&gt;, 'required': True, 'description': 'Application this experiment uses'}, 'name': {'unique': True, 'type': 'string', 'primary_key': True, 'description': 'human-readable experiment name'}, 'measurement': {'argparse': {'flags': ('--measurement',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.measurement.Measurement'&gt;, 'required': True, 'description': 'Measurement parameters for this experiment'}, 'trials': {'via': 'experiment', 'description': 'Trials of this experiment', 'collection': &lt;class 'taucmdr.model.trial.Trial'&gt;}, 'tau_makefile': {'type': 'string', 'description': 'TAU Makefile used during this experiment, if any.'}, 'record_output': {'default': False, 'argparse': {'flags': ('--record-output',)}, 'type': 'boolean', 'description': 'Record application stdout'}, 'target': {'argparse': {'flags': ('--target',), 'metavar': '&lt;name&gt;'}, 'model': &lt;class 'taucmdr.model.target.Target'&gt;, 'required': True, 'description': &quot;The experiment's hardware/software configuration&quot;}}</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.attributes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -115,7 +115,7 @@ prepares the experiment, and performs the operation.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
+<li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
 <li><strong>compiler_args</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
 </ul>
 </td>
@@ -127,7 +127,7 @@ The experiment is not configured to perform the desired build.</p>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Build subprocess return code.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.6)">int</a></p>
 </td>
 </tr>
 </tbody>
@@ -136,7 +136,7 @@ The experiment is not configured to perform the desired build.</p>
 
 <dl class="method">
 <dt id="taucmdr.model.experiment.Experiment.managed_run">
-<code class="descname">managed_run</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmds</em>, <em>description</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.managed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
+<code class="descname">managed_run</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmds</em>, <em>description=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#Experiment.managed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.Experiment.managed_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses this experiment to run an application command.</p>
 <p>Performs all relevent system preparation tasks to run the user&#8217;s application
 under the specified experimental configuration.</p>
@@ -147,7 +147,7 @@ under the specified experimental configuration.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>launcher_cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
 <li><strong>application_cmds</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; List of application executables with command line arguments (list of lists).</li>
-<li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; If not None, a description of the run.</li>
+<li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; If not None, a description of the run.</li>
 </ul>
 </td>
 </tr>
@@ -158,7 +158,7 @@ The experiment is not configured to perform the desired run.</p>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Application subprocess return code.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.6)">int</a></p>
 </td>
 </tr>
 </tbody>
@@ -201,7 +201,7 @@ The experiment is not configured to perform the desired run.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String indicating why an application rebuild is required.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)">str</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -209,7 +209,7 @@ The experiment is not configured to perform the desired run.</p>
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment'), (&lt;class 'taucmdr.model.project.Project'&gt;, 'experiment')])</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.project.Project'&gt;, 'experiment'), (&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment')])</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -223,7 +223,7 @@ The experiment is not configured to perform the desired run.</p>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ExperimentSelectionError</span></code> &#8211;
 No experiment with the given name in the currently selected project.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the experiment to select.</td>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Name of the experiment to select.</td>
 </tr>
 </tbody>
 </table>
@@ -266,8 +266,25 @@ Invalid trial number or no trials in selected experiment.</td>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller" title="taucmdr.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.controller.Controller</span></code></a></p>
 <p>Experiment data controller.</p>
 <dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController._check_unique">
+<code class="descname">_check_unique</code><span class="sig-paren">(</span><em>data</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController._check_unique"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController._check_unique" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default match_any to False to prevent matches outside the selected project.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController._restrict_project">
+<code class="descname">_restrict_project</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController._restrict_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController._restrict_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures that we only operate on experiment records in the selected project.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="taucmdr.model.experiment.ExperimentController.all">
 <code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.model.experiment.ExperimentController.count">
+<code class="descname">count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.count" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -283,11 +300,6 @@ Invalid trial number or no trials in selected experiment.</td>
 <dl class="method">
 <dt id="taucmdr.model.experiment.ExperimentController.exists">
 <code class="descname">exists</code><span class="sig-paren">(</span><em>keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.exists" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="taucmdr.model.experiment.ExperimentController.export_records">
-<code class="descname">export_records</code><span class="sig-paren">(</span><em>keys=None</em>, <em>eids=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/experiment.html#ExperimentController.export_records"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.experiment.ExperimentController.export_records" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">

@@ -1,0 +1,7 @@
+taucmdr.cf.compiler.caf module
+==============================
+
+.. automodule:: taucmdr.cf.compiler.caf
+    :members:
+    :undoc-members:
+    :show-inheritance:

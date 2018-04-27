@@ -7,10 +7,12 @@ Submodules
 .. toctree::
 
    taucmdr.cli.commands.trial.tests.test_create
+   taucmdr.cli.commands.trial.tests.test_create_launcher
    taucmdr.cli.commands.trial.tests.test_delete
    taucmdr.cli.commands.trial.tests.test_edit
    taucmdr.cli.commands.trial.tests.test_export
    taucmdr.cli.commands.trial.tests.test_list
+   taucmdr.cli.commands.trial.tests.test_renumber
    taucmdr.cli.commands.trial.tests.test_show
 
 Module contents

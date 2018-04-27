@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0.50
+        VERSION:     '1.3.0.66
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="next" title="taucmdr" href="modules.html" />
+    <link rel="next" title="Continuous Integration" href="continuous_integration.html" />
     <link rel="prev" title="How to write and run unit tests" href="unit_tests.html" /> 
   </head>
   <body role="document">
@@ -42,7 +42,7 @@
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="modules.html">taucmdr</a>&#160;&#160;»
+        <a href="continuous_integration.html">Continuous Integration</a>&#160;&#160;»
         </p>
 
       </div>
@@ -51,6 +51,16 @@
         
   <div class="section" id="packaging-and-releasing-tau-commander">
 <h1>Packaging and Releasing TAU Commander<a class="headerlink" href="#packaging-and-releasing-tau-commander" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="versioning">
+<h2>Versioning<a class="headerlink" href="#versioning" title="Permalink to this headline">¶</a></h2>
+<p>TAU Commander follows semantic versioning (<a class="reference external" href="https://semver.org/">https://semver.org/</a>).
+The version number is MAJOR.MINOR.PATCH.COMMIT where COMMIT is the number of
+commits since the last tag.  E.g. version 1.3.0.5 is five unreleased commits
+after the version 1.3.0 release.</p>
+<p>The <code class="docutils literal"><span class="pre">VERSION</span></code> file is created automatically and shows the current version.
+It might be out of date.  It&#8217;s always a good idea to <code class="docutils literal"><span class="pre">make</span> <span class="pre">clean</span></code> before
+performing any task that depends on a version number.</p>
+</div>
 <div class="section" id="setup-py">
 <h2>setup.py<a class="headerlink" href="#setup-py" title="Permalink to this headline">¶</a></h2>
 <p>TAU Commander follows the <a class="reference external" href="https://packaging.python.org/">Python Packaging Guide</a>, the same resource that guides package deployment to the
@@ -61,19 +71,33 @@ TAU Commander.  The important ones are:</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">build:</th><td class="field-body">Build everything needed for a new TAU Commander installation in the <code class="docutils literal"><span class="pre">build</span></code> directory.</td>
+<tr class="field-odd field"><th class="field-name">build:</th><td class="field-body"><p class="first">Build everything needed for a new TAU Commander installation in the <code class="docutils literal"><span class="pre">build</span></code> directory.</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">build_sphinx:</th><td class="field-body">Rebuild TAU Commander developer documentation (which you are currently reading) in the <code class="docutils literal"><span class="pre">build/sphinx</span></code> directory.
+<tr class="field-even field"><th class="field-name">build_sphinx:</th><td class="field-body"><p class="first">Rebuild TAU Commander developer documentation (which you are currently reading) in the <code class="docutils literal"><span class="pre">build/sphinx</span></code> directory.
 Use the <code class="docutils literal"><span class="pre">--update-gh-pages</span></code> option and associated options (see <code class="docutils literal"><span class="pre">--help</span></code>) to update the developer documentation
-on Github (<a class="reference external" href="http://paratoolsinc.github.io/taucmdr/">http://paratoolsinc.github.io/taucmdr/</a>).</td>
+on Github (<a class="reference external" href="http://paratoolsinc.github.io/taucmdr/">http://paratoolsinc.github.io/taucmdr/</a>).</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">test:</th><td class="field-body">Run all unit tests and pylint.</td>
+<tr class="field-odd field"><th class="field-name">test:</th><td class="field-body"><p class="first">Run all unit tests and pylint.</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">install:</th><td class="field-body">Install a TAU Commander distribution. End users must <strong>NEVER</strong> use <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>!  TAU Commander needs
+<tr class="field-even field"><th class="field-name">release:</th><td class="field-body"><p class="first">Generate distributable release packages in the <code class="docutils literal"><span class="pre">dist</span></code> directory.
+See the <code class="docutils literal"><span class="pre">--web</span></code> and <code class="docutils literal"><span class="pre">--all</span></code> flags.  You probably want the <code class="docutils literal"><span class="pre">--all</span></code> flag.
+E.g. for a new version release:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>git tag v1.3.1
+make clean
+python setup.py release --all
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">install:</th><td class="field-body"><p class="first last">Install a TAU Commander distribution. End users must <strong>NEVER</strong> use <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>!  TAU Commander needs
 its own, private, un-shared Python installation to avoid environment contamination when profiling a user&#8217;s code.
 For example, if the user&#8217;s Python has a package named &#8220;tau&#8221; installed in it then both TAU Commander and the user&#8217;s
 code will break.  The top-level Makefile will call <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> with appropriate options after
-installing a pristine Python just for TAU Commander. <a class="footnote-reference" href="#id3" id="id1">[2]</a></td>
+installing a pristine Python just for TAU Commander. <a class="footnote-reference" href="#id3" id="id1">[2]</a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -106,7 +130,7 @@ the user&#8217;s end so we can&#8217;t count on automatic dependency resolution.
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="modules.html">taucmdr</a>&#160;&#160;»
+        <a href="continuous_integration.html">Continuous Integration</a>&#160;&#160;»
         </p>
 
       </div>

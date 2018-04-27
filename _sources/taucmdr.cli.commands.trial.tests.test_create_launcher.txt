@@ -1,0 +1,7 @@
+taucmdr.cli.commands.trial.tests.test_create_launcher module
+============================================================
+
+.. automodule:: taucmdr.cli.commands.trial.tests.test_create_launcher
+    :members:
+    :undoc-members:
+    :show-inheritance:

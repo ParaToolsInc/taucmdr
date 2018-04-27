@@ -18,6 +18,7 @@ Submodules
    taucmdr.cli.commands.trial.edit
    taucmdr.cli.commands.trial.export
    taucmdr.cli.commands.trial.list
+   taucmdr.cli.commands.trial.renumber
    taucmdr.cli.commands.trial.show
 
 Module contents

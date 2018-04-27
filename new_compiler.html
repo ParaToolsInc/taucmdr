@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.2.0.50
+        VERSION:     '1.3.0.66
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -77,7 +77,7 @@ See <a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.comp
 <p>The assocations defined in the compiler knowlegebase are very powerful.  TAU Commander can draw conclusions about which
 compilers should be used, and which compiler flags should be used, at any point in the workflow given a relatively small
 ammount of information.  Consider this target creation command:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>tau target create --host-compilers=Intel --mpi-compilers=System
+<div class="highlight-python"><div class="highlight"><pre><span></span>tau target create --compilers=Intel --mpi-wrapper-style=System
 </pre></div>
 </div>
 <p>Because the knowledgebase specifies the individual compiler commands for each role in the Intel compiler family, that

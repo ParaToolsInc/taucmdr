@@ -1,0 +1,7 @@
+taucmdr.cli.commands.trial.renumber module
+==========================================
+
+.. automodule:: taucmdr.cli.commands.trial.renumber
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   taucmdr.cli.commands.project.tests.test_copy
    taucmdr.cli.commands.project.tests.test_create
    taucmdr.cli.commands.project.tests.test_delete
    taucmdr.cli.commands.project.tests.test_edit

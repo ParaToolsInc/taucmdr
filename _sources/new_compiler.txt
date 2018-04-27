@@ -35,7 +35,7 @@ The assocations defined in the compiler knowlegebase are very powerful.  TAU Com
 compilers should be used, and which compiler flags should be used, at any point in the workflow given a relatively small
 ammount of information.  Consider this target creation command::
 
-   tau target create --host-compilers=Intel --mpi-compilers=System
+   tau target create --compilers=Intel --mpi-wrapper-style=System
 
 Because the knowledgebase specifies the individual compiler commands for each role in the Intel compiler family, that
 command is automatically expanded to::
@@ -92,7 +92,7 @@ This creates a new compiler knowledgebase with CC, CXX, FC, and UPC roles.
 
 
 Compiler Families (:any:`_CompilerFamily`)
------------------------------------------
+------------------------------------------
 
 The compiler's family assigns roles to compiler commands and tracks the various command line options used by that
 compiler family.  The family name (:any:`_CompilerFamily.name`) provides a convinent way to operate on many different
@@ -122,7 +122,7 @@ and the next, and so on until it ultimately succeeds or admits failure.
 
 
 Compiler Information (:any:`_CompilerInfo`)
-------------------------------------------
+-------------------------------------------
 
 A :any:`_CompilerInfo` instance is the abstract representation of a compiler.  It connects a compiler command with it's
 role and family. The process of compiler resultion completes by instantiating :any:`_CompilerInfo`, i.e. once TAU 
