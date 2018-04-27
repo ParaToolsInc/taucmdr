@@ -707,7 +707,7 @@ class InstalledCompiler(object):
         return self._version_string
     
     def generate_wrapper(self, prefix):
-        """Generate a compiler wrapper script that uses :any:`tau.TAUCMDR_SCRIPT` to invoke the compiler.
+        """Generate a compiler wrapper script that uses :any:`taucmdr.TAUCMDR_SCRIPT` to invoke the compiler.
         
         Args:
             prefix (str): Path to a directory in which the wrapper script will be created.
