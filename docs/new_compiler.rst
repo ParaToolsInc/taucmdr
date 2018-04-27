@@ -92,7 +92,7 @@ This creates a new compiler knowledgebase with CC, CXX, FC, and UPC roles.
 
 
 Compiler Families (:any:`_CompilerFamily`)
------------------------------------------
+------------------------------------------
 
 The compiler's family assigns roles to compiler commands and tracks the various command line options used by that
 compiler family.  The family name (:any:`_CompilerFamily.name`) provides a convinent way to operate on many different
@@ -122,7 +122,7 @@ and the next, and so on until it ultimately succeeds or admits failure.
 
 
 Compiler Information (:any:`_CompilerInfo`)
-------------------------------------------
+-------------------------------------------
 
 A :any:`_CompilerInfo` instance is the abstract representation of a compiler.  It connects a compiler command with it's
 role and family. The process of compiler resultion completes by instantiating :any:`_CompilerInfo`, i.e. once TAU 

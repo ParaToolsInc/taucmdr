@@ -1252,14 +1252,14 @@ class TauInstallation(Installation):
         """Build a command line to launch an application under TAU.
 
         Sometimes TAU needs to use tau_exec, sometimes not.  This routine
-        also handles backend launch commands like `aprun`.
-        
-        `application_cmds` may be an empty list if the application is launched 
+        also handles backend launch commands like ``aprun``.
+
+        `application_cmds` may be an empty list if the application is launched
         via a configuration file, e.g. ``mpirun --app myapp.cfg``.
 
-        Args
+        Args:
             launcher_cmd (list): Application launcher with command line arguments, e.g. ``['mpirun', '-np', '4']``.
-            application_cmds (list): List of application command with command line arguments (list of list), 
+            application_cmds (list): List of application command with command line arguments (list of list),
                                      e.g. ``[['./a.out', '-g', 'hello'], [':', '-np', '2', './b.out', 'foobar']]``
 
         Returns:
@@ -1528,11 +1528,11 @@ class TauInstallation(Installation):
 
     def merge_tau_trace_files(self, prefix):
         """Use tau_treemerge.pl to merge multiple TAU trace files into a single edf and a single trc file.
-        
+
         The new edf file and trc file are written to ``prefix``.
-        
-        Args: 
-            prefix (str): Path to the directory containing *.trc and *.edf files.
+
+        Args:
+            prefix (str): Path to the directory containing ``*.trc`` and ``*.edf`` files.
         """
         self._prep_data_analysis_tools()
         trc_files = glob.glob(os.path.join(prefix, '*.trc'))

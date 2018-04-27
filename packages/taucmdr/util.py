@@ -703,7 +703,7 @@ def uncolor_text(text):
 
 def walk_packages(path, prefix):
     """Fix :any:`pkgutil.walk_packages` to work with Python zip files.
-    
+
     Python's default :any:`zipimporter` doesn't provide an `iter_modules` method so
     :any:`pkgutil.walk_packages` silently fails to list modules and packages when
     they are in a zip file.  This implementation works around this.
