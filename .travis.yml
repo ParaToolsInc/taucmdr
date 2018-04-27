@@ -59,7 +59,8 @@ deploy:
   script: python setup.py build_sphinx --update-gh-pages --gh-origin-url "git@github.com:${TRAVIS_REPO_SLUG}.git" --gh-user-name "Travis-CI-bot" --gh-user-email "info@paratools.com" --gh-commit-msg "Updated documentation on Travis-CI job $TRAVIS_JOB_NUMBER at commit $TRAVIS_COMMIT"
   skip_cleanup: true
   on:
-    branch: master
+    all_branches: true
+    condition: ( $TRAVIS_BRANCH = master || $TRAVIS_BRANCH = unstable ) && $TRAVIS_SECURE_ENV_VARS = true
     repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
 
 notifications:
