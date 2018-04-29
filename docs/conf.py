@@ -16,6 +16,7 @@ import sys
 import os
 import shlex
 import tempfile
+import datetime
 
 # Since this file is execfile()d with the current directory set to its
 # containing dir, we can safely calculate the TAUCMDR_HOME.
@@ -87,7 +88,7 @@ language = None
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
-#today = ''
+today = datetime.datetime.utcnow().strftime("%b %d, %Y at %H:%M:%S UTC")
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
 
@@ -178,7 +179,7 @@ html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = today # in UTC, '%b %d, %Y at %H:%M:%S'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
