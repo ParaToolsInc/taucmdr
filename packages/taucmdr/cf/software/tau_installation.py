@@ -205,6 +205,7 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
+                 track_memory_footprint=False,
                  forced_makefile=None,
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
@@ -254,6 +255,7 @@ class TauInstallation(Installation):
             metadata_merge (bool): If True then merge metadata.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
+            track_memory_footprint (bool): If True then track memory footprint.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -296,6 +298,7 @@ class TauInstallation(Installation):
         assert metadata_merge in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
+        assert track_memory_footprint in (True, False)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
@@ -351,6 +354,7 @@ class TauInstallation(Installation):
         self.metadata_merge = metadata_merge
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
+        self.track_memory_footprint = track_memory_footprint
         self.forced_makefile = forced_makefile
         self.unwind_depth = unwind_depth
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
@@ -1120,6 +1124,7 @@ class TauInstallation(Installation):
         env['TAU_METRICS'] = ",".join(self.metrics) + ","
         env['TAU_THROTTLE'] = str(int(self.throttle))
         env['TAU_MERGE_METADATA'] = str(int(self.metadata_merge))
+        env['TAU_TRACK_MEMORY_FOOTPRINT'] = str(int(self.track_memory_footprint))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
             env['TAU_THROTTLE_NUMCALLS'] = str(int(self.throttle_num_calls))

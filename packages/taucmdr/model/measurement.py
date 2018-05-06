@@ -342,6 +342,12 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'track_memory_footprint': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'track memory footprint',
+            'argparse': {'flags': ('--track-memory-footprint',)}
+        },
         'metadata_merge': {
             'type': 'boolean',
             'default': True,
