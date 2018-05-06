@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.67
+        VERSION:     '1.3.0.68
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -252,6 +252,7 @@
                  <span class="n">metadata_merge</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">throttle_per_call</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                  <span class="n">throttle_num_calls</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                 <span class="n">track_memory_footprint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">forced_makefile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">unwind_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the TAU installation wrapper class.</span>
@@ -301,6 +302,7 @@
 <span class="sd">            metadata_merge (bool): If True then merge metadata.</span>
 <span class="sd">            throttle_per_call (int): Maximum microseconds per call of a lightweight event.</span>
 <span class="sd">            throttle_num_calls (int): Minimum number of calls for a lightweight event.</span>
+<span class="sd">            track_memory_footprint (bool): If True then track memory footprint.</span>
 <span class="sd">            forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">minimal</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
@@ -343,6 +345,7 @@
         <span class="k">assert</span> <span class="n">metadata_merge</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_per_call</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_num_calls</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">track_memory_footprint</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">forced_makefile</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">forced_makefile</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;TAU Performance System&#39;</span><span class="p">,</span> 
                                               <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> 
@@ -398,6 +401,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata_merge</span> <span class="o">=</span> <span class="n">metadata_merge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_per_call</span> <span class="o">=</span> <span class="n">throttle_per_call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span> <span class="o">=</span> <span class="n">throttle_num_calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">track_memory_footprint</span> <span class="o">=</span> <span class="n">track_memory_footprint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span> <span class="o">=</span> <span class="n">forced_makefile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unwind_depth</span> <span class="o">=</span> <span class="n">unwind_depth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uses_pdt</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">minimal</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">)</span>
@@ -1167,6 +1171,7 @@
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_METRICS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_THROTTLE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">throttle</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_MERGE_METADATA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata_merge</span><span class="p">))</span>
+        <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACK_MEMORY_FOOTPRINT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">track_memory_footprint</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span><span class="p">:</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_THROTTLE_PERCALL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">throttle_per_call</span><span class="p">))</span>
             <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_THROTTLE_NUMCALLS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span><span class="p">))</span>
@@ -1665,7 +1670,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 29, 2018 at 16:44:39 UTC.
+      Last updated on May 06, 2018 at 16:14:40 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
