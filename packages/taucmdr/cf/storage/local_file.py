@@ -179,7 +179,9 @@ class LocalFileStorage(AbstractStorage):
             util.mkdirp(self.prefix)
             dbfile = os.path.join(self.prefix, self.name + '.json')
             try:
-                self._database = tinydb.TinyDB(dbfile, storage=CachingMiddleware(_JsonFileStorage))
+                storage = CachingMiddleware(_JsonFileStorage)
+                storage.WRITE_CACHE_SIZE = 0
+                self._database = tinydb.TinyDB(dbfile, storage=storage)
             except IOError as err:
                 raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err),
                                    "Check that you have `write` access")
