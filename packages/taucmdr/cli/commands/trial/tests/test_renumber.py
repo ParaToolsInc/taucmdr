@@ -38,6 +38,7 @@ from taucmdr.cli.commands.trial.renumber import COMMAND as RENUMBER_COMMAND
 from taucmdr.cli.commands.trial.create import COMMAND as CREATE_COMMAND
 from taucmdr.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from taucmdr.cli.commands.trial.edit import COMMAND as EDIT_COMMAND
+from taucmdr.cli.commands.trial.delete import COMMAND as DELETE_COMMAND
 
 class RenumberTest(tests.TestCase):
     """Tests for :any:`trial.renumber`."""
@@ -81,5 +82,26 @@ class RenumberTest(tests.TestCase):
         self.assertIn('./a.out', stdout)
         self.assertIn('desc1', stdout)
         self.assertNotIn('desc2', stdout)
+        self.assertIn('Selected experiment:', stdout)
+        self.assertFalse(stderr)
+
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_compresstrials(self):
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        for i in xrange(3):
+            self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
+            self.assertCommandReturnValue(0, EDIT_COMMAND, [str(i), '--description', 'desc%s' %i])
+        self.assertCommandReturnValue(0, DELETE_COMMAND, ['1'])
+        self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['2', '--to', '1'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, '0')
+        self.assertIn('./a.out', stdout)
+        self.assertIn('desc0', stdout)
+        self.assertIn('Selected experiment:', stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, '1')
+        self.assertIn('./a.out', stdout)
+        self.assertIn('desc2', stdout)
+        self.assertNotIn('desc1', stdout)
         self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
