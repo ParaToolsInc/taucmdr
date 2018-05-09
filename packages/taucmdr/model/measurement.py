@@ -346,7 +346,9 @@ def attributes():
             'type': 'boolean',
             'default': False,
             'description': 'track memory footprint',
-            'argparse': {'flags': ('--track-memory-footprint',)}
+            'argparse': {'flags': ('--track-memory-footprint',),
+                         'group': 'memory' },
+            'compat': {True: Measurement.exclude('baseline', True)},
         },
         'metadata_merge': {
             'type': 'boolean',
