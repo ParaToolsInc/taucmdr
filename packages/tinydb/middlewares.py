@@ -91,9 +91,11 @@ class CachingMiddleware(Middleware):
 
         self.cache = None
         self._cache_modified_count = 0
+        self._open = True
 
     def __del__(self):
-        self.flush()  # Flush potentially unwritten data
+        if self._open:
+            self.flush()  # Flush potentially unwritten data
 
     def read(self):
         if self.cache is None:
@@ -118,3 +120,4 @@ class CachingMiddleware(Middleware):
     def close(self):
         self.flush()
         self.storage.close()
+        self._open = False
