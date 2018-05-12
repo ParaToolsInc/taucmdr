@@ -27,11 +27,8 @@
 #
 """``application create`` subcommand."""
 
-import os
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.model.application import Application
 
 
-class ApplicationCreateCommand(CreateCommand):
-    
-COMMAND = ApplicationCreateCommand(Application, __name__)
+COMMAND = CreateCommand(Application, __name__)
