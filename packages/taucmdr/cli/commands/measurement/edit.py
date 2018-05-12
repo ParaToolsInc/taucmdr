@@ -27,6 +27,7 @@
 #
 """``measurement edit`` subcommand."""
 
+import os
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
@@ -38,6 +39,13 @@ from taucmdr.model.experiment import Experiment
 
 class MeasurementEditCommand(EditCommand):
     """``measurement edit`` subcommand."""
+
+    def _parse_args(self, argv):
+        args = super(MeasurementEditCommand, self)._parse_args(argv)
+        if hasattr(args, 'select_file'):
+            if args.select_file.lower() == 'none':
+                args.select_file = None
+        return args
     
     def _update_record(self, store, data, key):
         try:
