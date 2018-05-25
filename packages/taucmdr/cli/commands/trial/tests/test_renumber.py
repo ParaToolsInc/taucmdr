@@ -29,7 +29,7 @@
 
 Functions used for unit tests of edit.py.
 """
-#pylint: disable=missing-docstring
+# pylint: disable=missing-docstring
 import os
 
 from taucmdr import tests
@@ -42,6 +42,7 @@ from taucmdr.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from taucmdr.cli.commands.trial.edit import COMMAND as EDIT_COMMAND
 from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
+from taucmdr.cli.commands.trial.delete import COMMAND as DELETE_COMMAND
 
 
 class RenumberTest(tests.TestCase):
@@ -92,7 +93,7 @@ class RenumberTest(tests.TestCase):
         self.assertManagedBuild(0, CC, [], 'hello.c')
         for i in xrange(3):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
-            self.assertCommandReturnValue(0, EDIT_COMMAND, [str(i), '--description', 'desc%s' %i])
+            self.assertCommandReturnValue(0, EDIT_COMMAND, [str(i), '--description', 'desc%s' % i])
         self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['0', '1', '2', '--to', '1', '2', '0'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, '0')
         self.assertIn('./a.out', stdout)
@@ -120,3 +121,31 @@ class RenumberTest(tests.TestCase):
                             "Trial should have profile in data directory")
             self.assertEqual(int(os.path.basename(trial.get_data_files()['tau'])), trial['number'],
                              "Trial number should match data directory name after renumber")
+
+    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
+    def test_compresstrials(self):
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        for i in xrange(13):
+            self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
+            self.assertCommandReturnValue(0, EDIT_COMMAND, [str(i), '--description', 'desc%s' % i])
+        self.assertCommandReturnValue(0, DELETE_COMMAND, ['9', '11'])
+        self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['12', '--to', '9'])
+        self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['13', '--to', '11'])
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, '8')
+        self.assertIn('./a.out', stdout)
+        self.assertIn('desc8', stdout)
+        self.assertIn('Selected experiment:', stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, '9')
+        self.assertIn('./a.out', stdout)
+        self.assertIn('desc12', stdout)
+        self.assertNotIn('desc9', stdout)
+        self.assertIn('Selected experiment:', stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, '11')
+        self.assertIn('./a.out', stdout)
+        self.assertIn('desc13', stdout)
+        self.assertNotIn('desc11', stdout)
+        self.assertIn('Selected experiment:', stdout)
+        self.assertFalse(stderr)
