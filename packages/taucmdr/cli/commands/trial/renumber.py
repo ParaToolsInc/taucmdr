@@ -27,11 +27,16 @@
 #
 """``trial renumber`` subcommand."""
 
-from taucmdr import EXIT_SUCCESS
+from __future__ import print_function
+
+import itertools
+
+from taucmdr import EXIT_SUCCESS, logger
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
+
 
 class TrialRenumberCommand(AbstractCommand):
     """``trial renumber`` subcommand."""
@@ -58,35 +63,37 @@ class TrialRenumberCommand(AbstractCommand):
         records['number'] = new
         trial_ctrl.create(records)
 
-
     def main(self, argv):
-        print argv
         args = self._parse_args(argv)
         trial_numbers = []
         for num in getattr(args, 'trial_numbers', []):
             try:
                 trial_numbers.append(int(num))
             except ValueError:
-                self.parser.error("Invalid trial number: %s" %num)
+                self.parser.error("Invalid trial number: %s" % num)
         new_trial_numbers = []
         for num in getattr(args, 'to', []):
             try:
                 new_trial_numbers.append(int(num))
             except ValueError:
-                self.parser.error("Invalid trial trial number: %s" %num)
+                self.parser.error("Invalid trial trial number: %s" % num)
         if len(trial_numbers) != len(new_trial_numbers):
             self.parser.error("Invalid number of trials."
                               " Number of old trials ids should be equal to number of new trial ids.")
 
+        self.logger.info("Renumbering " + ', '.join(
+            ['{} => {}'.format(i, j) for (i, j) in itertools.izip(trial_numbers, new_trial_numbers)]))
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
+        expr = Project.selected().experiment()
         # Check that no trials deleted with this renumbering
         for trial_pair in range(0, len(trial_numbers)):
             if new_trial_numbers[trial_pair] not in trial_numbers \
-               and trial_ctrl.exists({'number': new_trial_numbers[trial_pair]}):
+               and trial_ctrl.exists({'number': new_trial_numbers[trial_pair], 'experiment': expr.eid}):
                 self.parser.error("This renumbering would delete trial %s. If you would like to delete"
                                   " this trial use the `trial delete` subcommand." %new_trial_numbers[trial_pair])
         trial_ctrl.renumber(trial_numbers, new_trial_numbers)
         return EXIT_SUCCESS
+
 
 COMMAND = TrialRenumberCommand(__name__, summary_fmt="Renumber trial numbers.")

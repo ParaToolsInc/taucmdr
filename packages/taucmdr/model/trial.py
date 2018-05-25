@@ -41,6 +41,7 @@ from datetime import datetime
 import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
+from taucmdr.model.project import Project
 from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
@@ -239,9 +240,10 @@ class TrialController(Controller):
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
         b64env = base64.b64encode(repr(env))
         is_bluegene = expr.populate('target').architecture().is_bluegene()
-	is_cray_login = expr.populate('target').operating_system().is_cray_login()
-	if is_cray_login:
-	    LOGGER.warning('Running on a Cray head node. This may produce incorrect results. Try running on a compute node.')
+        is_cray_login = expr.populate('target').operating_system().is_cray_login()
+        if is_cray_login:
+            LOGGER.warning('Running on a Cray head node. This may produce incorrect results. '
+                           'Try running on a compute node.')
         try:
             if is_bluegene:
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
@@ -269,19 +271,21 @@ class TrialController(Controller):
             new_trials (list): new trial numbers.
         """
         new_records = []
+        expr = Project.selected().experiment()
         for trial_pair,_ in enumerate(old_trials):
             old = old_trials[trial_pair]
             new = new_trials[trial_pair]
-            record = dict(self.one({'number': old}))
+            record = dict(self.one({'number': old, 'experiment': expr.eid}))
             record['number'] = new
             new_records.append(record)
         for trial in old_trials:
-            self.delete({'number': trial})
+            self.delete({'number': trial, 'experiment': expr.eid})
         for trial in new_trials:
-            if self.exists({'number': trial}):
-                self.delete({'number': trial})
+            if self.exists({'number': trial, 'experiment': expr.eid}):
+                self.delete({'number': trial, 'experiment': expr.eid})
         for rec in new_records:
             self.create(rec)
+
 
 class Trial(Model):
     """Trial data model."""
