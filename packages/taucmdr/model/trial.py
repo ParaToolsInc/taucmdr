@@ -38,6 +38,9 @@ import errno
 import base64
 import time
 from datetime import datetime
+
+import shutil
+
 import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
@@ -270,21 +273,23 @@ class TrialController(Controller):
             old_trials (list): old trial numbers.
             new_trials (list): new trial numbers.
         """
-        new_records = []
+        # First, we renumber everything to available temporary numbers
+        assert len(old_trials) == len(new_trials)
         expr = Project.selected().experiment()
-        for trial_pair,_ in enumerate(old_trials):
-            old = old_trials[trial_pair]
-            new = new_trials[trial_pair]
-            record = dict(self.one({'number': old, 'experiment': expr.eid}))
-            record['number'] = new
-            new_records.append(record)
-        for trial in old_trials:
-            self.delete({'number': trial, 'experiment': expr.eid})
-        for trial in new_trials:
-            if self.exists({'number': trial, 'experiment': expr.eid}):
-                self.delete({'number': trial, 'experiment': expr.eid})
-        for rec in new_records:
-            self.create(rec)
+        existing_nums = [trial['number'] for trial in
+                         Trial.controller(storage=PROJECT_STORAGE).search({'experiment': expr.eid})]
+        start_temp_id = max(max(existing_nums), max(new_trials)) + 1
+        temp_id = start_temp_id
+        for old_trial_num in old_trials:
+            old_trial = self.one({'number': old_trial_num, 'experiment': expr.eid})
+            self.update({'number': temp_id}, old_trial.eid)
+            temp_id = temp_id + 1
+        # Then we renumber from the temporaries to the final new numbers
+        temp_id = start_temp_id
+        for new_trial_num in new_trials:
+            intermed_trial = self.one({'number': temp_id, 'experiment': expr.eid})
+            self.update({'number': new_trial_num}, intermed_trial.eid)
+            temp_id = temp_id + 1
 
 
 class Trial(Model):
@@ -407,7 +412,21 @@ class Trial(Model):
         except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
-                
+
+    def on_update(self, changes):
+        try:
+            old_value, new_value = changes['number']
+        except KeyError:
+            # We only care about changes to experiment
+            return
+        if old_value is not None and new_value is not None:
+            experiment = self.populate('experiment')
+            old_prefix = os.path.join(experiment.prefix, str(old_value))
+            new_prefix = os.path.join(experiment.prefix, str(new_value))
+            if os.path.exists(old_prefix):
+                shutil.move(old_prefix, new_prefix)
+                LOGGER.debug("Renamed directory %s to %s", old_prefix, new_prefix)
+
     def _postprocess_slog2(self):
         slog2 = os.path.join(self.prefix, 'tau.slog2')
         if os.path.exists(slog2):
