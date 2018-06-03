@@ -27,8 +27,11 @@
 #
 """``experiment list`` subcommand."""
 
-from taucmdr import util
+from taucmdr import util, EXIT_SUCCESS
+from taucmdr.error import ExperimentSelectionError
+from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import ListCommand
+from taucmdr.model.project import Project
 from taucmdr.model.experiment import Experiment
 
 def data_size(expr):
@@ -43,4 +46,41 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Record Output', 'value': 'record_output'},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
-COMMAND = ListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)
+class ExperimentListCommand(ListCommand):
+    """Base class for the `list` subcommand of command line views."""
+
+    def _construct_parser(self):
+        parser = arguments.get_parser(prog=self.command, description=self.summary)
+        parser.add_argument('--current',
+                            help="List current trial",
+                            default=False,
+                            const=True,
+                            action="store_const")
+        return parser
+
+    def main(self, argv):
+        """Command program entry point.
+
+        Args:
+            argv (list): Command line arguments.
+
+        Returns:
+            int: Process return code: non-zero if a problem occurred, 0 otherwise
+        """
+        args = self._parse_args(argv)
+
+        if args.current:
+            proj = Project.controller().selected()
+            try:
+                expr = proj.experiment()
+            except ExperimentSelectionError:
+                print (util.color_text('No selected experiment: ', 'red') +
+                       'Use `%s` to create or select an experiment.' % select_cmd)
+            else:
+                print expr['name']
+            retval = EXIT_SUCCESS
+        else:
+            retval = super(ExperimentListCommand, self).main(argv)
+        return retval
+
+COMMAND = ExperimentListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)
