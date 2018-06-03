@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../',
-        VERSION:     '1.3.0.77
+        VERSION:     '1.3.0.80
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -74,9 +74,12 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;``experiment list`` subcommand.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span><span class="p">,</span> <span class="n">EXIT_SUCCESS</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ExperimentSelectionError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.cli_view</span> <span class="kn">import</span> <span class="n">ListCommand</span>
+<span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">select_cmd</span>
 
 <div class="viewcode-block" id="data_size"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.experiment.list.html#taucmdr.cli.commands.experiment.list.data_size">[docs]</a><span class="k">def</span> <span class="nf">data_size</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">util</span><span class="o">.</span><span class="n">human_size</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">trial</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;trials&#39;</span><span class="p">]))</span></div>
@@ -90,7 +93,44 @@
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Record Output&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;record_output&#39;</span><span class="p">},</span>
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;TAU Makefile&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;tau_makefile&#39;</span><span class="p">}]</span>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ListCommand</span><span class="p">(</span><span class="n">Experiment</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">dashboard_columns</span><span class="o">=</span><span class="n">DASHBOARD_COLUMNS</span><span class="p">,</span> <span class="n">include_storage_flag</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="viewcode-block" id="ExperimentListCommand"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.experiment.list.html#taucmdr.cli.commands.experiment.list.ExperimentListCommand">[docs]</a><span class="k">class</span> <span class="nc">ExperimentListCommand</span><span class="p">(</span><span class="n">ListCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for the `list` subcommand of command line views.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentListCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_construct_parser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--current&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;List current trial&quot;</span><span class="p">,</span>
+                            <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                            <span class="n">const</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_const&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span>
+
+<div class="viewcode-block" id="ExperimentListCommand.main"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.experiment.list.html#taucmdr.cli.commands.experiment.list.ExperimentListCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Command program entry point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argv (list): Command line arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Process return code: non-zero if a problem occurred, 0 otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">current</span><span class="p">:</span>
+            <span class="n">proj</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">controller</span><span class="p">()</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">expr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">ExperimentSelectionError</span><span class="p">:</span>
+                <span class="k">print</span> <span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s1">&#39;No selected experiment: &#39;</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">)</span> <span class="o">+</span>
+                       <span class="s1">&#39;Use `</span><span class="si">%s</span><span class="s1">` to create or select an experiment.&#39;</span> <span class="o">%</span> <span class="n">select_cmd</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">EXIT_SUCCESS</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExperimentListCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span></div></div>
+
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">ExperimentListCommand</span><span class="p">(</span><span class="n">Experiment</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">dashboard_columns</span><span class="o">=</span><span class="n">DASHBOARD_COLUMNS</span><span class="p">,</span> <span class="n">include_storage_flag</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 
       </div>
@@ -104,7 +144,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on May 27, 2018 at 20:44:50 UTC.
+      Last updated on Jun 03, 2018 at 17:24:40 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
