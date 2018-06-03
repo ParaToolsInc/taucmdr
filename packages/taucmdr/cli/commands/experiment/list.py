@@ -29,10 +29,10 @@
 
 from taucmdr import util, EXIT_SUCCESS
 from taucmdr.error import ExperimentSelectionError
-from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.project import Project
 from taucmdr.model.experiment import Experiment
+from taucmdr.cli.commands.experiment.select import COMMAND as select_cmd
 
 def data_size(expr):
     return util.human_size(sum(int(trial.get('data_size', 0)) for trial in expr['trials']))
