@@ -50,7 +50,7 @@ class ExperimentListCommand(ListCommand):
     """Base class for the `list` subcommand of command line views."""
 
     def _construct_parser(self):
-        parser = arguments.get_parser(prog=self.command, description=self.summary)
+        parser = super(ExperimentListCommand, self)._construct_parser()
         parser.add_argument('--current',
                             help="List current trial",
                             default=False,
