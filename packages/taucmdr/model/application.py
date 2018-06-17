@@ -130,6 +130,15 @@ def attributes():
             'argparse': {'flags': ('--mpc',)},
             'rebuild_required': True
         },
+        'max_threads': {
+            'type': 'integer',
+            'description': 'maximum number of threads',
+            'argparse': {'flags': ('--max-threads',),
+                         'metavar': 'threads',
+                         'nargs': '?',
+                         'const': 25},
+            'rebuild_required': True
+        },
         'linkage': {
             'type': 'string',
             'default': 'static' if HOST_OS is CRAY_CNL else 'dynamic',

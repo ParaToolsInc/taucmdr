@@ -314,6 +314,7 @@ class Experiment(Model):
                     shmem_support=application.get_or_default('shmem'),
                     shmem_libraries=target.get('shmem_libraries', []),
                     mpc_support=application.get_or_default('mpc'),
+                    max_threads=application.get('max_threads', None),
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),

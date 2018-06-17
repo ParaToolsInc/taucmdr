@@ -177,6 +177,7 @@ class TauInstallation(Installation):
                  shmem_support=False,
                  shmem_libraries=None,
                  mpc_support=False,
+                 max_threads=None,
                  # Instrumentation methods and options
                  source_inst="never",
                  compiler_inst="never",
@@ -230,6 +231,7 @@ class TauInstallation(Installation):
             shmem_support (bool): Enable or disable SHMEM support in TAU.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             mpc_support (bool): Enable or disable MPC support in TAU.
+            max_threads (int): Maximum number of threads in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
             compiler_inst (str): Policy for compiler-based instrumentation, one of "always", "fallback", or "never".
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
@@ -272,6 +274,7 @@ class TauInstallation(Installation):
         assert shmem_support in (True, False)
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
+        assert isinstance(max_threads, int) or max_threads is None
         assert source_inst in ("automatic", "manual", "never")
         assert compiler_inst in ("always", "fallback", "never")
         assert keep_inst_files in (True, False)
@@ -328,6 +331,7 @@ class TauInstallation(Installation):
         self.shmem_support = shmem_support
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
+        self.max_threads = max_threads
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.keep_inst_files = keep_inst_files
@@ -436,16 +440,19 @@ class TauInstallation(Installation):
         return uid_parts
 
     def _get_max_threads(self):
-        if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
-            if self.target_arch in (INTEL_KNC, INTEL_KNL):
-                nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
-                return nprocs
-            else:
-                nprocs = multiprocessing.cpu_count()
-                # Assume 2 HTs/core
-                return max(64, 2*nprocs)
+        if self.max_threads:
+            return self.max_threads
         else:
-            return 25 # This is currently TAU's default.
+            if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
+                if self.target_arch in (INTEL_KNC, INTEL_KNL):
+                    nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
+                    return nprocs
+                else:
+                    nprocs = multiprocessing.cpu_count()
+                    # Assume 2 HTs/core
+                    return max(64, 2*nprocs)
+            else:
+                return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
         return len(self.metrics)
