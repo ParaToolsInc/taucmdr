@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.82
+        VERSION:     '1.3.0.83
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -87,6 +87,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">resource</span>
 <span class="kn">import</span> <span class="nn">multiprocessing</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">CalledProcessError</span>
@@ -509,6 +510,9 @@
         <span class="c1"># so multiple TAU installations share the large common files.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">())</span>
+            <span class="c1"># If tau nightly, add current date to tag</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">==</span> <span class="n">NIGHTLY</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;-%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_tag</span>
     
     <span class="k">def</span> <span class="nf">_verify_tau_libs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau_makefile</span><span class="p">):</span>
@@ -1677,7 +1681,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jun 30, 2018 at 16:17:29 UTC.
+      Last updated on Jul 08, 2018 at 19:20:58 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
