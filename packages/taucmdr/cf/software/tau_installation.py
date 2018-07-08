@@ -40,6 +40,7 @@ TAU is the core software package of TAU Commander.
 import os
 import glob
 import shutil
+import datetime
 import resource
 import multiprocessing
 from subprocess import CalledProcessError
@@ -462,6 +463,9 @@ class TauInstallation(Installation):
         # so multiple TAU installations share the large common files.
         if self._install_tag is None:
             self._install_tag = util.archive_toplevel(self.acquire_source())
+            # If tau nightly, add current date to tag
+            if self.src == NIGHTLY:
+                self._install_tag = self._install_tag + datetime.datetime.now().strftime('-%Y-%m-%d')
         return self._install_tag
     
     def _verify_tau_libs(self, tau_makefile):
