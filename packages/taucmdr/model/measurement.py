@@ -286,7 +286,7 @@ def attributes():
         'metrics': {
             'type': 'array',
             'default': ['TIME'],
-            'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
+            'description': 'a space separated list of performance metrics to gather, e.g. TIME, PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<metric>'},
