@@ -462,10 +462,16 @@ class TauInstallation(Installation):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
         if self._install_tag is None:
-            self._install_tag = util.archive_toplevel(self.acquire_source())
+            source_archive = self.acquire_source()
+            self._install_tag = util.archive_toplevel(source_archive)
             # If tau nightly, add current date to tag
             if self.src == NIGHTLY:
-                self._install_tag = self._install_tag + datetime.datetime.now().strftime('-%Y-%m-%d')
+                current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
+                self._install_tag = self._install_tag + current_date
+                # Move to new tgz file
+                new_archive_name = os.path.join(os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz')
+                os.rename(source_archive, new_archive_name)
+                self.src = new_archive_name
         return self._install_tag
     
     def _verify_tau_libs(self, tau_makefile):
