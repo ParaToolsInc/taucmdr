@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.3.0.84
+        VERSION:     '1.3.0.86
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -424,6 +424,13 @@
                               <span class="n">Application</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;linkage&#39;</span><span class="p">,</span> <span class="s1">&#39;static&#39;</span><span class="p">))},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
+        <span class="s1">&#39;update_nightly&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Download newest TAU nightly&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--update-nightly&#39;</span><span class="p">,)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;tau_source&#39;</span><span class="p">,</span> <span class="s1">&#39;nightly&#39;</span><span class="p">))},</span>
+        <span class="p">},</span>
         <span class="s1">&#39;extra_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;forcibly add to the TAU_OPTIONS environment variable (not recommended)&#39;</span><span class="p">,</span>
@@ -526,7 +533,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 15, 2018 at 19:40:53 UTC.
+      Last updated on Jul 29, 2018 at 19:38:50 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
