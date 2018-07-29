@@ -470,7 +470,9 @@ class TauInstallation(Installation):
             self._install_tag = util.archive_toplevel(source_archive)
             # If tau nightly, add current date to tag
             if self.src == NIGHTLY:
-                if self.update_nightly:
+                nightlies=glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
+                nightlies_downloaded = True if nightlies else False
+                if self.update_nightly or not nightlies_downloaded:
                     current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
                     self._install_tag = self._install_tag + current_date
                     # Move to new tgz file
@@ -478,7 +480,7 @@ class TauInstallation(Installation):
                     os.rename(source_archive, new_archive_name)
                     self.src = new_archive_name
                 else:
-                    last_nightly = sorted(glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz')))[-1]
+                    last_nightly = sorted(nightlies)[-1]
                     nightly_date = os.path.basename(last_nightly)[11:22]
                     self._install_tag = self._install_tag + nightly_date
                     self.src = last_nightly
