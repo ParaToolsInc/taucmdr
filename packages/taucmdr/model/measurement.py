@@ -377,6 +377,13 @@ def attributes():
                               Application.discourage('linkage', 'static'))},
             'rebuild_required': True
         },
+        'update_nightly': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'Download newest TAU nightly',
+            'argparse': {'flags': ('--update-nightly',)},
+            'compat': {bool: (Target.require('tau_source', 'nightly'))},
+        },
         'extra_tau_options': {
             'type': 'string',
             'description': 'forcibly add to the TAU_OPTIONS environment variable (not recommended)',
