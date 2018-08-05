@@ -372,6 +372,7 @@ class TauInstallation(Installation):
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
+        self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
@@ -1175,6 +1176,8 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.measure_openmp == 'ompt':
             opts.append('-ompt')
+        if self.uses_ompt_tr6:
+            env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'
         if self.measure_io:
             opts.append('-io')
         if self.measure_memory_alloc:
