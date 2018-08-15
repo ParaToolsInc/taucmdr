@@ -76,11 +76,11 @@ endif
 
 # Build download macro
 # Usage: $(call download,source,dest)
-WGET = $(shell type -P wget)
+WGET = $(shell command -v wget)
 ifneq ($(WGET),)
   download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
-  CURL = $(shell type -P curl)
+  CURL = $(shell command -v curl)
   ifneq ($(CURL),)
     download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
   else
@@ -131,7 +131,7 @@ ifeq ($(USE_MINICONDA),true)
 else
   $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
   CONDA_SRC = 
-  PYTHON_EXE = $(shell type -P python)
+  PYTHON_EXE = $(shell command -v python)
   PYTHON_FLAGS = -O
   ifeq ($(PYTHON_EXE),)
     $(error python not found in PATH.)
