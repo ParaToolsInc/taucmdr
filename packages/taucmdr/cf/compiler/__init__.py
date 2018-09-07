@@ -306,7 +306,7 @@ class _CompilerFamily(TrackedInstance):
                 LOGGER.debug("%s returned %d: %s", cmd, err.returncode, err.output)
                 # Keep going: Cray compilers return nonzero on version flag
             if stdout:
-                if re.search(family.family_regex, stdout):
+                if re.search(family.family_regex, stdout, re.MULTILINE):
                     if family.show_wrapper_flags:
                         cmd = [absolute_path] + family.show_wrapper_flags
                         try:
@@ -315,7 +315,7 @@ class _CompilerFamily(TrackedInstance):
                             messages.append(err.output)
                             LOGGER.debug("%s returned %d: %s", cmd, err.returncode, err.output)
                         if stdout:
-                            if re.search(family.family_regex, stdout):
+                            if re.search(family.family_regex, stdout, re.MULTILINE):
                                 LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
                                 cls._probe_cache[absolute_path] = family
                                 return family
@@ -537,7 +537,7 @@ class InstalledCompiler(object):
         # Don't need to check the compiler family of compiler wrappers since the compiler
         # the wrapper wraps has already been checked.
         if not self.wrapped and info.family.family_regex:
-            if not re.search(info.family.family_regex, self.version_string):
+            if not re.search(info.family.family_regex, self.version_string, re.MULTILINE):
                 probed_family = _CompilerFamily.probe(absolute_path)
                 raise ConfigurationError("Compiler '%s' is a %s compiler, not a %s compiler." %
                                          (absolute_path, probed_family.name, info.family.name))
