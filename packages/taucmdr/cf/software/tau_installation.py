@@ -208,6 +208,7 @@ class TauInstallation(Installation):
                  throttle_per_call=10,
                  throttle_num_calls=100000,
                  track_memory_footprint=False,
+                 update_nightly=False,
                  forced_makefile=None,
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
@@ -256,6 +257,7 @@ class TauInstallation(Installation):
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
             throttle (bool): If True then throttle lightweight events.
             metadata_merge (bool): If True then merge metadata.
+            update_nightly (bool): If True then download latest TAU nightly.
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             track_memory_footprint (bool): If True then track memory footprint.
@@ -300,6 +302,7 @@ class TauInstallation(Installation):
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
         assert metadata_merge in (True, False)
+        assert update_nightly in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert track_memory_footprint in (True, False)
@@ -357,6 +360,7 @@ class TauInstallation(Installation):
         self.callpath_depth = callpath_depth
         self.throttle = throttle
         self.metadata_merge = metadata_merge
+        self.update_nightly = update_nightly
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.track_memory_footprint = track_memory_footprint
@@ -368,6 +372,7 @@ class TauInstallation(Installation):
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
+        self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
@@ -462,10 +467,24 @@ class TauInstallation(Installation):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
         if self._install_tag is None:
-            self._install_tag = util.archive_toplevel(self.acquire_source())
+            source_archive = self.acquire_source()
+            self._install_tag = util.archive_toplevel(source_archive)
             # If tau nightly, add current date to tag
             if self.src == NIGHTLY:
-                self._install_tag = self._install_tag + datetime.datetime.now().strftime('-%Y-%m-%d')
+                nightlies=glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
+                nightlies_downloaded = True if nightlies else False
+                if self.update_nightly or not nightlies_downloaded:
+                    current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
+                    self._install_tag = self._install_tag + current_date
+                    # Move to new tgz file
+                    new_archive_name = os.path.join(os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz')
+                    os.rename(source_archive, new_archive_name)
+                    self.src = new_archive_name
+                else:
+                    last_nightly = sorted(nightlies)[-1]
+                    nightly_date = os.path.basename(last_nightly)[11:22]
+                    self._install_tag = self._install_tag + nightly_date
+                    self.src = last_nightly
         return self._install_tag
     
     def _verify_tau_libs(self, tau_makefile):
@@ -1157,6 +1176,8 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.measure_openmp == 'ompt':
             opts.append('-ompt')
+        if self.uses_ompt_tr6:
+            env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'
         if self.measure_io:
             opts.append('-io')
         if self.measure_memory_alloc:

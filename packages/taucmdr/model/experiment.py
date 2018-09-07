@@ -344,6 +344,7 @@ class Experiment(Model):
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
+                    update_nightly=measurement.get_or_default('update_nightly'),
                     forced_makefile=target.get('forced_makefile', None),
                     unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
