@@ -174,14 +174,14 @@ install: build
 	@echo "the quick start guide at http://www.taucommander.com/guide."
 	@echo
 	@echo "If you'd like to pre-configure TAU for a particular experiment then go use"
-	@echo "the \"INSTALLDIR/system/configure\" script to generate TAU configurations."
+	@echo "the \"$(INSTALLDIR)/system/configure\" script to generate TAU configurations."
 	@echo "This is especially a good idea if you are a system administrator installing"
 	@echo "TAU Commander so that someone else can use it.  Without arguments, the"
 	@echo "\"configure\" script will generate as many TAU configurations as it can."
 	@echo
 	@echo "In short:"
-	@echo "  If you are a sysadmin then go run \"INSTALLDIR/system/configure\"."
-	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH and get to work." 
+	@echo "  If you are a sysadmin then go run \"$(INSTALLDIR)/system/configure\"."
+	@echo "  Otherwise just add \"$(INSTALLDIR)/bin\" to your PATH and get to work." 
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
