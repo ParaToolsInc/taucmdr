@@ -385,6 +385,11 @@ class TauInstallation(Installation):
                     break
             else:
                 self.metrics.insert(0, 'TIME')
+        # Split comma separated metrics
+        mets = []
+        for met in self.metrics:
+            mets.extend(met.split(','))
+        self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg) 
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
             if uses(pkg):
