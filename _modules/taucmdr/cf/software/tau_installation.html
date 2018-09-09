@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.98
+        VERSION:     '1.3.0.99
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -432,6 +432,11 @@
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;TIME&#39;</span><span class="p">)</span>
+        <span class="c1"># Split comma separated metrics</span>
+        <span class="n">mets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">met</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span>
+            <span class="n">mets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">met</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">mets</span>
         <span class="n">uses</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">pkg</span><span class="p">:</span> <span class="n">sources</span><span class="p">[</span><span class="n">pkg</span><span class="p">]</span> <span class="k">if</span> <span class="n">forced_makefile</span> <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;uses_&#39;</span><span class="o">+</span><span class="n">pkg</span><span class="p">)</span> 
         <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="s1">&#39;binutils&#39;</span><span class="p">,</span> <span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;pdt&#39;</span><span class="p">,</span> <span class="s1">&#39;ompt&#39;</span><span class="p">,</span> <span class="s1">&#39;libotf2&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">uses</span><span class="p">(</span><span class="n">pkg</span><span class="p">):</span>
@@ -1702,7 +1707,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Sep 07, 2018 at 22:31:50 UTC.
+      Last updated on Sep 09, 2018 at 19:09:34 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
