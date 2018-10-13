@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.101
+        VERSION:     '1.3.0.102
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -257,6 +257,7 @@
                  <span class="n">track_memory_footprint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">update_nightly</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">forced_makefile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">dyninst</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">unwind_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the TAU installation wrapper class.</span>
 
@@ -412,6 +413,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span> <span class="o">=</span> <span class="n">throttle_num_calls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">track_memory_footprint</span> <span class="o">=</span> <span class="n">track_memory_footprint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span> <span class="o">=</span> <span class="n">forced_makefile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dyninst</span> <span class="o">=</span> <span class="n">dyninst</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unwind_depth</span> <span class="o">=</span> <span class="n">unwind_depth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uses_pdt</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">minimal</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uses_binutils</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">minimal</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span><span class="p">)</span>
@@ -804,6 +806,8 @@
                     <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s2">&quot;Invalid value for measure_openmp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_openmp</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_io</span><span class="p">:</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-iowrapper&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dyninst</span><span class="p">:</span>
+            <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-dyninst=download&#39;</span><span class="p">)</span>
 
         <span class="c1"># Use -useropt for hacks and workarounds.</span>
         <span class="n">useropts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-O2&#39;</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">]</span>
@@ -1693,7 +1697,29 @@
             <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;BGP_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;BlueGene/P high resolution clock.&quot;</span><span class="p">))</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span> <span class="ow">is</span> <span class="n">IBM_BGQ</span><span class="p">:</span>
             <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;BGQ_TIMERS&quot;</span><span class="p">,</span> <span class="s2">&quot;BlueGene/Q high resolution clock.&quot;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">metrics</span></div></div>
+        <span class="k">return</span> <span class="n">metrics</span></div>
+
+<div class="viewcode-block" id="TauInstallation.rewrite"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.rewrite">[docs]</a>    <span class="k">def</span> <span class="nf">rewrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rewrite_package</span><span class="p">,</span> <span class="n">executable</span><span class="p">,</span> <span class="n">inst_file</span><span class="p">):</span>
+        <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makefile_tags</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span>
+            <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;serial&#39;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rewrite_package</span> <span class="o">==</span> <span class="s1">&#39;dyninst&#39;</span><span class="p">:</span>
+            <span class="n">rewrite_cmd</span> <span class="o">=</span> <span class="s1">&#39;tau_run&#39;</span>
+            <span class="n">dyninstroot</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;dyninst-9.3.2-working&#39;</span><span class="p">)</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;DYNINST_ROOT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dyninstroot</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;DYNINSTAPI_RT_LIB&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/lib/libdyninstAPI_RT.so&#39;</span> <span class="o">%</span><span class="n">dyninstroot</span>
+            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;LD_LIBRARY_PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dyninstroot</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">)</span> <span class="p">,</span> <span class="n">env</span><span class="p">[</span><span class="s1">&#39;LD_LIBRARY_PATH&#39;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">rewrite_package</span> <span class="o">==</span> <span class="s1">&#39;pebil&#39;</span><span class="p">:</span>
+            <span class="n">rewrite_cmd</span> <span class="o">=</span> <span class="s1">&#39;tau_pebil_rewrite&#39;</span>
+        <span class="k">elif</span> <span class="n">rewrite_package</span> <span class="o">==</span> <span class="s1">&#39;maqao&#39;</span><span class="p">:</span>
+            <span class="n">rewrite_cmd</span> <span class="o">=</span> <span class="s1">&#39;tau_rewrite&#39;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">rewrite_cmd</span><span class="p">,</span> <span class="s1">&#39;-T&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tags</span><span class="p">),</span> <span class="n">executable</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">inst_file</span><span class="p">]</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;TAU was unable rewrite the executable.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span></div></div>
 </pre></div>
 
       </div>
@@ -1707,7 +1733,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Sep 09, 2018 at 20:11:42 UTC.
+      Last updated on Oct 13, 2018 at 18:54:42 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

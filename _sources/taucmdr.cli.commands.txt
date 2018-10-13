@@ -24,6 +24,7 @@ Submodules
    taucmdr.cli.commands.dashboard
    taucmdr.cli.commands.help
    taucmdr.cli.commands.initialize
+   taucmdr.cli.commands.rewrite
    taucmdr.cli.commands.select
 
 Module contents

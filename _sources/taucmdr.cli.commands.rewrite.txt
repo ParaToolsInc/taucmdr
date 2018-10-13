@@ -1,0 +1,7 @@
+taucmdr.cli.commands.rewrite module
+===================================
+
+.. automodule:: taucmdr.cli.commands.rewrite
+    :members:
+    :undoc-members:
+    :show-inheritance:
