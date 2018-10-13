@@ -210,6 +210,7 @@ class TauInstallation(Installation):
                  track_memory_footprint=False,
                  update_nightly=False,
                  forced_makefile=None,
+                 dyninst=False,
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
 
@@ -365,6 +366,7 @@ class TauInstallation(Installation):
         self.throttle_num_calls = throttle_num_calls
         self.track_memory_footprint = track_memory_footprint
         self.forced_makefile = forced_makefile
+        self.dyninst = dyninst
         self.unwind_depth = unwind_depth
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN)
@@ -757,6 +759,8 @@ class TauInstallation(Installation):
                     raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
         if self.measure_io:
             flags.append('-iowrapper')
+        if self.dyninst:
+            flags.append('-dyninst=download')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
@@ -1647,3 +1651,25 @@ class TauInstallation(Installation):
         elif self.target_arch is IBM_BGQ:
             metrics.append(("BGQ_TIMERS", "BlueGene/Q high resolution clock."))
         return metrics
+
+    def rewrite(self, rewrite_package, executable, inst_file):
+        makefile = self.get_makefile()
+        tags = self._makefile_tags(makefile)
+        if not self.mpi_support:
+            tags.add('serial')
+        _, env = self.runtime_config()
+        if rewrite_package == 'dyninst':
+            rewrite_cmd = 'tau_run'
+            dyninstroot = os.path.join(self.install_prefix, self.target_arch.name, 'dyninst-9.3.2-working')
+            env['DYNINST_ROOT'] = dyninstroot
+            env['DYNINSTAPI_RT_LIB'] = '%s/lib/libdyninstAPI_RT.so' %dyninstroot
+            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib') , env['LD_LIBRARY_PATH'])
+        elif rewrite_package == 'pebil':
+            rewrite_cmd = 'tau_pebil_rewrite'
+        elif rewrite_package == 'maqao':
+            rewrite_cmd = 'tau_rewrite'
+        cmd = [rewrite_cmd, '-T', ','.join(tags), executable, '-o', inst_file]
+        retval = util.create_subprocess(cmd, env=env, stdout=True)
+        if retval != 0:
+            raise ConfigurationError("TAU was unable rewrite the executable.")
+        return retval
