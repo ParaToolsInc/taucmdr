@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.102
+        VERSION:     '1.3.0.105
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -189,14 +189,20 @@
 
 <span class="n">TRACE_ANALYSIS_TOOLS</span> <span class="o">=</span> <span class="s1">&#39;jumpshot&#39;</span><span class="p">,</span> <span class="s1">&#39;vampir&#39;</span>
 
-<span class="n">PROGRAM_LAUNCHERS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mpirun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span> 
-                     <span class="s1">&#39;mpiexec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span> 
-                     <span class="s1">&#39;ibrun&#39;</span><span class="p">:</span> <span class="p">[],</span> 
-                     <span class="s1">&#39;aprun&#39;</span><span class="p">:</span> <span class="p">[],</span> 
-                     <span class="s1">&#39;qsub&#39;</span><span class="p">:</span> <span class="p">[],</span> 
-                     <span class="s1">&#39;srun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;--multi-prog&#39;</span><span class="p">],</span> 
+<span class="n">PROGRAM_LAUNCHERS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mpirun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;mpiexec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;mpiexec.hydra&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;mpiexec.mpd&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;orterun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-app&#39;</span><span class="p">,</span> <span class="s1">&#39;--app&#39;</span><span class="p">,</span> <span class="s1">&#39;-configfile&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;mpiexec_mpt&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;ccc_mprun&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;mpirun_rsh&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;ibrun&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;aprun&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;qsub&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;srun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;--multi-prog&#39;</span><span class="p">],</span>
                      <span class="s1">&#39;oshrun&#39;</span><span class="p">:</span> <span class="p">[],</span>
-                     <span class="s1">&#39;cafrun&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;-np&#39;</span><span class="p">]}</span>
+                     <span class="s1">&#39;cafrun&#39;</span><span class="p">:</span> <span class="p">[]}</span>
 
 
 <div class="viewcode-block" id="TauInstallation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation">[docs]</a><span class="k">class</span> <span class="nc">TauInstallation</span><span class="p">(</span><span class="n">Installation</span><span class="p">):</span>
@@ -1733,7 +1739,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Oct 13, 2018 at 18:54:42 UTC.
+      Last updated on Oct 25, 2018 at 18:46:59 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
