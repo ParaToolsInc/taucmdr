@@ -97,7 +97,7 @@ endif
 endif
 ifeq ($(HOST_OS),Darwin)
   CONDA_OS = MacOSX
-else 
+else
   ifeq ($(HOST_OS),Linux)
     CONDA_OS = Linux
   else
@@ -106,7 +106,7 @@ else
 endif
 ifeq ($(HOST_ARCH),x86_64)
   CONDA_ARCH = x86_64
-else 
+else
   ifeq ($(HOST_ARCH),i386)
     CONDA_ARCH = x86
   else
@@ -130,7 +130,7 @@ ifeq ($(USE_MINICONDA),true)
   PYTHON_FLAGS = -EOu
 else
   $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
-  CONDA_SRC = 
+  CONDA_SRC =
   PYTHON_EXE = $(shell command -pv python || type -P python || which python)
   PYTHON_FLAGS = -O
   ifeq ($(PYTHON_EXE),)
@@ -162,10 +162,10 @@ install: build
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
-	@echo "Hooray! TAU Commander is installed!" 
+	@echo "Hooray! TAU Commander is installed!"
 	@echo
 	@echo "INSTALLDIR=\"$(INSTALLDIR)\""
-	@echo 
+	@echo
 	@echo "What's next?"
 	@echo
 	@echo "TAU Commander will automatically generate new TAU configurations for each new"
@@ -181,7 +181,7 @@ install: build
 	@echo
 	@echo "In short:"
 	@echo "  If you are a sysadmin then go run \"$(INSTALLDIR)/system/configure\"."
-	@echo "  Otherwise just add \"$(INSTALLDIR)/bin\" to your PATH and get to work." 
+	@echo "  Otherwise just add \"$(INSTALLDIR)/bin\" to your PATH and get to work."
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
@@ -208,5 +208,5 @@ $(CONDA_SRC):
              echo "**************************************************************************" ; \
              false)
 
-clean: 
+clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION

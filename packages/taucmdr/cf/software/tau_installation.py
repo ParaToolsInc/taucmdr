@@ -142,14 +142,20 @@ PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 
 TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
 
-PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'], 
-                     'mpiexec': ['-app', '--app', '-configfile'], 
-                     'ibrun': [], 
-                     'aprun': [], 
-                     'qsub': [], 
-                     'srun': ['--multi-prog'], 
+PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
+                     'mpiexec': ['-app', '--app', '-configfile'],
+                     'mpiexec.hydra': ['-app', '--app', '-configfile'],
+                     'mpiexec.mpd': ['-app', '--app', '-configfile'],
+                     'orterun': ['-app', '--app', '-configfile'],
+                     'mpiexec_mpt': [],
+                     'ccc_mprun': [],
+                     'mpirun_rsh': [],
+                     'ibrun': [],
+                     'aprun': [],
+                     'qsub': [],
+                     'srun': ['--multi-prog'],
                      'oshrun': [],
-                     'cafrun': ['-np']}
+                     'cafrun': []}
 
 
 class TauInstallation(Installation):
