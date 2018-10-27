@@ -345,6 +345,13 @@ class Experiment(Model):
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
                     update_nightly=measurement.get_or_default('update_nightly'),
+                    ptts=measurement.get_or_default('ptts'),
+                    ptts_post=measurement.get_or_default('ptts_post'),
+                    ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
+                    ptts_restart=measurement.get_or_default('ptts_restart'),
+                    ptts_start=measurement.get_or_default('ptts_start'),
+                    ptts_stop=measurement.get_or_default('ptts_stop'),
+                    ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
                     forced_makefile=target.get('forced_makefile', None),
                     unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
@@ -495,6 +502,13 @@ class Experiment(Model):
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
                     update_nightly=measurement.get_or_default('update_nightly'),
+                    ptts=measurement.get_or_default('ptts'),
+                    ptts_post=measurement.get_or_default('ptts_post'),
+                    ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
+                    ptts_restart=measurement.get_or_default('ptts_restart'),
+                    ptts_start=measurent.get_or_default('ptts_start'),
+                    ptts_stop=measurement.get_or_default('ptts_stop'),
+                    ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
                     forced_makefile=target.get('forced_makefile', None),
                     unwind_depth=measurement.get_or_default('unwind_depth'),
                     dyninst=dyninst)

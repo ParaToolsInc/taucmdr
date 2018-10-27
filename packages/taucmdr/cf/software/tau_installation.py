@@ -209,6 +209,13 @@ class TauInstallation(Installation):
                  throttle_num_calls=100000,
                  track_memory_footprint=False,
                  update_nightly=False,
+                 ptts=False,
+                 ptts_post=False,
+                 ptts_sample_flags=None,
+                 ptts_restart=False,
+                 ptts_start=None,
+                 ptts_stop=None,
+                 ptts_report_flags=None,
                  forced_makefile=None,
                  dyninst=False,
                  unwind_depth=0):
@@ -259,6 +266,13 @@ class TauInstallation(Installation):
             throttle (bool): If True then throttle lightweight events.
             metadata_merge (bool): If True then merge metadata.
             update_nightly (bool): If True then download latest TAU nightly.
+            ptts (bool): If True then enable PTTS support.
+            ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
+            ptts_sample_flags (str): flags to pass to PTTS sample_ts command
+            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and be reinstrumented after stop
+            ptts_start (str): address at which to start a PTTS sampling region
+            ptts_stop (str): address at which to stop a PTTS sampling region
+            ptts_report_flags (str): flags to pass to PTTS report_ts command
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             track_memory_footprint (bool): If True then track memory footprint.
@@ -304,6 +318,9 @@ class TauInstallation(Installation):
         assert throttle in (True, False)
         assert metadata_merge in (True, False)
         assert update_nightly in (True, False)
+        assert ptts in (True, False)
+        assert ptts_post in (True, False)
+        assert ptts_restart in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert track_memory_footprint in (True, False)
@@ -362,6 +379,13 @@ class TauInstallation(Installation):
         self.throttle = throttle
         self.metadata_merge = metadata_merge
         self.update_nightly = update_nightly
+        self.ptts = ptts
+        self.ptts_post = ptts_post
+        self.ptts_sample_flags = ptts_sample_flags
+        self.ptts_restart = ptts_restart
+        self.ptts_start = ptts_start
+        self.ptts_stop = ptts_stop
+        self.ptts_report_flags = ptts_report_flags
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.track_memory_footprint = track_memory_footprint
@@ -1194,6 +1218,14 @@ class TauInstallation(Installation):
             opts.append('-memory')
         if self.measure_shmem:
             opts.append('-shmem')
+        if self.ptts:
+            opts.append('-ptts')
+        if self.ptts_post:
+            opts.append('-ptts-post')
+        if self.ptts_sample_flags:
+            opts.append('-ptts-sample-flags=%s' %self.ptts_sample_flags)
+        if self.ptts_report_flags:
+            opts.append('-ptts-report-flags=%s' %self.ptts_report_flags)
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
