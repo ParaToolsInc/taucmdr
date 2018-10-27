@@ -447,11 +447,10 @@ class Experiment(Model):
         measurement = populated['measurement']
         if rewrite_package == 'maqao' or rewrite_package == 'pebil':
             source_inst = "automatic"
-            dyninst=False
+            dyninst = False
         else:
-            source_inst=measurement.get_or_default('source_inst'),
-            source_inst='never'
-            dyninst=True
+            source_inst = 'never'
+            dyninst = True
         tau = TauInstallation(\
                     target.sources(),
                     target_arch=target.architecture(),
@@ -506,7 +505,7 @@ class Experiment(Model):
                     ptts_post=measurement.get_or_default('ptts_post'),
                     ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
                     ptts_restart=measurement.get_or_default('ptts_restart'),
-                    ptts_start=measurent.get_or_default('ptts_start'),
+                    ptts_start=measurement.get_or_default('ptts_start'),
                     ptts_stop=measurement.get_or_default('ptts_stop'),
                     ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
                     forced_makefile=target.get('forced_makefile', None),
