@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.3.0.105
+        VERSION:     '1.3.0.108
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -392,6 +392,13 @@
                     <span class="n">throttle_num_calls</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;throttle_num_calls&#39;</span><span class="p">),</span>
                     <span class="n">track_memory_footprint</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;track_memory_footprint&#39;</span><span class="p">),</span>
                     <span class="n">update_nightly</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;update_nightly&#39;</span><span class="p">),</span>
+                    <span class="n">ptts</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_post</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_post&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_sample_flags</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_sample_flags&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_restart</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_restart&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_start</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_start&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_stop</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_stop&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_report_flags</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_report_flags&#39;</span><span class="p">),</span>
                     <span class="n">forced_makefile</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;forced_makefile&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
                     <span class="n">unwind_depth</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;unwind_depth&#39;</span><span class="p">))</span>
         <span class="n">tau</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
@@ -487,11 +494,10 @@
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">populated</span><span class="p">[</span><span class="s1">&#39;measurement&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">rewrite_package</span> <span class="o">==</span> <span class="s1">&#39;maqao&#39;</span> <span class="ow">or</span> <span class="n">rewrite_package</span> <span class="o">==</span> <span class="s1">&#39;pebil&#39;</span><span class="p">:</span>
             <span class="n">source_inst</span> <span class="o">=</span> <span class="s2">&quot;automatic&quot;</span>
-            <span class="n">dyninst</span><span class="o">=</span><span class="bp">False</span>
+            <span class="n">dyninst</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">source_inst</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">),</span>
-            <span class="n">source_inst</span><span class="o">=</span><span class="s1">&#39;never&#39;</span>
-            <span class="n">dyninst</span><span class="o">=</span><span class="bp">True</span>
+            <span class="n">source_inst</span> <span class="o">=</span> <span class="s1">&#39;never&#39;</span>
+            <span class="n">dyninst</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="n">tau</span> <span class="o">=</span> <span class="n">TauInstallation</span><span class="p">(</span>\
                     <span class="n">target</span><span class="o">.</span><span class="n">sources</span><span class="p">(),</span>
                     <span class="n">target_arch</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">architecture</span><span class="p">(),</span>
@@ -542,6 +548,13 @@
                     <span class="n">throttle_num_calls</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;throttle_num_calls&#39;</span><span class="p">),</span>
                     <span class="n">track_memory_footprint</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;track_memory_footprint&#39;</span><span class="p">),</span>
                     <span class="n">update_nightly</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;update_nightly&#39;</span><span class="p">),</span>
+                    <span class="n">ptts</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_post</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_post&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_sample_flags</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_sample_flags&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_restart</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_restart&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_start</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_start&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_stop</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_stop&#39;</span><span class="p">),</span>
+                    <span class="n">ptts_report_flags</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;ptts_report_flags&#39;</span><span class="p">),</span>
                     <span class="n">forced_makefile</span><span class="o">=</span><span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;forced_makefile&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
                     <span class="n">unwind_depth</span><span class="o">=</span><span class="n">measurement</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;unwind_depth&#39;</span><span class="p">),</span>
                     <span class="n">dyninst</span><span class="o">=</span><span class="n">dyninst</span><span class="p">)</span>
@@ -593,7 +606,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Oct 25, 2018 at 18:46:59 UTC.
+      Last updated on Oct 27, 2018 at 22:14:59 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

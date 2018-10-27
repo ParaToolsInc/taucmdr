@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.105
+        VERSION:     '1.3.0.108
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -262,6 +262,13 @@
                  <span class="n">throttle_num_calls</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                  <span class="n">track_memory_footprint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">update_nightly</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">ptts</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">ptts_post</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">ptts_sample_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">ptts_restart</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">ptts_start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">ptts_stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">ptts_report_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">forced_makefile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">dyninst</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">unwind_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -312,6 +319,13 @@
 <span class="sd">            throttle (bool): If True then throttle lightweight events.</span>
 <span class="sd">            metadata_merge (bool): If True then merge metadata.</span>
 <span class="sd">            update_nightly (bool): If True then download latest TAU nightly.</span>
+<span class="sd">            ptts (bool): If True then enable PTTS support.</span>
+<span class="sd">            ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files</span>
+<span class="sd">            ptts_sample_flags (str): flags to pass to PTTS sample_ts command</span>
+<span class="sd">            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and be reinstrumented after stop</span>
+<span class="sd">            ptts_start (str): address at which to start a PTTS sampling region</span>
+<span class="sd">            ptts_stop (str): address at which to stop a PTTS sampling region</span>
+<span class="sd">            ptts_report_flags (str): flags to pass to PTTS report_ts command</span>
 <span class="sd">            throttle_per_call (int): Maximum microseconds per call of a lightweight event.</span>
 <span class="sd">            throttle_num_calls (int): Minimum number of calls for a lightweight event.</span>
 <span class="sd">            track_memory_footprint (bool): If True then track memory footprint.</span>
@@ -357,6 +371,9 @@
         <span class="k">assert</span> <span class="n">throttle</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">metadata_merge</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">update_nightly</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">ptts</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">ptts_post</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">ptts_restart</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_per_call</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_num_calls</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">track_memory_footprint</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
@@ -415,6 +432,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span> <span class="o">=</span> <span class="n">throttle</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata_merge</span> <span class="o">=</span> <span class="n">metadata_merge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_nightly</span> <span class="o">=</span> <span class="n">update_nightly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts</span> <span class="o">=</span> <span class="n">ptts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts_post</span> <span class="o">=</span> <span class="n">ptts_post</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts_sample_flags</span> <span class="o">=</span> <span class="n">ptts_sample_flags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts_restart</span> <span class="o">=</span> <span class="n">ptts_restart</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts_start</span> <span class="o">=</span> <span class="n">ptts_start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts_stop</span> <span class="o">=</span> <span class="n">ptts_stop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptts_report_flags</span> <span class="o">=</span> <span class="n">ptts_report_flags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_per_call</span> <span class="o">=</span> <span class="n">throttle_per_call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span> <span class="o">=</span> <span class="n">throttle_num_calls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">track_memory_footprint</span> <span class="o">=</span> <span class="n">track_memory_footprint</span>
@@ -1247,6 +1271,14 @@
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-memory&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_shmem</span><span class="p">:</span>
             <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-shmem&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptts</span><span class="p">:</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-ptts&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptts_post</span><span class="p">:</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-ptts-post&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptts_sample_flags</span><span class="p">:</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-ptts-sample-flags=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">ptts_sample_flags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptts_report_flags</span><span class="p">:</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-ptts-report-flags=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">ptts_report_flags</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">opts</span><span class="p">)),</span> <span class="n">env</span></div>
 
 <div class="viewcode-block" id="TauInstallation.get_compiler_command"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.get_compiler_command">[docs]</a>    <span class="k">def</span> <span class="nf">get_compiler_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compiler</span><span class="p">):</span>
@@ -1739,7 +1771,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Oct 25, 2018 at 18:46:59 UTC.
+      Last updated on Oct 27, 2018 at 22:14:59 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
