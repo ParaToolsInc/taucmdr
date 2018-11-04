@@ -191,7 +191,7 @@ python_check: $(PYTHON_EXE)
 python_download: $(CONDA_SRC)
 
 $(CONDA): $(CONDA_SRC)
-	$(ECHO)bash $< -b -p $(CONDA_DEST)
+	$(ECHO)bash $< -b -u -p $(CONDA_DEST)
 	$(ECHO)touch $(CONDA_DEST)/bin/*
 
 $(CONDA_SRC):
