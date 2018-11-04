@@ -118,6 +118,7 @@ COMMANDS = {None:
              'tau_throttle.sh',
              'tauupc',
              'tau_upc.sh',
+             'tau_python',
              'tau_user_setup.sh']}
 
 HEADERS = {None: ['Profile/Profiler.h', 'Profile/TAU.h']}
@@ -155,6 +156,7 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'qsub': [],
                      'srun': ['--multi-prog'],
                      'oshrun': [],
+                     'python': [],
                      'cafrun': []}
 
 
@@ -222,6 +224,7 @@ class TauInstallation(Installation):
                  ptts_start=None,
                  ptts_stop=None,
                  ptts_report_flags=None,
+                 python=False,
                  forced_makefile=None,
                  dyninst=False,
                  unwind_depth=0):
@@ -282,6 +285,7 @@ class TauInstallation(Installation):
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             track_memory_footprint (bool): If True then track memory footprint.
+            python (bool): If true then measure Python methods.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -330,6 +334,7 @@ class TauInstallation(Installation):
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert track_memory_footprint in (True, False)
+        assert isinstance(python, bool)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
@@ -395,6 +400,7 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.track_memory_footprint = track_memory_footprint
+        self.python = python
         self.forced_makefile = forced_makefile
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
@@ -791,6 +797,8 @@ class TauInstallation(Installation):
             flags.append('-iowrapper')
         if self.dyninst:
             flags.append('-dyninst=download')
+        if self.python:
+            flags.append('-python')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
@@ -948,6 +956,8 @@ class TauInstallation(Installation):
             tags.add('shmem')
         if self.mpc_support:
             tags.add('mpc')
+        if self.python:
+            tags.add('python')
         LOGGER.debug("TAU tags: %s", tags)
         return tags
 
@@ -1368,9 +1378,16 @@ class TauInstallation(Installation):
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
                          self.measure_opencl or
                          self.tbb_support or
-                         self.pthreads_support))
+                         self.pthreads_support) and not self.python)
         if not use_tau_exec:
             tau_exec = []
+            if self.python:
+                makefile = self.get_makefile()
+                tags = self._makefile_tags(makefile)
+                if not self.mpi_support:
+                    tags.add('serial')
+                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python'])] + opts
+                launcher_cmd = []
         else:
             makefile = self.get_makefile()
             tags = self._makefile_tags(makefile)

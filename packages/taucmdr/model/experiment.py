@@ -352,6 +352,7 @@ class Experiment(Model):
                     ptts_start=measurement.get_or_default('ptts_start'),
                     ptts_stop=measurement.get_or_default('ptts_stop'),
                     ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+                    python=measurement.get_or_default('python'),
                     forced_makefile=target.get('forced_makefile', None),
                     unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
@@ -508,6 +509,7 @@ class Experiment(Model):
                     ptts_start=measurement.get_or_default('ptts_start'),
                     ptts_stop=measurement.get_or_default('ptts_stop'),
                     ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+                    python=measurement.get_or_default('python'),
                     forced_makefile=target.get('forced_makefile', None),
                     unwind_depth=measurement.get_or_default('unwind_depth'),
                     dyninst=dyninst)
