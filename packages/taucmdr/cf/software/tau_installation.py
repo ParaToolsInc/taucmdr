@@ -1406,7 +1406,13 @@ class TauInstallation(Installation):
         else:
             cmd = launcher_cmd
             cmd.extend(tau_exec)
-            cmd.extend(application_cmds[0])
+            if self.python:
+                python_args = application_cmds[0][1:]
+                if len(python_args) != 0:
+                    cmd.extend(['-tau-python-args="%s"' %' '.join(application_cmds[0][1:])])
+                cmd.extend([application_cmds[0][0]])
+            else:
+                cmd.extend(application_cmds[0])
             for application_cmd in application_cmds[1:]:
                 for i, part in enumerate(application_cmd):
                     if util.which(part):
