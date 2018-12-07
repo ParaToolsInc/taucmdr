@@ -559,7 +559,7 @@ class TauInstallation(Installation):
                 elif 'UNWIND_INC=' in line:
                     if self.uses_libunwind: 
                         libunwind = self.dependencies['libunwind']
-                        libunwind_inc = line.split('-I')[1].strip()
+                        libunwind_inc = line.split('=')[1].strip().strip("-I")
                         if not os.path.isdir(libunwind_inc):
                             raise SoftwarePackageError("UNWIND_INC in '%s' is not a directory" % tau_makefile)                            
                         if libunwind.include_path != libunwind_inc:
@@ -589,7 +589,7 @@ class TauInstallation(Installation):
                 elif 'OTFINC=' in line:
                     if self.uses_libotf2:
                         libotf2 = self.dependencies['libotf2']
-                        libotf2_dir = line.split('-I')[1].strip()
+                        libotf2_dir = line.split('=')[1].strip().strip("-I")
                         if not os.path.isdir(libotf2_dir):
                             raise SoftwarePackageError("OTFINC in '%s' is not a directory" % tau_makefile)                            
                         if libotf2.include_path != libotf2_dir:
