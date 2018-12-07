@@ -549,7 +549,7 @@ class TauInstallation(Installation):
                 elif 'BFDINCLUDE=' in line:
                     if self.uses_binutils:
                         binutils = self.dependencies['binutils']
-                        bfd_inc = line.split('=')[1].strip().strip("-I")
+                        bfd_inc = line.split('=')[1].split("-I")[0].strip()
                         if not os.path.isdir(bfd_inc):
                             raise SoftwarePackageError("BFDINCLUDE in '%s' is not a directory" % tau_makefile)                            
                         if binutils.include_path != bfd_inc:
