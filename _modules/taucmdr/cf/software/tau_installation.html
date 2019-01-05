@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.115
+        VERSION:     '1.3.0.117
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -85,6 +85,7 @@
 <span class="c1"># pylint: disable=too-many-branches</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
@@ -271,7 +272,7 @@
                  <span class="n">ptts_start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">ptts_stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">ptts_report_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">python</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">python</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span>
                  <span class="n">forced_makefile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">dyninst</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">unwind_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -332,7 +333,7 @@
 <span class="sd">            throttle_per_call (int): Maximum microseconds per call of a lightweight event.</span>
 <span class="sd">            throttle_num_calls (int): Minimum number of calls for a lightweight event.</span>
 <span class="sd">            track_memory_footprint (bool): If True then track memory footprint.</span>
-<span class="sd">            python (bool): If true then measure Python methods.</span>
+<span class="sd">            python (bool): Path to python executable.</span>
 <span class="sd">            forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">minimal</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
@@ -381,7 +382,6 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_per_call</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_num_calls</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">track_memory_footprint</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">python</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">forced_makefile</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">forced_makefile</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;TAU Performance System&#39;</span><span class="p">,</span> 
                                               <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span> <span class="n">compilers</span><span class="p">,</span> 
@@ -451,6 +451,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span> <span class="o">=</span> <span class="n">forced_makefile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dyninst</span> <span class="o">=</span> <span class="n">dyninst</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unwind_depth</span> <span class="o">=</span> <span class="n">unwind_depth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uses_pdt</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">minimal</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;automatic&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shmem_support</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uses_binutils</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">minimal</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uses_libunwind</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">minimal</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DARWIN</span><span class="p">)</span>
@@ -533,6 +534,9 @@
                 <span class="n">uid_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="n">pkg</span><span class="p">]</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
         <span class="c1"># TAU changes if any of its hard-coded limits change</span>
         <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_max_threads</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_max_metrics</span><span class="p">())])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="p">:</span>
+            <span class="n">python_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_python_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">python_path</span><span class="p">)</span>
+            <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">python_path</span><span class="p">,</span> <span class="n">python_version</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">uid_parts</span></div>
 
     <span class="k">def</span> <span class="nf">_get_max_threads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -844,7 +848,7 @@
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-iowrapper&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dyninst</span><span class="p">:</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-dyninst=download&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="p">:</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-python&#39;</span><span class="p">)</span>
 
         <span class="c1"># Use -useropt for hacks and workarounds.</span>
@@ -1003,7 +1007,7 @@
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;shmem&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpc_support</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;mpc&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="p">:</span>
             <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;TAU tags: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tags</span></div>
@@ -1420,15 +1424,23 @@
             <span class="k">for</span> <span class="n">application_cmd</span> <span class="ow">in</span> <span class="n">application_cmds</span><span class="p">:</span>
                 <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="s1">&#39;python&#39;</span> <span class="ow">in</span> <span class="n">subcmd</span> <span class="k">for</span> <span class="n">subcmd</span> <span class="ow">in</span> <span class="n">launcher_cmd</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="o">=</span><span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span><span class="o">=</span><span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uid</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">python_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">subcmd</span> <span class="ow">in</span> <span class="n">launcher_cmd</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;python&#39;</span> <span class="ow">in</span> <span class="n">subcmd</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">python_path</span> <span class="o">=</span> <span class="n">subcmd</span>
         <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">!=</span> <span class="s1">&#39;static&#39;</span> <span class="ow">and</span> 
                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span> <span class="ow">and</span>
                         <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">)</span> <span class="ow">or</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">measure_opencl</span> <span class="ow">or</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">tbb_support</span> <span class="ow">or</span>
-                         <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">)</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">pthreads_support</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">use_tau_exec</span><span class="p">:</span>
             <span class="n">tau_exec</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="p">:</span>
                 <span class="n">makefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_makefile</span><span class="p">()</span>
                 <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_makefile_tags</span><span class="p">(</span><span class="n">makefile</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_support</span><span class="p">:</span>
@@ -1453,13 +1465,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="n">launcher_cmd</span>
             <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tau_exec</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">python</span><span class="p">:</span>
-                <span class="n">python_args</span> <span class="o">=</span> <span class="n">application_cmds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">python_args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;-tau-python-args=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">application_cmds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:])])</span>
-                <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">application_cmds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">application_cmds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">cmd</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">application_cmds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">for</span> <span class="n">application_cmd</span> <span class="ow">in</span> <span class="n">application_cmds</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">application_cmd</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">part</span><span class="p">):</span>
@@ -1780,7 +1786,15 @@
         <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">retval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;TAU was unable rewrite the executable.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">retval</span></div></div>
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+<div class="viewcode-block" id="TauInstallation.get_python_version"><a class="viewcode-back" href="../../../../taucmdr.cf.software.tau_installation.html#taucmdr.cf.software.tau_installation.TauInstallation.get_python_version">[docs]</a>    <span class="k">def</span> <span class="nf">get_python_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">python_path</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runtime_config</span><span class="p">()</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">python_path</span> <span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">get_command_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;\d+\.\d+\.\d+&#39;</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">()</span></div></div>
 </pre></div>
 
       </div>
@@ -1794,7 +1808,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Dec 07, 2018 at 22:05:35 UTC.
+      Last updated on Jan 05, 2019 at 20:44:00 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
