@@ -38,6 +38,7 @@ TAU is the core software package of TAU Commander.
 # pylint: disable=too-many-branches
 
 import os
+import re
 import glob
 import shutil
 import datetime
@@ -224,7 +225,7 @@ class TauInstallation(Installation):
                  ptts_start=None,
                  ptts_stop=None,
                  ptts_report_flags=None,
-                 python=False,
+                 python=util.which('python'),
                  forced_makefile=None,
                  dyninst=False,
                  unwind_depth=0):
@@ -285,7 +286,7 @@ class TauInstallation(Installation):
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             track_memory_footprint (bool): If True then track memory footprint.
-            python (bool): If true then measure Python methods.
+            python (bool): Path to python executable.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -334,7 +335,6 @@ class TauInstallation(Installation):
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
         assert track_memory_footprint in (True, False)
-        assert isinstance(python, bool)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
@@ -404,6 +404,7 @@ class TauInstallation(Installation):
         self.forced_makefile = forced_makefile
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
+        self.uses_python = False
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN)
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
@@ -486,6 +487,9 @@ class TauInstallation(Installation):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
+        if self.uses_python:
+            python_version = self.get_python_version(self.python_path)
+            uid_parts.extend([self.python_path, python_version])
         return uid_parts
 
     def _get_max_threads(self):
@@ -797,7 +801,7 @@ class TauInstallation(Installation):
             flags.append('-iowrapper')
         if self.dyninst:
             flags.append('-dyninst=download')
-        if self.python:
+        if self.uses_python:
             flags.append('-python')
 
         # Use -useropt for hacks and workarounds.
@@ -956,7 +960,7 @@ class TauInstallation(Installation):
             tags.add('shmem')
         if self.mpc_support:
             tags.add('mpc')
-        if self.python:
+        if self.uses_python:
             tags.add('python')
         LOGGER.debug("TAU tags: %s", tags)
         return tags
@@ -1373,15 +1377,23 @@ class TauInstallation(Installation):
             for application_cmd in application_cmds:
                 cmd.extend(application_cmd)
             return cmd, env
+        if any('python' in subcmd for subcmd in launcher_cmd):
+            self.uses_python=True
+            self._tau_makefile=None
+            self._uid = None
+            self.python_path = util.which('python')
+            for subcmd in launcher_cmd:
+                if 'python' in subcmd:
+                    self.python_path = subcmd
         use_tau_exec = (self.application_linkage != 'static' and 
                         (self.profile != 'none' or self.trace != 'none') and
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
                          self.measure_opencl or
                          self.tbb_support or
-                         self.pthreads_support) and not self.python)
+                         self.pthreads_support) and not self.uses_python)
         if not use_tau_exec:
             tau_exec = []
-            if self.python:
+            if self.uses_python:
                 makefile = self.get_makefile()
                 tags = self._makefile_tags(makefile)
                 if not self.mpi_support:
@@ -1406,13 +1418,7 @@ class TauInstallation(Installation):
         else:
             cmd = launcher_cmd
             cmd.extend(tau_exec)
-            if self.python:
-                python_args = application_cmds[0][1:]
-                if len(python_args) != 0:
-                    cmd.extend(['-tau-python-args="%s"' %' '.join(application_cmds[0][1:])])
-                cmd.extend([application_cmds[0][0]])
-            else:
-                cmd.extend(application_cmds[0])
+            cmd.extend(application_cmds[0])
             for application_cmd in application_cmds[1:]:
                 for i, part in enumerate(application_cmd):
                     if util.which(part):
@@ -1734,3 +1740,11 @@ class TauInstallation(Installation):
         if retval != 0:
             raise ConfigurationError("TAU was unable rewrite the executable.")
         return retval
+
+    def get_python_version(self, python_path):
+        _, env = self.runtime_config()
+        cmd = [python_path , '--version']
+        out = util.get_command_output(cmd)
+        p=re.compile('\d+\.\d+\.\d+')
+        m = p.search(out)
+        return m.group()

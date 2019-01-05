@@ -434,9 +434,9 @@ def attributes():
             'compat': {bool: (Measurement.require('ptts', True))},
         },
         'python': {
-            'type': 'boolean',
-            'default': False,
-            'description': 'measure python methods',
+            'type': 'string',
+            'default': '',
+            'description': 'path to python executable',
             'argparse': {'flags': ('--python',)},
             'rebuild_required': True
         },
