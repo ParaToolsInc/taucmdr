@@ -385,7 +385,10 @@ class Trial(Model):
                 LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
                                "the application executable is '%s' and subsequent executables are arguments "
                                "to that command. If this is incorrect, use ':' to separate each application "
-                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`", cmd0)
+                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`. "
+                               "Or, use '--' to separate '%s', its arguments, and subsequent executables "
+                               "from the application command, e.g. "
+                               "`mpirun -np 4 numactl -m 1 -- ./a.out -l hello", cmd0, cmd0)
                 return launcher_cmd, [cmd]
             # Split MPMD command on ':'.  Retain ':' as first element of each application command
             colons.append(len(cmd))
