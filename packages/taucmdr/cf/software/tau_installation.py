@@ -225,7 +225,6 @@ class TauInstallation(Installation):
                  ptts_start=None,
                  ptts_stop=None,
                  ptts_report_flags=None,
-                 python=util.which('python'),
                  forced_makefile=None,
                  dyninst=False,
                  unwind_depth=0):
@@ -286,7 +285,6 @@ class TauInstallation(Installation):
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             track_memory_footprint (bool): If True then track memory footprint.
-            python (bool): Path to python executable.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -400,7 +398,7 @@ class TauInstallation(Installation):
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
         self.track_memory_footprint = track_memory_footprint
-        self.python = python
+        self.python_path = util.which('python')
         self.forced_makefile = forced_makefile
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
@@ -487,9 +485,8 @@ class TauInstallation(Installation):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
-        if self.uses_python:
-            python_version = self.get_python_version(self.python_path)
-            uid_parts.extend([self.python_path, python_version])
+        python_version = self.get_python_version(self.python_path)
+        uid_parts.extend([self.python_path, python_version])
         return uid_parts
 
     def _get_max_threads(self):
@@ -1381,10 +1378,10 @@ class TauInstallation(Installation):
             self.uses_python=True
             self._tau_makefile=None
             self._uid = None
-            self.python_path = util.which('python')
             for subcmd in launcher_cmd:
                 if 'python' in subcmd:
                     self.python_path = subcmd
+            self.install()
         use_tau_exec = (self.application_linkage != 'static' and 
                         (self.profile != 'none' or self.trace != 'none') and
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or

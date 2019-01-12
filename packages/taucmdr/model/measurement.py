@@ -433,13 +433,6 @@ def attributes():
             'argparse': {'flags': ('--ptts-report-flags',)},
             'compat': {bool: (Measurement.require('ptts', True))},
         },
-        'python': {
-            'type': 'string',
-            'default': '',
-            'description': 'path to python executable',
-            'argparse': {'flags': ('--python',)},
-            'rebuild_required': True
-        },
         'extra_tau_options': {
             'type': 'string',
             'description': 'forcibly add to the TAU_OPTIONS environment variable (not recommended)',
