@@ -1395,7 +1395,7 @@ class TauInstallation(Installation):
                 tags = self._makefile_tags(makefile)
                 if not self.mpi_support:
                     tags.add('serial')
-                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python'])] + opts
+                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter', self.python_path] + opts
                 launcher_cmd = []
         else:
             makefile = self.get_makefile()
