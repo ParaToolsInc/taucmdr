@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.117
+        VERSION:     '1.3.0.118
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -272,7 +272,6 @@
                  <span class="n">ptts_start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">ptts_stop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">ptts_report_flags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">python</span><span class="o">=</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span>
                  <span class="n">forced_makefile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">dyninst</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">unwind_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -333,7 +332,6 @@
 <span class="sd">            throttle_per_call (int): Maximum microseconds per call of a lightweight event.</span>
 <span class="sd">            throttle_num_calls (int): Minimum number of calls for a lightweight event.</span>
 <span class="sd">            track_memory_footprint (bool): If True then track memory footprint.</span>
-<span class="sd">            python (bool): Path to python executable.</span>
 <span class="sd">            forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">minimal</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
@@ -447,7 +445,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_per_call</span> <span class="o">=</span> <span class="n">throttle_per_call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span> <span class="o">=</span> <span class="n">throttle_num_calls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">track_memory_footprint</span> <span class="o">=</span> <span class="n">track_memory_footprint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">python</span> <span class="o">=</span> <span class="n">python</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">python_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span> <span class="o">=</span> <span class="n">forced_makefile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dyninst</span> <span class="o">=</span> <span class="n">dyninst</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unwind_depth</span> <span class="o">=</span> <span class="n">unwind_depth</span>
@@ -534,9 +532,8 @@
                 <span class="n">uid_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="p">[</span><span class="n">pkg</span><span class="p">]</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
         <span class="c1"># TAU changes if any of its hard-coded limits change</span>
         <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_max_threads</span><span class="p">()),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_max_metrics</span><span class="p">())])</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="p">:</span>
-            <span class="n">python_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_python_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">python_path</span><span class="p">)</span>
-            <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">python_path</span><span class="p">,</span> <span class="n">python_version</span><span class="p">])</span>
+        <span class="n">python_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_python_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">python_path</span><span class="p">)</span>
+        <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">python_path</span><span class="p">,</span> <span class="n">python_version</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">uid_parts</span></div>
 
     <span class="k">def</span> <span class="nf">_get_max_threads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1428,10 +1425,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">uses_python</span><span class="o">=</span><span class="bp">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tau_makefile</span><span class="o">=</span><span class="bp">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid</span> <span class="o">=</span> <span class="bp">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">python_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">subcmd</span> <span class="ow">in</span> <span class="n">launcher_cmd</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s1">&#39;python&#39;</span> <span class="ow">in</span> <span class="n">subcmd</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">python_path</span> <span class="o">=</span> <span class="n">subcmd</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>
         <span class="n">use_tau_exec</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">application_linkage</span> <span class="o">!=</span> <span class="s1">&#39;static&#39;</span> <span class="ow">and</span> 
                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span> <span class="ow">and</span>
                         <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">source_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_inst</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">)</span> <span class="ow">or</span>
@@ -1808,7 +1805,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jan 05, 2019 at 20:44:00 UTC.
+      Last updated on Jan 12, 2019 at 19:12:22 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
