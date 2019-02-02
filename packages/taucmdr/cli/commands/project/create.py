@@ -118,6 +118,7 @@ class ProjectCreateCommand(CreateCommand):
 
 
     def main(self, argv):
+        init_options = []
         if 'init_options=' == argv[-1][:13]:
             init_options = argv[-1][13:]
             argv.pop()
