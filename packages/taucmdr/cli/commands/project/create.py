@@ -134,7 +134,8 @@ class ProjectCreateCommand(CreateCommand):
         data['targets'] = [model.eid for model in targets]
         data['applications'] = [model.eid for model in applications]
         data['measurements'] = [model.eid for model in measurements]
-        data['init_options'] = init_options
+        if init_options:
+            data['init_options'] = init_options
         try:
             self.model.controller().create(data)
         except UniqueAttributeError:
