@@ -139,7 +139,8 @@ class InitializeCommand(AbstractCommand):
 
     def _create_project(self, args):
         project_name = args.project_name
-        options = [project_name]
+        init_options = args.init_options
+        options = [project_name, 'init_options=%s' %init_options]
         try:
             project_create_cmd.main(options)
         except ConfigurationError:
@@ -225,6 +226,8 @@ class InitializeCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
+        vargs = vars(args)
+        vargs['init_options'] = ' '.join(argv)
         if not (args.baseline or args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
 

@@ -80,6 +80,10 @@ def attributes():
             'model': Experiment,
             'description': 'the current experiment',
         },
+        'init_options': {
+            'type': 'string',
+            'description': 'options passed to initialize command',
+        },
     }
 
 
