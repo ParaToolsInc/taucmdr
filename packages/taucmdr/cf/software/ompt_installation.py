@@ -59,7 +59,8 @@ class OmptInstallation(CMakeInstallation):
                       '-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path,
                       '-DCMAKE_C_FLAGS=-fPIC',
                       '-DCMAKE_CXX_FLAGS=-fPIC',
-                      '-DCMAKE_BUILD_TYPE=Release'])
+                      '-DCMAKE_BUILD_TYPE=Release',
+                      '-DCMAKE_DISABLE_FIND_PACKAGE_CUDA:BOOL=TRUE'])
         return super(OmptInstallation, self).cmake(flags)
 
     def make(self, flags):
