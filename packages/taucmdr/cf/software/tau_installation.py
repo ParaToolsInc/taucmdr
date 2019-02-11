@@ -790,6 +790,8 @@ class TauInstallation(Installation):
                 flags.append('-openmp')
                 if self.measure_openmp == 'ompt':
                     flags.append('-ompt=%s' % ompt.install_prefix if ompt else None)
+                    if self.uses_ompt_tr6:
+                        flags.append('-ompt-tr6')
                 elif self.measure_openmp == 'opari':
                     flags.append('-opari')
                 else:
@@ -943,6 +945,8 @@ class TauInstallation(Installation):
                 tags.add('openmp')
                 if self.measure_openmp == 'ompt':
                     tags.add('ompt')
+                    if self.uses_ompt_tr6:
+                        tags.add('tr6')
                 elif self.measure_openmp == 'opari':
                     tags.add('opari')
                 else:
@@ -979,6 +983,7 @@ class TauInstallation(Installation):
             tags.add('openmp')
             tags.add('opari')
             tags.add('ompt')
+            tags.add('tr6')
             tags.add('gomp')
         if not self.uses_scorep:
             tags.add('scorep')
