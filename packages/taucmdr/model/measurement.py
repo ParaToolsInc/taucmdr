@@ -74,6 +74,13 @@ def attributes():
                 LOGGER.warning("%s = %s in %s recommends against callpath > 0 in %s",
                                lhs_attr, lhs_value, lhs_name, rhs_name)
 
+    def _ensure_instrumented(lhs, lhs_attr, lhs_value, rhs):
+        if isinstance(rhs, Measurement):
+            if rhs.get('source_inst') == 'never' and rhs.get('compiler_inst') == 'never':
+                lhs_name = lhs.name.lower()
+                rhs_name = rhs.name.lower()
+                raise IncompatibleRecordError("%s = %s in %s requires source_inst and compiler_inst are not both 'never' in %s" % 
+                                              (lhs_attr, lhs_value, lhs_name, rhs_name))
 
     return {
         'projects': {
@@ -373,7 +380,7 @@ def attributes():
             'description': 'specify selective instrumentation file',
             'argparse': {'flags': ('--select-file',),
                          'metavar': 'path'},
-            'compat': {bool: (Measurement.exclude('source_inst', 'never'),
+            'compat': {bool: (_ensure_instrumented,
                               Application.discourage('linkage', 'static'))},
             'rebuild_required': True
         },
