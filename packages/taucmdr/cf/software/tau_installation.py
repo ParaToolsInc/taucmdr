@@ -227,6 +227,7 @@ class TauInstallation(Installation):
                  ptts_report_flags=None,
                  forced_makefile=None,
                  dyninst=False,
+                 mpit=False,
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
 
@@ -285,6 +286,7 @@ class TauInstallation(Installation):
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
             track_memory_footprint (bool): If True then track memory footprint.
+            mpit (bool): If True then enable MPI-T profiling interface.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -393,6 +395,7 @@ class TauInstallation(Installation):
         self.ptts_sample_flags = ptts_sample_flags
         self.ptts_restart = ptts_restart
         self.ptts_start = ptts_start
+        self.mpit = mpit
         self.ptts_stop = ptts_stop
         self.ptts_report_flags = ptts_report_flags
         self.throttle_per_call = throttle_per_call
@@ -802,6 +805,9 @@ class TauInstallation(Installation):
             flags.append('-dyninst=download')
         if self.uses_python:
             flags.append('-python')
+        if self.mpit:
+            print 'append mpit'
+            flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
@@ -963,6 +969,8 @@ class TauInstallation(Installation):
             tags.add('mpc')
         if self.uses_python:
             tags.add('python')
+        if self.mpit:
+            tags.add('mpit')
         LOGGER.debug("TAU tags: %s", tags)
         return tags
 

@@ -450,6 +450,12 @@ def attributes():
             'compat': {bool: (Measurement.discourage('extra_tau_options'),
                               Measurement.exclude('baseline', True))}
         },
+        'mpit': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'MPI-T profiling interface',
+            'argparse': {'flags': ('--mpit',)},
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
