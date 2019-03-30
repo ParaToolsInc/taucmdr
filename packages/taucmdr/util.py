@@ -686,7 +686,10 @@ def color_text(text, *args, **kwargs):
     Returns:
         str: The colorized text.
     """
-    return termcolor.colored(text, *args, **kwargs)
+    if sys.stdout.isatty():
+        return termcolor.colored(text, *args, **kwargs)
+    else:
+        return text
 
 
 def uncolor_text(text):
