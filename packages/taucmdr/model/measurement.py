@@ -493,10 +493,24 @@ class Measurement(Model):
             pass
         else:
             if select_file and not os.path.exists(select_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
+                raise ConfigurationError(
+                    "Selective instrumentation file '%s' not found" % select_file)
+
+    def _check_metrics(self):
+        """Check for TIME in metrics, add it if missing, ensure it is first"""
+        try:
+            self['metrics'].remove('TIME')
+        except KeyError:
+            raise ConfigurationError(
+                "The metrics attribute should always exist with at least TIME present!")
+        except ValueError:
+            LOGGER.warning("'TIME' must always be present as the first metric!")
+        finally:
+            self['metrics'].insert(0, 'TIME')
 
     def on_create(self):
         self._check_select_file()
+        self._check_metrics()
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
@@ -515,6 +529,7 @@ class Measurement(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         self._check_select_file()
+        self._check_metrics()
         if self.is_selected():
             for attr, change in changes.iteritems():
                 if self.attributes[attr].get('rebuild_required'):
