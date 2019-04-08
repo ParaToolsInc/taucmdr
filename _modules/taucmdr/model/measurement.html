@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.3.0.128
+        VERSION:     '1.3.0.130
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -340,7 +340,7 @@
         <span class="s1">&#39;metrics&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;a space separated list of performance metrics to gather, e.g. TIME, PAPI_FP_INS&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;a space separated list of performance metrics to gather, e.g. TIME PAPI_FP_INS&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--metrics&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;metric&gt;&#39;</span><span class="p">},</span>
@@ -540,10 +540,24 @@
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">select_file</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">select_file</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Selective instrumentation file &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">select_file</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                    <span class="s2">&quot;Selective instrumentation file &#39;</span><span class="si">%s</span><span class="s2">&#39; not found&quot;</span> <span class="o">%</span> <span class="n">select_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Measurement._check_metrics"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.Measurement._check_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">_check_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check for TIME in metrics, add it if missing, ensure it is first&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;TIME&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="s2">&quot;The metrics attribute should always exist with at least TIME present!&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;TIME&#39; must always be present as the first metric!&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;TIME&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Measurement.on_create"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.Measurement.on_create">[docs]</a>    <span class="k">def</span> <span class="nf">on_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_select_file</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_select_file</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_metrics</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Measurement.on_update"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.Measurement.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">changes</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">ImmutableRecordError</span>
@@ -562,6 +576,7 @@
                                          <span class="s2">&quot;in experiment &#39;</span><span class="si">%s</span><span class="s2">&#39;:</span><span class="se">\n</span><span class="s2">    </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">err</span><span class="p">),</span>
                                          <span class="s2">&quot;Delete experiment &#39;</span><span class="si">%s</span><span class="s2">&#39; and try again.&quot;</span> <span class="o">%</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_select_file</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_metrics</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_selected</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">changes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rebuild_required&#39;</span><span class="p">):</span>
@@ -595,7 +610,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 30, 2019 at 21:22:19 UTC.
+      Last updated on Apr 08, 2019 at 15:34:00 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
