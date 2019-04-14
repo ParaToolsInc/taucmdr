@@ -35,6 +35,7 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
+from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.cf.compiler.host import HOST_COMPILERS
@@ -43,12 +44,22 @@ from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.compiler.caf import CAF_COMPILERS
 
+LOGGER = logger.get_logger(__name__)
 
 def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement
     from taucmdr.cf.platforms import DARWIN, HOST_OS, CRAY_CNL
+
+    def _encourage_except_baseline(lhs, lhs_attr, lhs_value, rhs):
+        if isinstance(rhs, Measurement):
+            if not rhs['baseline']:
+                lhs_name = lhs.name.lower()
+                rhs_name = rhs.name.lower()
+                LOGGER.warning("%s = %s in %s recommends True in %s",
+                               lhs_attr, lhs_value, lhs_name, rhs_name)
+
     return {
         'projects': {
             'collection': Project,
@@ -87,7 +98,7 @@ def attributes():
             'default': False,
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
-            'compat': {True: Measurement.encourage('mpi', True)},
+            'compat': {True: _encourage_except_baseline},
             'rebuild_required': True
         },
         'caf': {
@@ -95,7 +106,7 @@ def attributes():
             'default': False,
             'description': 'application uses Coarray Fortran',
             'argparse': {'flags': ('--caf',)},
-            'compat': {True: (Measurement.encourage('mpi', True),
+            'compat': {True: (_encourage_except_baseline,
                               Measurement.require('source_inst', 'never'))},
             'rebuild_required': True
         },
@@ -113,7 +124,7 @@ def attributes():
             'description': 'application uses OpenCL',
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda_toolkit'),
-                              Measurement.encourage('opencl', True))},
+                              _encourage_except_baseline)},
             'rebuild_required': True
         },
         'shmem': {
