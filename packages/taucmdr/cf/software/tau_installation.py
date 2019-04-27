@@ -1537,10 +1537,14 @@ class TauInstallation(Installation):
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Profile directory '%s' does not exist" % path)
-            for thisdir, _, files in os.walk(path):
+            for thisdir, subdirs, files in os.walk(path):
                 if any(file_name.startswith("profile") for file_name in files):
                     LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(thisdir))
                     retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=thisdir, env=env)
+                elif any(subdir.startswith("MULTI__") for subdir in subdirs):
+                    for subdir in [file_name.startswith("MULTI__") for file_name in files]:
+                        LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(subdir))
+                        retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env)
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
         return retval
