@@ -728,6 +728,7 @@ class TauInstallation(Installation):
                             host_compilers.PGI: 'pgi',
                             host_compilers.CRAY: 'cray',
                             host_compilers.IBM: 'ibm',
+                            host_compilers.ARM: 'armflang',
                             host_compilers.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]

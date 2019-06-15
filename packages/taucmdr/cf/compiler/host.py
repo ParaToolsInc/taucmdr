@@ -71,6 +71,9 @@ CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray',
 APPLE_LLVM = HOST_COMPILERS.add('Apple', family_regex=r'Apple LLVM',
                                 CC='cc', CXX='c++')
 
+ARM = HOST_COMPILERS.add('Arm', family_regex=r'Arm C/C\+\+/Fortran Compiler',
+                         CC='armclang', CXX='armclang++', FC='armflang')
+
 CC = HOST_COMPILERS.roles['CC']
 CXX = HOST_COMPILERS.roles['CXX']
 FC = HOST_COMPILERS.roles['FC']
