@@ -77,6 +77,7 @@ DATA_TOOLS = ['jumpshot',
               'pprof',
               'slog2print',
               'tau2slog2',
+              'tau_trace2json',
               'taudb_configure',
               'taudb_install_cert',
               'taudb_keygen',
@@ -1696,6 +1697,25 @@ class TauInstallation(Installation):
             raise InternalError("Nonzero return code from tau2slog2")
         if not os.path.exists(slog2):
             raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")                
+
+
+    def tau_trace_to_json(self, trc, edf, json):
+        """Convert a TAU trace file to JSON format.
+        
+        Args:
+            trc (str): Path to the trc file.
+            edf (str): Path to the edf file.
+            json (str): Path to the json file to create.
+        """
+        self._prep_data_analysis_tools()
+        LOGGER.info("Converting TAU trace files to json format...")
+        cmd = [os.path.join(self.bin_path, 'tau_trace2json'), trc, edf, '-o', json]
+        if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
+            os.remove(json)
+            raise InternalError("Nonzero return code from tau_trace2json")
+        if not os.path.exists(json):
+            raise InternalError("Failed to convert TAU trace data: no json files exist after calling 'tau_trace2json'")                
+
 
     def tau_metrics(self):
         """List TAU metrics available on this target.
