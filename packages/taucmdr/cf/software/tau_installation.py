@@ -1194,7 +1194,7 @@ class TauInstallation(Installation):
         else:
             env['TAU_PROFILE'] = '0'
             env['SCOREP_ENABLE_PROFILING'] = 'false'
-        if self.trace == 'slog2':
+        if self.trace == 'slog2' or self.trace == 'json':
             env['TAU_TRACE'] = '1'
         elif self.trace == 'otf2':
             env['TAU_TRACE'] = '1'
