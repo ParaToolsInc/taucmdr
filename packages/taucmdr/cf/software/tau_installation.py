@@ -311,7 +311,7 @@ class TauInstallation(Installation):
         assert isinstance(select_file, basestring) or select_file is None
         assert baseline in (True, False)
         assert profile in ("tau", "merged", "cubex", "none")
-        assert trace in ("slog2", "otf2", "none")
+        assert trace in ("slog2", "otf2", "json","none")
         assert sample in (True, False)
         assert isinstance(metrics, list) or metrics is None
         assert measure_io in (True, False)
@@ -1505,7 +1505,7 @@ class TauInstallation(Installation):
 
     def is_trace_format(self, fmt):
         """Return True if ``fmt`` is a string indicating a trace data format."""
-        return fmt in ('slog2', 'otf2')
+        return fmt in ('slog2', 'otf2', 'json')
 
     def _show_unknown(self, tool):
         def launcher(_, paths, env):
@@ -1584,7 +1584,7 @@ class TauInstallation(Installation):
                 raise ConfigurationError("Too many trace files, use vampirserver to view.")
             retval += util.create_subprocess(['vampir', path], cwd=cwd, env=env)
         return retval
-    
+
     def _prep_data_analysis_tools(self):
         """Checks that data analysis tools are installed, or installs them if needed."""
         if not glob.glob(os.path.join(self.lib_path, 'Makefile.tau*')):
