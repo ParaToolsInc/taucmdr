@@ -1597,7 +1597,7 @@ class TauInstallation(Installation):
                 raise ConfigurationError("Trace file '%s' does not exist" % path)
             path = os.path.abspath(path)
             cwd = os.path.dirname(path)
-            retval += util.create_subprocess([os.path.join(self.bin_path, 'google-chrome'), ''], 
+            retval += util.create_subprocess(['google-chrome', ''], 
                                              cwd=cwd, env=env, stdout=False)
         return retval
     
