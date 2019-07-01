@@ -28,6 +28,7 @@
 """``target create`` subcommand."""
 
 import os
+import shlex
 from collections import Counter
 from taucmdr import util
 from taucmdr.error import ConfigurationError
@@ -106,7 +107,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --taucmdr='%s'", args.tau_source)
         with open(makefile, 'r') as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
-            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 
+            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))), 
                              "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
                              "PAPIDIR": ("papi_source", os.path.abspath),
                              "PDTDIR": ("pdt_source", os.path.abspath),

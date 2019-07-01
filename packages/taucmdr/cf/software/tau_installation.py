@@ -42,6 +42,7 @@ import re
 import glob
 import shutil
 import datetime
+import shlex
 import resource
 import multiprocessing
 from subprocess import CalledProcessError
@@ -553,7 +554,7 @@ class TauInstallation(Installation):
                 elif 'BFDINCLUDE=' in line:
                     if self.uses_binutils:
                         binutils = self.dependencies['binutils']
-                        bfd_inc = line.split('-I')[1].strip()
+                        bfd_inc = shlex.split(line.split('=')[1])[0].strip('-I')
                         if not os.path.isdir(bfd_inc):
                             raise SoftwarePackageError("BFDINCLUDE in '%s' is not a directory" % tau_makefile)                            
                         if binutils.include_path != bfd_inc:
