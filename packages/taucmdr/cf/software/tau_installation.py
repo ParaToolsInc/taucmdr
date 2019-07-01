@@ -311,7 +311,7 @@ class TauInstallation(Installation):
         assert isinstance(select_file, basestring) or select_file is None
         assert baseline in (True, False)
         assert profile in ("tau", "merged", "cubex", "none")
-        assert trace in ("slog2", "otf2", "json","none")
+        assert trace in ("slog2", "otf2", "json", "none")
         assert sample in (True, False)
         assert isinstance(metrics, list) or metrics is None
         assert measure_io in (True, False)
