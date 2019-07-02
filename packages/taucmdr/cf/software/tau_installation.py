@@ -145,6 +145,12 @@ PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 
 TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir', 'google_chrome'
 
+TOOL_FOR_FORMAT = {
+                'json':['google_chrome'],
+                'slog2':['jumpshot'],
+                'otf2':['vampir']
+            }
+
 PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'mpiexec': ['-app', '--app', '-configfile'],
                      'mpiexec.hydra': ['-app', '--app', '-configfile'],
@@ -1638,7 +1644,11 @@ class TauInstallation(Installation):
                 tools = trace_tools if trace_tools is not None else TRACE_ANALYSIS_TOOLS
             else:
                 raise InternalError("Unhandled data format '%s'" % fmt)
-            for tool in tools:
+            try:
+                available_tools = TOOL_FOR_FORMAT[fmt]
+            except KeyError:
+                raise InternalError("'%s'is an unrecognized file type" % fmt)
+            for tool in available_tools:
                 try:
                     launcher = getattr(self, '_show_'+tool)
                 except AttributeError:

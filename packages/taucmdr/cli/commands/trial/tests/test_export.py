@@ -105,3 +105,16 @@ class ExportTest(tests.TestCase):
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
         export_file = expr['name'] + '.trial0.tgz'
         self.assertTrue(os.path.exists(export_file))
+
+    def test_export_json(self):
+        self.reset_project_storage(['--trace', 'json', '--profile', 'none'])
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['trace'], 'json')
+        self.assertEqual(meas['profile'], 'none')
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['./a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.json'
+        self.assertTrue(os.path.exists(export_file))
+        
