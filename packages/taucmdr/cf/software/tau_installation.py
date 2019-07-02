@@ -1600,10 +1600,11 @@ class TauInstallation(Installation):
                 raise ConfigurationError("Trace file '%s' does not exist" % path)
             path = os.path.abspath(path)
             cwd = os.path.dirname(path)
+
+            LOGGER.info("\nTo see the profile, go to chrome://tracing in your browser and load the tau.json file at this path")
+            LOGGER.info(path)
             retval += util.create_subprocess(['google-chrome', ''], 
                                              cwd=cwd, env=env, stdout=False)
-            print("To see the profile, go to chrome://tracing in your browser and load the tau.json file at this path")
-            print(path)
         return retval
     
     def _prep_data_analysis_tools(self):
