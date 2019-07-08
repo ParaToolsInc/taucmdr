@@ -150,6 +150,12 @@ def attributes():
                          'const': 25},
             'rebuild_required': True
         },
+        'python': {
+            'type': 'boolean',
+            'description': 'application uses python',
+            'argparse': {'flags': ('--python',)},
+            'rebuild_required': True
+        },
         'linkage': {
             'type': 'string',
             'default': 'static' if HOST_OS is CRAY_CNL else 'dynamic',

@@ -77,7 +77,7 @@ class CreateTest(tests.TestCase):
     def test_trace_json(self):
         self.reset_project_storage()
         name = 'trace_json'
-        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace'])
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace','json'])
         self.assertFalse(stderr)
         self.assertIn("Added measurement '%s' to project" % name, stdout)
         self.assertNotIn("WARNING", stdout)

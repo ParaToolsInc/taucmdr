@@ -149,7 +149,8 @@ TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir', 'google_chrome'
 TOOL_FOR_FORMAT = {
                 'json':['google_chrome'],
                 'slog2':['jumpshot'],
-                'otf2':['vampir']
+                'otf2':['vampir'],
+                'tau':['pprof','paraprof'],
             }
 
 PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
@@ -1740,7 +1741,7 @@ class TauInstallation(Installation):
         """
         self._prep_data_analysis_tools()
         LOGGER.info("Converting TAU trace files to json format...")
-        cmd = [os.path.join(self.bin_path, 'tau_trace2json'), trc, edf, '-o', json]
+        cmd = [os.path.join(self.bin_path, 'tau_trace2json'), trc, edf, '-chrome', '-ignoreatomic', '-o', json]
         if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
             os.remove(json)
             raise InternalError("Nonzero return code from tau_trace2json")
