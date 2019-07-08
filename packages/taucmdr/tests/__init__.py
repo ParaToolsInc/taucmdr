@@ -166,7 +166,7 @@ class TestCase(unittest.TestCase):
         """
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
         PROJECT_STORAGE.destroy(ignore_errors=True)
-        argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1']
+        argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
         if init_args is not None:
             argv.extend(init_args)
         if '--bare' in argv or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
