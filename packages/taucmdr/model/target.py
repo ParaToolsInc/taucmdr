@@ -357,7 +357,7 @@ def attributes():
         },
         PY.keyword: {
             'model': Compiler,
-            'required': True,
+            'required': False,
             'description': 'Python Interpreter command',
             'argparse': {'flags': ('--python-interpreter',),
                          'group': 'python',

@@ -31,7 +31,7 @@ Python Interpreter Knowledgebase (implemented using the compiler classes)
 """
 from taucmdr.cf.compiler import Knowledgebase
 
-PYTHON_INTERPRETERS = Knowledgebase('Python', 'Compilers targeting different versions of Python',
+PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different versions of Python',
                                PY=('python','python') # language: python, envars: python
                                )
 
@@ -44,3 +44,4 @@ PYTHON3 = PYTHON_INTERPRETERS.add('PY3_INTERPRETER', family_regex=r'^Python 3'
 								PY=('python3','python'))
 
 PY = PYTHON_INTERPRETERS.roles['PY']
+
