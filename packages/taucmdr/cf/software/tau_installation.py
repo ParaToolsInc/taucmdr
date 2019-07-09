@@ -38,8 +38,11 @@ TAU is the core software package of TAU Commander.
 # pylint: disable=too-many-branches
 
 import os
+import re
 import glob
 import shutil
+import datetime
+import shlex
 import resource
 import multiprocessing
 from subprocess import CalledProcessError
@@ -52,6 +55,7 @@ from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
 from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
 
@@ -116,6 +120,7 @@ COMMANDS = {None:
              'tau_throttle.sh',
              'tauupc',
              'tau_upc.sh',
+             'tau_python',
              'tau_user_setup.sh']}
 
 HEADERS = {None: ['Profile/Profiler.h', 'Profile/TAU.h']}
@@ -131,7 +136,8 @@ TAU_COMPILER_WRAPPERS = {CC: 'tau_cc.sh',
                          SHMEM_CXX: 'tau_cxx.sh',
                          SHMEM_FC: 'tau_f90.sh',
                          CUDA_CXX: 'tau_cxx.sh',
-                         CUDA_FC: 'tau_ftn.sh'}
+                         CUDA_FC: 'tau_ftn.sh',
+                         CAF_FC: 'tau_caf.sh'}
 
 TAU_MINIMAL_COMPILERS = [CC, CXX]
 
@@ -139,13 +145,21 @@ PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 
 TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
 
-PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'], 
-                     'mpiexec': ['-app', '--app', '-configfile'], 
-                     'ibrun': [], 
-                     'aprun': [], 
-                     'qsub': [], 
-                     'srun': ['--multi-prog'], 
-                     'oshrun': []}
+PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
+                     'mpiexec': ['-app', '--app', '-configfile'],
+                     'mpiexec.hydra': ['-app', '--app', '-configfile'],
+                     'mpiexec.mpd': ['-app', '--app', '-configfile'],
+                     'orterun': ['-app', '--app', '-configfile'],
+                     'mpiexec_mpt': [],
+                     'ccc_mprun': [],
+                     'mpirun_rsh': [],
+                     'ibrun': [],
+                     'aprun': [],
+                     'qsub': [],
+                     'srun': ['--multi-prog'],
+                     'oshrun': [],
+                     'python': [],
+                     'cafrun': []}
 
 
 class TauInstallation(Installation):
@@ -166,6 +180,7 @@ class TauInstallation(Installation):
                  tbb_support=False,
                  mpi_support=False,
                  mpi_libraries=None,
+                 caf_support=False,
                  cuda_support=False,
                  cuda_prefix=None,
                  opencl_support=False,
@@ -173,6 +188,7 @@ class TauInstallation(Installation):
                  shmem_support=False,
                  shmem_libraries=None,
                  mpc_support=False,
+                 max_threads=None,
                  # Instrumentation methods and options
                  source_inst="never",
                  compiler_inst="never",
@@ -201,7 +217,19 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
-                 forced_makefile=None):
+                 track_memory_footprint=False,
+                 update_nightly=False,
+                 ptts=False,
+                 ptts_post=False,
+                 ptts_sample_flags=None,
+                 ptts_restart=False,
+                 ptts_start=None,
+                 ptts_stop=None,
+                 ptts_report_flags=None,
+                 forced_makefile=None,
+                 dyninst=False,
+                 mpit=False,
+                 unwind_depth=0):
         """Initialize the TAU installation wrapper class.
 
         Args:
@@ -224,6 +252,7 @@ class TauInstallation(Installation):
             shmem_support (bool): Enable or disable SHMEM support in TAU.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             mpc_support (bool): Enable or disable MPC support in TAU.
+            max_threads (int): Maximum number of threads in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
             compiler_inst (str): Policy for compiler-based instrumentation, one of "always", "fallback", or "never".
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
@@ -247,8 +276,18 @@ class TauInstallation(Installation):
             callpath_depth (int): Depth of callpath measurement.  0 to disable.
             throttle (bool): If True then throttle lightweight events.
             metadata_merge (bool): If True then merge metadata.
+            update_nightly (bool): If True then download latest TAU nightly.
+            ptts (bool): If True then enable PTTS support.
+            ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
+            ptts_sample_flags (str): flags to pass to PTTS sample_ts command
+            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and be reinstrumented after stop
+            ptts_start (str): address at which to start a PTTS sampling region
+            ptts_stop (str): address at which to stop a PTTS sampling region
+            ptts_report_flags (str): flags to pass to PTTS report_ts command
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
+            track_memory_footprint (bool): If True then track memory footprint.
+            mpit (bool): If True then enable MPI-T profiling interface.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -265,6 +304,7 @@ class TauInstallation(Installation):
         assert shmem_support in (True, False)
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
+        assert isinstance(max_threads, int) or max_threads is None
         assert source_inst in ("automatic", "manual", "never")
         assert compiler_inst in ("always", "fallback", "never")
         assert keep_inst_files in (True, False)
@@ -289,8 +329,13 @@ class TauInstallation(Installation):
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
         assert metadata_merge in (True, False)
+        assert update_nightly in (True, False)
+        assert ptts in (True, False)
+        assert ptts_post in (True, False)
+        assert ptts_restart in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
+        assert track_memory_footprint in (True, False)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
                                               sources, target_arch, target_os, compilers, 
@@ -314,11 +359,13 @@ class TauInstallation(Installation):
         self.tbb_support = tbb_support
         self.mpi_support = mpi_support
         self.mpi_libraries = mpi_libraries if mpi_libraries is not None else []
+        self.caf_support = caf_support
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
         self.shmem_support = shmem_support
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
+        self.max_threads = max_threads
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.keep_inst_files = keep_inst_files
@@ -343,26 +390,47 @@ class TauInstallation(Installation):
         self.callpath_depth = callpath_depth
         self.throttle = throttle
         self.metadata_merge = metadata_merge
+        self.update_nightly = update_nightly
+        self.ptts = ptts
+        self.ptts_post = ptts_post
+        self.ptts_sample_flags = ptts_sample_flags
+        self.ptts_restart = ptts_restart
+        self.ptts_start = ptts_start
+        self.mpit = mpit
+        self.ptts_stop = ptts_stop
+        self.ptts_report_flags = ptts_report_flags
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
+        self.track_memory_footprint = track_memory_footprint
+        self.python_path = util.which('python')
         self.forced_makefile = forced_makefile
+        self.dyninst = dyninst
+        self.unwind_depth = unwind_depth
+        self.uses_python = False
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN)
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
+        self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
-        # TAU assumes the first metric is always some kind of wallclock timer
-        # so move the first wallclock metric to the front of the list
-        for i, metric in enumerate(self.metrics):
-            if 'TIME' in metric and 'TIME' not in self.metrics[0]:
-                self.metrics.insert(0, self.metrics.pop(i))
-                break
-        else:
-            self.metrics.insert(0, 'TIME')        
+        if 'TIME' not in self.metrics[0]:
+            # TAU assumes the first metric is always some kind of wallclock timer
+            # so move the first wallclock metric to the front of the list
+            for i, metric in enumerate(self.metrics):
+                if 'TIME' in metric and 'TIME' not in self.metrics[0]:
+                    self.metrics.insert(0, self.metrics.pop(i))
+                    break
+            else:
+                self.metrics.insert(0, 'TIME')
+        # Split comma separated metrics
+        mets = []
+        for met in self.metrics:
+            mets.extend(met.split(','))
+        self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg) 
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
             if uses(pkg):
@@ -372,7 +440,7 @@ class TauInstallation(Installation):
                                 uses('binutils'), uses('libunwind'), uses('papi'), uses('pdt'))
         self.check_env_compat()
 
-    @classmethod    
+    @classmethod
     def get_minimal(cls):
         """Creates a minimal TAU configuration for working with legacy data analysis tools.
     
@@ -421,26 +489,50 @@ class TauInstallation(Installation):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
+        python_version = self.get_python_version(self.python_path)
+        uid_parts.extend([self.python_path, python_version])
         return uid_parts
 
     def _get_max_threads(self):
-        if self.target_arch in (INTEL_KNC, INTEL_KNL):
-            nprocs = 256
+        if self.max_threads:
+            return self.max_threads
         else:
-            nprocs = multiprocessing.cpu_count()
-        # Round up to the next power of two, e.g. 160 => 256
-        return 1 << (nprocs-1).bit_length()
+            if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
+                if self.target_arch in (INTEL_KNC, INTEL_KNL):
+                    nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
+                    return nprocs
+                else:
+                    nprocs = multiprocessing.cpu_count()
+                    # Assume 2 HTs/core
+                    return max(64, 2*nprocs)
+            else:
+                return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
-        # Round up to the next power of two, e.g. 25 => 32
-        nmetrics = 1 << (len(self.metrics)-1).bit_length()
-        return max(nmetrics, 32)
-    
+        return len(self.metrics)
+
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
         # so multiple TAU installations share the large common files.
         if self._install_tag is None:
-            self._install_tag = util.archive_toplevel(self.acquire_source())
+            source_archive = self.acquire_source()
+            self._install_tag = util.archive_toplevel(source_archive)
+            # If tau nightly, add current date to tag
+            if self.src == NIGHTLY:
+                nightlies=glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
+                nightlies_downloaded = True if nightlies else False
+                if self.update_nightly or not nightlies_downloaded:
+                    current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
+                    self._install_tag = self._install_tag + current_date
+                    # Move to new tgz file
+                    new_archive_name = os.path.join(os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz')
+                    os.rename(source_archive, new_archive_name)
+                    self.src = new_archive_name
+                else:
+                    last_nightly = sorted(nightlies)[-1]
+                    nightly_date = os.path.basename(last_nightly)[11:22]
+                    self._install_tag = self._install_tag + nightly_date
+                    self.src = last_nightly
         return self._install_tag
     
     def _verify_tau_libs(self, tau_makefile):
@@ -462,7 +554,7 @@ class TauInstallation(Installation):
                 elif 'BFDINCLUDE=' in line:
                     if self.uses_binutils:
                         binutils = self.dependencies['binutils']
-                        bfd_inc = line.split('=')[1].strip().strip("-I")
+                        bfd_inc = shlex.split(line.split('=')[1])[0].strip('-I')
                         if not os.path.isdir(bfd_inc):
                             raise SoftwarePackageError("BFDINCLUDE in '%s' is not a directory" % tau_makefile)                            
                         if binutils.include_path != bfd_inc:
@@ -637,9 +729,12 @@ class TauInstallation(Installation):
                             host_compilers.PGI: 'pgi',
                             host_compilers.CRAY: 'cray',
                             host_compilers.IBM: 'ibm',
+                            host_compilers.ARM: 'armflang',
                             host_compilers.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
+                if self.caf_support:
+                    fortran_magic=self.compilers[CAF_FC].info.command
             except KeyError:
                 LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
@@ -700,12 +795,21 @@ class TauInstallation(Installation):
                 flags.append('-openmp')
                 if self.measure_openmp == 'ompt':
                     flags.append('-ompt=%s' % ompt.install_prefix if ompt else None)
+                    if self.uses_ompt_tr6:
+                        flags.append('-ompt-tr6')
                 elif self.measure_openmp == 'opari':
                     flags.append('-opari')
                 else:
                     raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
         if self.measure_io:
             flags.append('-iowrapper')
+        if self.dyninst:
+            flags.append('-dyninst=download')
+        if self.uses_python:
+            flags.append('-python')
+        if self.mpit:
+            print 'append mpit'
+            flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
@@ -849,6 +953,8 @@ class TauInstallation(Installation):
                 tags.add('openmp')
                 if self.measure_openmp == 'ompt':
                     tags.add('ompt')
+                    if self.uses_ompt_tr6:
+                        tags.add('tr6')
                 elif self.measure_openmp == 'opari':
                     tags.add('opari')
                 else:
@@ -863,6 +969,10 @@ class TauInstallation(Installation):
             tags.add('shmem')
         if self.mpc_support:
             tags.add('mpc')
+        if self.uses_python:
+            tags.add('python')
+        if self.mpit:
+            tags.add('mpit')
         LOGGER.debug("TAU tags: %s", tags)
         return tags
 
@@ -883,6 +993,7 @@ class TauInstallation(Installation):
             tags.add('openmp')
             tags.add('opari')
             tags.add('ompt')
+            tags.add('tr6')
             tags.add('gomp')
         if not self.uses_scorep:
             tags.add('scorep')
@@ -986,18 +1097,25 @@ class TauInstallation(Installation):
         Returns:
             tuple: (opts, env) updated to support TAU.
         """
+        # The additional `compiler` argument is needed to TAU falls back to the right compiler
+        # pylint: disable=arguments-differ
         opts, env = super(TauInstallation, self).compiletime_config(opts, env)
         env = self._sanitize_environment(env)
         if self.baseline:
             return opts, env
         for pkg in self.dependencies.itervalues():
             opts, env = pkg.compiletime_config(opts, env)
+
         try:
             tau_opts = set(self.force_tau_options)
         except AttributeError:
             try:
                 tau_opts = set(env['TAU_OPTIONS'].split())
             except KeyError:
+                tau_opts = set()
+            try:
+                tau_opts = set(self.extra_tau_options)
+            except AttributeError:
                 tau_opts = set()
             if self.source_inst != 'never' or self.compiler_inst != 'never':
                 for flag in '-optAppCC', '-optAppCXX', '-optAppF90':
@@ -1033,6 +1151,11 @@ class TauInstallation(Installation):
                 opts.append('-g')
             if self.source_inst != 'never' and self.compilers[CC].unwrap().info.family is not IBM:
                 opts.append('-DTAU_ENABLED=1')
+        try:
+            extra_tau_opts = set(self.extra_tau_options)
+            tau_opts |= extra_tau_opts
+        except AttributeError:
+            pass
         env['TAU_OPTIONS'] = ' '.join(tau_opts)
         makefile = self.get_makefile()
         tags = self._makefile_tags(makefile)
@@ -1081,6 +1204,14 @@ class TauInstallation(Installation):
             env['TAU_TRACE'] = '0'
             env['SCOREP_ENABLE_TRACING'] = 'false'
         env['TAU_SAMPLING'] = str(int(self.sample))
+        if self.sample:
+            # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
+            arch_period = {INTEL_KNC: 100000,
+                           INTEL_KNL: 100000,
+                           IBM_BGL: 20000,
+                           IBM_BGP: 20000,
+                           IBM_BGQ: 50000}
+            env['TAU_EBS_PERIOD'] = str(arch_period.get(self.target_arch, 10000))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
@@ -1088,12 +1219,16 @@ class TauInstallation(Installation):
         env['TAU_METRICS'] = ",".join(self.metrics) + ","
         env['TAU_THROTTLE'] = str(int(self.throttle))
         env['TAU_MERGE_METADATA'] = str(int(self.metadata_merge))
+        env['TAU_TRACK_MEMORY_FOOTPRINT'] = str(int(self.track_memory_footprint))
         if self.throttle:
             env['TAU_THROTTLE_PERCALL'] = str(int(self.throttle_per_call))
             env['TAU_THROTTLE_NUMCALLS'] = str(int(self.throttle_num_calls))
         if self.callpath_depth > 0:
             env['TAU_CALLPATH'] = '1'
             env['TAU_CALLPATH_DEPTH'] = str(self.callpath_depth)
+        if self.unwind_depth > 0:
+            env['TAU_EBS_UNWIND'] = '1'
+            env['TAU_EBS_UNWIND_DEPTH'] = str(self.unwind_depth)
         if self.select_file and self.application_linkage == 'dynamic':
             env['TAU_SELECT_FILE'] = os.path.realpath(os.path.abspath(self.select_file))
         if self.verbose:
@@ -1106,6 +1241,8 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.measure_openmp == 'ompt':
             opts.append('-ompt')
+        if self.uses_ompt_tr6:
+            env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'
         if self.measure_io:
             opts.append('-io')
         if self.measure_memory_alloc:
@@ -1113,6 +1250,14 @@ class TauInstallation(Installation):
             opts.append('-memory')
         if self.measure_shmem:
             opts.append('-shmem')
+        if self.ptts:
+            opts.append('-ptts')
+        if self.ptts_post:
+            opts.append('-ptts-post')
+        if self.ptts_sample_flags:
+            opts.append('-ptts-sample-flags=%s' %self.ptts_sample_flags)
+        if self.ptts_report_flags:
+            opts.append('-ptts-report-flags=%s' %self.ptts_report_flags)
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
@@ -1217,14 +1362,14 @@ class TauInstallation(Installation):
         """Build a command line to launch an application under TAU.
 
         Sometimes TAU needs to use tau_exec, sometimes not.  This routine
-        also handles backend launch commands like `aprun`.
-        
-        `application_cmds` may be an empty list if the application is launched 
+        also handles backend launch commands like ``aprun``.
+
+        `application_cmds` may be an empty list if the application is launched
         via a configuration file, e.g. ``mpirun --app myapp.cfg``.
 
-        Args
+        Args:
             launcher_cmd (list): Application launcher with command line arguments, e.g. ``['mpirun', '-np', '4']``.
-            application_cmds (list): List of application command with command line arguments (list of list), 
+            application_cmds (list): List of application command with command line arguments (list of list),
                                      e.g. ``[['./a.out', '-g', 'hello'], [':', '-np', '2', './b.out', 'foobar']]``
 
         Returns:
@@ -1244,14 +1389,29 @@ class TauInstallation(Installation):
             for application_cmd in application_cmds:
                 cmd.extend(application_cmd)
             return cmd, env
+        if any('python' in subcmd for subcmd in launcher_cmd):
+            self.uses_python=True
+            self._tau_makefile=None
+            self._uid = None
+            for subcmd in launcher_cmd:
+                if 'python' in subcmd:
+                    self.python_path = subcmd
+            self.install()
         use_tau_exec = (self.application_linkage != 'static' and 
                         (self.profile != 'none' or self.trace != 'none') and
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
                          self.measure_opencl or
                          self.tbb_support or
-                         self.pthreads_support))
+                         self.pthreads_support) and not self.uses_python)
         if not use_tau_exec:
             tau_exec = []
+            if self.uses_python:
+                makefile = self.get_makefile()
+                tags = self._makefile_tags(makefile)
+                if not self.mpi_support:
+                    tags.add('serial')
+                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter', self.python_path] + opts
+                launcher_cmd = []
         else:
             makefile = self.get_makefile()
             tags = self._makefile_tags(makefile)
@@ -1379,10 +1539,14 @@ class TauInstallation(Installation):
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Profile directory '%s' does not exist" % path)
-            for thisdir, dirs, files in os.walk(path):
+            for thisdir, subdirs, files in os.walk(path):
                 if any(file_name.startswith("profile") for file_name in files):
-                    LOGGER.info("\nCurrent trial/metric directory: %s" % os.path.basename(thisdir))
+                    LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(thisdir))
                     retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=thisdir, env=env)
+                elif any(subdir.startswith("MULTI__") for subdir in subdirs):
+                    for subdir in [file_name.startswith("MULTI__") for file_name in files]:
+                        LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(subdir))
+                        retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env)
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
         return retval
@@ -1493,11 +1657,11 @@ class TauInstallation(Installation):
 
     def merge_tau_trace_files(self, prefix):
         """Use tau_treemerge.pl to merge multiple TAU trace files into a single edf and a single trc file.
-        
+
         The new edf file and trc file are written to ``prefix``.
-        
-        Args: 
-            prefix (str): Path to the directory containing *.trc and *.edf files.
+
+        Args:
+            prefix (str): Path to the directory containing ``*.trc`` and ``*.edf`` files.
         """
         self._prep_data_analysis_tools()
         trc_files = glob.glob(os.path.join(prefix, '*.trc'))
@@ -1529,6 +1693,7 @@ class TauInstallation(Installation):
         LOGGER.info("Converting TAU trace files to SLOG2 format...")
         cmd = [os.path.join(self.bin_path, 'tau2slog2'), trc, edf, '-o', slog2]
         if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
+            os.remove(slog2)
             raise InternalError("Nonzero return code from tau2slog2")
         if not os.path.exists(slog2):
             raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")                
@@ -1569,3 +1734,33 @@ class TauInstallation(Installation):
         elif self.target_arch is IBM_BGQ:
             metrics.append(("BGQ_TIMERS", "BlueGene/Q high resolution clock."))
         return metrics
+
+    def rewrite(self, rewrite_package, executable, inst_file):
+        makefile = self.get_makefile()
+        tags = self._makefile_tags(makefile)
+        if not self.mpi_support:
+            tags.add('serial')
+        _, env = self.runtime_config()
+        if rewrite_package == 'dyninst':
+            rewrite_cmd = 'tau_run'
+            dyninstroot = os.path.join(self.install_prefix, self.target_arch.name, 'dyninst-9.3.2-working')
+            env['DYNINST_ROOT'] = dyninstroot
+            env['DYNINSTAPI_RT_LIB'] = '%s/lib/libdyninstAPI_RT.so' %dyninstroot
+            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib') , env['LD_LIBRARY_PATH'])
+        elif rewrite_package == 'pebil':
+            rewrite_cmd = 'tau_pebil_rewrite'
+        elif rewrite_package == 'maqao':
+            rewrite_cmd = 'tau_rewrite'
+        cmd = [rewrite_cmd, '-T', ','.join(tags), executable, '-o', inst_file]
+        retval = util.create_subprocess(cmd, env=env, stdout=True)
+        if retval != 0:
+            raise ConfigurationError("TAU was unable rewrite the executable.")
+        return retval
+
+    def get_python_version(self, python_path):
+        _, env = self.runtime_config()
+        cmd = [python_path , '--version']
+        out = util.get_command_output(cmd)
+        p=re.compile('\d+\.\d+\.\d+')
+        m = p.search(out)
+        return m.group()

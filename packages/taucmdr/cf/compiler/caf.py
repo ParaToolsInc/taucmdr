@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,37 +25,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
+"""CAF compiler knowledgebase.
 
-Functions used for unit tests of show.py.
+We keep a separate knowledge base for CAF compilers to simplify compiler
+identification and because TAU doesn't require CAF for all configurations.
 """
+from taucmdr.cf.compiler import Knowledgebase
 
+CAF_COMPILERS = Knowledgebase('CAF', 'Compilers supporting Coarray Fortran',
+                              FC=('Coarray Fortran', ('FC', 'F77', 'F90')))
 
-from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH
-from taucmdr.cli.commands.trial import show, create
-from taucmdr.cf.compiler.host import CC
+SYSTEM = CAF_COMPILERS.add('System', show_wrapper_flags=['-show'],
+                           FC='caf')
 
-class ShowTest(tests.TestCase):
-    
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
-    def test_show(self):
-        self.reset_project_storage()
-        self.assertManagedBuild(0, CC, [], 'hello.c')
-        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
-        argv = ['0', '--profile-tool', 'pprof']
-        self.assertCommandReturnValue(None, show.COMMAND, argv)
+CAF_FC = CAF_COMPILERS.roles['FC']
 
-    def test_multiple_trials(self):
-        """Issue #240"""
-        self.reset_project_storage()
-        self.assertManagedBuild(0, CC, [], 'hello.c')
-        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
-        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
-        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
-        argv = ['0', '2', '--profile-tool', 'pprof']
-        stdout, stderr = self.assertCommandReturnValue(None, show.COMMAND, argv)
-        self.assertFalse(stderr)
-        self.assertIn('Current trial/metric directory: 0', stdout)
-        self.assertIn('Current trial/metric directory: 2', stdout)
-        self.assertNotIn('Current trial/metric directory: 1', stdout)

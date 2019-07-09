@@ -27,9 +27,12 @@
 #
 """``experiment list`` subcommand."""
 
-from taucmdr import util
+from taucmdr import util, EXIT_SUCCESS
+from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli.cli_view import ListCommand
+from taucmdr.model.project import Project
 from taucmdr.model.experiment import Experiment
+from taucmdr.cli.commands.experiment.select import COMMAND as select_cmd
 
 def data_size(expr):
     return util.human_size(sum(int(trial.get('data_size', 0)) for trial in expr['trials']))
@@ -40,6 +43,44 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Target', 'function': lambda x: x['target']['name']},
                      {'header': 'Application', 'function': lambda x: x['application']['name']},
                      {'header': 'Measurement', 'function': lambda x: x['measurement']['name']},
+                     {'header': 'Record Output', 'value': 'record_output'},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
-COMMAND = ListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)
+class ExperimentListCommand(ListCommand):
+    """Base class for the `list` subcommand of command line views."""
+
+    def _construct_parser(self):
+        parser = super(ExperimentListCommand, self)._construct_parser()
+        parser.add_argument('--current',
+                            help="List current trial",
+                            default=False,
+                            const=True,
+                            action="store_const")
+        return parser
+
+    def main(self, argv):
+        """Command program entry point.
+
+        Args:
+            argv (list): Command line arguments.
+
+        Returns:
+            int: Process return code: non-zero if a problem occurred, 0 otherwise
+        """
+        args = self._parse_args(argv)
+
+        if args.current:
+            proj = Project.controller().selected()
+            try:
+                expr = proj.experiment()
+            except ExperimentSelectionError:
+                print (util.color_text('No selected experiment: ', 'red') +
+                       'Use `%s` to create or select an experiment.' % select_cmd)
+            else:
+                print expr['name']
+            retval = EXIT_SUCCESS
+        else:
+            retval = super(ExperimentListCommand, self).main(argv)
+        return retval
+
+COMMAND = ExperimentListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)

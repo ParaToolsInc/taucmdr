@@ -35,8 +35,7 @@ import sys
 import threading
 import logging
 import itertools
-from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
 
@@ -73,74 +72,54 @@ def load_average():
 
     Returns:
         float: Load average since last time this routine was called
-               or 0.0 if couldn't calculate load average.
+               or None if couldn't calculate load average.
     """
     try:
         cpu_load_avg = _proc_stat_cpu_load_average()
     except IOError:
-        cpu_load_avg = 0.0
+        cpu_load_avg = None
     return cpu_load_avg
 
 
-@contextmanager
-def progress_spinner(show_cpu=True):
-    """Show a progress spinner until the wrapped object returns."""
-    flag = threading.Event()
-    def show_progress():
-        with ProgressIndicator(show_cpu=show_cpu) as spinner:
-            while not flag.wait(0.25):
-                spinner.update()
-    thread = threading.Thread(target=show_progress)
-    # Kill thread ungracefully when main thread exits, see
-    # https://docs.python.org/2/library/threading.html#thread-objects
-    thread.daemon = True
-    thread.start()
-    # Send control to wrapped object
-    yield
-    # Wrapped object has returned, stop the thread
-    flag.set()
-    thread.join()
-
-
 class ProgressIndicator(object):
-    """Display a progress bar or spinner on a stream."""
+    """A fancy progress indicator to entertain antsy users."""
     
-    _spinner = itertools.cycle(['-', '/', '|', '\\'])
-    
-    def __init__(self, total_size=0, block_size=1, show_cpu=True, mode=None):
-        """ Initialize the ProgressBar object.
+    _spinner = itertools.cycle(['-', '\\', '|', '/'])
 
-        Args:
-            total_size (int): Total amount of work to be completed.
-            block_size (int): Size of a work block.
-            show_cpu (bool): If True, show CPU load average as well as progress.
-            mode (str): One of 'full', 'minimal', 'disabled', or None.
-                        If ``mode == None`` then the default value for ``mode`` is taken from  
-                            the __TAUCMDR_PROGRESS_BARS__ environment variable. If that variable is not set 
-                            then the default is 'full'.
-                        If ``mode == 'full'`` then all output is written to :any:`sys.stdout`.
-                        If ``mode == 'minimal'`` then a single '.' character is written to sys.stdout approximately
-                            every five seconds without erasing the line (best for Travis regression test).
-                        If ``mode == 'disabled'`` then no output is written to stdout.
-        """
-        if mode is None:
-            mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', 'full').lower()
-        if mode not in ('none', 'disabled', 'minimal', 'full'):
+    _indent = '    '
+
+    def __init__(self, label, total_size=0, block_size=1, show_cpu=True, auto_refresh=0.25):
+        mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', 'full').lower()
+        if mode not in ('full', 'disabled'):
             raise ConfigurationError('Invalid value for __TAUCMDR_PROGRESS_BARS__ environment variable: %s' % mode)               
+        self.label = label
         self.count = 0
         self.total_size = total_size
         self.block_size = block_size
-        self.show_cpu = show_cpu
-        self.mode = mode
-        self._last_time = datetime.now()
-        self._start_time = None
+        self.show_cpu = show_cpu if load_average() is not None else False
+        self.auto_refresh = auto_refresh if mode != 'disabled' else 0
+        self._mode = mode
         self._line_remaining = 0
+        self._phases = []
+        self._phase_count = 0
+        self._phase_depth = 0
+        self._phase_base = 0
+        self._thread = None
+        self._exiting = None
+        self._updating = None
+
+    def _thread_progress(self):
+        while not self._exiting.wait(self.auto_refresh):
+            self._updating.acquire()
+            self.update()
+            self._updating.notify()
+            self._updating.release()
         
     def __enter__(self):
-        self.update(0)
+        self.push_phase(self.label)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, unused_exc_type, unused_exc_value, unused_traceback):
         self.complete()
         return False
     
@@ -154,9 +133,12 @@ class ProgressIndicator(object):
         sys.stdout.write(text)
         self._line_remaining -= len(util.uncolor_text(text))
         
-    def _line_flush(self):
+    def _line_flush(self, newline=False):
+        self._line_append(' '*self._line_remaining)
+        if newline:
+            sys.stdout.write('\n')
         sys.stdout.flush()
-        assert self._line_remaining >= 0
+        assert self._line_remaining == 0, str(self._line_remaining)
         
     def _draw_bar(self, percent, width, char, *args, **kwargs):
         from taucmdr import util          
@@ -164,49 +146,79 @@ class ProgressIndicator(object):
         bar_off = width - bar_on
         self._line_append(util.color_text(char*bar_on, *args, **kwargs))
         self._line_append(' '*bar_off)
-        
-    def _update_minimal(self):
-        if self._start_time is None:
-            self._start_time = datetime.now()
-            sys.stdout.write(logger.COLORED_LINE_MARKER)
-        tdelta = datetime.now() - self._last_time
-        if tdelta.total_seconds() >= 5:
-            self._last_time = datetime.now()
-            sys.stdout.write('.')
-            sys.stdout.flush()
-            
-    def _update_full(self, count, block_size, total_size):
-        if count is not None:
-            self.count = count
-        if block_size is not None:
-            self.block_size = block_size
-        if total_size is not None:
-            self.total_size = total_size
-        if self._start_time is None:
-            self._start_time = datetime.now()
-        show_bar = self.total_size > 0
-        tdelta = datetime.now() - self._start_time
-        self._line_reset()
-        self._line_append("%0.1f seconds " % tdelta.total_seconds())        
-        if (not self.show_cpu and not show_bar) or (self._line_remaining < 40):
-            self._line_append('[%s]' % self._spinner.next())
-            self._line_flush()
+
+    def _draw_phase_labels(self):
+        start = self._phase_base
+        printed_phases = self._phases[:start]
+        for i, (label, timestamp, implicit) in enumerate(self._phases[start:-1], start):
+            if label is not None:
+                if self._phases[i+1][0] is not None:
+                    self._line_reset()
+                    self._line_append("%s:" % label)
+                    self._line_flush(newline=True)
+                printed_phases.append((label, timestamp, implicit))
+            else:
+                label, tstart, _ = printed_phases.pop()
+                tdelta = (timestamp - tstart).total_seconds()
+                self._line_reset()
+                self._line_append("%s [%0.3f seconds]" % (label, tdelta))
+                self._line_flush(newline=True)
+        label, timestamp, implicit = self._phases[-1]
+        if label is not None:
+            printed_phases.append((label, timestamp, implicit))
         else:
-            if self.show_cpu:
-                cpu_load = min(load_average(), 1.0)
-                self._line_append("[CPU: %0.1f " % (100*cpu_load))
-                width = (self._line_remaining/4) if show_bar else (self._line_remaining-2)
-                self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
-                self._line_append("]")
-            if show_bar:
-                if self.show_cpu:
-                    self._line_append(" ")
-                percent = max(min(float(self.count*self.block_size) / self.total_size, 1.0), 0.0)
-                self._line_append("[%0.1f%% " % (100*percent))
-                width = self._line_remaining - 3
-                self._draw_bar(percent, width, '>', 'green', 'on_green')
-                self._line_append("]")
-            self._line_flush()
+            label, tstart, _ = printed_phases.pop()
+            tdelta = (timestamp - tstart).total_seconds()
+            self._line_reset()
+            self._line_append("%s [%0.3f seconds]" % (label, tdelta))
+            self._line_flush(newline=True)
+        self._phases = printed_phases
+        self._phase_depth = len(printed_phases)
+        self._phase_base = max(self._phase_base, self._phase_depth-1)
+
+    def push_phase(self, label, implicit=False):
+        if self.auto_refresh:
+            if self._thread is None:
+                self._thread = threading.Thread(target=self._thread_progress)
+                self._exiting = threading.Event()
+                self._updating = threading.Condition()
+                self._thread.daemon = True
+                self._thread.start()
+            self._updating.acquire()
+        try:
+            top_phase = self._phases[-1]
+        except IndexError:
+            new_phase = True
+        else:
+            new_phase = top_phase[0] is not None and top_phase[0].strip() != label
+            if top_phase[2]:
+                self.pop_phase()
+        if new_phase:
+            label = (self._phase_depth*self._indent) + label
+            self._phases.append((label, datetime.now(), implicit))
+        if self.auto_refresh:
+            self._updating.wait()
+            self._updating.release()
+        else:
+            self.update()
+
+    def pop_phase(self):
+        if self.auto_refresh:
+            self._updating.acquire()
+        if self._phases:
+            self._phases.append((None, datetime.now(), None))
+        if self.auto_refresh:
+            self._updating.wait()
+            self._updating.release()
+        else:
+            self.update()
+
+    def phase(self, label):
+        self.push_phase(label, True)
+
+    def increment(self, count=1):
+        self.count += count
+
 
     def update(self, count=None, block_size=None, total_size=None):
         """Show progress.
@@ -218,23 +230,62 @@ class ProgressIndicator(object):
             block_size (int): Size of a work block.
             total_size (int): Total amount of work to be completed.
         """
-        if self.mode == 'disabled' or getattr(logging, logger.LOG_LEVEL) >= logging.ERROR:
+        if count is not None:
+            self.count = count
+        if block_size is not None:
+            self.block_size = block_size
+        if total_size is not None:
+            self.total_size = total_size
+        if self.auto_refresh:
+            if threading.current_thread() is not self._thread:
+                if not self._phases:
+                    self.push_phase(self.label)
+                return
+        else:
+            if not self._phases:
+                self.push_phase(self.label)
+                return
+        if self._phase_depth != len(self._phases):
+            self._draw_phase_labels()
+        if not self._phases:
             return
-        elif self.mode == 'minimal':
-            self._update_minimal()
-        elif self.mode == 'full':
-            self._update_full(count, block_size, total_size)
+        label, tstart, _ = self._phases[-1]
+        tdelta = (datetime.now() - tstart).total_seconds()
+        self._line_reset()
+        if label =="":
+            self._line_append("%0.1f seconds %s" % (tdelta, self._spinner.next()))
+        else:
+            self._line_append("%s: %0.1f seconds %s" % (label, tdelta, self._spinner.next()))
+        show_bar = self.total_size > 0
+        if self.show_cpu and self._line_remaining > 40:
+            cpu_load = min(load_average(), 1.0)
+            self._line_append("[CPU: %0.1f " % (100*cpu_load))
+            width = (self._line_remaining/4) if show_bar else (self._line_remaining-2)
+            self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
+            self._line_append("]")
+        if show_bar and self._line_remaining > 20:
+            self._line_append(" ")
+            completed = float(self.count*self.block_size)
+            percent = max(min(completed / self.total_size, 1.0), 0.0)
+            self._line_append("[%0.1f%% " % (100*percent))
+            if completed == 0:
+                eta = '(unknown)'
+            else:
+                time_remaining = (tdelta / completed) * (self.total_size - completed)
+                eta = datetime.now() + timedelta(seconds=time_remaining)
+                eta = '%s-%s-%s %02d:%02d' % (eta.year, eta.month, eta.day, eta.hour, eta.minute)
+            width = self._line_remaining - 4 - len(eta)
+            self._draw_bar(percent, width, '>', 'green', 'on_green')
+            self._line_append("] %s" % eta)
+        self._line_flush()
+
 
     def complete(self):
-        if self.mode != 'disabled':
-            tdelta = datetime.now() - self._start_time
-            elapsed = "Completed in %0.3f seconds" % tdelta.total_seconds()
-            if self.mode == 'minimal':
-                sys.stdout.write(' %s\n' % elapsed)
-                sys.stdout.flush()
-            elif self.mode == 'full':
-                self._line_reset()
-                self._line_append(elapsed)
-                self._line_append(' '*self._line_remaining)
-                self._line_flush()
-            self._start_time = None
+        active = len(self._phases)
+        for _ in xrange(active):
+            self.pop_phase()
+        if self.auto_refresh:
+            self._exiting.set()
+            self._thread.join()
+        else:
+            self.update()

@@ -29,7 +29,7 @@
 
 import os
 import platform
-from taucmdr import util
+from taucmdr import util, PROJECT_DIR
 from taucmdr import EXIT_SUCCESS, EXIT_WARNING
 from taucmdr.error import InternalError, ConfigurationError, ProjectSelectionError
 from taucmdr.model.project import Project
@@ -93,6 +93,13 @@ class InitializeCommand(AbstractCommand):
                                    help='location of installation directory',
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>', default=arguments.SUPPRESS)
+        project_group.add_argument('--force',
+                            help="Force project to be created in current directory",
+                            nargs='?',
+                            const=True,
+                            default=False,
+                            metavar='T/F',
+                            action=ParseBooleanAction)
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
                                   help="Name of the new target configuration",
@@ -132,7 +139,8 @@ class InitializeCommand(AbstractCommand):
 
     def _create_project(self, args):
         project_name = args.project_name
-        options = [project_name]
+        init_options = args.init_options
+        options = [project_name, 'init_options=%s' %init_options]
         try:
             project_create_cmd.main(options)
         except ConfigurationError:
@@ -182,7 +190,9 @@ class InitializeCommand(AbstractCommand):
             self._create_measurement(
                 'baseline', args, baseline=True, profile='tau', trace='none', 
                 sample=False, source_inst='never', compiler_inst='never',
-                mpi=False, cuda=False, opencl=False, openmp='ignore', shmem=False)
+                mpi=False, cuda=False, opencl=False, openmp='ignore', shmem=False,
+                track_memory_footprint=False, callsite=False, comm_matrix=False,
+                heap_usage=False, memory_alloc=False)
             if args.sample:
                 measurements.append(self._create_measurement(
                     'sample', args, profile=args.profile, trace='none',
@@ -216,10 +226,14 @@ class InitializeCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
+        vargs = vars(args)
+        vargs['init_options'] = ' '.join(argv)
         if not (args.baseline or args.profile or args.trace or args.sample):
             self.parser.error('You must specify at least one measurement.')
 
         proj_ctrl = Project.controller()
+        if args.force:
+            proj_ctrl.storage.force_cwd(True)
         try:
             proj = proj_ctrl.selected()
         except ProjectStorageError:
@@ -234,12 +248,16 @@ class InitializeCommand(AbstractCommand):
                 raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
-            err.value = "The project has been initialized but no project configuration is selected."
+            err.value = "The project has been initialized in %s but no project configuration is selected." %proj_ctrl.storage.prefix
             raise err
         else:
+            cwd_prefix=os.path.realpath(os.path.join(os.getcwd(), PROJECT_DIR))
+            force_str = ""
+            if cwd_prefix != proj_ctrl.storage.prefix:
+                force_str = "Or use the `tau initialize --force` command to initialize a project in the current directory."
             self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
                                 " `tau application edit` to edit the selected project or delete"
-                                " '%s' to reset to a fresh environment.", proj['name'], proj_ctrl.storage.prefix)
+                                " '%s' to reset to a fresh environment. %s", proj['name'], proj_ctrl.storage.prefix, force_str)
             return EXIT_WARNING
 
 COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.") 

@@ -189,7 +189,10 @@ class Texttable:
 
         if len(array) != 4:
             raise ArraySizeError("array should contain 4 characters")
-        array = [termcolor.colored(x[:1], char_color) for x in [str(s) for s in array]]
+        if sys.stdout.isatty():
+            array = [termcolor.colored(x[:1], char_color) for x in [str(s) for s in array]]
+        else:
+            array = [x[:1] for x in [str(s) for s in array]]
         (self._char_horiz, self._char_vert,
             self._char_corner, self._char_header) = array
 
@@ -531,7 +534,8 @@ class Texttable:
                 fill = width - len(cell_line)
                 if isheader:
                     align = "c"
-                    cell_line = termcolor.colored(cell_line, attrs=["bold"])
+                    if sys.stdout.isatty():
+                        cell_line = termcolor.colored(cell_line, attrs=["bold"])
                 if align == "r":
                     out += "%s " % (fill * space + cell_line)
                 elif align == "c":

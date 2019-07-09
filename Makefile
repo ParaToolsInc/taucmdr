@@ -76,11 +76,11 @@ endif
 
 # Build download macro
 # Usage: $(call download,source,dest)
-WGET = $(shell which wget)
+WGET = $(shell command -pv wget || type -P wget || which wget)
 ifneq ($(WGET),)
   download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
-  CURL = $(shell which curl)
+  CURL = $(shell command -pv curl || type -P curl || which curl)
   ifneq ($(CURL),)
     download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
   else
@@ -97,7 +97,7 @@ endif
 endif
 ifeq ($(HOST_OS),Darwin)
   CONDA_OS = MacOSX
-else 
+else
   ifeq ($(HOST_OS),Linux)
     CONDA_OS = Linux
   else
@@ -106,7 +106,7 @@ else
 endif
 ifeq ($(HOST_ARCH),x86_64)
   CONDA_ARCH = x86_64
-else 
+else
   ifeq ($(HOST_ARCH),i386)
     CONDA_ARCH = x86
   else
@@ -130,8 +130,8 @@ ifeq ($(USE_MINICONDA),true)
   PYTHON_FLAGS = -EOu
 else
   $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
-  CONDA_SRC = 
-  PYTHON_EXE = $(shell which python)
+  CONDA_SRC =
+  PYTHON_EXE = $(shell command -pv python || type -P python || which python)
   PYTHON_FLAGS = -O
   ifeq ($(PYTHON_EXE),)
     $(error python not found in PATH.)
@@ -162,10 +162,10 @@ install: build
 	@chmod -R a+rX,g+w $(INSTALLDIR)
 	@echo
 	@echo "-------------------------------------------------------------------------------"
-	@echo "Hooray! TAU Commander is installed!" 
+	@echo "Hooray! TAU Commander is installed!"
 	@echo
 	@echo "INSTALLDIR=\"$(INSTALLDIR)\""
-	@echo 
+	@echo
 	@echo "What's next?"
 	@echo
 	@echo "TAU Commander will automatically generate new TAU configurations for each new"
@@ -174,14 +174,14 @@ install: build
 	@echo "the quick start guide at http://www.taucommander.com/guide."
 	@echo
 	@echo "If you'd like to pre-configure TAU for a particular experiment then go use"
-	@echo "the \"INSTALLDIR/system/configure\" script to generate TAU configurations."
+	@echo "the \"$(INSTALLDIR)/system/configure\" script to generate TAU configurations."
 	@echo "This is especially a good idea if you are a system administrator installing"
 	@echo "TAU Commander so that someone else can use it.  Without arguments, the"
 	@echo "\"configure\" script will generate as many TAU configurations as it can."
 	@echo
 	@echo "In short:"
-	@echo "  If you are a sysadmin then go run \"INSTALLDIR/system/configure\"."
-	@echo "  Otherwise just add \"INSTALLDIR/bin\" to your PATH and get to work." 
+	@echo "  If you are a sysadmin then go run \"$(INSTALLDIR)/system/configure\"."
+	@echo "  Otherwise just add \"$(INSTALLDIR)/bin\" to your PATH and get to work."
 	@echo "-------------------------------------------------------------------------------"
 	@echo
 
@@ -191,7 +191,7 @@ python_check: $(PYTHON_EXE)
 python_download: $(CONDA_SRC)
 
 $(CONDA): $(CONDA_SRC)
-	$(ECHO)bash $< -b -p $(CONDA_DEST)
+	$(ECHO)bash $< -b -u -p $(CONDA_DEST)
 	$(ECHO)touch $(CONDA_DEST)/bin/*
 
 $(CONDA_SRC):
@@ -208,5 +208,5 @@ $(CONDA_SRC):
              echo "**************************************************************************" ; \
              false)
 
-clean: 
+clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION

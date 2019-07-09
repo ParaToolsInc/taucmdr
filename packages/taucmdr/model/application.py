@@ -35,20 +35,31 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
-import os
+from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
+from taucmdr.cf.compiler.caf import CAF_COMPILERS
 
+LOGGER = logger.get_logger(__name__)
 
 def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement
     from taucmdr.cf.platforms import DARWIN, HOST_OS, CRAY_CNL
+
+    def _encourage_except_baseline(lhs, lhs_attr, lhs_value, rhs):
+        if isinstance(rhs, Measurement):
+            if not rhs['baseline']:
+                lhs_name = lhs.name.lower()
+                rhs_name = rhs.name.lower()
+                LOGGER.warning("%s = %s in %s recommends True in %s",
+                               lhs_attr, lhs_value, lhs_name, rhs_name)
+
     return {
         'projects': {
             'collection': Project,
@@ -87,7 +98,16 @@ def attributes():
             'default': False,
             'description': 'application uses MPI',
             'argparse': {'flags': ('--mpi',)},
-            'compat': {True: Measurement.encourage('mpi', True)},
+            'compat': {True: _encourage_except_baseline},
+            'rebuild_required': True
+        },
+        'caf': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'application uses Coarray Fortran',
+            'argparse': {'flags': ('--caf',)},
+            'compat': {True: (_encourage_except_baseline,
+                              Measurement.require('source_inst', 'never'))},
             'rebuild_required': True
         },
         'cuda': {
@@ -104,7 +124,7 @@ def attributes():
             'description': 'application uses OpenCL',
             'argparse': {'flags': ('--opencl',)},
             'compat': {True: (Target.require('cuda_toolkit'),
-                              Measurement.encourage('opencl', True))},
+                              _encourage_except_baseline)},
             'rebuild_required': True
         },
         'shmem': {
@@ -121,13 +141,13 @@ def attributes():
             'argparse': {'flags': ('--mpc',)},
             'rebuild_required': True
         },
-        'select_file': {
-            'type': 'string',
-            'description': 'specify selective instrumentation file',
-            'argparse': {'flags': ('--select-file',),
-                         'metavar': 'path'},
-            'compat': {bool: (Measurement.exclude('source_inst', 'never'),
-                              Application.discourage('linkage', 'static'))},
+        'max_threads': {
+            'type': 'integer',
+            'description': 'maximum number of threads',
+            'argparse': {'flags': ('--max-threads',),
+                         'metavar': 'threads',
+                         'nargs': '?',
+                         'const': 25},
             'rebuild_required': True
         },
         'linkage': {
@@ -148,18 +168,6 @@ class Application(Model):
 
     __attributes__ = attributes
 
-    def _check_select_file(self):
-        try:
-            select_file = self['select_file']
-        except KeyError:
-            pass
-        else:
-            if select_file and not os.path.exists(select_file):
-                raise ConfigurationError("Selective instrumentation file '%s' not found" % select_file)
-
-    def on_create(self):
-        self._check_select_file()
-
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
@@ -176,7 +184,6 @@ class Application(Model):
                 raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
-        self._check_select_file()
         if self.is_selected():
             for attr, change in changes.iteritems():
                 if self.attributes[attr].get('rebuild_required'):
@@ -209,7 +216,8 @@ class Application(Model):
             is_mpi = compiler['role'].startswith(MPI_COMPILERS.keyword) and self['mpi']
             is_shmem = compiler['role'].startswith(SHMEM_COMPILERS.keyword) and self['shmem']
             is_cuda = compiler['role'].startswith(CUDA_COMPILERS.keyword) and self['cuda']
-            if is_host or is_mpi or is_shmem or is_cuda:
+            is_caf = compiler['role'].startswith(CAF_COMPILERS.keyword) and self['caf']
+            if is_host or is_mpi or is_shmem or is_cuda or is_caf:
                 found.append(compiler)
         if not found:
             raise ConfigurationError("Application '%s' is not compatible with any of these compilers:\n  %s" %

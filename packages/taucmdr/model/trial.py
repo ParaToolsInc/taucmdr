@@ -38,9 +38,13 @@ import errno
 import base64
 import time
 from datetime import datetime
+
+import shutil
+
 import fasteners
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
+from taucmdr.model.project import Project
 from taucmdr.progress import ProgressIndicator
 from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
@@ -109,6 +113,10 @@ def attributes():
             'type': 'float',
             'description': "seconds spent executing the application command only (excludes all other operations)"
         },
+        'output': {
+            'type': 'string',
+            'description': "stdout and stderr of program"
+        },
     }
 
 
@@ -160,12 +168,15 @@ class TrialController(Controller):
             LOGGER.info("The job has been added to the queue.")
         return retval
 
-    def _perform_interactive(self, expr, trial, cmd, cwd, env):
+    def _perform_interactive(self, expr, trial, cmd, cwd, env, record_output=False):
         begin_time = self._mark_time('BEGIN', expr)
         retval = None
         try:
             self.update({'phase': 'executing', 'begin_time': begin_time}, trial.eid)
-            retval, elapsed = trial.execute_command(expr, cmd, cwd, env)
+            if record_output:
+                retval, output, elapsed =  trial.execute_command(expr, cmd, cwd, env, record_output)
+            else:
+                retval, elapsed = trial.execute_command(expr, cmd, cwd, env, record_output)
         except:
             self.delete(trial.eid)
             raise
@@ -178,6 +189,8 @@ class TrialController(Controller):
             for name in file_names:
                 data_size += os.path.getsize(os.path.join(dir_path, name))
         fields['data_size'] = data_size
+        if record_output:
+            fields['output'] = output
         self.update(fields, trial.eid)
         if retval != 0:
             if data_size != 0:
@@ -194,9 +207,12 @@ class TrialController(Controller):
         LOGGER.info('Current working directory: %s', cwd)
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
         LOGGER.info('Elapsed seconds: %s', elapsed)
-        return retval
+        if record_output:
+            return retval, output
+        else:
+            return retval
 
-    def perform(self, proj, cmd, cwd, env, description):
+    def perform(self, proj, cmd, cwd, env, description, record_output=False):
         """Performs a trial of an experiment.
 
         Args:
@@ -227,11 +243,18 @@ class TrialController(Controller):
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
         b64env = base64.b64encode(repr(env))
         is_bluegene = expr.populate('target').architecture().is_bluegene()
+        is_cray_login = expr.populate('target').operating_system().is_cray_login()
+        if is_cray_login:
+            LOGGER.warning('Running on a Cray head node. This may produce incorrect results. '
+                           'Try running on a compute node.')
         try:
             if is_bluegene:
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
             else:
-                retval = self._perform_interactive(expr, trial, cmd, cwd, env)
+                if record_output:
+                    retval, output = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
+                else:
+                    retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
         except Exception as err:
             try:
                 self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
@@ -242,6 +265,31 @@ class TrialController(Controller):
         else:
             self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
             return retval
+
+    def renumber(self, old_trials, new_trials):
+        """Renumbers trial id of an experiment.
+
+        Args:
+            old_trials (list): old trial numbers.
+            new_trials (list): new trial numbers.
+        """
+        # First, we renumber everything to available temporary numbers
+        assert len(old_trials) == len(new_trials)
+        expr = Project.selected().experiment()
+        existing_nums = [trial['number'] for trial in
+                         Trial.controller(storage=PROJECT_STORAGE).search({'experiment': expr.eid})]
+        start_temp_id = max(max(existing_nums), max(new_trials)) + 1
+        temp_id = start_temp_id
+        for old_trial_num in old_trials:
+            old_trial = self.one({'number': old_trial_num, 'experiment': expr.eid})
+            self.update({'number': temp_id}, old_trial.eid)
+            temp_id = temp_id + 1
+        # Then we renumber from the temporaries to the final new numbers
+        temp_id = start_temp_id
+        for new_trial_num in new_trials:
+            intermed_trial = self.one({'number': temp_id, 'experiment': expr.eid})
+            self.update({'number': new_trial_num}, intermed_trial.eid)
+            temp_id = temp_id + 1
 
 
 class Trial(Model):
@@ -337,7 +385,10 @@ class Trial(Model):
                 LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
                                "the application executable is '%s' and subsequent executables are arguments "
                                "to that command. If this is incorrect, use ':' to separate each application "
-                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`", cmd0)
+                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`. "
+                               "Or, use '--' to separate '%s', its arguments, and subsequent executables "
+                               "from the application command, e.g. "
+                               "`mpirun -np 4 numactl -m 1 -- ./a.out -l hello", cmd0, cmd0)
                 return launcher_cmd, [cmd]
             # Split MPMD command on ':'.  Retain ':' as first element of each application command
             colons.append(len(cmd))
@@ -364,7 +415,21 @@ class Trial(Model):
         except Exception as err:  # pylint: disable=broad-except
             if os.path.exists(self.prefix):
                 LOGGER.error("Could not remove trial data at '%s': %s", self.prefix, err)
-                
+
+    def on_update(self, changes):
+        try:
+            old_value, new_value = changes['number']
+        except KeyError:
+            # We only care about changes to experiment
+            return
+        if old_value is not None and new_value is not None:
+            experiment = self.populate('experiment')
+            old_prefix = os.path.join(experiment.prefix, str(old_value))
+            new_prefix = os.path.join(experiment.prefix, str(new_value))
+            if os.path.exists(old_prefix):
+                shutil.move(old_prefix, new_prefix)
+                LOGGER.debug("Renamed directory %s to %s", old_prefix, new_prefix)
+
     def _postprocess_slog2(self):
         slog2 = os.path.join(self.prefix, 'tau.slog2')
         if os.path.exists(slog2):
@@ -379,7 +444,7 @@ class Trial(Model):
         edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
         count_trc_edf = len(trc_files) + len(edf_files)
         LOGGER.info('Cleaning up TAU trace files...')
-        with ProgressIndicator(count_trc_edf) as progress_bar:
+        with ProgressIndicator("", total_size=count_trc_edf) as progress_bar:
             count = 0
             for path in trc_files + edf_files:
                 os.remove(path)
@@ -457,7 +522,7 @@ class Trial(Model):
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
 
-    def execute_command(self, expr, cmd, cwd, env):
+    def execute_command(self, expr, cmd, cwd, env, record_output=False):
         """Execute a command as part of an experiment trial.
 
         Creates a new subprocess for the command and checks for TAU data files
@@ -481,8 +546,13 @@ class Trial(Model):
         LOGGER.info(cmd_str)
         try:
             begin_time = time.time()
-            retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
+            ret = util.create_subprocess(cmd, cwd=cwd, env=env, log=False, record_output=record_output)
             elapsed = time.time() - begin_time
+            if record_output:
+                retval = ret[0]
+                output = base64.b64encode(repr(ret[1]))
+            else:
+                retval = ret
         except OSError as err:
             target = expr.populate('target')
             errno_hint = {errno.EPERM: "Check filesystem permissions",
@@ -527,7 +597,10 @@ class Trial(Model):
 
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        return retval, elapsed
+        if record_output:
+            return retval, output, elapsed
+        else:
+            return retval, elapsed
     
     def export(self, dest):
         """Export experiment trial data.

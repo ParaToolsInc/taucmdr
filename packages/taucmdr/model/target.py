@@ -167,6 +167,7 @@ def attributes():
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+    from taucmdr.cf.compiler.caf import CAF_FC
     
     knc_intel_only = _require_compiler_family(INTEL, 
                                               "You must use Intel compilers to target the Xeon Phi (KNC)",
@@ -344,6 +345,15 @@ def attributes():
                          'metavar': '<command>'},
             'rebuild_required': True
         },  
+        CAF_FC.keyword: {
+            'model': Compiler,
+            'required': False,
+            'description': 'Coarray Fortran compiler command',
+            'argparse': {'flags': ('--caf-fc',),
+                         'group': 'CAF',
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },
         'cuda_toolkit': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
@@ -428,7 +438,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
+                         'metavar': '(<path>|<url>|download|download-tr6|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },

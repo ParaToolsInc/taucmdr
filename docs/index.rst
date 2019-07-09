@@ -54,6 +54,7 @@ Table of Contents
    new_compiler
    unit_tests
    packaging
+   continuous_integration
 
 * :ref:`genindex`
 * :ref:`modindex`

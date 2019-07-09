@@ -143,6 +143,10 @@ class TestCase(unittest.TestCase):
         pop_test_workdir()
 
     def run(self, result=None):
+        # Whenever running a test, set the terminal size large enough to avoid any regex failures due to line wrap
+        logger.TERM_SIZE=(150,150)
+        logger.LINE_WIDTH=logger.TERM_SIZE[0]
+        logger._STDOUT_HANDLER.setFormatter(logger.LogFormatter(line_width=logger.LINE_WIDTH, printable_only=True))
         # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
@@ -162,7 +166,7 @@ class TestCase(unittest.TestCase):
         """
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
         PROJECT_STORAGE.destroy(ignore_errors=True)
-        argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1']
+        argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
         if init_args is not None:
             argv.extend(init_args)
         if '--bare' in argv or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):

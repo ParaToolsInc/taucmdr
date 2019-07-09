@@ -39,17 +39,6 @@ from taucmdr.model.experiment import Experiment
 class ApplicationEditCommand(EditCommand):
     """``application edit`` subcommand."""
     
-    def _parse_args(self, argv):
-        args = super(ApplicationEditCommand, self)._parse_args(argv)
-        if hasattr(args, 'select_file'):
-            absolute_path = os.path.abspath(args.select_file)
-            if args.select_file.lower() == 'none':
-                absolute_path = None
-            elif not os.path.exists(absolute_path):
-                self.parser.error("Selective instrumentation file '%s' not found" % absolute_path)
-            args.select_file = absolute_path
-        return args
-
     def _update_record(self, store, data, key):
         try:
             retval = super(ApplicationEditCommand, self)._update_record(store, data, key)

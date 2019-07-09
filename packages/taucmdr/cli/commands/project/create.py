@@ -118,6 +118,10 @@ class ProjectCreateCommand(CreateCommand):
 
 
     def main(self, argv):
+        init_options = []
+        if 'init_options=' == argv[-1][:13]:
+            init_options = argv[-1][13:]
+            argv.pop()
         args = self._parse_args(argv)
         targets = set()
         applications = set()
@@ -131,6 +135,8 @@ class ProjectCreateCommand(CreateCommand):
         data['targets'] = [model.eid for model in targets]
         data['applications'] = [model.eid for model in applications]
         data['measurements'] = [model.eid for model in measurements]
+        if init_options:
+            data['init_options'] = init_options
         try:
             self.model.controller().create(data)
         except UniqueAttributeError:

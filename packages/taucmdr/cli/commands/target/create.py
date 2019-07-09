@@ -28,6 +28,7 @@
 """``target create`` subcommand."""
 
 import os
+import shlex
 from collections import Counter
 from taucmdr import util
 from taucmdr.error import ConfigurationError
@@ -40,6 +41,7 @@ from taucmdr.cf.compiler.host import HOST_COMPILERS, FC
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
+from taucmdr.cf.compiler.caf import CAF_COMPILERS
 from taucmdr.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
 from taucmdr.cf.software.tau_installation import TauInstallation, TAU_MINIMAL_COMPILERS
 
@@ -105,7 +107,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --taucmdr='%s'", args.tau_source)
         with open(makefile, 'r') as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
-            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(x.lstrip("-I"))), 
+            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))), 
                              "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
                              "PAPIDIR": ("papi_source", os.path.abspath),
                              "PDTDIR": ("pdt_source", os.path.abspath),
@@ -299,7 +301,7 @@ class TargetCreateCommand(CreateCommand):
             dict: InstalledCompiler instances indexed by role keyword.
         """
         compilers = {}
-        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS, CUDA_COMPILERS:
+        for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS, CUDA_COMPILERS, CAF_COMPILERS:
             for role in kbase.roles.itervalues():
                 try:
                     command = getattr(args, role.keyword)

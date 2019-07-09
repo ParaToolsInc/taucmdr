@@ -27,21 +27,8 @@
 #
 """``application create`` subcommand."""
 
-import os
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.model.application import Application
 
 
-class ApplicationCreateCommand(CreateCommand):
-    
-    def _parse_args(self, argv):
-        args = super(ApplicationCreateCommand, self)._parse_args(argv)
-        if hasattr(args, 'select_file'):
-            absolute_path = os.path.abspath(args.select_file)
-            if not os.path.exists(absolute_path):
-                self.parser.error("Selective instrumentation file '%s' not found" % absolute_path)
-            args.select_file = absolute_path
-        return args
-
-
-COMMAND = ApplicationCreateCommand(Application, __name__)
+COMMAND = CreateCommand(Application, __name__)

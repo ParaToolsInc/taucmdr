@@ -42,6 +42,7 @@ class TrialDeleteCommand(DeleteCommand):
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('number', 
                             help="Number of the trial to delete",
+                            nargs='+',
                             metavar='<trial_number>')
         return parser
 
@@ -52,15 +53,16 @@ class TrialDeleteCommand(DeleteCommand):
         proj = proj_ctrl.selected()
         expr = proj.experiment()
         try:
-            number = int(args.number)
+            numbers = [int(number) for number in args.number]
         except ValueError:
             self.parser.error("Invalid trial number: %s" % args.number)
-        fields = {'experiment': expr.eid, 'number': number}
-        if not trial_ctrl.exists(fields):
+        fields = [{'experiment': expr.eid, 'number': number} for number in numbers]
+        if any([trial_ctrl.exists(field) for field in fields]) == False:
             self.parser.error("No trial number %s in the current experiment.  "
                               "See `trial list` to see all trial numbers." % number)
-        trial_ctrl.delete(fields)
-        self.logger.info('Deleted trial %s', number)
+        for i in range(len(fields)):
+            trial_ctrl.delete(fields[i])
+            self.logger.info('Deleted trial %s', numbers[i])
         return EXIT_SUCCESS
 
 COMMAND = TrialDeleteCommand(Trial, __name__, summary_fmt="Delete experiment trials.")

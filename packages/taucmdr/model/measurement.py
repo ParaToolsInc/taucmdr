@@ -33,6 +33,7 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+import os
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -73,6 +74,13 @@ def attributes():
                 LOGGER.warning("%s = %s in %s recommends against callpath > 0 in %s",
                                lhs_attr, lhs_value, lhs_name, rhs_name)
 
+    def _ensure_instrumented(lhs, lhs_attr, lhs_value, rhs):
+        if isinstance(rhs, Measurement):
+            if rhs.get('source_inst') == 'never' and rhs.get('compiler_inst') == 'never':
+                lhs_name = lhs.name.lower()
+                rhs_name = rhs.name.lower()
+                raise IncompatibleRecordError("%s = %s in %s requires source_inst and compiler_inst are not both 'never' in %s" % 
+                                              (lhs_attr, lhs_value, lhs_name, rhs_name))
 
     return {
         'projects': {
@@ -107,6 +115,7 @@ def attributes():
                          'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None),
                        'merged': _merged_profile_compat},
+            'rebuild_required': True
         },
         'trace': {
             'type': 'string',
@@ -119,7 +128,8 @@ def attributes():
                          'choices':('slog2', 'otf2', 'none'),
                          'const': 'otf2'},
             'compat': {'otf2': Target.exclude('libotf2_source', None),
-                       lambda x: x != 'none': _discourage_callpath}
+                       lambda x: x != 'none': _discourage_callpath},
+            'rebuild_required': True
         },
         'sample': {
             'type': 'boolean',
@@ -238,6 +248,17 @@ def attributes():
                          'nargs': '?',
                          'const': 100}
         },
+        'unwind_depth': {
+            'type': 'integer',
+            'default': 0,
+            'description': 'Record callstack to specified depth',
+            'argparse': {'flags': ('--unwind-depth',),
+                         'group': 'data',
+                         'metavar': 'depth',
+                         'nargs': '?',
+                         'const': 10},
+            'compat': {(lambda unwind: unwind > 0): Measurement.exclude('sample', False)}
+        },
         'io': {
             'type': 'boolean',
             'default': False,
@@ -272,7 +293,7 @@ def attributes():
         'metrics': {
             'type': 'array',
             'default': ['TIME'],
-            'description': 'performance metrics to gather, e.g. TIME, PAPI_FP_INS',
+            'description': 'a space separated list of performance metrics to gather, e.g. TIME PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<metric>'},
@@ -328,6 +349,14 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'track_memory_footprint': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'track memory footprint',
+            'argparse': {'flags': ('--track-memory-footprint',),
+                         'group': 'memory'},
+            'compat': {True: Measurement.exclude('baseline', True)},
+        },
         'metadata_merge': {
             'type': 'boolean',
             'default': True,
@@ -346,6 +375,87 @@ def attributes():
                               Target.exclude('host_os', DARWIN),
                               Measurement.exclude('baseline', True))}
         },
+        'select_file': {
+            'type': 'string',
+            'description': 'specify selective instrumentation file',
+            'argparse': {'flags': ('--select-file',),
+                         'metavar': 'path'},
+            'compat': {bool: (_ensure_instrumented,
+                              Application.discourage('linkage', 'static'))},
+            'rebuild_required': True
+        },
+        'update_nightly': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'Download newest TAU nightly',
+            'argparse': {'flags': ('--update-nightly',)},
+            'compat': {bool: (Target.require('tau_source', 'nightly'))},
+        },
+        'ptts': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'enable support for PTTS',
+            'argparse': {'flags': ('--ptts',)},
+        },
+        'ptts_post': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'skip application sampling and post-process existing PTTS sample files',
+            'argparse': {'flags': ('--ptts-post',)},
+            'compat': {bool: (Measurement.require('ptts', True))},
+        },
+        'ptts_sample_flags': {
+            'type': 'string',
+            'default': '',#None, 
+            'description': 'flags to pass to PTTS sample_ts command',
+            'argparse': {'flags': ('--ptts-sample-flags',),
+                         'metavar': 'sample_flags'},
+            'compat': {bool: (Measurement.require('ptts', True))},
+        },
+        'ptts_restart': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'enable restart support within PTTS, allowing application to continue running and be reinstrumented after stop',
+            'argparse': {'flags': ('--ptts-restart',)},
+            'compat': {bool: (Measurement.require('ptts', True))},
+        },
+        'ptts_start': {
+            'type': 'string',
+            'default': '',#None,
+            'description': 'address at which to start a PTTS sampling region',
+            'argparse': {'flags': ('--ptts-start',)},
+            'compat': {bool: (Measurement.require('ptts', True))},
+        },
+        'ptts_stop': {
+            'type': 'string',
+            'default': '',#None,
+            'description': 'address at which to stop a PTTS sampling region',
+            'argparse': {'flags': ('--ptts-stop',)},
+            'compat': {bool: (Measurement.require('ptts', True))},
+        },
+        'ptts_report_flags': {
+            'type': 'string',
+            'default': '',#None,
+            'description': 'flags to pass to PTTS report_ts command',
+            'argparse': {'flags': ('--ptts-report-flags',)},
+            'compat': {bool: (Measurement.require('ptts', True))},
+        },
+        'extra_tau_options': {
+            'type': 'string',
+            'description': 'forcibly add to the TAU_OPTIONS environment variable (not recommended)',
+            'rebuild_on_change': True,
+            'argparse': {'flags': ('--extra-tau-options',),
+                         'nargs': '+',
+                         'metavar': '<option>'},
+            'compat': {bool: (Measurement.discourage('extra_tau_options'),
+                              Measurement.exclude('baseline', True))}
+        },
+        'mpit': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'MPI-T profiling interface',
+            'argparse': {'flags': ('--mpit',)},
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
@@ -354,6 +464,18 @@ def attributes():
                          'nargs': '+',
                          'metavar': '<option>'},
             'compat': {bool: (Measurement.discourage('force_tau_options'),
+                              Measurement.exclude('extra_tau_options'),
+                              Measurement.exclude('baseline', True))}
+        },
+        'extra_tau_options': {
+            'type': 'array',
+            'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
+            'rebuild_on_change': True,
+            'argparse': {'flags': ('--extra-tau-options',),
+                         'nargs': '+',
+                         'metavar': '<option>'},
+            'compat': {bool: (Measurement.discourage('extra_tau_options'),
+                              Measurement.exclude('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         }
     }
@@ -363,6 +485,32 @@ class Measurement(Model):
     """Measurement data model."""
     
     __attributes__ = attributes
+
+    def _check_select_file(self):
+        try:
+            select_file = self['select_file']
+        except KeyError:
+            pass
+        else:
+            if select_file and not os.path.exists(select_file):
+                raise ConfigurationError(
+                    "Selective instrumentation file '%s' not found" % select_file)
+
+    def _check_metrics(self):
+        """Check for TIME in metrics, add it if missing, ensure it is first"""
+        try:
+            self['metrics'].remove('TIME')
+        except KeyError:
+            raise ConfigurationError(
+                "The metrics attribute should always exist with at least TIME present!")
+        except ValueError:
+            LOGGER.warning("'TIME' must always be present as the first metric!")
+        finally:
+            self['metrics'].insert(0, 'TIME')
+
+    def on_create(self):
+        self._check_select_file()
+        self._check_metrics()
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
@@ -380,6 +528,8 @@ class Measurement(Model):
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
+        self._check_select_file()
+        self._check_metrics()
         if self.is_selected():
             for attr, change in changes.iteritems():
                 if self.attributes[attr].get('rebuild_required'):

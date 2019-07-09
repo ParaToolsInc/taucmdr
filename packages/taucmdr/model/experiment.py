@@ -93,6 +93,12 @@ def attributes():
         'tau_makefile': {
             'type': 'string',
             'description': 'TAU Makefile used during this experiment, if any.'
+        },
+        'record_output': {
+            'type': 'boolean',
+            'default': False,
+            'description': "Record application stdout",
+            'argparse': {'flags': ('--record-output',)},
         }
     }
 
@@ -300,6 +306,7 @@ class Experiment(Model):
                     tbb_support=application.get_or_default('tbb'),
                     mpi_support=application.get_or_default('mpi'),
                     mpi_libraries=target.get('mpi_libraries', []),
+                    caf_support=application.get_or_default('caf'),
                     cuda_support=application.get_or_default('cuda'),
                     cuda_prefix=target.get('cuda_toolkit', None),
                     opencl_support=application.get_or_default('opencl'),
@@ -307,12 +314,13 @@ class Experiment(Model):
                     shmem_support=application.get_or_default('shmem'),
                     shmem_libraries=target.get('shmem_libraries', []),
                     mpc_support=application.get_or_default('mpc'),
+                    max_threads=application.get('max_threads', None),
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),
                     keep_inst_files=measurement.get_or_default('keep_inst_files'),
                     reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
-                    select_file=application.get('select_file', None),
+                    select_file=measurement.get('select_file', None),
                     # Measurement methods and options
                     baseline=baseline,
                     profile=measurement.get_or_default('profile'),
@@ -335,7 +343,18 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    forced_makefile=target.get('forced_makefile', None))
+                    track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
+                    update_nightly=measurement.get_or_default('update_nightly'),
+                    ptts=measurement.get_or_default('ptts'),
+                    ptts_post=measurement.get_or_default('ptts_post'),
+                    ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
+                    ptts_restart=measurement.get_or_default('ptts_restart'),
+                    ptts_start=measurement.get_or_default('ptts_start'),
+                    ptts_stop=measurement.get_or_default('ptts_stop'),
+                    ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+                    forced_makefile=target.get('forced_makefile', None),
+                    mpit=measurement.get_or_default('mpit'),
+                    unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
@@ -378,6 +397,13 @@ class Experiment(Model):
             pass
         else:
             LOGGER.warning("Measurement '%s' forces TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.force_tau_options))
+        try:
+            tau.extra_tau_options = meas['extra_tau_options']
+        except KeyError:
+            pass
+        else:
+            #LOGGER.warning("Measurement '%s' adds extra options TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.extra_tau_options))
+            LOGGER.warning("Measurement '%s' forces adds '%s' to TAU_OPTIONS", meas['name'], ' '.join(tau.extra_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
     def managed_run(self, launcher_cmd, application_cmds, description=None): 
@@ -410,7 +436,86 @@ class Experiment(Model):
                                application['name'], application['linkage'], cmd0, linkage)
         cmd, env = tau.get_application_command(launcher_cmd, application_cmds)
         proj = self.populate('project')
-        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description)
+        record_output = self.populate(attribute='record_output', defaults=True)
+        return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description, record_output)
+
+    def managed_rewrite(self, rewrite_package, executable, inst_file):
+        from taucmdr.cf.software.tau_installation import TauInstallation
+        with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
+            populated = self.populate(defaults=True)
+        target = populated['target']
+        application = populated['application']
+        measurement = populated['measurement']
+        if rewrite_package == 'maqao' or rewrite_package == 'pebil':
+            source_inst = "automatic"
+            dyninst = False
+        else:
+            source_inst = 'never'
+            dyninst = True
+        tau = TauInstallation(\
+                    target.sources(),
+                    target_arch=target.architecture(),
+                    target_os=target.operating_system(),
+                    compilers=target.compilers(),
+                    # TAU feature suppport
+                    application_linkage=application.get_or_default('linkage'),
+                    openmp_support=application.get_or_default('openmp'),
+                    pthreads_support=application.get_or_default('pthreads'),
+                    tbb_support=application.get_or_default('tbb'),
+                    mpi_support=application.get_or_default('mpi'),
+                    mpi_libraries=target.get('mpi_libraries', []),
+                    caf_support=application.get_or_default('caf'),
+                    cuda_support=application.get_or_default('cuda'),
+                    cuda_prefix=target.get('cuda_toolkit', None),
+                    opencl_support=application.get_or_default('opencl'),
+                    opencl_prefix=target.get('opencl', None),
+                    shmem_support=application.get_or_default('shmem'),
+                    shmem_libraries=target.get('shmem_libraries', []),
+                    mpc_support=application.get_or_default('mpc'),
+                    max_threads=application.get('max_threads', None),
+                    # Instrumentation methods and options
+                    source_inst=source_inst,
+                    compiler_inst=measurement.get_or_default('compiler_inst'),
+                    keep_inst_files=measurement.get_or_default('keep_inst_files'),
+                    reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
+                    select_file=measurement.get('select_file', None),
+                    # Measurement methods and options
+                    profile=measurement.get_or_default('profile'),
+                    trace=measurement.get_or_default('trace'),
+                    sample=measurement.get_or_default('sample'),
+                    metrics=measurement.get_or_default('metrics'),
+                    measure_io=measurement.get_or_default('io'),
+                    measure_mpi=measurement.get_or_default('mpi'),
+                    measure_openmp=measurement.get_or_default('openmp'),
+                    measure_opencl=measurement.get_or_default('opencl'),
+                    measure_cuda=measurement.get_or_default('cuda'),
+                    measure_shmem=measurement.get_or_default('shmem'),
+                    measure_heap_usage=measurement.get_or_default('heap_usage'),
+                    measure_system_load=measurement.get_or_default('system_load'),
+                    measure_memory_alloc=measurement.get_or_default('memory_alloc'),
+                    measure_comm_matrix=measurement.get_or_default('comm_matrix'),
+                    measure_callsite=measurement.get_or_default('callsite'),
+                    callpath_depth=measurement.get_or_default('callpath'),
+                    throttle=measurement.get_or_default('throttle'),
+                    metadata_merge=measurement.get_or_default('metadata_merge'),
+                    throttle_per_call=measurement.get_or_default('throttle_per_call'),
+                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+                    track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
+                    update_nightly=measurement.get_or_default('update_nightly'),
+                    ptts=measurement.get_or_default('ptts'),
+                    ptts_post=measurement.get_or_default('ptts_post'),
+                    ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
+                    ptts_restart=measurement.get_or_default('ptts_restart'),
+                    ptts_start=measurement.get_or_default('ptts_start'),
+                    ptts_stop=measurement.get_or_default('ptts_stop'),
+                    ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+                    forced_makefile=target.get('forced_makefile', None),
+                    mpit=measurement.get_or_default('mpit'),
+                    unwind_depth=measurement.get_or_default('unwind_depth'),
+                    dyninst=dyninst)
+        tau.install()
+        tau.rewrite(rewrite_package, executable, inst_file)
+        return tau
 
     def trials(self, trial_numbers=None):
         """Get a list of modeled trial records.
@@ -427,21 +532,19 @@ class Experiment(Model):
         Raises:
             ConfigurationError: Invalid trial number or no trials in selected experiment.
         """
+        trials = self.populate('trials')
+        if not trials:
+            raise ConfigurationError("No trials in experiment %s" % self['name'])
         if trial_numbers:
-            for num in trial_numbers:
-                trials = []
-                found = Trial.controller(self.storage).one({'experiment': self.eid, 'number': num})
-                if not found:
-                    raise ConfigurationError("Experiment '%s' has no trial with number %s" % (self.name, num))
-                trials.append(found)
-            return trials
+            all_numbers = set(trial['number'] for trial in trials)
+            not_found = [i for i in trial_numbers if i not in all_numbers]
+            if not_found:
+                raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." % 
+                                         (self['name'], ", ".join(not_found)))
+            return [trial for trial in trials if trial['number'] in trial_numbers]
         else:
-            trials = self.populate('trials')
-            if not trials:
-                raise ConfigurationError("No trials in experiment %s" % self['name'])
             found = trials[0]
             for trial in trials[1:]:
                 if trial['begin_time'] > found['begin_time']:
                     found = trial
             return [found]
-
