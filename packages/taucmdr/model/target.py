@@ -351,8 +351,10 @@ def attributes():
             'required': False,
             'description': 'Coarray Fortran compiler command',
             'argparse': {'flags': ('--caf-fc',),
-                         'group': 'CAF',
-	},
+                         'group': 'CAF', 
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },
         PY.keyword: {
             'model': Compiler,
             'required': True,
