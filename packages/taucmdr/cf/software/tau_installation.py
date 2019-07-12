@@ -39,14 +39,18 @@ TAU is the core software package of TAU Commander.
 
 import os
 import re
+import sys
+import ast
 import glob
 import shutil
 import datetime
 import shlex
 import resource
+import tempfile
 import multiprocessing
 from subprocess import CalledProcessError
 from taucmdr import logger, util
+from taucmdr.util import get_command_output
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags, new_os_environ
@@ -56,6 +60,7 @@ from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
 from taucmdr.cf.compiler.caf import CAF_FC
+from taucmdr.cf.compiler.python import PY
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
 from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
 
@@ -189,6 +194,7 @@ class TauInstallation(Installation):
                  shmem_libraries=None,
                  mpc_support=False,
                  max_threads=None,
+                 python_support=False,
                  # Instrumentation methods and options
                  source_inst="never",
                  compiler_inst="never",
@@ -326,6 +332,7 @@ class TauInstallation(Installation):
         assert measure_memory_alloc in (True, False)
         assert measure_comm_matrix in (True, False)
         assert measure_callsite in (True, False)
+        assert python_support in (True, False)
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
         assert metadata_merge in (True, False)
@@ -366,6 +373,7 @@ class TauInstallation(Installation):
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
         self.max_threads = max_threads
+        self.python_support = python_support
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.keep_inst_files = keep_inst_files
@@ -718,7 +726,7 @@ class TauInstallation(Installation):
         cc_command = self.compilers[CC].unwrap().info.command
         cxx_command = self.compilers[CXX].unwrap().info.command
         fc_comp = self.compilers[FC].unwrap() if FC in self.compilers else None
-
+        py_path = self.compilers[PY].path
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's magic words
         fortran_magic = None
@@ -758,6 +766,53 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_CC],
                                    self.compilers[SHMEM_CXX],
                                    self.compilers[SHMEM_FC])
+        
+        if self.python_support:
+            # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
+            program = '''
+import re
+import sys
+import os
+
+def find_version():
+    path = os.path.join(sys.prefix,'lib')
+    all = os.listdir(path)
+    p = re.compile(r'^(python)([1-9\\.]+)')
+    for i in all:
+        m = p.match(i)
+        if m:
+            version = m.group(2)
+            break
+    return {'version':version,'path':path}
+
+print(find_version())
+                    '''
+                    # GET RID OF PATH UP HERE because it won't be used from this path
+            path = self.compilers[PY].absolute_path
+            new_file, name = tempfile.mkstemp(suffix='py',text=True)
+            with os.fdopen(new_file, 'w') as f:
+                f.write(program)
+            data = get_command_output([path,name])
+            # literal_eval converts string of dict to an actual python dict
+            # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
+            data = ast.literal_eval(data) 
+            # pythonlib = data['path']
+            pythoninc = data['path']+data['version']
+            pythoninc = os.path.join(os.path.dirname(data['path']),'include')
+            pythoninc = os.path.join(pythoninc,'python'+data['version'])
+            
+            # run ldd /usr/lib and save output
+            out = get_command_output(['ldd',path])
+            pattern = re.compile(r'.*=> (.*libpython[23a-z]\.\d.so[0-9\.]+)')
+            pythonlib = pattern.search(out,re.MULTILINE)
+            if pythonlib is not None:
+                pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
+                pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
+            else:
+                print 'output of ldd',out
+                raise InternalError('output of ldd %s failed to match regex' % path)
+            print 'pythonlib',pythonlib
+            print 'pythoninc',pythoninc
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -780,6 +835,8 @@ class TauInstallation(Installation):
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
+                  '-pythoninc=%s' % pythoninc if self.python_support else None,
+                  '-pythonlib=%s' % pythonlib if self.python_support else None,
                   '-otf=%s' % libotf2.install_prefix if libotf2 else None,
                  ] if flag]
         if pdt:
