@@ -63,7 +63,10 @@ def push_test_workdir():
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
-    path = tempfile.mkdtemp()
+    try:
+        path = tempfile.mkdtemp()
+    except OSError:
+        path = tmepfile.mkdtemp(dir=os.getcwd())
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
     _TEMPDIR_STACK.append(tempfile.tempdir)
