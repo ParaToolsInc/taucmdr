@@ -44,6 +44,7 @@ from taucmdr.cli.commands.measurement.edit import COMMAND as measurement_edit_cm
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
 from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_cmd
 from taucmdr.model.project import Project
+from taucmdr import util
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
@@ -182,3 +183,38 @@ class CreateTest(tests.TestCase):
         self.assertCommandReturnValue(0, trial_create_cmd, ['--description', 'test desc', './a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, trial_list_cmd, [])
         self.assertIn('test desc', stdout)
+
+    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")    
+    def test_run_python(self):
+        self.reset_project_storage(['--python','T','--python-interpreter','python'])
+        self.copy_testfile('firstprime.py')
+        test_dir = os.getcwd()
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python',os.path.join(test_dir,'firstprime.py')])
+        self.assertIn('Trial 0 produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+        self.assertInLastTrialData("firstPrimeAfter")
+
+    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")    
+    def test_run_python2(self):
+        self.reset_project_storage(['--python','T','--python-interpreter','python2'])
+        self.copy_testfile('firstprime.py')
+        test_dir = os.getcwd()
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python2',os.path.join(test_dir,'firstprime.py')])
+        self.assertIn('Trial 0 produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+        self.assertInLastTrialData("firstPrimeAfter")
+
+    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")    
+    def test_run_python3(self):
+        self.reset_project_storage(['--python','T','--python-interpreter','python3'])
+        self.copy_testfile('firstprime.py')
+        test_dir = os.getcwd()
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python3',os.path.join(test_dir,'firstprime.py')])
+        self.assertIn('Trial 0 produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+        self.assertInLastTrialData("firstPrimeAfter")
+
+
