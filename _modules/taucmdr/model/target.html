@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.3.0.138
+        VERSION:     '1.3.0.139
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -215,6 +215,7 @@
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.cuda</span> <span class="kn">import</span> <span class="n">CUDA_CXX</span><span class="p">,</span> <span class="n">CUDA_FC</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.caf</span> <span class="kn">import</span> <span class="n">CAF_FC</span>
+    <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.python</span> <span class="kn">import</span> <span class="n">PY</span>
     
     <span class="n">knc_intel_only</span> <span class="o">=</span> <span class="n">_require_compiler_family</span><span class="p">(</span><span class="n">INTEL</span><span class="p">,</span> 
                                               <span class="s2">&quot;You must use Intel compilers to target the Xeon Phi (KNC)&quot;</span><span class="p">,</span>
@@ -397,7 +398,16 @@
             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Coarray Fortran compiler command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--caf-fc&#39;</span><span class="p">,),</span>
-                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;CAF&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;CAF&#39;</span><span class="p">,</span> 
+                         <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+        <span class="p">},</span>
+        <span class="n">PY</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Python Interpreter command&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,),</span>
+                         <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;python&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;command&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
         <span class="p">},</span>
@@ -704,7 +714,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 14, 2019 at 23:59:48 UTC.
+      Last updated on Jul 15, 2019 at 19:17:53 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

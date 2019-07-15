@@ -17,6 +17,7 @@ Submodules
    taucmdr.cf.compiler.cuda
    taucmdr.cf.compiler.host
    taucmdr.cf.compiler.mpi
+   taucmdr.cf.compiler.python
    taucmdr.cf.compiler.shmem
 
 Module contents

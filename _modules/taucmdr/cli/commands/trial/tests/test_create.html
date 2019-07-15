@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../../',
-        VERSION:     '1.3.0.138
+        VERSION:     '1.3.0.139
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -91,6 +91,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.create</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_create_cmd</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.select</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_select_cmd</span>
 <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
 
 <div class="viewcode-block" id="CreateTest"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest">[docs]</a><span class="k">class</span> <span class="nc">CreateTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Tests for :any:`trial.create`.&quot;&quot;&quot;</span>
@@ -228,7 +229,42 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertManagedBuild</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">CC</span><span class="p">,</span> <span class="p">[],</span> <span class="s1">&#39;hello.c&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;--description&#39;</span><span class="p">,</span> <span class="s1">&#39;test desc&#39;</span><span class="p">,</span> <span class="s1">&#39;./a.out&#39;</span><span class="p">])</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_list_cmd</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;test desc&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;test desc&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div>
+
+    <span class="nd">@tests.skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 or 3 required for this test&quot;</span><span class="p">)</span>    
+<div class="viewcode-block" id="CreateTest.test_run_python"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_run_python">[docs]</a>    <span class="k">def</span> <span class="nf">test_run_python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)</span>
+        <span class="n">test_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;python&#39;</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Trial 0 produced&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;profile files&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;firstPrimeAfter&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@tests.skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python2&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 required for this test&quot;</span><span class="p">)</span>    
+<div class="viewcode-block" id="CreateTest.test_run_python2"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_run_python2">[docs]</a>    <span class="k">def</span> <span class="nf">test_run_python2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python2&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)</span>
+        <span class="n">test_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;python2&#39;</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Trial 0 produced&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;profile files&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;firstPrimeAfter&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@tests.skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python3&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 3 required for this test&quot;</span><span class="p">)</span>    
+<div class="viewcode-block" id="CreateTest.test_run_python3"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_run_python3">[docs]</a>    <span class="k">def</span> <span class="nf">test_run_python3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python3&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)</span>
+        <span class="n">test_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;python3&#39;</span><span class="p">,</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Trial 0 produced&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;profile files&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;firstPrimeAfter&quot;</span><span class="p">)</span></div></div>
+
+
 </pre></div>
 
       </div>
@@ -242,7 +278,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 14, 2019 at 23:59:48 UTC.
+      Last updated on Jul 15, 2019 at 19:17:53 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

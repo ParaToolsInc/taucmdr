@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../',
-        VERSION:     '1.3.0.138
+        VERSION:     '1.3.0.139
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -94,6 +94,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if this subcommand is compatible with `cmd`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">uses_python</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span><span class="o">.</span><span class="n">populate</span><span class="p">()[</span><span class="s1">&#39;application&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uses_python</span> <span class="ow">and</span> <span class="s1">&#39;python&#39;</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span></div>
 
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -163,7 +166,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 14, 2019 at 23:59:48 UTC.
+      Last updated on Jul 15, 2019 at 19:17:53 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

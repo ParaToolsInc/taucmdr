@@ -1,0 +1,7 @@
+taucmdr.cf.compiler.python module
+=================================
+
+.. automodule:: taucmdr.cf.compiler.python
+    :members:
+    :undoc-members:
+    :show-inheritance:

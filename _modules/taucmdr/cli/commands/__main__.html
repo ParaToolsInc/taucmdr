@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.138
+        VERSION:     '1.3.0.139
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -182,10 +182,12 @@
 
         <span class="c1"># Check shortcuts</span>
         <span class="n">shortcut</span> <span class="o">=</span> <span class="bp">None</span>
-        <span class="k">if</span> <span class="n">build_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
+        <span class="n">uses_python</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span><span class="o">.</span><span class="n">populate</span><span class="p">()[</span><span class="s1">&#39;application&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">uses_python</span> <span class="ow">and</span> <span class="n">build_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span> <span class="c1"># should return false for python</span>
             <span class="n">shortcut</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;build&#39;</span><span class="p">]</span>
             <span class="n">cmd_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">cmd_args</span>
-        <span class="k">elif</span> <span class="n">trial_create_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">trial_create_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span> <span class="c1"># should return true for python</span>
             <span class="n">shortcut</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial&#39;</span><span class="p">,</span> <span class="s1">&#39;create&#39;</span><span class="p">]</span>
             <span class="n">cmd_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">]</span> <span class="o">+</span> <span class="n">cmd_args</span>
         <span class="k">elif</span> <span class="s1">&#39;show&#39;</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
@@ -223,7 +225,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 14, 2019 at 23:59:48 UTC.
+      Last updated on Jul 15, 2019 at 19:17:53 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
