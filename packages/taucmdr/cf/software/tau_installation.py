@@ -163,7 +163,6 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'qsub': [],
                      'srun': ['--multi-prog'],
                      'oshrun': [],
-                     'python': [],
                      'cafrun': []}
 
 
@@ -726,7 +725,6 @@ class TauInstallation(Installation):
         cc_command = self.compilers[CC].unwrap().info.command
         cxx_command = self.compilers[CXX].unwrap().info.command
         fc_comp = self.compilers[FC].unwrap() if FC in self.compilers else None
-        py_path = self.compilers[PY].path
         # TAU's configure script can't detect Fortran compiler from the compiler
         # command so translate Fortran compiler command into TAU's magic words
         fortran_magic = None
@@ -787,9 +785,8 @@ def find_version():
 
 print(find_version())
                     '''
-                    # GET RID OF PATH UP HERE because it won't be used from this path
             path = self.compilers[PY].absolute_path
-            new_file, name = tempfile.mkstemp(suffix='py',text=True)
+            new_file, name = tempfile.mkstemp(suffix='py',text=True) # make a temporary file
             with os.fdopen(new_file, 'w') as f:
                 f.write(program)
             data = get_command_output([path,name])
@@ -1026,7 +1023,7 @@ print(find_version())
             tags.add('shmem')
         if self.mpc_support:
             tags.add('mpc')
-        if self.uses_python:
+        if self.python_support:
             tags.add('python')
         if self.mpit:
             tags.add('mpit')
@@ -1447,7 +1444,7 @@ print(find_version())
                 cmd.extend(application_cmd)
             return cmd, env
         if any('python' in subcmd for subcmd in launcher_cmd):
-            self.uses_python=True
+            #self.uses_python=True
             self._tau_makefile=None
             self._uid = None
             for subcmd in launcher_cmd:
@@ -1459,15 +1456,15 @@ print(find_version())
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
                          self.measure_opencl or
                          self.tbb_support or
-                         self.pthreads_support) and not self.uses_python)
+                         self.pthreads_support) and not self.python_support)
         if not use_tau_exec:
             tau_exec = []
-            if self.uses_python:
+            if self.python_support:
                 makefile = self.get_makefile()
                 tags = self._makefile_tags(makefile)
                 if not self.mpi_support:
                     tags.add('serial')
-                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter', self.python_path] + opts
+                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path] + opts
                 launcher_cmd = []
         else:
             makefile = self.get_makefile()
