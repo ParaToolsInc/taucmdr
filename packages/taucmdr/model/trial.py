@@ -398,7 +398,6 @@ class Trial(Model):
             # Split MPMD command on ':'.  Retain ':' as first element of each application command
             colons.append(len(cmd))
             application_cmds = [cmd[:colons[0]]]
-            print 'application_cmds: ',application_cmds
             for i, idx in enumerate(colons[:-1]):
                 application_cmds.append(cmd[idx:colons[i+1]])
             return launcher_cmd, application_cmds

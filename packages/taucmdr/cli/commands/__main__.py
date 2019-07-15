@@ -137,7 +137,6 @@ class MainCommand(AbstractCommand):
         shortcut = None
         from taucmdr.model.project import Project
         uses_python = Project.selected().experiment().populate()['application'].get_or_default('python')
-        print uses_python
         if not uses_python and build_command.is_compatible(cmd): # should return false for python
             shortcut = ['build']
             cmd_args = [cmd] + cmd_args

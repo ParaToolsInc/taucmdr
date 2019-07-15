@@ -366,7 +366,6 @@ def attributes():
         },
         'cuda_toolkit': {
             'type': 'string',
-
             'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
             'default': cuda_toolkit_default(), 
             'argparse': {'flags': ('--cuda-toolkit',),
