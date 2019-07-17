@@ -34,8 +34,9 @@ Instead, process arguments in the appropriate subcommand.
 import os
 import sys
 import taucmdr
+import argcomplete
 from taucmdr import cli, logger, util, TAUCMDR_VERSION, TAUCMDR_SCRIPT
-from taucmdr.cli import UnknownCommandError, arguments
+from taucmdr.cli import UnknownCommandError, arguments, _get_commands, COMMANDS_PACKAGE_NAME
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.commands.build import COMMAND as build_command
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_command
@@ -88,9 +89,16 @@ class MainCommand(AbstractCommand):
                                       usage=usage,
                                       description=self.summary,
                                       epilog=epilog)
+        # pylint: disable=protected-access 
+        commands = sorted((i for i in _get_commands(COMMANDS_PACKAGE_NAME).iteritems() if i[0] != '__module__'))
+        subcommands = set()
+        for cmd_name, _ in commands:
+            if 'main' in cmd_name:
+                continue
+            subcommands.add(cmd_name)
         parser.add_argument('command',
                             help="See subcommand descriptions below",
-                            metavar='<subcommand>')
+                            metavar='<subcommand>', choices=subcommands)
         parser.add_argument('options',
                             help="Options to be passed to <subcommand>",
                             metavar='[options]',
@@ -107,6 +115,7 @@ class MainCommand(AbstractCommand):
                            const='ERROR',
                            default=arguments.SUPPRESS,
                            action='store_const')        
+        argcomplete.autocomplete(parser)
         return parser
             
     def main(self, argv):
