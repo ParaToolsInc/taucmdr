@@ -70,7 +70,7 @@ deploy:
   skip_cleanup: true
   on:
     all_branches: true
-    condition: ( $TRAVIS_BRANCH = master || $TRAVIS_BRANCH = unstable ) && $TRAVIS_SECURE_ENV_VARS = true
+    condition: ( $TRAVIS_BRANCH = master || $TRAVIS_BRANCH = unstable ) && $TRAVIS_SECURE_ENV_VARS = true && $THIS_OS = bionic
     repo: ParaToolsInc/taucmdr # Don't try to deploy on private forks
 
 notifications:
