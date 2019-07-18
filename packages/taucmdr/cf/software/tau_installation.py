@@ -222,6 +222,7 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
+                 sampling_period=0,
                  track_memory_footprint=False,
                  update_nightly=False,
                  ptts=False,
@@ -291,6 +292,7 @@ class TauInstallation(Installation):
             ptts_report_flags (str): flags to pass to PTTS report_ts command
             throttle_per_call (int): Maximum microseconds per call of a lightweight event.
             throttle_num_calls (int): Minimum number of calls for a lightweight event.
+            sampling_period (int): Sampling period in microseconds; set to 0 to use architecture specific defaults.
             track_memory_footprint (bool): If True then track memory footprint.
             mpit (bool): If True then enable MPI-T profiling interface.
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
@@ -341,6 +343,7 @@ class TauInstallation(Installation):
         assert ptts_restart in (True, False)
         assert isinstance(throttle_per_call, int)
         assert isinstance(throttle_num_calls, int)
+        assert isinstance(sampling_period, int)
         assert track_memory_footprint in (True, False)
         assert isinstance(forced_makefile, basestring) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System', 
@@ -408,6 +411,7 @@ class TauInstallation(Installation):
         self.ptts_report_flags = ptts_report_flags
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
+        self.sampling_period = sampling_period
         self.track_memory_footprint = track_memory_footprint
         self.python_path = util.which('python')
         self.forced_makefile = forced_makefile
@@ -1265,7 +1269,10 @@ print(find_version())
                            IBM_BGL: 20000,
                            IBM_BGP: 20000,
                            IBM_BGQ: 50000}
-            env['TAU_EBS_PERIOD'] = str(arch_period.get(self.target_arch, 10000))
+            if self.sampling_period > 0:
+                env['TAU_EBS_PERIOD'] = str(self.sampling_period)
+            else:
+                env['TAU_EBS_PERIOD'] = str(arch_period.get(self.target_arch, 10000))
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
