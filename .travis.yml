@@ -3,10 +3,11 @@ language: generic
 os:
   - linux
 
-dist:
-  - trusty
-  - xenial
-  - bionic
+matrix:
+  include:
+    - dist: trusty
+    - dist: xenial
+    - dist: bionic
 
 branches:
   except:
