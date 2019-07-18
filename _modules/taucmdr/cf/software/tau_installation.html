@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.3.0.139
+        VERSION:     '1.3.0.140
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -269,6 +269,7 @@
                  <span class="n">metadata_merge</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">throttle_per_call</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                  <span class="n">throttle_num_calls</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+                 <span class="n">sampling_period</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                  <span class="n">track_memory_footprint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">update_nightly</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                  <span class="n">ptts</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
@@ -338,6 +339,7 @@
 <span class="sd">            ptts_report_flags (str): flags to pass to PTTS report_ts command</span>
 <span class="sd">            throttle_per_call (int): Maximum microseconds per call of a lightweight event.</span>
 <span class="sd">            throttle_num_calls (int): Minimum number of calls for a lightweight event.</span>
+<span class="sd">            sampling_period (int): Sampling period in microseconds; set to 0 to use architecture specific defaults.</span>
 <span class="sd">            track_memory_footprint (bool): If True then track memory footprint.</span>
 <span class="sd">            mpit (bool): If True then enable MPI-T profiling interface.</span>
 <span class="sd">            forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.</span>
@@ -388,6 +390,7 @@
         <span class="k">assert</span> <span class="n">ptts_restart</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_per_call</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">throttle_num_calls</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampling_period</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">track_memory_footprint</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">forced_makefile</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="ow">or</span> <span class="n">forced_makefile</span> <span class="ow">is</span> <span class="bp">None</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TauInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;TAU Performance System&#39;</span><span class="p">,</span> 
@@ -455,6 +458,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ptts_report_flags</span> <span class="o">=</span> <span class="n">ptts_report_flags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_per_call</span> <span class="o">=</span> <span class="n">throttle_per_call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">throttle_num_calls</span> <span class="o">=</span> <span class="n">throttle_num_calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span> <span class="o">=</span> <span class="n">sampling_period</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">track_memory_footprint</span> <span class="o">=</span> <span class="n">track_memory_footprint</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">python_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">forced_makefile</span> <span class="o">=</span> <span class="n">forced_makefile</span>
@@ -1312,7 +1316,10 @@
                            <span class="n">IBM_BGL</span><span class="p">:</span> <span class="mi">20000</span><span class="p">,</span>
                            <span class="n">IBM_BGP</span><span class="p">:</span> <span class="mi">20000</span><span class="p">,</span>
                            <span class="n">IBM_BGQ</span><span class="p">:</span> <span class="mi">50000</span><span class="p">}</span>
-            <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_EBS_PERIOD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arch_period</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="p">,</span> <span class="mi">10000</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_EBS_PERIOD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_period</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_EBS_PERIOD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arch_period</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="p">,</span> <span class="mi">10000</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACK_HEAP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_heap_usage</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_TRACK_LOAD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_system_load</span><span class="p">))</span>
         <span class="n">env</span><span class="p">[</span><span class="s1">&#39;TAU_COMM_MATRIX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measure_comm_matrix</span><span class="p">))</span>
@@ -1878,7 +1885,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 18, 2019 at 00:03:01 UTC.
+      Last updated on Jul 18, 2019 at 18:26:55 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
