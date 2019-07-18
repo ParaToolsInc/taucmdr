@@ -6,8 +6,11 @@ os:
 matrix:
   include:
     - dist: trusty
+      env: THIS_OS=trusty
     - dist: xenial
+      env: THIS_OS=xenial
     - dist: bionic
+      env: THIS_OS=bionic
 
 branches:
   except:
@@ -59,7 +62,7 @@ after_failure:
   - tail -1000 "$HOME/.local/taucmdr/debug_log"
 
 after_script:
-  - codecov --env TRAVIS_OS_NAME
+  - codecov --env THIS_OS
 
 deploy:
   provider: script
