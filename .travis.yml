@@ -3,6 +3,11 @@ language: generic
 os:
   - linux
 
+dist:
+  - trusty
+  - xenial
+  - bionic
+
 branches:
   except:
     - gh-pages
@@ -35,6 +40,7 @@ before_install:
   - echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
+  - gcc --version
 
 # Test `make install` while boostraping Python 2.7 environment and required packages.
 install:
