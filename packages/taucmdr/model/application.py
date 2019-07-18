@@ -86,6 +86,14 @@ def attributes():
             'argparse': {'flags': ('--pthreads',)},
             'rebuild_required': True
         },
+        'python': {
+            'type': 'boolean',
+            'description': 'application uses Python',
+            'default': False,
+            'argparse': {'flags': ('--python',)},
+            'rebuild_required': True
+        },
+
         'tbb': {
             'type': 'boolean',
             'description': 'application uses Thread Building Blocks (TBB)',

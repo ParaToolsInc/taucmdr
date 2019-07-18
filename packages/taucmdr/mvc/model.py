@@ -266,7 +266,7 @@ class Model(StorageRecord):
                 validated[attr] = data[attr]
             except KeyError:
                 if 'required' in props:
-                    if props['required']:
+                    if props['required']: 
                         raise ModelError(cls, "'%s' is required but was not defined" % attr)
                 elif 'default' in props:
                     validated[attr] = props['default']

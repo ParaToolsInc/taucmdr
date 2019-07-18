@@ -168,6 +168,7 @@ def attributes():
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
     from taucmdr.cf.compiler.caf import CAF_FC
+    from taucmdr.cf.compiler.python import PY
     
     knc_intel_only = _require_compiler_family(INTEL, 
                                               "You must use Intel compilers to target the Xeon Phi (KNC)",
@@ -350,7 +351,16 @@ def attributes():
             'required': False,
             'description': 'Coarray Fortran compiler command',
             'argparse': {'flags': ('--caf-fc',),
-                         'group': 'CAF',
+                         'group': 'CAF', 
+                         'metavar': '<command>'},
+            'rebuild_required': True
+        },
+        PY.keyword: {
+            'model': Compiler,
+            'required': False,
+            'description': 'Python Interpreter command',
+            'argparse': {'flags': ('--python-interpreter',),
+                         'group': 'python',
                          'metavar': '<command>'},
             'rebuild_required': True
         },

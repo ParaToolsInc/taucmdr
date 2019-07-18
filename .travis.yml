@@ -3,6 +3,15 @@ language: generic
 os:
   - linux
 
+matrix:
+  include:
+    - dist: trusty
+      env: THIS_OS=trusty
+    - dist: xenial
+      env: THIS_OS=xenial
+    - dist: bionic
+      env: THIS_OS=bionic
+
 branches:
   except:
     - gh-pages
@@ -35,6 +44,7 @@ before_install:
   - echo "Testing ssh to github.com" && ($GIT_SSH -T "git@github.com" || true)
   - env | grep -iv 'token\|key\|encrypt' | sort # scrub tokens from output & sort
   - mount
+  - gcc --version
 
 # Test `make install` while boostraping Python 2.7 environment and required packages.
 install:
@@ -52,7 +62,7 @@ after_failure:
   - tail -1000 "$HOME/.local/taucmdr/debug_log"
 
 after_script:
-  - codecov --env TRAVIS_OS_NAME
+  - codecov --env THIS_OS
 
 deploy:
   provider: script

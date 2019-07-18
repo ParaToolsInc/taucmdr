@@ -47,6 +47,9 @@ class TrialCreateCommand(CreateCommand):
         Returns:
             bool: True if this subcommand is compatible with `cmd`.
         """
+        uses_python = Project.selected().experiment().populate()['application'].get_or_default('python')
+        if uses_python and 'python' in cmd:
+            return True
         return bool(util.which(cmd))
 
     def _construct_parser(self):

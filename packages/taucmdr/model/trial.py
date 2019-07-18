@@ -366,6 +366,11 @@ class Trial(Model):
         assert launcher_cmd or cmd
         LOGGER.debug('Launcher: %s', launcher_cmd)
         LOGGER.debug('Remainder: %s', cmd)
+        uses_python = Project.selected().experiment().populate()['application'].get_or_default('python')
+        if uses_python:
+            if 'python' in cmd[0]:
+                cmd.remove(cmd[0])
+
         if not launcher_cmd:
             if num_exes > 1:
                 LOGGER.warning("Multiple executables were found on the command line but none of them "

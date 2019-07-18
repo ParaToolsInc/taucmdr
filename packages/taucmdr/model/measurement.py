@@ -349,6 +349,16 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'sampling_period': {
+            'type': 'integer',
+            'default': 0,
+            'description': 'default sampling period in microseconds',
+            'argparse': {'flags': ('--sampling-period',),
+                         'metavar': 'us',
+                         'nargs': '?',
+                         'const': 5000},
+            'compat': {True: (Measurement.require('sample', True))},
+        },
         'track_memory_footprint': {
             'type': 'boolean',
             'default': False,

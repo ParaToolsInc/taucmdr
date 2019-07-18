@@ -315,6 +315,7 @@ class Experiment(Model):
                     shmem_libraries=target.get('shmem_libraries', []),
                     mpc_support=application.get_or_default('mpc'),
                     max_threads=application.get('max_threads', None),
+                    python_support=application.get_or_default('python'),
                     # Instrumentation methods and options
                     source_inst=measurement.get_or_default('source_inst'),
                     compiler_inst=measurement.get_or_default('compiler_inst'),
@@ -343,6 +344,7 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+                    sampling_period=measurement.get_or_default('sampling_period'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
                     update_nightly=measurement.get_or_default('update_nightly'),
                     ptts=measurement.get_or_default('ptts'),
@@ -500,6 +502,7 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+                    sampling_period=measurement.get_or_default('sampling_period'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
                     update_nightly=measurement.get_or_default('update_nightly'),
                     ptts=measurement.get_or_default('ptts'),
