@@ -1272,7 +1272,8 @@ print(find_version())
             if self.sampling_period > 0:
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
             else:
-                env['TAU_EBS_PERIOD'] = str(arch_period.get(self.target_arch, 10000))
+                self.smapling_period = arch_period.get(self.target_arch, 10000)
+                env['TAU_EBS_PERIOD'] = str(self.sampling_period)
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))

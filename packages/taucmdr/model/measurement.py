@@ -351,7 +351,7 @@ def attributes():
         },
         'sampling_period': {
             'type': 'integer',
-            'default': 0,
+            'default': 5000,
             'description': 'default sampling period in microseconds',
             'argparse': {'flags': ('--sampling-period',),
                          'metavar': 'us',
