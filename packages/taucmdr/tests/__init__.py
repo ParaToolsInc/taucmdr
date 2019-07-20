@@ -35,6 +35,7 @@ import atexit
 import tempfile
 import unittest
 from unittest import skipIf, skipUnless
+from taucmdr.util import get_command_output
 import warnings
 try:
     from cStringIO import StringIO
@@ -63,10 +64,15 @@ def push_test_workdir():
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
+    path = tempfile.mkdtemp()
     try:
-        path = tempfile.mkdtemp()
+        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
+        test_dst = os.path.join(path, 'foo_launcher')
+        shutil.copy(test_src, test_dst)
+        get_command_output('%s/foo_launcher' %path)
     except OSError:
-        path = tmepfile.mkdtemp(dir=os.getcwd())
+        shutil.rmtree(path)
+        path = tempfile.mkdtemp(dir=os.getcwd())
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
     _TEMPDIR_STACK.append(tempfile.tempdir)
