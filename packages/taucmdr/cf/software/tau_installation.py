@@ -852,7 +852,12 @@ print(find_version())
             else:
                 flags.append('-openmp')
                 if self.measure_openmp == 'ompt':
-                    flags.append('-ompt=%s' % ompt.install_prefix if ompt else None)
+                    if ompt:
+                        comp_version = self.compilers[CC].version
+                        if comp_version is not None and self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19:
+                            flags.append('-ompt')
+                        else:
+                            flags.append('-ompt=%s' % ompt.install_prefix)
                     if self.uses_ompt_tr6:
                         flags.append('-ompt-tr6')
                 elif self.measure_openmp == 'opari':

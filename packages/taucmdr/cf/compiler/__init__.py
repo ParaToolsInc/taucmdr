@@ -705,6 +705,22 @@ class InstalledCompiler(object):
                 raise ConfigurationError("Compiler '%s' no longer exists or is not executable" % 
                                          self.absolute_path)
         return self._version_string
+
+    @property
+    def version(self):
+        """Get the compiler's self-reported version info.
+
+        Usually whatever the compiler prints when the --version flag is provided.
+
+        Returns:
+            tuple: The compilers' version (usually) in the format (maj, min, build).
+        """
+
+        if self.info.family.name == 'Intel' and self.info.role.keyword == 'Host_CC':
+            version_tuple = re.findall("(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
+        else:
+            version_tuple = None
+        return version_tuple
     
     def generate_wrapper(self, prefix):
         """Generate a compiler wrapper script that uses :any:`taucmdr.TAUCMDR_SCRIPT` to invoke the compiler.
