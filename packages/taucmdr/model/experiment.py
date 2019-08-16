@@ -427,7 +427,11 @@ class Experiment(Model):
         tau = self.configure()
         application = self.populate('application')
         for application_cmd in application_cmds:
-            cmd0 = application_cmd[0]
+            try:
+                cmd0 = application_cmd[0]
+            except IndexError:
+                raise ConfigurationError("""Please provide a python file to run
+eg. tau python first_prime.py""")
             linkage = util.get_binary_linkage(cmd0)
             if linkage is None:
                 LOGGER.warning("Unable to check application linkage on '%s'", cmd0)

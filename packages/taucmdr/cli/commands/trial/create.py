@@ -28,11 +28,10 @@
 """``trial create`` subcommand."""
 
 from taucmdr import util
-from taucmdr.cli import arguments
+from taucmdr.cli import arguments, get_all_commands
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
-
 
 class TrialCreateCommand(CreateCommand):
     """``trial create`` subcommand."""

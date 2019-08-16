@@ -40,7 +40,6 @@ from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 
-
 class AbstractCliView(AbstractCommand):
     """A command that works as a `view` for a `controller`.
     
@@ -80,6 +79,9 @@ class RootCommand(AbstractCliView):
                             help="Arguments to be passed to <subcommand>",
                             metavar='[arguments]',
                             nargs=arguments.REMAINDER)
+        # add choices to one of the parser.add_arguments
+        # this function is recycled a bunch so how to generate those choices?
+        # argcomplete.autocomplete() # if using autocomplete
         return parser
 
     def main(self, argv):
