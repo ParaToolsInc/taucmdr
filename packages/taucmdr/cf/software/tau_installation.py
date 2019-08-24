@@ -232,6 +232,7 @@ class TauInstallation(Installation):
                  ptts_start=None,
                  ptts_stop=None,
                  ptts_report_flags=None,
+                 tags=None,
                  forced_makefile=None,
                  dyninst=False,
                  mpit=False,
@@ -414,6 +415,7 @@ class TauInstallation(Installation):
         self.sampling_period = sampling_period
         self.track_memory_footprint = track_memory_footprint
         self.python_path = util.which('python')
+        self.tags = tags
         self.forced_makefile = forced_makefile
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
@@ -1036,6 +1038,9 @@ print(find_version())
             tags.add('python')
         if self.mpit:
             tags.add('mpit')
+        if self.tags:
+            for tag in self.tags:
+                tags.add(tag)
         LOGGER.debug("TAU tags: %s", tags)
         return tags
 

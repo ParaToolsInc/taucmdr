@@ -354,6 +354,7 @@ class Experiment(Model):
                     ptts_start=measurement.get_or_default('ptts_start'),
                     ptts_stop=measurement.get_or_default('ptts_stop'),
                     ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+                    tags=measurement.get_or_default('tag'),
                     forced_makefile=target.get('forced_makefile', None),
                     mpit=measurement.get_or_default('mpit'),
                     unwind_depth=measurement.get_or_default('unwind_depth'))

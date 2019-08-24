@@ -477,6 +477,14 @@ def attributes():
                               Measurement.exclude('extra_tau_options'),
                               Measurement.exclude('baseline', True))}
         },
+        'tag': {
+            'type': 'string',
+            'description': "Narrow search for tags",
+            'default': '',#None,
+            'argparse': {'flags': ('--tag',),
+                         'nargs': '+',
+                         'metavar': '<tags>'}
+        },
         'extra_tau_options': {
             'type': 'array',
             'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
