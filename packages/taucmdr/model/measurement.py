@@ -391,7 +391,8 @@ def attributes():
             'argparse': {'flags': ('--select-file',),
                          'metavar': 'path'},
             'compat': {bool: (_ensure_instrumented,
-                              Application.discourage('linkage', 'static'))},
+                              Application.discourage('linkage', 'static'),
+                              Measurement.discourage('throttle', True))},
             'rebuild_required': True
         },
         'update_nightly': {
