@@ -107,9 +107,7 @@ class MainCommand(AbstractCommand):
                         except:
                             thing = repr(thing)
                     file.write(thing+kwargs['sep'])
-                    print(thing+kwargs['sep'])
                 file.write(kwargs['end'])
-                print(kwargs['end'])
         Write('\n'*30)
 
         def get_applications():
@@ -217,7 +215,6 @@ class MainCommand(AbstractCommand):
             subcommands = set(sorted((i[0] for i in _get_commands(COMMANDS_PACKAGE_NAME).iteritems() if i[0] != '__module__')))
             subcommands.discard('main')
             complist = shlex.split(os.environ['COMP_LINE'])
-            print 'complist=%s' %complist
             for option in ['-v','-q','--verbose','--quiet']:
                 if option in complist:
                     complist.remove(option)
