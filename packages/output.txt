@@ -1,0 +1,244 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+('help', 'rewrite', 'trial', 'project', 'application', 'experiment', 'build', 'measurement', 'initialize', 'target', 'select', 'dashboard') 
+sys.argv  ['/home/devin/taucmdr/scripts/tau'] 
+command_list  ['tau'] 
+spaces_count: 1
+ 
+letters_count: 3
+ 
+current_cmd_letters: 3
+ 
+t  a  u     
+ 
+0  1  2  3  
+cmd_so_far: 'tau '
+ 
+altered COMP_LINE:  tau  
+altered COMP_POINT:  4 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+('help', 'rewrite', 'trial', 'project', 'application', 'experiment', 'build', 'measurement', 'initialize', 'target', 'select', 'dashboard') 
+sys.argv  ['/home/devin/taucmdr/scripts/tau'] 
+command_list  ['tau'] 
+spaces_count: 1
+ 
+letters_count: 3
+ 
+current_cmd_letters: 3
+ 
+t  a  u     
+ 
+0  1  2  3  
+cmd_so_far: 'tau '
+ 
+altered COMP_LINE:  tau  
+altered COMP_POINT:  4 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+('help', 'rewrite', 'trial', 'project', 'application', 'experiment', 'build', 'measurement', 'initialize', 'target', 'select', 'dashboard') 
+sys.argv  ['/home/devin/taucmdr/scripts/tau'] 
+command_list  ['tau', 'in'] 
+more commands than just tau 
+found cmd:  tau initialize 
+succeeded in try block 
+spaces_count: 1
+ 
+letters_count: 5
+ 
+current_cmd_letters: 2
+ 
+t  a  u     i  n  
+ 
+0  1  2  3  4  5  
+cmd_so_far: 'tau in'
+ 
+altered COMP_LINE:  in 
+altered COMP_POINT:  2 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+('help', 'rewrite', 'trial', 'project', 'application', 'experiment', 'build', 'measurement', 'initialize', 'target', 'select', 'dashboard') 
+sys.argv  ['/home/devin/taucmdr/scripts/tau'] 
+command_list  ['tau', 'in'] 
+more commands than just tau 
+found cmd:  tau initialize 
+succeeded in try block 
+spaces_count: 1
+ 
+letters_count: 5
+ 
+current_cmd_letters: 2
+ 
+t  a  u     i  n  
+ 
+0  1  2  3  4  5  
+cmd_so_far: 'tau in'
+ 
+altered COMP_LINE:  in 
+altered COMP_POINT:  2 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+('help', 'rewrite', 'trial', 'project', 'application', 'experiment', 'build', 'measurement', 'initialize', 'target', 'select', 'dashboard') 
+sys.argv  ['/home/devin/taucmdr/scripts/tau'] 
+command_list  ['tau', 'in'] 
+more commands than just tau 
+found cmd:  tau initialize 
+succeeded in try block 
+spaces_count: 1
+ 
+letters_count: 5
+ 
+current_cmd_letters: 2
+ 
+t  a  u     i  n  
+ 
+0  1  2  3  4  5  
+cmd_so_far: 'tau in'
+ 
+altered COMP_LINE:  in 
+altered COMP_POINT:  2 

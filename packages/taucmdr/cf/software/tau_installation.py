@@ -782,9 +782,7 @@ def find_version():
             version = m.group(2)
             break
     return {'version':version,'path':path}
-
-print(find_version())
-                    '''
+'''
             path = self.compilers[PY].absolute_path
             new_file, name = tempfile.mkstemp(suffix='py',text=True) # make a temporary file
             with os.fdopen(new_file, 'w') as f:
@@ -793,7 +791,6 @@ print(find_version())
             # literal_eval converts string of dict to an actual python dict
             # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
             data = ast.literal_eval(data) 
-            # pythonlib = data['path']
             pythoninc = data['path']+data['version']
             pythoninc = os.path.join(os.path.dirname(data['path']),'include')
             pythoninc = os.path.join(pythoninc,'python'+data['version'])
@@ -806,10 +803,7 @@ print(find_version())
                 pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
                 pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
             else:
-                print 'output of ldd',out
                 raise InternalError('output of ldd %s failed to match regex' % path)
-            print 'pythonlib',pythonlib
-            print 'pythoninc',pythoninc
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
