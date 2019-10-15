@@ -191,7 +191,7 @@ existance and value correctness and throw the appropriate exception and/or emit 
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>args</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) &#8211; Attribute name in args[0] and, optionally, attribute value in args[1].</li>
+<li><strong>args</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a>) &#8211; Attribute name in args[0] and, optionally, attribute value in args[1].</li>
 <li><strong>attr_defined</strong> &#8211; Callback function to be invoked when the attribute is defined.</li>
 <li><strong>attr_undefined</strong> &#8211; Callback function to be invoked when the attribute is undefined.</li>
 <li><strong>attr_eq</strong> &#8211; Callback function to be invoked when the attribute is equal to args[1].</li>
@@ -317,7 +317,7 @@ defined or equal to the specified value (if given).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) &#8211; Attribute name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Attribute name.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If the attribute is set then the attribute&#8217;s value is returned.
 If the attribute is not set then the attribute&#8217;s default value is returned.</td>
@@ -371,7 +371,7 @@ than populating directly from the controller.</p>
 If attribute is not None, the value of the populated attribute.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#KeyError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code></a> &#8211;
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#KeyError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code></a> &#8211;
 <cite>attribute</cite> is undefined in the record.</p>
 </td>
 </tr>
@@ -423,11 +423,11 @@ undefined or not equal to the specified value (if given).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) &#8211; Data to validate, may be None.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) &#8211; Data to validate, may be None.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validated data or None if <cite>data</cite> is None.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ModelError</span></code> &#8211;
 The given data doesn&#8217;t fit the model.</td>
@@ -441,7 +441,7 @@ The given data doesn&#8217;t fit the model.</td>
 <dl class="class">
 <dt id="taucmdr.mvc.model.ModelMeta">
 <em class="property">class </em><code class="descclassname">taucmdr.mvc.model.</code><code class="descname">ModelMeta</code><a class="reference internal" href="_modules/taucmdr/mvc/model.html#ModelMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.ModelMeta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.7)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.8)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
 <p>Constructs model attributes, configures defaults, and establishes relationships.</p>
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.ModelMeta.attributes">
@@ -473,7 +473,7 @@ The given data doesn&#8217;t fit the model.</td>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Oct 14, 2019 at 00:53:41 UTC.
+      Last updated on Oct 15, 2019 at 00:53:40 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
