@@ -173,11 +173,29 @@ class MainCommand(AbstractCommand):
                         completions += get_measurements()
                         completions += get_experiments()
                         completions += get_target()
+            accepted_subcommands = ['copy', 'edit', 'delete', 'list']
             if complist[1] == 'application':
-                if complist[-1] in ['copy','edit','delete']:
-                    completions += get_applications()
+                all_completions = list(get_applications())
+                possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
+		if complist[-1] in accepted_subcommands:
+                    completions += all_completions
+		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+                    completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
+            if complist[1] == 'measurement':
+                possible_completions = get_measurements()
+		if complist[-1] in accepted_subcommands:
+                    completions += possible_completions
+            if complist[1] == 'experiment':
+                possible_completions = get_experiments()
+		if complist[-1] in accepted_subcommands:
+                    completions += possible_completions
+            if complist[1] == 'target':
+                possible_completions = get_target()
+		if complist[-1] in accepted_subcommands:
+                    completions += possible_completions
 
             # many more should go here
+            Write('completions = %s' %completions)
             return completions
 
         def add_commands(complist):
@@ -262,6 +280,7 @@ class MainCommand(AbstractCommand):
                 Write('subcommand and one command after have been parsed. complete more than that')
                 completions = []
                 completions = add_special_cases(complist,completions)
+                Write('        ---- complist', complist)
                 return completions
 
         parser.add_argument('command',
