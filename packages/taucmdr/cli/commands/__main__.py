@@ -231,7 +231,7 @@ class MainCommand(AbstractCommand):
             '''
             # pylint: disable=protected-access 
             subcommands = set(sorted((i[0] for i in _get_commands(COMMANDS_PACKAGE_NAME).iteritems() if i[0] != '__module__')))
-            subcommands.remove('main')
+            subcommands.discard('main')
             complist = shlex.split(os.environ['COMP_LINE'])
             for option in ['-v','-q','--verbose','--quiet']:
                 if option in complist:
