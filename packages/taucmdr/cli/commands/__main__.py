@@ -177,22 +177,31 @@ class MainCommand(AbstractCommand):
             if complist[1] == 'application':
                 all_completions = list(get_applications())
                 possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
-		if complist[-1] in accepted_subcommands:
+                if complist[-1] in accepted_subcommands:
                     completions += all_completions
 		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
                     completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
             if complist[1] == 'measurement':
-                possible_completions = get_measurements()
-		if complist[-1] in accepted_subcommands:
-                    completions += possible_completions
+                all_completions = list(get_measurements())
+                possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
+                if complist[-1] in accepted_subcommands:
+                    completions += all_completions
+		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+                    completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
             if complist[1] == 'experiment':
-                possible_completions = get_experiments()
-		if complist[-1] in accepted_subcommands:
-                    completions += possible_completions
+                all_completions = list(get_experiments())
+                possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
+                if complist[-1] in accepted_subcommands:
+                    completions += all_completions
+		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+                    completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
             if complist[1] == 'target':
-                possible_completions = get_target()
-		if complist[-1] in accepted_subcommands:
-                    completions += possible_completions
+                all_completions = list(get_target())
+                possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
+                if complist[-1] in accepted_subcommands:
+                    completions += all_completions
+		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+                    completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
 
             # many more should go here
             Write('completions = %s' %completions)
