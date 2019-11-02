@@ -174,33 +174,33 @@ class MainCommand(AbstractCommand):
                         completions += get_experiments()
                         completions += get_target()
             accepted_subcommands = ['copy', 'edit', 'delete', 'list']
-            if complist[1] == 'application':
+            if 'application'.startswith(complist[1]):
                 all_completions = list(get_applications())
                 possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
-                if complist[-1] in accepted_subcommands:
+                if any(subcmd.startswith(complist[-1]) for subcmd in accepted_subcommands):
                     completions += all_completions
-		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+		elif any(subcmd.startswith(complist[-2]) for subcmd in accepted_subcommands) and sum(possible_completions)>0:
                     completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
-            if complist[1] == 'measurement':
+            if 'measurement'.startswith(complist[1]):
                 all_completions = list(get_measurements())
                 possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
-                if complist[-1] in accepted_subcommands:
+                if any(subcmd.startswith(complist[-1]) for subcmd in accepted_subcommands):
                     completions += all_completions
-		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+		elif any(subcmd.startswith(complist[-2]) for subcmd in accepted_subcommands) and sum(possible_completions)>0:
                     completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
-            if complist[1] == 'experiment':
+            if 'experiment'.startswith(complist[1]):
                 all_completions = list(get_experiments())
                 possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
-                if complist[-1] in accepted_subcommands:
+                if any(subcmd.startswith(complist[-1]) for subcmd in accepted_subcommands):
                     completions += all_completions
-		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+		elif any(subcmd.startswith(complist[-2]) for subcmd in accepted_subcommands) and sum(possible_completions)>0:
                     completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
-            if complist[1] == 'target':
+            if 'target'.startswith(complist[1]):
                 all_completions = list(get_target())
                 possible_completions = [(i.find(complist[-1])>=0 and i != complist[-1]) for i in all_completions]
-                if complist[-1] in accepted_subcommands:
+                if any(subcmd.startswith(complist[-1]) for subcmd in accepted_subcommands):
                     completions += all_completions
-		elif complist[-2] in accepted_subcommands and sum(possible_completions)>0:
+		elif any(subcmd.startswith(complist[-2]) for subcmd in accepted_subcommands) and sum(possible_completions)>0:
                     completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
 
             # many more should go here
