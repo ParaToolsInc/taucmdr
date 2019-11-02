@@ -288,6 +288,12 @@ class MainCommand(AbstractCommand):
             else:
                 Write('subcommand and one command after have been parsed. complete more than that')
                 completions = []
+                found_cmd = find_command([complist[1], complist[2]])
+                parser = found_cmd._construct_parser()
+                for item in parser.actions:
+                    if item.option_strings:
+                        for op in item.option_strings:
+                            completions.append(op)
                 completions = add_special_cases(complist,completions)
                 Write('        ---- complist', complist)
                 return completions
