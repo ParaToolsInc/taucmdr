@@ -782,7 +782,9 @@ def find_version():
             version = m.group(2)
             break
     return {'version':version,'path':path}
-'''
+
+print(find_version())
+                    '''
             path = self.compilers[PY].absolute_path
             new_file, name = tempfile.mkstemp(suffix='py',text=True) # make a temporary file
             with os.fdopen(new_file, 'w') as f:
