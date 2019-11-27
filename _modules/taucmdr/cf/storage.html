@@ -126,7 +126,7 @@
 <span class="sd">        database (str): Database object implementing :any:`AbstractDatabase`. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
     
     <span class="n">Record</span> <span class="o">=</span> <span class="n">StorageRecord</span>
 
@@ -221,7 +221,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.count"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.count"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Count the records in the database.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
@@ -232,7 +232,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>    
-<div class="viewcode-block" id="AbstractStorage.get"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.get"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find a single record.</span>
 <span class="sd">        </span>
 <span class="sd">        The behavior depends on the type of `keys`:</span>
@@ -257,7 +257,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.search"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.search"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find multiple records.</span>
 <span class="sd">        </span>
 <span class="sd">        The behavior depends on the type of `keys`:</span>
@@ -280,7 +280,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.match"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.match"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find records where `field` matches `regex` or `test`.</span>
 <span class="sd">        </span>
 <span class="sd">        Either `regex` or `test` may be specified, not both.  </span>
@@ -302,7 +302,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.contains"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.contains"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the specified table contains at least one matching record.</span>
 <span class="sd">        </span>
 <span class="sd">        The behavior depends on the type of `keys`:</span>
@@ -324,7 +324,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.insert"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.insert"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a new record.</span>
 <span class="sd">        </span>
 <span class="sd">        If the table doesn&#39;t exist it will be created.</span>
@@ -338,7 +338,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.update"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.update"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update records.</span>
 <span class="sd">        </span>
 <span class="sd">        The behavior depends on the type of `keys`:</span>
@@ -358,7 +358,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>      
-<div class="viewcode-block" id="AbstractStorage.unset"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.unset"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update records by unsetting fields.</span>
 <span class="sd">        </span>
 <span class="sd">        Update only allows you to update a record by adding new fields or overwriting existing fields. </span>
@@ -381,7 +381,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>        
-<div class="viewcode-block" id="AbstractStorage.remove"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.remove"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete records.</span>
 <span class="sd">        </span>
 <span class="sd">        The behavior depends on the type of `keys`:</span>
@@ -400,7 +400,7 @@
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractStorage.purge"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractStorage.purge"><a class="viewcode-back" href="../../../taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete all records.</span>
 
 <span class="sd">        Args:</span>
@@ -421,7 +421,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

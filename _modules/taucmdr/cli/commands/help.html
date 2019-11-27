@@ -95,10 +95,10 @@
                 <span class="s1">&#39;.exe&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;binary executable&quot;</span><span class="p">,</span>
                          <span class="s2">&quot;See &#39;taucmdr run --help&#39; for help with profiling this program&quot;</span><span class="p">)}</span>
 
-<span class="n">_MIME_HINTS</span> <span class="o">=</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> 
-               <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span> 
+<span class="n">_MIME_HINTS</span> <span class="o">=</span> <span class="p">{</span><span class="kc">None</span><span class="p">:</span> 
+               <span class="p">{</span><span class="kc">None</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span> 
                 <span class="s1">&#39;gzip&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;compressed file&quot;</span><span class="p">,</span> <span class="s2">&quot;Please specify an executable file&quot;</span><span class="p">)},</span>
-               <span class="s1">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
+               <span class="s1">&#39;application&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">None</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
                                <span class="s1">&#39;sharedlib&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;shared library&quot;</span><span class="p">,</span> 
                                              <span class="s2">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
                                <span class="s1">&#39;archive&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;archive file&quot;</span><span class="p">,</span> 
@@ -106,7 +106,7 @@
                                <span class="s1">&#39;tar&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;archive file&quot;</span><span class="p">,</span> 
                                        <span class="s2">&quot;Please specify an executable file&quot;</span><span class="p">),</span>
                                <span class="s1">&#39;unknown&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown binary file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">)},</span>
-               <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">None</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown text file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
+               <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">None</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;unknown text file&quot;</span><span class="p">,</span> <span class="n">_GENERIC_HELP</span><span class="p">),</span>
                         <span class="s1">&#39;src&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;source code file&quot;</span><span class="p">,</span> 
                                 <span class="s2">&quot;See &#39;taucmdr build --help&#39; for help compiling this file&quot;</span><span class="p">),</span>
                         <span class="s1">&#39;hdr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;source header file&quot;</span><span class="p">,</span> 
@@ -121,7 +121,7 @@
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">and</span> <span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">full_key</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">dct</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">dct</span><span class="p">[</span><span class="bp">None</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">dct</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="_guess_filetype"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.help.html#taucmdr.cli.commands.help._guess_filetype">[docs]</a><span class="k">def</span> <span class="nf">_guess_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
@@ -131,10 +131,10 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">filetype</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
         <span class="n">textchars</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">27</span><span class="p">])</span> <span class="o">+</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x100</span><span class="p">))</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">textchars</span><span class="p">):</span>
-                <span class="n">filetype</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;application/unknown&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">textchars</span><span class="p">):</span>
+                <span class="n">filetype</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;application/unknown&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">filetype</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;text/plain&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="n">filetype</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;text/plain&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">filetype</span></div>
 
 
@@ -240,7 +240,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

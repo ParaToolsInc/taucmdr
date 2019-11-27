@@ -106,24 +106,24 @@
     <span class="kn">from</span> <span class="nn">taucmdr.model.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;trial number&#39;</span>
         <span class="p">},</span>
         <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Experiment</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;this trial&#39;s experiment&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;command line executed when performing the trial&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;directory the trial was performed in&quot;</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -182,7 +182,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_mark_time</span><span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
         <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">())</span>
-        <span class="n">headline</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">{:=&lt;{}}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;== </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> at </span><span class="si">%s</span><span class="s1"> ==&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">timestamp</span><span class="p">),</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">)</span>
+        <span class="n">headline</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">{:=&lt;</span><span class="si">{}</span><span class="s1">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;== </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> at </span><span class="si">%s</span><span class="s1"> ==&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mark</span><span class="p">,</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">timestamp</span><span class="p">),</span> <span class="n">logger</span><span class="o">.</span><span class="n">LINE_WIDTH</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">headline</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">timestamp</span>
 
@@ -215,9 +215,9 @@
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The job has been added to the queue.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">retval</span>
 
-    <span class="k">def</span> <span class="nf">_perform_interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_perform_interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">begin_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mark_time</span><span class="p">(</span><span class="s1">&#39;BEGIN&#39;</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span>
-        <span class="n">retval</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;phase&#39;</span><span class="p">:</span> <span class="s1">&#39;executing&#39;</span><span class="p">,</span> <span class="s1">&#39;begin_time&#39;</span><span class="p">:</span> <span class="n">begin_time</span><span class="p">},</span> <span class="n">trial</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">record_output</span><span class="p">:</span>
@@ -259,7 +259,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">retval</span>
 
-<div class="viewcode-block" id="TrialController.perform"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.TrialController.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="TrialController.perform"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.TrialController.perform">[docs]</a>    <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proj</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Performs a trial of an experiment.</span>
 
 <span class="sd">        Args:</span>
@@ -279,7 +279,7 @@
                     <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">),</span>
                     <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">cwd</span><span class="p">,</span>
                     <span class="s1">&#39;phase&#39;</span><span class="p">:</span> <span class="s1">&#39;initializing&#39;</span><span class="p">}</span>
-            <span class="k">if</span> <span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
             <span class="n">trial</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="c1"># Tell TAU to send profiles and traces to the trial prefix</span>
@@ -474,7 +474,7 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="c1"># We only care about changes to experiment</span>
             <span class="k">return</span>
-        <span class="k">if</span> <span class="n">old_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">new_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">old_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">new_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span>
             <span class="n">old_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">old_value</span><span class="p">))</span>
             <span class="n">new_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_value</span><span class="p">))</span>
@@ -563,18 +563,18 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_env_opts</span><span class="p">))</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd_str</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">target</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
             <span class="n">errno_hint</span> <span class="o">=</span> <span class="p">{</span><span class="n">errno</span><span class="o">.</span><span class="n">EPERM</span><span class="p">:</span> <span class="s2">&quot;Check filesystem permissions&quot;</span><span class="p">,</span>
                           <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span> <span class="s2">&quot;Check paths and command line arguments&quot;</span><span class="p">,</span>
                           <span class="n">errno</span><span class="o">.</span><span class="n">ENOEXEC</span><span class="p">:</span> <span class="s2">&quot;Check that this host supports &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">target</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]}</span>
-            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t execute </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd_str</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> <span class="n">errno_hint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t execute </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd_str</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> <span class="n">errno_hint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">retval</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Return code </span><span class="si">%d</span><span class="s2"> from &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">retval</span><span class="p">,</span> <span class="n">cmd_str</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">retval</span></div>
 
-<div class="viewcode-block" id="Trial.execute_command"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.execute_command">[docs]</a>    <span class="k">def</span> <span class="nf">execute_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Trial.execute_command"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.execute_command">[docs]</a>    <span class="k">def</span> <span class="nf">execute_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Execute a command as part of an experiment trial.</span>
 
 <span class="sd">        Creates a new subprocess for the command and checks for TAU data files</span>
@@ -598,7 +598,7 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd_str</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">begin_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="n">record_output</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="n">record_output</span><span class="p">)</span>
             <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin_time</span>
             <span class="k">if</span> <span class="n">record_output</span><span class="p">:</span>
                 <span class="n">retval</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -610,7 +610,7 @@
             <span class="n">errno_hint</span> <span class="o">=</span> <span class="p">{</span><span class="n">errno</span><span class="o">.</span><span class="n">EPERM</span><span class="p">:</span> <span class="s2">&quot;Check filesystem permissions&quot;</span><span class="p">,</span>
                           <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span> <span class="s2">&quot;Check paths and command line arguments&quot;</span><span class="p">,</span>
                           <span class="n">errno</span><span class="o">.</span><span class="n">ENOEXEC</span><span class="p">:</span> <span class="s2">&quot;Check that this host supports &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">target</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]}</span>
-            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t execute </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd_str</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> <span class="n">errno_hint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t execute </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd_str</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> <span class="n">errno_hint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
 
@@ -704,7 +704,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

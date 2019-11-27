@@ -114,87 +114,87 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;projects using this application&#39;</span>
         <span class="p">},</span>
         <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application configuration name&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;unique&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses OpenMP&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--openmp&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;pthreads&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses pthreads&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--pthreads&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;python&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses Python&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--python&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
 
         <span class="s1">&#39;tbb&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses Thread Building Blocks (TBB)&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--tbb&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpi&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses MPI&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">_encourage_except_baseline</span><span class="p">},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">_encourage_except_baseline</span><span class="p">},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;caf&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses Coarray Fortran&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--caf&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">_encourage_except_baseline</span><span class="p">,</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">_encourage_except_baseline</span><span class="p">,</span>
                               <span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses NVIDIA CUDA&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">)},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;opencl&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses OpenCL&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--opencl&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">),</span>
                               <span class="n">_encourage_except_baseline</span><span class="p">)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;shmem&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses SHMEM&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpc&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;application uses MPC&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpc&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;max_threads&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
@@ -203,7 +203,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;threads&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">25</span><span class="p">},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;linkage&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -213,7 +213,7 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;linkage&gt;&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">)},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;static&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
     <span class="p">}</span></div>
 
@@ -250,7 +250,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">selected</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;application&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div>
 
 <div class="viewcode-block" id="Application.check_compiler"><a class="viewcode-back" href="../../../taucmdr.model.application.html#taucmdr.model.application.Application.check_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">check_compiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compilers</span><span class="p">):</span>
@@ -292,7 +292,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

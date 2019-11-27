@@ -136,18 +136,18 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;projects using this measurement&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;primary_key&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;unique&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;unique&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;measurement configuration name&quot;</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="s1">&#39;baseline&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;completely disable all instrumentation and measure wall clock time via the OS&quot;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--baseline&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;instrumentation&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">),</span>
                               <span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;trace&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s1">&#39;profile&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -160,9 +160,9 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="s1">&#39;merged&#39;</span><span class="p">,</span> <span class="s1">&#39;cubex&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;tau&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cubex&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;scorep_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cubex&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;scorep_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                        <span class="s1">&#39;merged&#39;</span><span class="p">:</span> <span class="n">_merged_profile_compat</span><span class="p">},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;trace&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -174,9 +174,9 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:(</span><span class="s1">&#39;slog2&#39;</span><span class="p">,</span> <span class="s1">&#39;otf2&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;otf2&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;otf2&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;libotf2_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;otf2&#39;</span><span class="p">:</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;libotf2_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span> <span class="n">_discourage_callpath</span><span class="p">},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
@@ -184,12 +184,12 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;use event-based sampling to gather performance data&quot;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--sample&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;instrumentation&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">),</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))}</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s1">&#39;source_inst&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -202,9 +202,9 @@
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;automatic&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">):</span> 
-                       <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;pdt_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
-                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                       <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;pdt_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;compiler_inst&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -218,25 +218,25 @@
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;always&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="s1">&#39;fallback&#39;</span><span class="p">):</span>
                        <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">),</span>
-                        <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                        <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">),</span>
-                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpi&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;use MPI library wrapper to measure time spent in MPI methods&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpi&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span>
                        <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">MPI_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
-                        <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                        <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;mpi&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;openmp&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -248,42 +248,42 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;ompt&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;opari&#39;</span><span class="p">:</span>
-                       <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)),</span>
-                       <span class="s1">&#39;ompt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                                <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                       <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)),</span>
+                       <span class="s1">&#39;ompt&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;openmp&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                                <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;cuda&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure cuda events via the CUPTI interface&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--cuda&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">),</span>
-                              <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">),</span>
+                              <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;shmem&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;use SHMEM library wrapper to measure time spent in SHMEM methods&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--shmem&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span>
                        <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">SHMEM_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">SHMEM_CXX</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
                         <span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="n">SHMEM_FC</span><span class="o">.</span><span class="n">keyword</span><span class="p">),</span>
-                        <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;shmem&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                        <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;shmem&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                        <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;opencl&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure OpenCL events&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--opencl&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">),</span>
-                              <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;opencl&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;cuda_toolkit&#39;</span><span class="p">),</span>
+                              <span class="n">Application</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;opencl&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;callpath&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
@@ -304,38 +304,38 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;depth&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">unwind</span><span class="p">:</span> <span class="n">unwind</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{(</span><span class="k">lambda</span> <span class="n">unwind</span><span class="p">:</span> <span class="n">unwind</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)}</span>
         <span class="p">},</span>
         <span class="s1">&#39;io&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure time spent in POSIX I/O calls&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--io&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;heap_usage&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure heap memory usage&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--heap-usage&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;memory&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;system_load&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;measure system load&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--system-load&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;data&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;memory_alloc&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;record memory allocation/deallocation events and detect leaks&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--memory-alloc&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;memory&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;metrics&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
@@ -345,36 +345,36 @@
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;metric&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">metrics</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">met</span> <span class="k">for</span> <span class="n">met</span> <span class="ow">in</span> <span class="n">metrics</span> <span class="k">if</span> <span class="s1">&#39;PAPI&#39;</span> <span class="ow">in</span> <span class="n">met</span><span class="p">])):</span>
-                       <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">),</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)),</span>
-                       <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">!=</span> <span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">]:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                       <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">),</span> <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;papi_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
+                       <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">!=</span> <span class="p">[</span><span class="s1">&#39;TIME&#39;</span><span class="p">]:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;keep_inst_files&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;don&#39;t remove instrumented files after compilation&quot;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--keep-inst-files&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;instrumentation&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">)}</span>
         <span class="p">},</span>
         <span class="s1">&#39;reuse_inst_files&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;reuse and preserve instrumented files after compilation&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--reuse-inst-files&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;instrumentation&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">)}</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">)}</span>
         <span class="p">},</span>
         <span class="s1">&#39;comm_matrix&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;record the point-to-point communication matrix&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--comm-matrix&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;throttle&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;throttle lightweight events to reduce overhead&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--throttle&#39;</span><span class="p">,)},</span>
         <span class="p">},</span>
@@ -404,33 +404,33 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;us&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;track_memory_footprint&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;track memory footprint&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--track-memory-footprint&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="s1">&#39;memory&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;metadata_merge&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;merge metadata of TAU profiles&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--metadata-merge&#39;</span><span class="p">,)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;callsite&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;record event callsites&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--callsite&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="bp">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">),</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;binutils_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">),</span>
-                              <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                              <span class="n">Target</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;libunwind_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                               <span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;host_os&#39;</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))}</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s1">&#39;select_file&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -439,28 +439,28 @@
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;path&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">_ensure_instrumented</span><span class="p">,</span>
                               <span class="n">Application</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;linkage&#39;</span><span class="p">,</span> <span class="s1">&#39;static&#39;</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;throttle&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
-            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="bp">True</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;throttle&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
+            <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
         <span class="p">},</span>
         <span class="s1">&#39;update_nightly&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Download newest TAU nightly&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--update-nightly&#39;</span><span class="p">,)},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;tau_source&#39;</span><span class="p">,</span> <span class="s1">&#39;nightly&#39;</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;enable support for PTTS&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts&#39;</span><span class="p">,)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts_post&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;skip application sampling and post-process existing PTTS sample files&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-post&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts_sample_flags&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -468,62 +468,62 @@
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;flags to pass to PTTS sample_ts command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-sample-flags&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;sample_flags&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts_restart&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;enable restart support within PTTS, allowing application to continue running and be reinstrumented after stop&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-restart&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts_start&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="c1">#None,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;address at which to start a PTTS sampling region&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-start&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts_stop&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="c1">#None,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;address at which to stop a PTTS sampling region&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-stop&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;ptts_report_flags&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="c1">#None,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;flags to pass to PTTS report_ts command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-report-flags&#39;</span><span class="p">,)},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))},</span>
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;ptts&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
         <span class="p">},</span>
         <span class="s1">&#39;extra_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;forcibly add to the TAU_OPTIONS environment variable (not recommended)&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--extra-tau-options&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;option&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;extra_tau_options&#39;</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))}</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s1">&#39;mpit&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI-T profiling interface&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--mpit&#39;</span><span class="p">,)},</span>
         <span class="p">},</span>
         <span class="s1">&#39;force_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;forcibly set the TAU_OPTIONS environment variable (not recommended)&quot;</span><span class="p">,</span>
-            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--force-tau-options&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;option&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;force_tau_options&#39;</span><span class="p">),</span>
                               <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;extra_tau_options&#39;</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))}</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))}</span>
         <span class="p">},</span>
         <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
@@ -536,13 +536,13 @@
         <span class="s1">&#39;extra_tau_options&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;append extra options to TAU_OPTIONS environment variable (not recommended)&quot;</span><span class="p">,</span>
-            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;rebuild_on_change&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--extra-tau-options&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;option&gt;&#39;</span><span class="p">},</span>
             <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="nb">bool</span><span class="p">:</span> <span class="p">(</span><span class="n">Measurement</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;extra_tau_options&#39;</span><span class="p">),</span>
                               <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;force_tau_options&#39;</span><span class="p">),</span>
-                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))}</span>
+                              <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))}</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
 
@@ -614,7 +614,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">selected</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">ProjectSelectionError</span><span class="p">,</span> <span class="n">ExperimentSelectionError</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">selected</span><span class="p">[</span><span class="s1">&#39;measurement&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">eid</span></div></div>
 </pre></div>
 
@@ -629,7 +629,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

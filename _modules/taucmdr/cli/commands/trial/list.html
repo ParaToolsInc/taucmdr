@@ -83,7 +83,7 @@
 
 
 <span class="n">DASHBOARD_COLUMNS</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Number&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;number&#39;</span><span class="p">},</span>
-                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Data Size&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">util</span><span class="o">.</span><span class="n">human_size</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_size&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))},</span>
+                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Data Size&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">util</span><span class="o">.</span><span class="n">human_size</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_size&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))},</span>
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Command&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;command&#39;</span><span class="p">},</span>
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Description&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;description&#39;</span><span class="p">},</span>
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Status&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;phase&#39;</span><span class="p">},</span>
@@ -135,7 +135,7 @@
                     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                         <span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;N/A&#39;</span>
                 <span class="k">elif</span> <span class="s1">&#39;yesno&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
-                    <span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;Yes&#39;</span> <span class="k">if</span> <span class="n">populated</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="s1">&#39;yesno&#39;</span><span class="p">],</span> <span class="bp">False</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;No&#39;</span>
+                    <span class="n">cell</span> <span class="o">=</span> <span class="s1">&#39;Yes&#39;</span> <span class="k">if</span> <span class="n">populated</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="s1">&#39;yesno&#39;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;No&#39;</span>
                 <span class="k">elif</span> <span class="s1">&#39;function&#39;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
                     <span class="n">cell</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">](</span><span class="n">populated</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -162,7 +162,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

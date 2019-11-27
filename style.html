@@ -199,7 +199,7 @@ identifier for the unused argument or prefixing the argument name with
 <cite>unused_</cite>. In situations where changing the argument names is
 infeasible, you can mention them at the beginning of the function. For
 example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">unused_b</span><span class="p">,</span> <span class="n">unused_c</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">unused_b</span><span class="p">,</span> <span class="n">unused_c</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span>
     <span class="k">return</span> <span class="n">a</span>
 </pre></div>
@@ -358,16 +358,16 @@ then use a loop instead.</p>
         <span class="k">if</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
             <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
 
-<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">y</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">y</span> <span class="o">!=</span> <span class="n">z</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
 
 <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">complicated_transform</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">long_generator_function</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
 
 <span class="n">squares</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
 
@@ -379,10 +379,10 @@ then use a loop instead.</p>
 </div>
 <p><strong>No:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">y</span>
-        <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">y</span> <span class="o">!=</span> <span class="n">z</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -482,8 +482,8 @@ item to a list), the default value is modified.</p>
 <p>Do not use mutable objects as default values in the function or method
 definition.</p>
 <p><strong>Yes:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>
 </pre></div>
 </div>
@@ -606,7 +606,7 @@ a value which is known to be an integer (and is not the result of
 </ul>
 <p><strong>Yes:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">users</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s1">&#39;no users&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;no users&#39;</span>
 
 <span class="k">if</span> <span class="n">foo</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">handle_zero</span><span class="p">()</span>
@@ -617,9 +617,9 @@ a value which is known to be an integer (and is not the result of
 </div>
 <p><strong>No:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">users</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s1">&#39;no users&#39;</span>
+    <span class="nb">print</span> <span class="s1">&#39;no users&#39;</span>
 
-<span class="k">if</span> <span class="n">foo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">foo</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">foo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">foo</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">handle_zero</span><span class="p">()</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span><span class="p">:</span>
@@ -656,7 +656,7 @@ features, so there is no reason not to use the new styles.</p>
 
 <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="n">my_list</span><span class="p">))</span>
 
-<span class="nb">apply</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+<span class="n">apply</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -686,12 +686,12 @@ to experienced Lisp and Scheme (and Haskell and ML and …) programmers.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">bar</span><span class="p">():</span>
-        <span class="k">print</span> <span class="n">i</span><span class="p">,</span>
+        <span class="nb">print</span> <span class="n">i</span><span class="p">,</span>
     <span class="c1"># ...</span>
     <span class="c1"># A bunch of code here</span>
     <span class="c1"># ...</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>  <span class="c1"># Ah, i *is* local to Foo, so this is what Bar sees</span>
-        <span class="k">print</span> <span class="n">i</span><span class="p">,</span>
+        <span class="nb">print</span> <span class="n">i</span><span class="p">,</span>
     <span class="n">bar</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -925,13 +925,13 @@ punctuation.</p>
 after a comma, semicolon, or colon except at the end of the line.</p>
 <p><strong>Yes:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-    <span class="k">print</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+    <span class="nb">print</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
 <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
 </pre></div>
 </div>
 <p><strong>No:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">4</span> <span class="p">:</span>
-    <span class="k">print</span> <span class="n">x</span> <span class="p">,</span> <span class="n">y</span>
+    <span class="nb">print</span> <span class="n">x</span> <span class="p">,</span> <span class="n">y</span>
 <span class="n">x</span> <span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="p">,</span> <span class="n">x</span>
 </pre></div>
 </div>
@@ -1067,7 +1067,7 @@ only returns None, this section is not required.</dd>
 <dt><strong>Raises:</strong></dt>
 <dd>List all exceptions that are relevant to the interface.</dd>
 </dl>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fetch_bigtable_rows</span><span class="p">(</span><span class="n">big_table</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">other_silly_variable</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fetch_bigtable_rows</span><span class="p">(</span><span class="n">big_table</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">other_silly_variable</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Fetches rows from a Bigtable.</span>
 
 <span class="sd">    Retrieves rows pertaining to the given keys from the Table instance</span>
@@ -1115,7 +1115,7 @@ as a function&#8217;s Args section.</p>
 <span class="sd">        eggs: An integer count of the eggs we have laid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">likes_spam</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">likes_spam</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Inits SampleClass with blah.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">likes_spam</span> <span class="o">=</span> <span class="n">likes_spam</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eggs</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1194,14 +1194,14 @@ decide between <code class="docutils literal"><span class="pre">+</span></code> 
 <p><strong>Yes:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
 <span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">!&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">imperative</span><span class="p">,</span> <span class="n">expletive</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;{}, {}!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">imperative</span><span class="p">,</span> <span class="n">expletive</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">imperative</span><span class="p">,</span> <span class="n">expletive</span><span class="p">)</span>
 <span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;name: </span><span class="si">%s</span><span class="s1">; score: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;name: {}; score: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;name: </span><span class="si">{}</span><span class="s1">; score: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>No:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># use + in this case</span>
-<span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;{}{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># use + in this case</span>
+<span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># use + in this case</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">imperative</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="n">expletive</span> <span class="o">+</span> <span class="s1">&#39;!&#39;</span>
 <span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;name: &#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;; score: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 </pre></div>
@@ -1250,7 +1250,7 @@ only if they also use <code class="docutils literal"><span class="pre">'</span><
 joining since multi-line strings do not flow with the indentation of the
 rest of the program:</p>
 <p><strong>Yes:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="p">(</span><span class="s2">&quot;This is much nicer.</span><span class="se">\n</span><span class="s2">&quot;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;This is much nicer.</span><span class="se">\n</span><span class="s2">&quot;</span>
        <span class="s2">&quot;Do it this way.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1294,7 +1294,7 @@ intended (e.g. in tracebacks of exceptions, inside globals, etc).</li>
 statement</a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;hello.txt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hello_file</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hello_file</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">line</span>
+        <span class="nb">print</span> <span class="n">line</span>
 </pre></div>
 </div>
 <p>For file-like objects that do not support the &#8220;with&#8221; statement, use
@@ -1303,7 +1303,7 @@ contextlib.closing():</p>
 
 <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">closing</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s2">&quot;http://www.python.org/&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">front_page</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">front_page</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">line</span>
+        <span class="nb">print</span> <span class="n">line</span>
 </pre></div>
 </div>
 <p>Legacy AppEngine code using Python 2.5 may enable the &#8220;with&#8221; statement
@@ -1484,7 +1484,7 @@ operations that should not be executed when the file is being
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

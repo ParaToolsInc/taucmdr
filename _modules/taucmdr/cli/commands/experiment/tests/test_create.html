@@ -90,7 +90,7 @@
 
 <div class="viewcode-block" id="CreateTest"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.experiment.tests.test_create.html#taucmdr.cli.commands.experiment.tests.test_create.CreateTest">[docs]</a><span class="k">class</span> <span class="nc">CreateTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     
-    <span class="nd">@tests.skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;pgcc&#39;</span><span class="p">),</span> <span class="s2">&quot;PGI compilers required for this test&quot;</span><span class="p">)</span>
+    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;pgcc&#39;</span><span class="p">),</span> <span class="s2">&quot;PGI compilers required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_pgi"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.experiment.tests.test_create.html#taucmdr.cli.commands.experiment.tests.test_create.CreateTest.test_pgi">[docs]</a>    <span class="k">def</span> <span class="nf">test_pgi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">target_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test_targ&#39;</span><span class="p">,</span> <span class="s1">&#39;--compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;PGI&#39;</span><span class="p">])</span>
@@ -146,7 +146,7 @@
         <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">experiment_create_cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
 
-    <span class="nd">@tests.skipIf</span><span class="p">(</span><span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="s2">&quot;No &#39;sample&#39; measurement on Darwin.&quot;</span><span class="p">)</span>
+    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipIf</span><span class="p">(</span><span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="s2">&quot;No &#39;sample&#39; measurement on Darwin.&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_new_project"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.experiment.tests.test_create.html#taucmdr.cli.commands.experiment.tests.test_create.CreateTest.test_new_project">[docs]</a>    <span class="k">def</span> <span class="nf">test_new_project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;https://github.com/ParaToolsInc/taucmdr/issues/29&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
@@ -183,7 +183,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

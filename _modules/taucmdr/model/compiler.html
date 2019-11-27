@@ -93,47 +93,47 @@
     <span class="k">return</span> <span class="p">{</span>
         <span class="s1">&#39;uid&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;compiler unique identifier&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;absolute path to the compiler command&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;compiler&#39;s family name&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;role&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;role this command plays in the compiler family, e.g. CXX or MPI_CC&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;wrapped&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Compiler</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;compiler wrapped by this compiler&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;include_path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;extra paths to search for include files when compiling with this compiler&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;library_path&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;extra paths to search for libraries when compiling with this compiler&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;compiler_flags&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;extra flags to use when compiling with this compiler&quot;</span>
         <span class="p">},</span>
         <span class="s1">&#39;libraries&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;array&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s2">&quot;extra libraries to link when compiling with this compiler&quot;</span>
         <span class="p">}</span>
     <span class="p">}</span></div>
@@ -194,11 +194,11 @@
         <span class="k">return</span> <span class="n">info_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
        
     <span class="k">def</span> <span class="nf">_verify_core_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">msg_parts</span><span class="p">):</span>
-        <span class="n">fatal</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">fatal</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span> <span class="o">!=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]:</span>
             <span class="n">msg_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Compiler moved from &#39;</span><span class="si">%s</span><span class="s2">&#39; to &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">],</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">]:</span>
-            <span class="n">fatal</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">fatal</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">msg_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;It was a </span><span class="si">%s</span><span class="s2"> compiler but now it&#39;s a </span><span class="si">%s</span><span class="s2"> compiler.&quot;</span> <span class="o">%</span> 
                              <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">],</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span> <span class="o">!=</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]:</span>
@@ -224,12 +224,12 @@
         <span class="n">msg_parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39; has changed:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)]</span>
         <span class="n">fatal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verify_core_attrs</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="n">msg_parts</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fatal</span><span class="p">:</span>
-            <span class="n">self_wrapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wrapped&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="n">self_wrapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wrapped&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">self_wrapped</span><span class="p">:</span>
-                <span class="n">fatal</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">fatal</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">msg_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;It has changed to a compiler wrapper.&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="ow">not</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span> <span class="ow">and</span> <span class="n">self_wrapped</span><span class="p">:</span>
-                <span class="n">fatal</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">fatal</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">msg_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;It has changed from a compiler wrapper to a regular compiler.&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span> <span class="ow">and</span> <span class="n">self_wrapped</span><span class="p">:</span>
                 <span class="n">new_wrapped</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span>
@@ -291,7 +291,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

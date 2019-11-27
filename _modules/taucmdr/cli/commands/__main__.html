@@ -112,7 +112,7 @@
     
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [arguments] &lt;subcommand&gt; [options]&quot;</span>  <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
-        <span class="n">_green</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;{:&lt;35}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">))</span>
+        <span class="n">_green</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:&lt;35}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">))</span>
         <span class="n">epilog_parts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">cli</span><span class="o">.</span><span class="n">commands_description</span><span class="p">(),</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                         <span class="n">util</span><span class="o">.</span><span class="n">color_text</span><span class="p">(</span><span class="s2">&quot;Shortcuts:&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;bold&quot;</span><span class="p">]),</span>
                         <span class="n">_green</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%(command)s</span><span class="s2"> &lt;compiler&gt;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;Execute a compiler command&quot;</span><span class="p">,</span> 
@@ -181,7 +181,7 @@
             <span class="k">pass</span>
 
         <span class="c1"># Check shortcuts</span>
-        <span class="n">shortcut</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">shortcut</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="kn">from</span> <span class="nn">taucmdr.model.project</span> <span class="kn">import</span> <span class="n">Project</span>
         <span class="n">uses_python</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span><span class="o">.</span><span class="n">populate</span><span class="p">()[</span><span class="s1">&#39;application&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_or_default</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">uses_python</span> <span class="ow">and</span> <span class="n">build_command</span><span class="o">.</span><span class="n">is_compatible</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span> <span class="c1"># should return false for python</span>
@@ -225,7 +225,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 26, 2019 at 01:17:21 UTC.
+      Last updated on Nov 27, 2019 at 01:18:13 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
