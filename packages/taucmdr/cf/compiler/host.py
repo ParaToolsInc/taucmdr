@@ -68,7 +68,7 @@ CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                           show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                           CC='cc', CXX='CC', FC='ftn', UPC='cc')
 
-APPLE_LLVM = HOST_COMPILERS.add('Apple', family_regex=r'Apple LLVM',
+APPLE_LLVM = HOST_COMPILERS.add('Apple', family_regex=r'Apple',
                                 CC='cc', CXX='c++')
 
 ARM = HOST_COMPILERS.add('Arm', family_regex=r'Arm C/C\+\+/Fortran Compiler',
