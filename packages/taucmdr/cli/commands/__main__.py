@@ -202,6 +202,24 @@ class MainCommand(AbstractCommand):
                     completions += all_completions
 		elif any(subcmd.startswith(complist[-2]) for subcmd in accepted_subcommands) and sum(possible_completions)>0:
                     completions += [all_completions[i] for i in range(len(all_completions)) if possible_completions[i]>0]
+            if 'experiment'.startswith(complist[1]) and 'create'.startswith(complist[2]) and len(complist) > 3:
+                if '--application'.startswith(complist[-1]):
+                    completions += get_applications()
+                if '--application'.startswith(complist[-2]) and any(app.startswith(complist[-1]) for app in get_applications()) and all(app != complist[-1] for app in get_applications()):
+                    completions += get_applications()
+                if '--measurement'.startswith(complist[-1]):
+                    completions += get_measurements()
+                if '--measurement'.startswith(complist[-2]) and any(meas.startswith(complist[-1]) for meas in get_measurements()) and all(meas != complist[-1] for meas in get_measurements()):
+                    completions += get_measurements()
+                if '--target'.startswith(complist[-1]):
+                    completions += get_target()
+                if '--target'.startswith(complist[-2]) and any(targ.startswith(complist[-1]) for targ in get_target()) and all(targ != complist[-1] for targ in get_target()):
+                    completions += get_target()
+                if '--record-output'.startswith(complist[-1]):
+                    completions += ['T', 'F']
+                if '--record-output'.startswith(complist[-2]) and any(targ.startswith(complist[-1]) for targ in get_target()) and all(targ != complist[-1] for targ in get_target()):
+                    completions += ['T', 'F']
+          
 
             # many more should go here
             Write('completions = %s' %completions)
