@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.4.0.1
+        VERSION:     '1.4.0.2
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -260,6 +260,13 @@
         <span class="n">src</span> <span class="o">=</span> <span class="n">sources</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;download&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lookup_target_os_list</span><span class="p">(</span><span class="n">repos</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">srcs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">srcs_avail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">srcs</span><span class="p">[:]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">srcs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">srcs</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">srcs_avail</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">src</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;download-tr6&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;download-tr6 is not a valid source for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -404,15 +411,31 @@
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No source code provided for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span>
-        <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="p">)</span>
         <span class="c1"># Check that archive is valid by getting archive top-level directory</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">reuse_archive</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Unable to acquire </span><span class="si">%s</span><span class="s2"> source package &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">archive</span></div>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">:</span>
+            <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">reuse_archive</span><span class="p">:</span>
+                    <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">archive</span>
+                    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to acquire </span><span class="si">%s</span><span class="s2"> source package &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">srcs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;falling back to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">archive</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Unable to acquire </span><span class="si">%s</span><span class="s2"> source package &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">srcs_avail</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">archive</span></div>
 
 <div class="viewcode-block" id="Installation._prepare_src"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation._prepare_src">[docs]</a>    <span class="k">def</span> <span class="nf">_prepare_src</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_archive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Prepares source code for installation.</span>
@@ -735,7 +758,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Feb 01, 2020 at 01:50:47 UTC.
+      Last updated on Feb 01, 2020 at 21:56:59 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
