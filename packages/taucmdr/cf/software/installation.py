@@ -213,6 +213,13 @@ class Installation(object):
         src = sources[name]
         if src.lower() == 'download':
             self.src = self._lookup_target_os_list(repos)
+            if isinstance(self.src, list):
+                self.srcs = self.src
+                self.srcs_avail = self.srcs[:]
+                self.src = self.srcs.pop(0)
+            else:
+                self.srcs = []
+                self.srcs_avail = [self.src]
         elif src.lower() == 'download-tr6':
             raise ConfigurationError("download-tr6 is not a valid source for %s" % self.title)
         else:
@@ -357,15 +364,31 @@ class Installation(object):
             raise ConfigurationError("No source code provided for %s" % self.title)
         if self.unmanaged:
             return self.src
-        archive = self._acquire_source(reuse_archive)
         # Check that archive is valid by getting archive top-level directory
-        try:
-            util.archive_toplevel(archive)
-        except IOError:
-            if not reuse_archive:
-                raise ConfigurationError("Unable to acquire %s source package '%s'" % (self.name, self.src))
-            return self.acquire_source(reuse_archive=False)
-        return archive
+        while self.src:
+            archive = self._acquire_source(reuse_archive)
+            try:
+                util.archive_toplevel(archive)
+            except IOError:
+                if reuse_archive:
+                    archive = self.acquire_source(reuse_archive=False)
+                    try:
+                        util.archive_toplevel(archive)
+                        return archive
+                    except IOError:
+                        pass
+                try:
+                    LOGGER.warning("Unable to acquire %s source package '%s'" % (self.name, self.src))
+                    self.src = self.srcs.pop(0)
+                    LOGGER.warning("falling back to '%s'" % self.src)
+                except IndexError:
+                    self.src = None
+            else:
+                return archive
+        if self.src is None:
+            raise ConfigurationError("Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail)))
+        else:
+            return archive
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
