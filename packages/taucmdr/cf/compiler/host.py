@@ -46,7 +46,7 @@ GNU = HOST_COMPILERS.add('GNU', family_regex=r'Free Software Foundation, Inc',
 INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation',
                            CC='icc', CXX='icpc', FC='ifort')
 
-PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group',
+PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group|NVIDIA CORPORATION',
                          CC='pgcc', CXX=('pgCC', 'pgc++', 'pgcxx'), FC=('pgfortran', 'pgf90', 'pgf77'))
 
 IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
