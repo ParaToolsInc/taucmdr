@@ -13,6 +13,6 @@ coverage:
     project:
       default:
         branches:
-          - !gh-pages
+          - '!gh-pages'
         target: auto
         threshold: 0.5
