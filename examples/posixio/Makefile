@@ -6,8 +6,8 @@ TARGET = posixio
 
 OBJS = posixio.o
 
-CFLAGS = 
-LDFLAGS = 
+CFLAGS =
+LDFLAGS =
 
 ##############################################
 

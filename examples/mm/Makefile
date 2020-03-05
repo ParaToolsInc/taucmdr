@@ -10,7 +10,7 @@ MPI_CFLAGS = -DTAU_MPI
 SUFFIX=.mpi
 else
 CC = tau gcc
-MPI_CFLAGS = 
+MPI_CFLAGS =
 SUFFIX=
 endif
 
@@ -18,7 +18,7 @@ ifdef OPENMP
 OMP_FLAGS = -fopenmp -DTAU_OPENMP
 SUFFIX=.openmp
 else
-OMP_FLAGS = 
+OMP_FLAGS =
 endif
 
 CFLAGS = $(MPI_CFLAGS) $(OMP_FLAGS)

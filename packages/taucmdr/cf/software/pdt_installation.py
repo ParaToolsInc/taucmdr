@@ -43,9 +43,9 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: 'http://tau.uoregon.edu/pdt.tgz',
-         X86_64: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+         X86_64: {None: 'http://tau.uoregon.edu/pdt.tgz',
                   LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'},
-         INTEL_KNL: {None: 'http://tau.uoregon.edu/pdt.tgz', 
+         INTEL_KNL: {None: 'http://tau.uoregon.edu/pdt.tgz',
                      LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
 
 COMMANDS = {None:
@@ -75,8 +75,8 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            X86_64: 
-            {DARWIN: 
+            X86_64:
+            {DARWIN:
              ['cparse',
               'cxxparse',
               'edgcpfe',
@@ -168,8 +168,8 @@ COMMANDS = {None:
 
 class PdtInstallation(AutotoolsInstallation):
     """Encapsulates a PDT installation.
-    
-    PDT doesn't actually use an Autotools configure script but the installation 
+
+    PDT doesn't actually use an Autotools configure script but the installation
     proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
     """
 
@@ -181,7 +181,7 @@ class PdtInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os, 
+        super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os,
                                               compilers, REPOS, COMMANDS, None, None)
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -211,7 +211,7 @@ class PdtInstallation(AutotoolsInstallation):
             self._configure_edg4x_rose()
             self._retry_verify = False
             self.verify()
-    
+
     def configure(self, _):
         family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC'}
         compiler_flag = family_flags.get(self.compilers[CXX].info.family.name, '')
@@ -219,4 +219,3 @@ class PdtInstallation(AutotoolsInstallation):
         LOGGER.info("Configuring PDT...")
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('%s configure failed' % self.title)
-

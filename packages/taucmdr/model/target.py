@@ -39,12 +39,12 @@ import os
 import glob
 import fasteners
 from taucmdr import logger, util
-from taucmdr.error import ConfigurationError, IncompatibleRecordError 
+from taucmdr.error import ConfigurationError, IncompatibleRecordError
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
-from taucmdr.cf.platforms import Architecture, OperatingSystem 
+from taucmdr.cf.platforms import Architecture, OperatingSystem
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
@@ -55,11 +55,11 @@ LOGGER = logger.get_logger(__name__)
 
 def _require_compiler_family(family, *hints):
     """Creates a compatibility callback to check a compiler family.
-    
+
     Args:
         family: The required compiler family.
         *hints: String hints to show the user when the check fails.
-        
+
     Returns:
         callable: a compatibility checking callback for use with data models.
     """
@@ -67,20 +67,20 @@ def _require_compiler_family(family, *hints):
         """Compatibility checking callback for use with data models.
 
         Requires ``rhs[rhs_attr]`` to be a compiler in a certain compiler family.
-        
+
         Args:
             lhs (Model): The model invoking `check_compatibility`.
             lhs_attr (str): Name of the attribute that defines the 'compat' property.
             lhs_value: Value of the attribute that defines the 'compat' property.
             rhs (Model): Model we are checking against (argument to `check_compatibility`).
             rhs_attr (str): The right-hand side attribute we are checking for compatibility.
-            
+
         Raises:
             ConfigurationError: Invalid compiler family specified in target configuration.
         """
         lhs_name = lhs.name.lower()
         rhs_name = rhs.name.lower()
-        msg = ("%s = %s in %s requires %s in %s to be a %s compiler" % 
+        msg = ("%s = %s in %s requires %s in %s to be a %s compiler" %
                (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name, family))
         try:
             compiler_record = rhs.populate(rhs_attr)
@@ -94,8 +94,8 @@ def _require_compiler_family(family, *hints):
 def knc_require_k1om(*_):
     """Compatibility checking callback for use with data models.
 
-    Requires that the Intel k1om tools be installed if the host architecture is KNC. 
-        
+    Requires that the Intel k1om tools be installed if the host architecture is KNC.
+
     Raises:
         ConfigurationError: Invalid compiler family specified in target configuration.
     """
@@ -134,10 +134,10 @@ def cuda_toolkit_default():
 
 def tau_source_default():
     """"Per Sameer's request, override managed TAU installation with an existing unmanaged TAU installation.
-    
+
     If a file named "override_tau_source" exists in the system-level storage prefix, use the contents of
     that file as the default path for TAU.  Otherwise use "download" as the default.
-    
+
     Returns:
         str: Path to TAU or "download".
     """
@@ -154,10 +154,10 @@ def tau_source_default():
 
 def attributes():
     """Construct attributes dictionary for the target model.
-    
+
     We build the attributes in a function so that classes like ``taucmdr.module.project.Project`` are
     fully initialized and usable in the returned dictionary.
-    
+
     Returns:
         dict: Attributes dictionary.
     """
@@ -169,14 +169,14 @@ def attributes():
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
     from taucmdr.cf.compiler.caf import CAF_FC
     from taucmdr.cf.compiler.python import PY
-    
-    knc_intel_only = _require_compiler_family(INTEL, 
+
+    knc_intel_only = _require_compiler_family(INTEL,
                                               "You must use Intel compilers to target the Xeon Phi (KNC)",
                                               "Try adding `--compilers=Intel` to the command line")
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
-    
+
     return {
         'projects': {
             'collection': Project,
@@ -209,7 +209,7 @@ def attributes():
                          'group': 'host',
                          'metavar': '<arch>',
                          'choices': Architecture.keys()},
-            'compat': {str(INTEL_KNC): 
+            'compat': {str(INTEL_KNC):
                        (Target.require('host_arch', knc_require_k1om),
                         Target.require(CC.keyword, knc_intel_only),
                         Target.require(CXX.keyword, knc_intel_only),
@@ -345,13 +345,13 @@ def attributes():
                          'group': 'CUDA',
                          'metavar': '<command>'},
             'rebuild_required': True
-        },  
+        },
         CAF_FC.keyword: {
             'model': Compiler,
             'required': False,
             'description': 'Coarray Fortran compiler command',
             'argparse': {'flags': ('--caf-fc',),
-                         'group': 'CAF', 
+                         'group': 'CAF',
                          'metavar': '<command>'},
             'rebuild_required': True
         },
@@ -367,7 +367,7 @@ def attributes():
         'cuda_toolkit': {
             'type': 'string',
             'description': 'path to NVIDIA CUDA Toolkit (enables OpenCL support)',
-            'default': cuda_toolkit_default(), 
+            'default': cuda_toolkit_default(),
             'argparse': {'flags': ('--cuda-toolkit',),
                          'group': 'CUDA',
                          'metavar': '<path>',
@@ -474,20 +474,20 @@ def attributes():
 
 class Target(Model):
     """Target data model."""
-    
+
     __attributes__ = attributes
-    
+
     def __init__(self, *args, **kwargs):
         super(Target, self).__init__(*args, **kwargs)
         self._compilers = None
-        
+
     def on_create(self):
         for comp in self.compilers().itervalues():
             comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
-            
+
     def on_delete(self):
         util.rmtree(os.path.join(self.storage.prefix, 'bin', self['name']))
-        
+
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
@@ -506,7 +506,7 @@ class Target(Model):
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
             for attr, change in changes.iteritems():
-                props = self.attributes[attr] 
+                props = self.attributes[attr]
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
                         old_comp = Compiler.controller(self.storage).one(change[0])
@@ -527,26 +527,26 @@ class Target(Model):
 
     def architecture(self):
         return Architecture.find(self['host_arch'])
-    
+
     def operating_system(self):
         return OperatingSystem.find(self['host_os'])
-    
+
     def sources(self):
         """Get paths to all source packages known to this target.
-        
+
         Returns:
             dict: Software package paths indexed by package name.
-        """ 
+        """
         sources = {}
         for attr, val in self.iteritems():
             if val and attr.endswith('_source'):
                 sources[attr.replace('_source', '')] = val
         return sources
-    
+
     def get_installation(self, name):
         cls = software.get_installation(name)
         return cls(self.sources(), self.architecture(), self.operating_system(), self.compilers())
-    
+
     def acquire_sources(self):
         """Acquire all source code packages known to this target."""
         for attr, val in self.iteritems():
@@ -556,12 +556,12 @@ class Target(Model):
                     inst.acquire_source()
                 except ConfigurationError as err:
                     # Not a warning since using an existing installation is OK and in that case
-                    # there is no source code package to acquire. 
+                    # there is no source code package to acquire.
                     LOGGER.info(err)
 
     def compilers(self):
         """Get information about the compilers used by this target configuration.
-        
+
         Returns:
             InstalledCompilerSet: Collection of installed compilers used by this target.
         """
@@ -582,21 +582,21 @@ class Target(Model):
 
     def check_compiler(self, compiler_cmd, compiler_args):
         """Checks a compiler command its arguments for compatibility with this target configuration.
-        
-        Checks that the given compiler matches at least one, **but possibly more**, of the compilers 
-        used in the target. Also performs any special checkes for invalid compiler arguments, 
+
+        Checks that the given compiler matches at least one, **but possibly more**, of the compilers
+        used in the target. Also performs any special checkes for invalid compiler arguments,
         e.g. -mmic is only for native KNC.
-        
+
         If the given compiler command and arguments are compatible with this target then information about
         matching compiler installations is returned as a list of n :any:`InstalledCompiler` instances.
-        
+
         Args:
             compiler_cmd (str): The compiler command as passed by the user.
             compiler_args (list): Compiler command line arguments.
-            
+
         Returns:
             list: Information about matching installed compilers as :any:`Compiler` instances.
-            
+
         Raises:
             ConfigurationError: The compiler or command line arguments are incompatible with this target.
         """
@@ -618,7 +618,7 @@ class Target(Model):
                 # Target was not configured with a compiler in this role
                 continue
             compiler_path = compiler_record['path']
-            if (absolute_path and (compiler_path == absolute_path) or 
+            if (absolute_path and (compiler_path == absolute_path) or
                     (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
                 found.append(compiler_record)
             else:
@@ -627,7 +627,7 @@ class Target(Model):
                     compiler_record = compiler_ctrl.one(compiler_record['wrapped'])
                     known_compilers.append(compiler_record.installation())
                     compiler_path = compiler_record['path']
-                    if (absolute_path and (compiler_path == absolute_path) or 
+                    if (absolute_path and (compiler_path == absolute_path) or
                             (not absolute_path and (os.path.basename(compiler_path) == compiler_cmd))):
                         found.append(compiler_record)
                         break
@@ -640,7 +640,7 @@ class Target(Model):
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
         return found
-    
+
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         if not self.get('papi_source'):
             return []
@@ -648,9 +648,8 @@ class Target(Model):
 
     def tau_metrics(self):
         return self.get_installation('tau').tau_metrics()
-    
+
     def cupti_metrics(self):
         if not self.get('cuda'):
             return []
         # FIXME: not implemented
-

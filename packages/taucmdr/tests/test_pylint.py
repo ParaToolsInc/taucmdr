@@ -39,7 +39,7 @@ from taucmdr import tests
 
 class PylintTest(tests.TestCase):
     """Runs Pylint to make sure the code scores at least 9.0"""
-       
+
     def run_pylint(self, *args):
         cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
         cmd.extend(args)
@@ -47,21 +47,20 @@ class PylintTest(tests.TestCase):
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    shell=False, env=env, universal_newlines=True)
         return process.communicate()
-    
+
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
         self.assertFalse(stderr)
         try:
             version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
         except IndexError:
-            self.fail("Unable to parse pylint version string:\n%s" % stdout)           
+            self.fail("Unable to parse pylint version string:\n%s" % stdout)
         version = tuple(int(x) for x in version_parts)
         self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % str(version))
-    
+
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
         self.assertFalse(stderr)
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
         self.assertGreaterEqual(score, 9.0, "%s\nPylint score %s/10 is too low!" % (stdout, score))
-

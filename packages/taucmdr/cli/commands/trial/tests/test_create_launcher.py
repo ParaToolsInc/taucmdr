@@ -39,7 +39,7 @@ from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 
 class CreateLauncherTest(tests.TestCase):
     """Tests for :any:`trial.create` with an application launcher.
-    
+
     https://github.com/ParaToolsInc/taucmdr/issues/210
     """
 
@@ -53,7 +53,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
         self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./a.out')
- 
+
     def test_launcher_flag(self):
         self.reset_project_storage()
         self.copy_testfile('foo_launcher')
@@ -64,7 +64,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
         self.assertRegexpMatches(stdout, r'./foo_launcher tau_exec .* ./a.out')
-         
+
     def test_invalid_exe(self):
         self.reset_project_storage()
         self.copy_testfile('foo_launcher')
@@ -74,7 +74,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER", stdout)
         self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./invalid')
-         
+
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
     def test_mpirun(self):
@@ -104,14 +104,14 @@ class CreateLauncherTest(tests.TestCase):
         self.reset_project_storage(['--mpi'])
         self.assertManagedBuild(0, MPI_CC, ['-DTAU_MPI'], 'matmult.c')
         shutil.copy('./a.out', './b.out')
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, 
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd,
                                                        ['mpirun', '-np', '2', './a.out', ':', '-np', '2', './b.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
         self.assertRegexpMatches(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
-         
+
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
     def test_cafrun(self):
@@ -134,5 +134,3 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 9 profile files", stdout)
         self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
-
-

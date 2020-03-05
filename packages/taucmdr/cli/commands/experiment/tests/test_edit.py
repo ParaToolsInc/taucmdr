@@ -46,31 +46,31 @@ class EditTest(tests.TestCase):
         stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND, [])
         self.assertIn('too few arguments', stderr)
         self.assertFalse(stdout)
-        
+
     def test_invalid_experiment_name(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND, 
+        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND,
                                                           ['targ1-app2-profile', '--measurement', 'trace'])
         self.assertIn("No project-level experiment with name='targ1-app2-profile'.", stderr)
         self.assertFalse(stdout)
 
     def test_invalid_target(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND, 
+        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND,
                                                           ['targ1-app1-profile', '--target', 'no_such_targ'])
         self.assertIn("Invalid target: no_such_targ", stderr)
         self.assertFalse(stdout)
 
     def test_invalid_application(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND, 
+        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND,
                                                           ['targ1-app2-profile', '--application', 'no_such_app'])
         self.assertIn("Invalid application: no_such_app", stderr)
         self.assertFalse(stdout)
 
     def test_invalid_measurement(self):
         self.reset_project_storage()
-        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND, 
+        stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND,
                                                           ['targ1-app2-profile', '--measurement', 'no_such_meas'])
         self.assertIn("Invalid measurement: no_such_meas", stderr)
         self.assertFalse(stdout)
@@ -81,8 +81,8 @@ class EditTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, APPLICATION_COPY_COMMAND, ['app1', 'app2', '--openmp'])
         self.assertIn("Added application 'app2' to project configuration", stdout)
         self.assertFalse(stderr)
-        stdout, stderr = self.assertCommandReturnValue(0, EXPERIMENT_CREATE_COMMAND, 
-                                                       ['exp1', '--target', 'targ1', 
+        stdout, stderr = self.assertCommandReturnValue(0, EXPERIMENT_CREATE_COMMAND,
+                                                       ['exp1', '--target', 'targ1',
                                                         '--application', 'app1',
                                                         '--measurement', 'profile'])
         self.assertIn("Created a new experiment 'exp1'", stdout)
@@ -98,6 +98,5 @@ class EditTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, SELECT_COMMAND, ['app1', 'profile'])
         self.assertIn("elected experiment 'targ1-app1-profile'", stdout)
         self.assertFalse(stderr)
-        stdout, stderr = self.assertCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND, 
+        stdout, stderr = self.assertCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND,
                                                        ['targ1-app1-profile', '--application', 'app2'])
-

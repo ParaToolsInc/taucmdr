@@ -44,7 +44,7 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
 
 
 LOGGER = logger.get_logger(__name__)
- 
+
 REPOS = {None: 'http://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.gz'}
 
 LIBRARIES = {None: ['libbfd.a']}
@@ -52,7 +52,7 @@ LIBRARIES = {None: ['libbfd.a']}
 
 class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
-    
+
     def __init__(self, sources, target_arch, target_os, compilers):
         # binutils can't be built with PGI compilers so substitute GNU compilers instead
         if compilers[CC].unwrap().info.family is PGI:
@@ -61,7 +61,7 @@ class BinutilsInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build binutils) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources, 
+        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources,
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags):
@@ -116,15 +116,15 @@ class BinutilsInstallation(AutotoolsInstallation):
             sys.stdout.write(line.replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0'))
 
     def compiletime_config(self, opts=None, env=None):
-        """Configure compilation environment to use this software package. 
+        """Configure compilation environment to use this software package.
 
         Don't put `self.bin_path` in PATH since this offends ``ld`` on some systems.
-        
+
         Args:
             opts (list): Optional list of command line options.
             env (dict): Optional dictionary of environment variables.
-            
-        Returns: 
+
+        Returns:
             tuple: opts, env updated for the new environment.
         """
         opts = list(opts) if opts else []
@@ -133,15 +133,15 @@ class BinutilsInstallation(AutotoolsInstallation):
 
     def runtime_config(self, opts=None, env=None):
         """Configure runtime environment to use this software package.
-        
+
         Don't put `self.bin_path` in PATH since this offends ``ld`` on some systems
         but do put `self.lib_path` in LD_LIBRARY_PATH.
-        
+
         Args:
             opts (list): Optional list of command line options.
             env (dict): Optional dictionary of environment variables.
-            
-        Returns: 
+
+        Returns:
             tuple: opts, env updated for the new environment.
         """
         opts = list(opts) if opts else []
@@ -150,10 +150,9 @@ class BinutilsInstallation(AutotoolsInstallation):
             if sys.platform == 'darwin':
                 library_path = 'DYLD_LIBRARY_PATH'
             else:
-                library_path = 'LD_LIBRARY_PATH'   
+                library_path = 'LD_LIBRARY_PATH'
             try:
                 env[library_path] = os.pathsep.join([self.lib_path, env[library_path]])
             except KeyError:
                 env[library_path] = self.lib_path
         return list(set(opts)), env
-

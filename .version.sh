@@ -8,4 +8,3 @@ if ! [ -f VERSION ] ; then
   echo ${version:1} > VERSION
 fi
 cat VERSION
-

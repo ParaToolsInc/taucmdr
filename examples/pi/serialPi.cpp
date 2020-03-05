@@ -4,7 +4,7 @@
 #include <math.h>
 #include <climits>
 
-// This example is adapted from "Using MPI, second edition" 
+// This example is adapted from "Using MPI, second edition"
 // by Gropp, Lusk, and Skellum
 
 
@@ -23,7 +23,7 @@ double runWorker()
     double x;
     double y;
     bool notDone = true;
-    int in = 0; 
+    int in = 0;
     int out = 0;
     double epsilon = 0.00000001;
     double error;
@@ -62,5 +62,3 @@ int main( int argc, char* argv[] )
         std::cout << "Pi is " << pi << std::endl;
 
 }
-
-
