@@ -26,4 +26,4 @@ repos:
     - id: pretty-format-json
     - id: requirements-txt-fixer
     - id: sort-simple-yaml
-    - id: trailing-whitespace
+#    - id: trailing-whitespace
