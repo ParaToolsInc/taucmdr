@@ -2,7 +2,6 @@ language: generic
 
 os:
   - linux
-  dist: xenial
 
 jobs:
   include:
