@@ -2,8 +2,9 @@ language: generic
 
 os:
   - linux
+  dist: xenial
 
-matrix:
+jobs:
   include:
     - dist: trusty
       env: THIS_OS=trusty
@@ -18,8 +19,6 @@ branches:
 
 git:
   depth: 9999
-
-sudo: false
 
 env:
   global:
@@ -67,7 +66,7 @@ after_script:
 deploy:
   provider: script
   script: python setup.py build_sphinx --update-gh-pages --gh-origin-url "git@github.com:${TRAVIS_REPO_SLUG}.git" --gh-user-name "Travis-CI-bot" --gh-user-email "info@paratools.com" --gh-commit-msg "Updated documentation on Travis-CI job $TRAVIS_JOB_NUMBER at commit $TRAVIS_COMMIT"
-  skip_cleanup: true
+  cleanup: false
   on:
     all_branches: true
     condition: ( $TRAVIS_BRANCH = master || $TRAVIS_BRANCH = unstable ) && $TRAVIS_SECURE_ENV_VARS = true && $THIS_OS = bionic
@@ -79,4 +78,3 @@ notifications:
       - taucmdr-notify@paratools.com
     on_success: change  # options: [always|never|change]
     on_failure: change
-    on_start: never
