@@ -18,7 +18,7 @@ Step 3: Update the :any:`Measurement` model
 -------------------------------------------
 
 If the new feature alters the application profile (likely since why else
-would you have it?) then add a new attribute to :any:`Measurement` to 
+would you have it?) then add a new attribute to :any:`Measurement` to
 control if the new feature should be enabled or not.
 
 Step 4: Update the Common Framework
@@ -26,7 +26,6 @@ Step 4: Update the Common Framework
 
 With the new feature described in the model, update the Common Framework
 modules in :any:`tau.cf` to react to the new model attributes.  For
-example, you may need to add new parameters to 
+example, you may need to add new parameters to
 :any:`TauInstallation.__init__` so the installation object can configure
-TAU appropriatly and enable support for the new feature.  
-
+TAU appropriatly and enable support for the new feature.

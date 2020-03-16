@@ -8,6 +8,3 @@ simple.o: simple.c
 	@$(CC) -c $<
 clean:
 	/bin/rm -rf simple simple.o *.inst.* *.pdb  profile.* *.trc MULTI_* *.edf
-
-
-

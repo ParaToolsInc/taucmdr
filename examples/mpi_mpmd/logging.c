@@ -10,4 +10,3 @@ void init_logging()
   MPI_Comm_rank(MPI_COMM_WORLD, &WORLD_RANK);
   MPI_Comm_size(MPI_COMM_WORLD, &WORLD_SIZE);
 }
-

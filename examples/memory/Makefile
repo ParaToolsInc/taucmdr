@@ -1,8 +1,8 @@
 CXX = g++
-CXXFLAGS = 
+CXXFLAGS =
 
 LD = $(CXX)
-LDFLAGS	= 
+LDFLAGS	=
 LIBS =
 
 RM 	      	= /bin/rm -f
@@ -11,7 +11,7 @@ TARGET	      	= simple
 
 ##############################################
 
-all:		$(TARGET)	
+all:		$(TARGET)
 
 install: 	$(TARGET)
 
@@ -21,6 +21,6 @@ $(TARGET):	$(TARGET).o
 $(TARGET).o : $(TARGET).cpp
 	$(CXX) $(CFLAGS) -c $(TARGET).cpp
 
-clean: 	
+clean:
 	$(RM) $(TARGET).o $(TARGET)
 ##############################################

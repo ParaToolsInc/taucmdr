@@ -1,5 +1,5 @@
 F90= tau_f90.sh -tau_makefile=../../../include/Makefile -tau_options='-optVerbose -optKeepFiles -optTauSelectFile=select.tau -optMemDbg'
-# You may also invoke it 
+# You may also invoke it
 #F90= tau_f90.sh -tau_makefile=../../../include/Makefile -tau_options='-optVerbose -optKeepFiles -optDetectMemoryLeaks'
 
 matrix: matrix.f90

@@ -31,7 +31,7 @@ MPI compilers are a special case for several reasons including:
     1) No binary compatibility guarantee among MPI compilers.
     2) They're almost always wrappers, not actual compilers.
     3) They almost always depend on CPU compilers.
-    
+
 We keep a separate knowledge base for MPI compilers to simplify compiler
 identification and because TAU doesn't require MPI for all configurations.
 """
@@ -44,25 +44,25 @@ MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing I
                               FC=('MPI Fortran', ('MPI_FC', 'MPI_F77', 'MPI_F90')))
 
 SYSTEM = MPI_COMPILERS.add('System', show_wrapper_flags=['-show'],
-                           CC='mpicc', 
-                           CXX=('mpic++', 'mpicxx', 'mpiCC'), 
+                           CC='mpicc',
+                           CXX=('mpic++', 'mpicxx', 'mpiCC'),
                            FC=('mpiftn', 'mpif90', 'mpif77', 'mpifort'))
 
 INTEL = MPI_COMPILERS.add('Intel', show_wrapper_flags=['-show'],
-                          CC='mpiicc', 
-                          CXX='mpiicpc', 
+                          CC='mpiicc',
+                          CXX='mpiicpc',
                           FC='mpiifort')
 
 IBM = MPI_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                         version_flags=['-qversion'],
                         show_wrapper_flags=['-show'],
-                        CC=('mpixlc_r', 'mpixlc', 'mpicc'), 
+                        CC=('mpixlc_r', 'mpixlc', 'mpicc'),
                         CXX=('mpixlcxx_r', 'mpixlcxx', 'mpixlC_r', 'mpic++', 'mpicxx', 'mpiCC'),
-                        FC=('mpixlf_r', 'mpixlf', 'mpixlf90_r', 'mpixlf90', 'mpixlf95_r', 'mpixlf95', 
-                            'mpixlf2003_r', 'mpixlf2003', 'mpixlf2008_r', 'mpixlf2008', 'mpixlf77_r', 'mpixlf77', 
+                        FC=('mpixlf_r', 'mpixlf', 'mpixlf90_r', 'mpixlf90', 'mpixlf95_r', 'mpixlf95',
+                            'mpixlf2003_r', 'mpixlf2003', 'mpixlf2008_r', 'mpixlf2008', 'mpixlf77_r', 'mpixlf77',
                             'mpifort', 'mpif90', 'mpif77'))
 
-CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                          version_flags=['-craype-verbose', '--version', '-E'],
                          show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                          CC='cc', CXX='CC', FC='ftn')
@@ -70,4 +70,3 @@ CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray',
 MPI_CC = MPI_COMPILERS.roles['CC']
 MPI_CXX = MPI_COMPILERS.roles['CXX']
 MPI_FC = MPI_COMPILERS.roles['FC']
-

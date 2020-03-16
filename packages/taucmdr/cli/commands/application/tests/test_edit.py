@@ -56,11 +56,10 @@ class EditTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('application edit <application_name> [arguments]', stderr)
         self.assertIn('application edit: error: No project-level application with name', stderr)
-        
+
     def test_wrongarg(self):
         self.reset_project_storage()
         argv = ['app1', '--use-mpi', 'T']
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('application edit <application_name> [arguments]', stderr)
         self.assertIn('application edit: error: unrecognized arguments', stderr)
-

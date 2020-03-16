@@ -3,7 +3,7 @@ CFLAGS = -O -g -fopenmp
 
 LD = $(CC)
 LDFLAGS = $(CFLAGS)
-LIBS= 
+LIBS=
 
 COMMON_SRC = logging.c
 
@@ -58,4 +58,3 @@ worker%.c: worker.c
 
 clean:
 	rm -f $(OBJ) $(EXES) $(WORKER_SRC)
-

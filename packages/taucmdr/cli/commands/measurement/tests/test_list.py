@@ -51,4 +51,3 @@ class ListTest(tests.TestCase):
         stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['INVALID_NAME'])
         self.assertIn("No measurement with name='INVALID_NAME'", stderr)
         self.assertFalse(stdout)
-

@@ -20,10 +20,10 @@ repos:
     - id: check-yaml
     - id: debug-statements
     - id: detect-private-key
-#    - id: end-of-file-fixer
+    - id: end-of-file-fixer
     - id: mixed-line-ending
 #    - id: name-tests-test
     - id: pretty-format-json
     - id: requirements-txt-fixer
     - id: sort-simple-yaml
-#    - id: trailing-whitespace
+    - id: trailing-whitespace

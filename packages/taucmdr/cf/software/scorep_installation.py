@@ -100,20 +100,20 @@ class ScorepInstallation(AutotoolsInstallation):
     # Settle down pylint.  Score-P is complex so we need a few extra arguments.
     # pylint: disable=too-many-arguments
 
-    def __init__(self, sources, target_arch, target_os, compilers, 
-                 use_mpi=False, 
-                 use_shmem=False, 
-                 use_binutils=False, 
-                 use_libunwind=False, 
-                 use_papi=False, 
+    def __init__(self, sources, target_arch, target_os, compilers,
+                 use_mpi=False,
+                 use_shmem=False,
+                 use_binutils=False,
+                 use_libunwind=False,
+                 use_papi=False,
                  use_pdt=False):
-        super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os, 
+        super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os,
                                                  compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
-        for pkg, used in (('binutils', use_binutils), 
-                          ('libunwind', use_libunwind), 
-                          ('papi', use_papi), 
+        for pkg, used in (('binutils', use_binutils),
+                          ('libunwind', use_libunwind),
+                          ('papi', use_papi),
                           ('pdt', use_pdt)):
             if used:
                 self.add_dependency(pkg, sources)
@@ -127,7 +127,7 @@ class ScorepInstallation(AutotoolsInstallation):
         return uid_parts
 
     def _get_flags(self):
-        flags = ['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube', 
+        flags = ['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube',
                  '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking']
         if self.target_arch in (X86_64, IBM64, PPC64, PPC64LE):
             suites = {host.INTEL: 'intel', host.IBM: 'ibm', host.PGI: 'pgi', host.GNU: 'gcc'}
@@ -154,7 +154,7 @@ class ScorepInstallation(AutotoolsInstallation):
             flags.append('--with-libbfd=%s' % binutils.install_prefix)
         if libunwind:
             flags.append('--with-libunwind=%s' % libunwind.install_prefix)
-        if papi:       
+        if papi:
             flags.append('--with-papi=%s' % papi.install_prefix)
             flags.append('--with-papi-header=%s' % papi.include_path)
             flags.append('--with-papi-lib=%s' % papi.lib_path)
@@ -194,10 +194,10 @@ class ScorepInstallation(AutotoolsInstallation):
             if flag.startswith("'--prefix="):
                 extra_flags.remove(flag)
         if found_flags != set(flags):
-            raise SoftwarePackageError("Score-P installation at '%s' was not configured with flags %s" % 
+            raise SoftwarePackageError("Score-P installation at '%s' was not configured with flags %s" %
                                        (self.install_prefix, ' '.join(flags)))
         if extra_flags:
-            raise SoftwarePackageError("Score-P installation at '%s' was configured with extra flags %s" % 
+            raise SoftwarePackageError("Score-P installation at '%s' was configured with extra flags %s" %
                                        (self.install_prefix, ' '.join(extra_flags)))
 
     def configure(self, flags):
@@ -209,4 +209,3 @@ class ScorepInstallation(AutotoolsInstallation):
         #               support for python 3. Use PYTHON=: to disable python support.
         os.environ['PYTHON'] = ':'
         return super(ScorepInstallation, self).configure(flags)
-

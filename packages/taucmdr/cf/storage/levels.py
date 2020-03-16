@@ -27,12 +27,12 @@
 #
 """TAU Commander hierarchical file and record storage system.
 
-System-level records are globally readable and writable, depending on the user's 
+System-level records are globally readable and writable, depending on the user's
 system access level.  System-level is a good place for software package installations
 and some system-specific configurations, e.g. target or compiler configurations.
 
 User-level records are readable and writable by (at least) the user.  User-level is also
-where software is installed when the user doesn't have write access to :any:`SYSTEM_PREFIX`.  
+where software is installed when the user doesn't have write access to :any:`SYSTEM_PREFIX`.
 It's a good place for user-specific records, i.e. preferences or encrypted login credentials.
 
 Project-level records define the project and its member components.  The user may also
@@ -72,4 +72,3 @@ def highest_writable_storage():
         else:
             raise StorageError("No writable storage levels")
         return highest_writable_storage.value
-
