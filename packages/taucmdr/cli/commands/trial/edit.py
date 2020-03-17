@@ -41,7 +41,7 @@ class TrialEditCommand(EditCommand):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         if not ctrl.exists({key_attr: key, 'experiment': expr.eid}):
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key)) 
+            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
         ctrl.update(data, {key_attr: key, 'experiment': expr.eid})
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS

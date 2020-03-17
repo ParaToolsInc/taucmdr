@@ -37,30 +37,30 @@ HELP_PAGE = """
  TAU Commander Build
 ==============================================================================
 
-After configuring TAU Commander and placing the bin directory in your path 
-build with “tau” prefixes. This would be something like `tau cc`, 
-`tau f77`, or `tau mpicxx`, . . .  Edit the Makefile to use compilers 
-with `tau` prefixes.  Changing the selected experiment typically will 
-require that you rebuild your application binaries – depending on 
-what changes.  TAU Commander will remind you to rebuild your binary 
-executable. 
+After configuring TAU Commander and placing the bin directory in your path
+build with “tau” prefixes. This would be something like `tau cc`,
+`tau f77`, or `tau mpicxx`, . . .  Edit the Makefile to use compilers
+with `tau` prefixes.  Changing the selected experiment typically will
+require that you rebuild your application binaries – depending on
+what changes.  TAU Commander will remind you to rebuild your binary
+executable.
 
-The list of compilers suported by TAU Commander is in the list below this help 
+The list of compilers suported by TAU Commander is in the list below this help
 section.
- 
-To selectively control instrumentation for files or routines that are part of 
-the binary to be analyzed, see the select-file options in the TAU Commander 
-Applications section. 
+
+To selectively control instrumentation for files or routines that are part of
+the binary to be analyzed, see the select-file options in the TAU Commander
+Applications section.
 __________________________________________________________________________
 """
 
 class BuildCommand(AbstractCommand):
     """``build`` subcommand."""
-    
+
     @staticmethod
     def is_compatible(cmd):
         """Check if this subcommand can work with the given command.
-        
+
         Args:
             cmd (str): A command from the command line, e.g. sys.argv[1].
 
@@ -70,7 +70,7 @@ class BuildCommand(AbstractCommand):
         return os.path.basename(cmd) in [info.command for info in Knowledgebase.all_compilers()]
 
     def _construct_parser(self):
-        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr) 
+        parts = ['  %s  %s' % ('{:<15}'.format(comp.command), comp.short_descr)
                  for comp in Knowledgebase.all_compilers()]
         epilog = "known compiler commands and their roles:\n%s\n" % '\n'.join(sorted(parts))
         usage = "%s <command> [arguments]" % self.command
@@ -78,7 +78,7 @@ class BuildCommand(AbstractCommand):
         parser.add_argument('cmd',
                             help="Compiler or linker command, e.g. 'gcc'",
                             metavar='<command>')
-        parser.add_argument('cmd_args', 
+        parser.add_argument('cmd_args',
                             help="Compiler arguments",
                             metavar='[arguments]',
                             nargs=arguments.REMAINDER)

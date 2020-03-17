@@ -61,7 +61,7 @@ class PapiInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os, 
+        super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, None)
         self._xml_event_info = None
 
@@ -93,19 +93,19 @@ class PapiInstallation(AutotoolsInstallation):
             xml_event_info = util.get_command_output(os.path.join(self.bin_path, 'papi_xml_event_info'))
             self._xml_event_info = ElementTree.fromstring(xml_event_info)
         return self._xml_event_info
-    
+
     def parse_metrics(self, metrics):
         """Extracts PAPI metrics from a list of metrics and strips TAU's metric prefixes."""
         return [re.sub('PAPI_NATIVE[:_]', '', metric) for metric in metrics if metric.startswith("PAPI")]
-    
+
     def check_metrics(self, metrics):
         """Checks compatibility of PAPI metrics.
-        
+
         Extracts all PAPI metrics from `metrics` and executes papi_event_chooser to check compatibility.
-        
+
         Args:
             metrics (list): List of metrics.
-            
+
         Raises:
             ConfigurationError: PAPI metrics are not compatible on the current host.
         """
@@ -152,15 +152,15 @@ class PapiInstallation(AutotoolsInstallation):
 
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         """List PAPI available metrics.
-        
+
         Returns a list of (name, description) tuples corresponding to the
         requested PAPI event type and possibly the event modifiers.
-        
+
         Args:
             event_type (str): Either "PRESET" or "NATIVE".
-            include_modifiers (bool): If True include event modifiers, 
+            include_modifiers (bool): If True include event modifiers,
                                       e.g. BR_INST_EXEC:NONTAKEN_COND as well as BR_INST_EXEC.
-        
+
         Returns:
             list: List of event name/description tuples.
         """

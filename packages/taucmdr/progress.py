@@ -83,7 +83,7 @@ def load_average():
 
 class ProgressIndicator(object):
     """A fancy progress indicator to entertain antsy users."""
-    
+
     _spinner = itertools.cycle(['-', '\\', '|', '/'])
 
     _indent = '    '
@@ -91,7 +91,7 @@ class ProgressIndicator(object):
     def __init__(self, label, total_size=0, block_size=1, show_cpu=True, auto_refresh=0.25):
         mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', 'full').lower()
         if mode not in ('full', 'disabled'):
-            raise ConfigurationError('Invalid value for __TAUCMDR_PROGRESS_BARS__ environment variable: %s' % mode)               
+            raise ConfigurationError('Invalid value for __TAUCMDR_PROGRESS_BARS__ environment variable: %s' % mode)
         self.label = label
         self.count = 0
         self.total_size = total_size
@@ -114,7 +114,7 @@ class ProgressIndicator(object):
             self.update()
             self._updating.notify()
             self._updating.release()
-        
+
     def __enter__(self):
         self.push_phase(self.label)
         return self
@@ -122,26 +122,26 @@ class ProgressIndicator(object):
     def __exit__(self, unused_exc_type, unused_exc_value, unused_traceback):
         self.complete()
         return False
-    
+
     def _line_reset(self):
         sys.stdout.write('\r')
         sys.stdout.write(logger.COLORED_LINE_MARKER)
         self._line_remaining = logger.LINE_WIDTH
-        
+
     def _line_append(self, text):
         from taucmdr import util
         sys.stdout.write(text)
         self._line_remaining -= len(util.uncolor_text(text))
-        
+
     def _line_flush(self, newline=False):
         self._line_append(' '*self._line_remaining)
         if newline:
             sys.stdout.write('\n')
         sys.stdout.flush()
         assert self._line_remaining == 0, str(self._line_remaining)
-        
+
     def _draw_bar(self, percent, width, char, *args, **kwargs):
-        from taucmdr import util          
+        from taucmdr import util
         bar_on = max(int(percent*width), 1)
         bar_off = width - bar_on
         self._line_append(util.color_text(char*bar_on, *args, **kwargs))

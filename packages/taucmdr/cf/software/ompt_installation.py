@@ -51,7 +51,7 @@ class OmptInstallation(CMakeInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         if sources['ompt'] == 'download-tr6':
             sources['ompt'] = 'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz'
-        super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os, 
+        super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def cmake(self, flags):

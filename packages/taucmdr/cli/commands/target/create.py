@@ -86,7 +86,7 @@ class TargetCreateCommand(CreateCommand):
         if len(matches) == 1:
             tau_arch = matches[0]
         elif len(matches) == 0:
-            raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" % 
+            raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" %
                                      (makefile, tau_arch_name))
         else:
             for arch in matches:
@@ -96,7 +96,7 @@ class TargetCreateCommand(CreateCommand):
             else:
                 parts = ["TAU Makefile '%s' targets an ambiguous TAU architecture: %s" % (makefile, tau_arch_name),
                          "It could be any of these:"]
-                parts.extend(["  - %s on %s" % (arch.operating_system.name, arch.architecture.name) 
+                parts.extend(["  - %s on %s" % (arch.operating_system.name, arch.architecture.name)
                               for arch in matches])
                 raise ConfigurationError("\n".join(parts))
         self.logger.info("Parsing TAU Makefile '%s' to populate command line arguments:", makefile)
@@ -108,7 +108,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --taucmdr='%s'", args.tau_source)
         with open(makefile, 'r') as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
-            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))), 
+            package_parts = {"BFDINCLUDE": ("binutils_source", lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))),
                              "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
                              "PAPIDIR": ("papi_source", os.path.abspath),
                              "PDTDIR": ("pdt_source", os.path.abspath),
@@ -239,7 +239,7 @@ class TargetCreateCommand(CreateCommand):
             family_default = family_count.most_common()[0][0].name
         except IndexError:
             family_default = arguments.SUPPRESS
-        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case. 
+        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case.
         keyword = kbase.keyword
         if keyword.upper() != keyword:
             keyword = keyword.lower()
@@ -269,7 +269,7 @@ class TargetCreateCommand(CreateCommand):
         # Crays are weird. Don't use the detected host family as a hint for MPI or SHMEM compilers
         # so that we'll always chose the Cray compiler wrappers.
         hint = host_family_name if HOST_OS is not CRAY_CNL else None
-        
+
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         self._configure_argument_group(group, MPI_COMPILERS, '--mpi-wrappers', 'mpi_family', hint)
 
@@ -294,10 +294,10 @@ class TargetCreateCommand(CreateCommand):
 
     def parse_compiler_flags(self, args):
         """Create a dictionary of :any:`InstalledCompiler` instances from commandl line arguments.
-        
+
         Args:
             args: A namespace of parsed command line arguments.
-            
+
         Returns:
             dict: InstalledCompiler instances indexed by role keyword.
         """

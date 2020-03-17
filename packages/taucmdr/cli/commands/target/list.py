@@ -38,15 +38,15 @@ from taucmdr.model.compiler import Compiler
 DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch', 'value': 'host_arch'},
-                     {'header': 'Host Compilers', 'function': 
+                     {'header': 'Host Compilers', 'function':
                       lambda data: data[CC.keyword]['family']},
-                     {'header': 'MPI Compilers', 'function': 
+                     {'header': 'MPI Compilers', 'function':
                       lambda data: data.get(MPI_CC.keyword, {'family': 'None'})['family']},
-                     {'header': 'SHMEM Compilers', 'function': 
+                     {'header': 'SHMEM Compilers', 'function':
                       lambda data: data.get(SHMEM_CC.keyword, {'family': 'None'})['family']}]
 
 class TargetListCommand(ListCommand):
-    
+
     def _format_long_item(self, key, val):
         fmt_key, fmt_val, flags, description = super(TargetListCommand, self)._format_long_item(key, val)
         attrs = self.model.attributes[key]

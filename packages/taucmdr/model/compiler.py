@@ -94,28 +94,28 @@ def attributes():
 
 class CompilerController(Controller):
     """Compiler data controller."""
-    
+
     def register(self, comp):
         """Records information about an installed compiler command in the database.
-        
+
         If the compiler has already been registered then do not update the database.
-        
+
         Args:
             comp (InstalledCompiler): Information about an installed compiler.
-            
+
         Returns:
             Compiler: Data controller for the installed compiler's data.
         """
         found = self.one({'uid': comp.uid})
         if not found:
             LOGGER.debug("Registering compiler '%s' (%s)", comp.absolute_path, comp.info.short_descr)
-            data = {'path': comp.absolute_path, 
-                    'family': comp.info.family.name, 
+            data = {'path': comp.absolute_path,
+                    'family': comp.info.family.name,
                     'role': comp.info.role.keyword}
             for attr in 'include_path', 'library_path', 'compiler_flags', 'libraries':
                 value = getattr(comp, attr)
                 if value:
-                    data[attr] = value 
+                    data[attr] = value
             if comp.wrapped:
                 data['wrapped'] = self.register(comp.wrapped).eid
             found = self.one(data)
@@ -125,14 +125,14 @@ class CompilerController(Controller):
             elif found['uid'] != comp.uid:
                 LOGGER.warning("%s '%s' has changed!"
                                " The unique ID was %s when the TAU project was created, but now it's %s."
-                               " TAU will attempt to continue but may fail later on.", 
+                               " TAU will attempt to continue but may fail later on.",
                                comp.info.short_descr, comp.absolute_path, found['uid'], comp.uid)
         return found
 
 
 class Compiler(Model):
     """Compiler data model."""
-    
+
     __attributes__ = attributes
 
     __controller__ = CompilerController
@@ -145,29 +145,29 @@ class Compiler(Model):
         if len(info_list) != 1:
             raise InternalError("Zero or more than one known compilers match '%s'" % self)
         return info_list[0]
-       
+
     def _verify_core_attrs(self, comp, msg_parts):
         fatal = False
         if comp.absolute_path != self['path']:
             msg_parts.append("Compiler moved from '%s' to '%s'." % (self['path'], comp.absolute_path))
         if comp.info.family.name != self['family']:
             fatal = True
-            msg_parts.append("It was a %s compiler but now it's a %s compiler." % 
+            msg_parts.append("It was a %s compiler but now it's a %s compiler." %
                              (self['family'], comp.info.family.name))
         if comp.info.role.keyword != self['role']:
-            msg_parts.append("It was a %s compiler but now it's a %s compiler." % 
+            msg_parts.append("It was a %s compiler but now it's a %s compiler." %
                              (self['role'], comp.info.role.keyword))
         return fatal
 
     def verify(self):
         """Checks that the system state matches the recorded compiler information.
-        
+
         May execute the compiler or other commands, check filesystem paths, and check environment variables
         to determine if this compiler record is still valid.  This operation may be expensive.
-        
+
         Returns:
             InstalledCompiler: Information on the compiler installation matching this record.
-        
+
         Raises:
             ConfigurationError: This compiler record is no longer valid.
         """
@@ -189,7 +189,7 @@ class Compiler(Model):
                 old_wrapped = self.populate('wrapped')
                 while 'wrapped' in old_wrapped:
                     old_wrapped = self.populate('wrapped')
-                # old_wrapped is a Compiler instance so this isn't really a protected access violation 
+                # old_wrapped is a Compiler instance so this isn't really a protected access violation
                 # pylint: disable=protected-access
                 fatal = fatal or old_wrapped._verify_core_attrs(new_wrapped, msg_parts)
                 if not fatal:
@@ -203,18 +203,18 @@ class Compiler(Model):
                         msg_parts.append('Linked libraries have changed.')
         msg = "\n  ".join(msg_parts)
         if fatal:
-            raise ConfigurationError(msg, 
-                                     "Check loaded environment modules", 
+            raise ConfigurationError(msg,
+                                     "Check loaded environment modules",
                                      "Check environment variables, especially PATH",
                                      "Contact your system administrator")
         else:
             LOGGER.warning(msg + ("\n\nCheck loaded environment modules and environment variables.\n"
                                   "Attempting to continue.  Compilation may fail later on."))
         return comp
-    
+
     def installation(self):
         """Gets information about this compiler installation.
-        
+
         Returns:
             InstalledCompiler: Information about the installed compiler command.
         """
@@ -224,10 +224,10 @@ class Compiler(Model):
         except KeyError:
             comp = InstalledCompiler(self['path'], info, uid=self['uid'])
         else:
-            comp = InstalledCompiler(self['path'], info, uid=self['uid'], 
-                                     wrapped=wrapped.installation(), 
-                                     include_path=self.get('include_path'), 
-                                     library_path=self.get('library_path'), 
-                                     compiler_flags=self.get('compiler_flags'), 
+            comp = InstalledCompiler(self['path'], info, uid=self['uid'],
+                                     wrapped=wrapped.installation(),
+                                     include_path=self.get('include_path'),
+                                     library_path=self.get('library_path'),
+                                     compiler_flags=self.get('compiler_flags'),
                                      libraries=self.get('libraries'))
         return comp

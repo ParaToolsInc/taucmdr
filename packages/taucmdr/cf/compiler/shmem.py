@@ -42,10 +42,10 @@ OPENSHMEM = SHMEM_COMPILERS.add('OpenSHMEM',
                                 CC='oshcc', CXX=('oshcxx', 'oshc++', 'oshCC'), FC='oshfort')
 
 SOS = SHMEM_COMPILERS.add('SOS',
-                          show_wrapper_flags=['-show'], 
+                          show_wrapper_flags=['-show'],
                           CC='oshcc', CXX=('oshc++', 'oshCC'), FC='oshfort')
 
-CRAY_SHMEM = SHMEM_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+CRAY_SHMEM = SHMEM_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                                  version_flags=['-craype-verbose', '--version', '-E'],
                                  show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                                  CC='cc', CXX='CC', FC='ftn')

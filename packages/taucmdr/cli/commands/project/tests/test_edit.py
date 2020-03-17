@@ -52,7 +52,7 @@ class EditTest(tests.TestCase):
         self.assertIsNone(proj_ctrl.one({'name': 'proj1'}))
         self.assertIsNotNone(proj_ctrl.one({'name': 'proj2'}))
         self.assertCommandReturnValue(0, edit.COMMAND, ['proj2', '--new-name', 'proj1'])
-    
+
     def test_wrongname(self):
         self.reset_project_storage()
         argv = ['proj2', '--new-name', 'proj3']
@@ -60,7 +60,7 @@ class EditTest(tests.TestCase):
         self.assertIn('project edit <project_name> [arguments]', stderr)
         self.assertIn('project edit: error', stderr)
         self.assertIn('is not a project name.', stderr)
-        
+
     def test_wrongarg(self):
         self.reset_project_storage()
         argv = ['app1', '--arg', 'arg1']

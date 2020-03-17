@@ -59,30 +59,30 @@ class MainCommand(AbstractCommand):
         summary_parts = [util.color_text("TAU Commander %s" % TAUCMDR_VERSION, 'red', attrs=['bold']),
                          util.color_text(" [ ", attrs=['bold']),
                          util.color_text(taucmdr.TAUCMDR_URL, 'cyan', attrs=['bold']),
-                         util.color_text(" ]", attrs=['bold'])] 
+                         util.color_text(" ]", attrs=['bold'])]
         super(MainCommand, self).__init__(__name__, summary_fmt=''.join(summary_parts), help_page_fmt=HELP_PAGE_FMT)
         self.command = os.path.basename(TAUCMDR_SCRIPT)
-    
+
     def _construct_parser(self):
         usage = "%s [arguments] <subcommand> [options]"  % self.command
         _green = lambda x: "{:<35}".format(util.color_text(x, 'green'))
         epilog_parts = ["", cli.commands_description(), "",
                         util.color_text("Shortcuts:", attrs=["bold"]),
-                        _green("  %(command)s <compiler>") + "Execute a compiler command", 
+                        _green("  %(command)s <compiler>") + "Execute a compiler command",
                         "                  - Example: %(command)s gcc *.c -o a.out",
                         "                  - Alias for '%(command)s build <compiler>'",
                         _green("  %(command)s <program>") + "Gather data from a program",
                         "                  - Example: %(command)s ./a.out",
                         "                  - Alias for '%(command)s trial create <program>'",
                         _green("  %(command)s metrics") + "Show metrics available in the current experiment",
-                        "                  - Alias for '%(command)s target metrics'",                       
+                        "                  - Alias for '%(command)s target metrics'",
                         _green("  %(command)s select") + "Select configuration objects to create a new experiment",
                         "                  - Alias for '%(command)s experiment create'",
                         _green("  %(command)s show") + "Show data from the most recent trial",
                         "                  - Alias for '%(command)s trial show'",
                         "",
                         "See `%(command)s help <subcommand>` for more information on a subcommand."]
-        epilog = '\n'.join(epilog_parts) % {'color_command': util.color_text(self.command, 'cyan'), 
+        epilog = '\n'.join(epilog_parts) % {'color_command': util.color_text(self.command, 'cyan'),
                                             'command': self.command}
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
@@ -106,9 +106,9 @@ class MainCommand(AbstractCommand):
                            help="suppress all output except error messages",
                            const='ERROR',
                            default=arguments.SUPPRESS,
-                           action='store_const')        
+                           action='store_const')
         return parser
-            
+
     def main(self, argv):
         """Program entry point.
 
@@ -121,7 +121,7 @@ class MainCommand(AbstractCommand):
         args = self._parse_args(argv)
         cmd = args.command
         cmd_args = args.options
-        
+
         log_level = getattr(args, 'verbose', getattr(args, 'quiet', logger.LOG_LEVEL))
         logger.set_log_level(log_level)
         LOGGER.debug('Arguments: %s', args)
@@ -155,7 +155,7 @@ class MainCommand(AbstractCommand):
             return cli.execute_command(shortcut, cmd_args)
         else:
             LOGGER.debug('No shortcut found for %r', cmd)
-     
+
         # Not sure what to do at this point, so advise the user and exit
         LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", TAUCMDR_SCRIPT, cmd)
         return cli.execute_command(['help'], [cmd])

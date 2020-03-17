@@ -34,7 +34,7 @@ HELP_PAGE = """
 TAU Commander Target:
 ========================================================================
 
-The Target settings define the environment including: the host architecture, 
+The Target settings define the environment including: the host architecture,
 compiler family and instaled software libraries.
 
 Creating new targets:

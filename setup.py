@@ -32,7 +32,7 @@ documentation, and unit testing are all handled from this script.
 
 **IMPORTANT**
 It is assumed that this script is run with the same python interpreter as
-TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.   
+TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.
 """
 
 
@@ -49,10 +49,10 @@ DESCRIPTION = "An intuitive interface for the TAU Performance System"
 # Package long description
 LONG_DESCRIPTION = \
 """TAU Commander from ParaTools, Inc. is a production-grade performance engineering solution that makes
-The TAU Performance System users more productive. It presents a simple, intuitive, and systematic 
-interface that guides users through performance engineering workflows and offers constructive 
+The TAU Performance System users more productive. It presents a simple, intuitive, and systematic
+interface that guides users through performance engineering workflows and offers constructive
 feedback in case of error. TAU Commander also enhances the performance engineer's ability to mine
-actionable information from the application performance data by connecting to a suite of cloud-based 
+actionable information from the application performance data by connecting to a suite of cloud-based
 data analysis, storage, visualization, and reporting services."""
 
 # Package software license
@@ -126,7 +126,7 @@ except ImportError:
         def initialize_options(self):
             pass
         def finalize_options(self):
-            pass 
+            pass
         def run(self):
             print "Sphinx must be installed to generate developer documentation."
             sys.exit(-1)
@@ -134,7 +134,7 @@ except ImportError:
 else:
     class BuildSphinx(BuildDoc):
         """Customize the build_sphinx command.
-        
+
         Copy source files into the build directory to prevent generated files from mixing
         with content files, run sphinx-apidoc to auto-document the "taucmdr" package, then
         proceed with normal build_sphinx behavior.
@@ -146,7 +146,7 @@ else:
                                 ('gh-user-email=', None, 'user.email in git config'),
                                 ('gh-commit-msg=', None, 'Commit message for gh-pages log')]
         user_options = BuildDoc.user_options + _custom_user_options
-        
+
         def initialize_options(self):
             BuildDoc.initialize_options(self)
             self.update_gh_pages = False
@@ -154,7 +154,7 @@ else:
             self.gh_user_name = None # Use github global conf
             self.gh_user_email = None # Use github global conf
             self.gh_commit_msg = "Updated documentation via build_sphinx"
-    
+
         def _shell(self, cmd, cwd=None):
             try:
                 with open(os.devnull, 'w') as fnull:
@@ -162,22 +162,22 @@ else:
             except subprocess.CalledProcessError as err:
                 sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd[:2]) + ' ...', err.returncode))
                 sys.exit(err.returncode)
-    
+
         def _clone_gh_pages(self):
             shutil.rmtree(self.builder_target_dir, ignore_errors=True)
-            cmd = ['git', 'clone', self.gh_origin_url, 
+            cmd = ['git', 'clone', self.gh_origin_url,
                    '-q', '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
             self._shell(cmd, cwd=self.build_dir)
             if self.gh_user_name:
                 self._shell(['git', 'config', 'user.name', self.gh_user_name])
             if self.gh_user_email:
                 self._shell(['git', 'config', 'user.email', self.gh_user_email])
-        
+
         def _push_gh_pages(self):
             self._shell(['git', 'add', '-A', '.'])
             self._shell(['git', 'commit', '-q', '-m', self.gh_commit_msg])
             self._shell(['git', 'push', '-q'])
-            
+
         def _copy_docs_source(self):
             copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
             shutil.rmtree(copy_source_dir, ignore_errors=True)
@@ -185,7 +185,7 @@ else:
             # Distuilts defines attributes in the initialize_options() method
             # pylint: disable=attribute-defined-outside-init
             self.source_dir = copy_source_dir
-    
+
         def _generate_api_docs(self):
             package_source_dir = os.path.join(PACKAGE_TOPDIR, self.distribution.package_dir[''], 'taucmdr')
             sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
@@ -193,7 +193,7 @@ else:
                                 '-f', # Overwrite existing files
                                 '-e', # Put documentation for each module on its own page
                                 '-o', self.source_dir, package_source_dir])
-    
+
         def run(self):
             if self.update_gh_pages:
                 self._clone_gh_pages()
@@ -210,14 +210,14 @@ class Test(TestCommand):
     _custom_user_options = [('system-sandbox', 'S', "Sandbox system storage when testing"),
                             ('user-sandbox', 'U', "Sandbox user storage when testing")]
     user_options = TestCommand.user_options + _custom_user_options
-    
+
     def initialize_options(self):
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
         TestCommand.initialize_options(self)
         self.system_sandbox = False
         self.user_sandbox = False
-    
+
     def run_tests(self):
         os.environ['__TAUCMDR_DISABLE_PAGER__'] = '1'
         if self.system_sandbox:
@@ -244,7 +244,7 @@ class InstallLib(InstallLibCommand):
 
     def initialize_options(self):
         InstallLibCommand.initialize_options(self)
-        
+
     def finalize_options(self):
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
@@ -260,7 +260,7 @@ class Install(InstallCommand):
 
     def initialize_options(self):
         InstallCommand.initialize_options(self)
-        
+
     def finalize_options(self):
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
@@ -270,33 +270,33 @@ class Install(InstallCommand):
         self.install_data = os.path.join(self.prefix)
         self.record = os.path.join(self.prefix, 'install.log')
         self.optimize = 1
-        
+
     def run(self):
         from taucmdr import util
         InstallCommand.run(self)
         util.mkdirp(os.path.join(self.prefix, 'system'))
         shutil.move(os.path.join(self.prefix, 'bin', 'system_configure'),
                     os.path.join(self.prefix, 'system', 'configure'))
-        
+
 
 class Release(SDistCommand):
     """Build release packages."""
-    
+
     description = "Build release packages."
-    
-    user_options = (SDistCommand.user_options + 
+
+    user_options = (SDistCommand.user_options +
                     [('target-arch=', None, "Target architecture"),
                      ('target-os=', None, "Target operating system"),
                      ('web', None, "Build a web-based distribution"),
                      ('all', None, "Build all-in-one packages for all supported (arch, os) combinations")])
-    
+
     def initialize_options(self):
         SDistCommand.initialize_options(self)
         self.target_arch = None
         self.target_os = None
         self.web = False
         self.all = False
-        
+
     def finalize_options(self):
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
@@ -321,7 +321,7 @@ class Release(SDistCommand):
                 print 'Invalid operating system: %s' % self.target_os
                 print 'Known operating system: %s' % OperatingSystem.keys()
                 sys.exit(-1)
-    
+
     def _software_packages(self):
         import taucmdr.cf.software
         packages = []
@@ -333,7 +333,7 @@ class Release(SDistCommand):
     def _download(self, pkg):
         from taucmdr import util
         module_name = pkg + '_installation'
-        repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)), 
+        repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)),
                                    globals(), locals(), ['REPOS'], -1), 'REPOS')
         default = repos[None]
         try:
@@ -351,7 +351,7 @@ class Release(SDistCommand):
                 cache = pickle.load(fin)
         except IOError:
             cache = {}
-        if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg): 
+        if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
             print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
             util.download(src, cache_pkg)
         cache[cache_pkg] = src
@@ -381,7 +381,7 @@ class Release(SDistCommand):
             return
         # Use `make` to download Python because we keep the Tau/Anaconda target translation in the Makefile
         subprocess.call(['make', 'python_download', 'HOST_ARCH='+make_arch, 'HOST_OS='+make_os])
-        
+
     def _build_web_release(self):
         SDistCommand.run(self)
         for path in self.archive_files:
@@ -399,7 +399,7 @@ class Release(SDistCommand):
             dest = os.path.join(self.dist_dir, dest)
             shutil.move(src, dest)
             print "Wrote '%s'" % dest
-            
+
     def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
         targets = set([(magic.architecture, magic.operating_system) for magic in TauMagic.all()])
@@ -407,7 +407,7 @@ class Release(SDistCommand):
             targ_arch, targ_os = target
             # Setuptools is a dirty, stateful animal.
             # Have to create a new subprocess to hack around setuptools' stateful implementation of sdist.
-            subprocess.call(['python', 'setup.py', 'release', 
+            subprocess.call(['python', 'setup.py', 'release',
                              '--target-arch', str(targ_arch),
                              '--target-os', str(targ_os)])
         subprocess.call(['python', 'setup.py', 'release', '--web'])
@@ -418,7 +418,7 @@ class Release(SDistCommand):
         # Update package version number
         for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-            sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version() 
+            sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version()
                              if line.startswith('__version__') else line)
         if self.web:
             self._build_web_release()
@@ -430,16 +430,16 @@ class Release(SDistCommand):
 
 class BuildMarkdown(Command):
     """Generate markdown documentation files for each TAU Commander command"""
-    
+
     description = "Generate markdown documentation files for each TAU Commander command"
 
     user_options = [('dest=', None, "Directory in which to write markdown files")]
-    
+
     def initialize_options(self):
         # Distuilts defines attributes outside __init__
         # pylint: disable=attribute-defined-outside-init
         self.dest = None
-    
+
     def finalize_options(self):
         # Distuilts defines attributes outside __init__
         # pylint: disable=attribute-defined-outside-init
@@ -447,7 +447,7 @@ class BuildMarkdown(Command):
             build = self.get_finalized_command('build')
             self.dest = os.path.join(os.path.abspath(build.build_base), 'markdown')
             self.mkpath(self.dest)
-    
+
     def run(self):
         from unidecode import unidecode
         from taucmdr import cli
@@ -478,7 +478,7 @@ class BuildMarkdown(Command):
         bs=1
         for cmd_name in cli.get_all_commands():
             name = cli.command_from_module_name(cmd_name)
-            if (name.count(' ') > bs) : 
+            if (name.count(' ') > bs) :
                indentspace = ': '
                bs = name.count(' ')
             if (name.count(' ') == 1) :
@@ -494,13 +494,13 @@ class BuildMarkdown(Command):
             tocfile.write(tocname.replace('.','-'))
             tocfile.write('">')
             tocname=  tocname.replace('tau-commander-','')
-            
+
             tocname=tocname.replace('.',' ')
             tocfile.write(tocname.capitalize())
             tocfile.write('</a>\n')
             parts = [cmd_obj.help_page,
                      "", "",
-                     "Command Line Usage", 
+                     "Command Line Usage",
                      "==================",
                      "", "",
                      cmd_obj.usage]
@@ -528,7 +528,7 @@ def _version():
 
 def _data_files():
     """List files to be copied to the TAU Commander installation.
-    
+
     Start with the files listed in MANIFEST.in, then exclude files that should not be installed.
     """
     from distutils.filelist import FileList
@@ -536,7 +536,7 @@ def _data_files():
     from distutils.errors import DistutilsTemplateError
     filelist = FileList()
     template = TextFile(os.path.join(PACKAGE_TOPDIR, 'MANIFEST.in'),
-                        strip_comments=1, skip_blanks=1, join_lines=1, 
+                        strip_comments=1, skip_blanks=1, join_lines=1,
                         lstrip_ws=1, rstrip_ws=1, collapse_join=1)
     try:
         while True:
@@ -571,7 +571,7 @@ setuptools.setup(
     license=LICENSE,
     keywords=KEYWORDS,
     url=HOMEPAGE,
-    classifiers=CLASSIFIERS,   
+    classifiers=CLASSIFIERS,
     # Package configuration
     packages=setuptools.find_packages("packages"),
     package_dir={"": "packages"},

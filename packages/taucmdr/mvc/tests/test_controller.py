@@ -36,4 +36,4 @@ from taucmdr import tests
 
 class ControllerTest(tests.TestCase):
     def test_controller(self):
-        self.assertEqual(1, 1) 
+        self.assertEqual(1, 1)

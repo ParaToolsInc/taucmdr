@@ -298,22 +298,22 @@ class Trial(Model):
     __attributes__ = attributes
 
     __controller__ = TrialController
-    
+
     @classmethod
     def _separate_launcher_cmd(cls, cmd):
         """Separate the launcher command and it's arguments from the application command(s) and arguments.
-        
+
         Args:
             cmd (list): Command line.
-        
+
         Returns:
             tuple: (Launcher command, Remainder of command line)
-            
+
         Raises:
             ConfigurationError: No application config files or executables found after a recognized launcher command.
         """
-        # If '--' appears in the command then everything before it is a launcher + args 
-        # and everything after is the application + args 
+        # If '--' appears in the command then everything before it is a launcher + args
+        # and everything after is the application + args
         try:
             idx = cmd.index('--')
         except ValueError:
@@ -349,17 +349,17 @@ class Trial(Model):
                                       "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
         # No launcher command, just an application command
         return [], cmd
-    
+
     @classmethod
     def parse_launcher_cmd(cls, cmd):
         """Parses a command line to split the launcher command and application commands.
-        
+
         Args:
             cmd (list): Command line.
-            
+
         Returns:
             tuple: (Launcher command, possibly empty list of application commands).
-        """ 
+        """
         cmd0 = cmd[0]
         launcher_cmd, cmd = cls._separate_launcher_cmd(cmd)
         num_exes = len([x for x in cmd if util.which(x)])
@@ -457,13 +457,13 @@ class Trial(Model):
                 progress_bar.update(count)
 
     def get_data_files(self):
-        """Return paths to the trial's data files or directories maped by data type. 
-        
-        Post-process trial data if necessary and return a dictionary mapping the types of data produced 
-        by this trial to paths to related data files or directories.  The paths should be suitable for 
-        passing on a command line to one of the known data analysis tools. For example, a trial producing 
+        """Return paths to the trial's data files or directories maped by data type.
+
+        Post-process trial data if necessary and return a dictionary mapping the types of data produced
+        by this trial to paths to related data files or directories.  The paths should be suitable for
+        passing on a command line to one of the known data analysis tools. For example, a trial producing
         SLOG2 traces and TAU profiles would return ``{"slog2": "/path/to/tau.slog2", "tau": "/path/to/directory/"}``.
-        
+
         Returns:
             dict: Keys are strings indicating the data type; values are filesystem paths.
         """
@@ -509,9 +509,9 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
-                              if (key.startswith('TAU_') or 
-                                  key.startswith('SCOREP_') or 
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+                              if (key.startswith('TAU_') or
+                                  key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
@@ -543,9 +543,9 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems() 
-                              if (key.startswith('TAU_') or 
-                                  key.startswith('SCOREP_') or 
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+                              if (key.startswith('TAU_') or
+                                  key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
         LOGGER.info('\n'.join(tau_env_opts))
         LOGGER.info(cmd_str)
@@ -564,7 +564,7 @@ class Trial(Model):
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
             raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
-        
+
         measurement = expr.populate('measurement')
 
         profiles = []
@@ -580,7 +580,7 @@ class Trial(Model):
                                " Check the compilation output and verify that MPI_Init (or similar) was called.",
                                self['number'])
                 for fname in negative_profiles:
-                    new_name = fname.replace(".-1.", ".0.") 
+                    new_name = fname.replace(".-1.", ".0.")
                     if not os.path.exists(new_name):
                         LOGGER.info("Renaming %s to %s", fname, new_name)
                         os.rename(fname, new_name)
@@ -606,13 +606,13 @@ class Trial(Model):
             return retval, output, elapsed
         else:
             return retval, elapsed
-    
+
     def export(self, dest):
         """Export experiment trial data.
- 
+
         Args:
             dest (str): Path to directory to contain exported data.
- 
+
         Raises:
             ConfigurationError: This trial has no data.
         """
@@ -621,7 +621,7 @@ class Trial(Model):
             raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in data.iteritems(): 
+        for fmt, path in data.iteritems():
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.get_minimal()

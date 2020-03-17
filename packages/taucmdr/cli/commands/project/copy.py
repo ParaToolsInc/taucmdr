@@ -40,7 +40,7 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 class ProjectCopyCommand(CopyCommand):
     """``project copy`` subcommand."""
-    
+
     def _parse_explicit(self, args, model):
         acc = set()
         ctrl = model.controller(PROJECT_STORAGE)
@@ -50,14 +50,14 @@ class ProjectCopyCommand(CopyCommand):
         except AttributeError:
             pass
         else:
-            for name in names: 
+            for name in names:
                 found = ctrl.one({"name": name})
                 if not found:
                     self.parser.error('There is no %s named %s.' % (model_name, name))
                 else:
                     acc.add(found)
         return acc
-    
+
     def _construct_parser(self):
         parser = super(ProjectCopyCommand, self)._construct_parser()
         parser.add_argument('--targets',
@@ -76,7 +76,7 @@ class ProjectCopyCommand(CopyCommand):
                             nargs='+',
                             default=arguments.SUPPRESS)
         return parser
-    
+
     def _copy_record(self, store, updates, key):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
@@ -84,7 +84,7 @@ class ProjectCopyCommand(CopyCommand):
         if not matching:
             self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
         elif len(matching) > 1:
-            raise InternalError("More than one %s-level %s with %s='%s' exists!" % 
+            raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
         else:
             found = matching[0]
@@ -108,22 +108,22 @@ class ProjectCopyCommand(CopyCommand):
         measurements = self._parse_explicit(args, Measurement)
 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        
+
         key_attr = self.model.key_attribute
         try:
             data[key_attr] = getattr(args, 'copy_%s' % key_attr)
         except AttributeError:
             pass
         key = getattr(args, key_attr)
-        
+
         if targets:
             data['targets'] = [model.eid for model in targets]
         if applications:
             data['applications'] = [model.eid for model in applications]
-        if measurements: 
+        if measurements:
             data['measurements'] = [model.eid for model in measurements]
-        
+
         return self._copy_record(PROJECT_STORAGE, data, key)
 
 
-COMMAND = ProjectCopyCommand(Project, __name__)    
+COMMAND = ProjectCopyCommand(Project, __name__)

@@ -44,7 +44,7 @@ DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
 
 class TrialListCommand(ListCommand):
     """``trial list`` subcommand."""
-    
+
     def _retrieve_records(self, ctrl, keys):
         if keys:
             try:
@@ -55,7 +55,7 @@ class TrialListCommand(ListCommand):
         records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
         recs = [rec for rec in records if rec['experiment'] == expr.eid]
         return sorted(recs, key=lambda recs: recs['number'])
-    
+
     def _format_long_item(self, key, val):
         key, val, flags, description = super(TrialListCommand, self)._format_long_item(key, val)
         if key == 'environment' or key == 'output':

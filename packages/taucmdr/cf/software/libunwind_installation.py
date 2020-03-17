@@ -27,8 +27,8 @@
 #
 """libunwind software installation management.
 
-libunwind is used for symbol resolution during sampling, compiler-based 
-instrumentation, and other measurement approaches. 
+libunwind is used for symbol resolution during sampling, compiler-based
+instrumentation, and other measurement approaches.
 """
 
 import os
@@ -65,7 +65,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
+        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os,
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
@@ -92,9 +92,9 @@ class LibunwindInstallation(AutotoolsInstallation):
 
     def make(self, flags):
         """Build libunwind.
-        
-        libunwind's test programs often fail to build but the library itself 
-        compiles just fine, so we just keep pressing on to 'make install' 
+
+        libunwind's test programs often fail to build but the library itself
+        compiles just fine, so we just keep pressing on to 'make install'
         even if 'make' appears to have died.
         """
         # pylint: disable=broad-except

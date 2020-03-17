@@ -36,7 +36,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class ModelMeta(type):
-    """Constructs model attributes, configures defaults, and establishes relationships.""" 
+    """Constructs model attributes, configures defaults, and establishes relationships."""
 
     def __new__(mcs, name, bases, dct):
         if dct['__module__'] != __name__:
@@ -48,10 +48,10 @@ class ModelMeta(type):
             # Model subclasses must define __attributes__ as a callable.
             # We make the callable a staticmethod to prevent method binding.
             try:
-                dct['__attributes__'] = staticmethod(dct['__attributes__']) 
-            except KeyError: 
+                dct['__attributes__'] = staticmethod(dct['__attributes__'])
+            except KeyError:
                 raise InternalError("Model class %s does not define '__attributes__'" % name)
-            # Replace attributes with a callable property (defined below).  This is to guarantee 
+            # Replace attributes with a callable property (defined below).  This is to guarantee
             # that model attributes won't be constructed until all Model subclasses have been constructed.
             dct['attributes'] = ModelMeta.attributes
             # Replace key_attribute with a callable property (defined below). This is to set
@@ -68,7 +68,7 @@ class ModelMeta(type):
             cls._attributes = cls.__attributes__()
             cls._construct_relationships()
             return cls._attributes
-        
+
     @property
     def key_attribute(cls):
         # pylint: disable=attribute-defined-outside-init
@@ -91,23 +91,23 @@ class Model(StorageRecord):
     Attributes:
         name (str): Name of the model.
         associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.
-        references (set): (Controller, str) tuples listing foreign models referencing this model.  
+        references (set): (Controller, str) tuples listing foreign models referencing this model.
         attributes (dict): Model attributes.
-        key_attribute (str): Name of an attribute that serves as a unique identifier. 
-        
+        key_attribute (str): Name of an attribute that serves as a unique identifier.
+
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
-    
+
     __metaclass__ = ModelMeta
     __controller__ = Controller
     __attributes__ = NotImplemented
-    
+
     name = None
     associations = {}
     references = set()
     attributes = {}
     key_attribute = None
-    
+
     def __init__(self, record):
         deprecated = [attr for attr in record if attr not in self.attributes]
         if deprecated:
@@ -116,22 +116,22 @@ class Model(StorageRecord):
             except (KeyError, ModelError):
                 title = "%s" % self.name
             LOGGER.debug("Ignorning deprecated attributes %s in %s", deprecated, title)
-        super(Model, self).__init__(record.storage, record.eid, 
+        super(Model, self).__init__(record.storage, record.eid,
                                     (item for item in record.iteritems() if item[0] not in deprecated))
         self._populated = None
-    
+
     def __setitem__(self, key, value):
         raise InternalError("Use controller(storage).update() to alter records")
- 
+
     def __delitem__(self, key):
         raise InternalError("Use controller(storage).update() to alter records")
 
     def get_or_default(self, key):
         """Returns the attribute's value or default value.
-        
+
         Args:
             key (str): Attribute name.
-        
+
         Returns:
             If the attribute is set then the attribute's value is returned.
             If the attribute is not set then the attribute's default value is returned.
@@ -145,30 +145,30 @@ class Model(StorageRecord):
             return self.attributes[key]['default']
 
     def on_create(self):
-        """Callback to be invoked after a new data record is created.""" 
+        """Callback to be invoked after a new data record is created."""
 
-    def on_update(self, changes): 
+    def on_update(self, changes):
         """Callback to be invoked after a data record is updated."""
 
-    def on_delete(self): 
+    def on_delete(self):
         """Callback to be invoked before a data record is deleted."""
 
     def populate(self, attribute=None, defaults=False):
         """Shorthand for ``self.controller(self.storage).populate(self, attribute, defaults)``.
-        
+
         Result is cached in the object instance when possible so this should be faster
         than populating directly from the controller.
-        
+
         Args:
             attribute (Optional[str]): If given, return only the populated attribute.
             defaults (Optional[bool]): If given, set undefined attributes to their default values.
-        
+
         Returns:
             If attribute is None, a dictionary of controlled data merged with associated records.
-            If attribute is not None, the value of the populated attribute. 
-            
+            If attribute is not None, the value of the populated attribute.
+
         Raises:
-            KeyError: `attribute` is undefined in the record. 
+            KeyError: `attribute` is undefined in the record.
         """
         if attribute:
             if self._populated is not None and not defaults:
@@ -179,11 +179,11 @@ class Model(StorageRecord):
             if self._populated is None:
                 self._populated = self.controller(self.storage).populate(self, attribute, defaults)
             return self._populated
-    
+
     @classmethod
     def controller(cls, storage):
         return cls.__controller__(cls, storage)
-    
+
     @classmethod
     def _construct_relationships(cls):
         primary_key = None
@@ -211,7 +211,7 @@ class Model(StorageRecord):
                     raise TypeError
             except TypeError:
                 raise ModelError(cls, "%s: Invalid foreign model controller: %r" % (model_attr_name, foreign_cls))
-            
+
             forward = (foreign_cls, via)
             reverse = (cls, attr)
             if not via:
@@ -222,7 +222,7 @@ class Model(StorageRecord):
                 try:
                     via_props = foreign_cls.attributes[via]
                 except KeyError:
-                    raise ModelError(cls, "%s: 'via' references undefined attribute '%s'" % 
+                    raise ModelError(cls, "%s: 'via' references undefined attribute '%s'" %
                                      (model_attr_name, foreign_model_attr_name))
                 via_attr_model = via_props.get('model', via_props.get('collection', None))
                 if not via_attr_model:
@@ -238,22 +238,22 @@ class Model(StorageRecord):
                     cls.associations[attr] = forward
                 else:
                     if existing != forward:
-                        raise ModelError(cls, "%s: conflicting associations: '%s' vs. '%s'" % 
+                        raise ModelError(cls, "%s: conflicting associations: '%s' vs. '%s'" %
                                          (model_attr_name, existing, forward))
 
     @classmethod
     def validate(cls, data):
         """Validates data against the model.
-        
+
         Args:
             data (dict): Data to validate, may be None.
 
         Returns:
             dict: Validated data or None if `data` is None.
-            
+
         Raises:
             ModelError: The given data doesn't fit the model.
-        """    
+        """
         if data is None:
             return None
         for key in data:
@@ -266,7 +266,7 @@ class Model(StorageRecord):
                 validated[attr] = data[attr]
             except KeyError:
                 if 'required' in props:
-                    if props['required']: 
+                    if props['required']:
                         raise ModelError(cls, "'%s' is required but was not defined" % attr)
                 elif 'default' in props:
                     validated[attr] = props['default']
@@ -295,28 +295,28 @@ class Model(StorageRecord):
                         raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
                     validated[attr] = value
         return validated
-    
+
     @classmethod
     def construct_condition(cls, args, attr_defined=None, attr_undefined=None, attr_eq=None, attr_ne=None):
         """Constructs a compatibility condition, see :any:`check_compatibility`.
-        
+
         The returned condition is a callable that accepts four arguments:
             * lhs (Model): The left-hand side of the `check_compatibility` operation.
             * lhs_attr (str): Name of the attribute that defines the 'compat' property.
             * lhs_value: The value of the attribute that defines the 'compat' property.
             * rhs (Model): Controller of the data record we are checking against.
-        
-        The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes 
-        are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen 
-        records. It may emit log messages to indicate that the records are not perfectly compatible 
+
+        The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes
+        are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen
+        records. It may emit log messages to indicate that the records are not perfectly compatible
         but that the user's operation is still likely to succeed with the chosen records.
-        
+
         See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
-        
-        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare 
-        the specified attribute against or a callback function.  If args[1] is callable, it must check attribute 
+
+        args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare
+        the specified attribute against or a callback function.  If args[1] is callable, it must check attribute
         existance and value correctness and throw the appropriate exception and/or emit log messages.
-        
+
         Args:
             args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].
             attr_defined: Callback function to be invoked when the attribute is defined.
@@ -342,7 +342,7 @@ class Model(StorageRecord):
         else:
             if callable(checked_value):
                 def condition(lhs, lhs_attr, lhs_value, rhs):
-                    if isinstance(rhs, cls): 
+                    if isinstance(rhs, cls):
                         checked_value(lhs, lhs_attr, lhs_value, rhs, rhs_attr)
             else:
                 def condition(lhs, lhs_attr, lhs_value, rhs):
@@ -366,66 +366,66 @@ class Model(StorageRecord):
     @classmethod
     def require(cls, *args):
         """Constructs a compatibility condition to enforce required conditions.
-        
+
         The condition will raise a :any:`IncompatibleRecordError` if the specified attribute is
         undefined or not equal to the specified value (if given).
-        
+
         Args:
-            *args: Corresponds to `args` in :any:`construct_condition`. 
-        
+            *args: Corresponds to `args` in :any:`construct_condition`.
+
         Returns:
             Callable condition object for use with :any:`check_compatibility`
-            
+
         Examples:
             'have_cheese' must be True::
-            
+
                 CheeseShop.require('have_cheese', True)
-             
+
             'have_cheese' must be set to any value::
-                
+
                 CheeseShop.require('have_cheese')
-            
+
             The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
-            
+
                 CheeseShop.require('have_cheese', cheese_callback)
-        """ 
+        """
         def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
-            raise IncompatibleRecordError("%s = %s in %s requires %s be defined in %s but it is undefined" % 
+            raise IncompatibleRecordError("%s = %s in %s requires %s be defined in %s but it is undefined" %
                                           (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name))
         def attr_ne(lhs, lhs_attr, lhs_value, rhs, rhs_attr, checked_value):
             lhs_name = lhs.name.lower()
             rhs_name = rhs.name.lower()
             rhs_value = rhs[rhs_attr]
-            raise IncompatibleRecordError("%s = %s in %s requires %s = %s in %s but it is %s" % 
+            raise IncompatibleRecordError("%s = %s in %s requires %s = %s in %s but it is %s" %
                                           (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name, rhs_value))
         return cls.construct_condition(args, attr_undefined=attr_undefined, attr_ne=attr_ne)
 
     @classmethod
     def encourage(cls, *args):
         """Constructs a compatibility condition to make recommendations.
-        
+
         The condition will emit warnings messages if the specified attribute is
         undefined or not equal to the specified value (if given).
-        
+
         Args:
-            *args: Corresponds to `args` in :any:`construct_condition`. 
-        
+            *args: Corresponds to `args` in :any:`construct_condition`.
+
         Returns:
             Callable condition object for use with :any:`check_compatibility`
-            
+
         Examples:
             'have_cheese' should be True::
-            
+
                 CheeseShop.encourage('have_cheese', True)
-             
+
             'have_cheese' should be set to any value::
-                
+
                 CheeseShop.encourage('have_cheese')
-            
+
             The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
-            
+
                 CheeseShop.encourage('have_cheese', cheese_callback)
         """
         def attr_undefined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -444,27 +444,27 @@ class Model(StorageRecord):
     @classmethod
     def discourage(cls, *args):
         """Constructs a compatibility condition to make recommendations.
-        
+
         The condition will emit warnings messages if the specified attribute is
         defined or equal to the specified value (if given).
-        
+
         Args:
-            *args: Corresponds to `args` in :any:`construct_condition`. 
-        
+            *args: Corresponds to `args` in :any:`construct_condition`.
+
         Returns:
             Callable condition object for use with :any:`check_compatibility`
-            
+
         Examples:
             'have_cheese' should not be True::
-            
+
                 CheeseShop.discourage('have_cheese', True)
-             
+
             'have_cheese' should not be set to any value::
-                
+
                 CheeseShop.discourage('have_cheese')
-            
+
             The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
-            
+
                 CheeseShop.discourage('have_cheese', cheese_callback)
         """
         def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -482,27 +482,27 @@ class Model(StorageRecord):
     @classmethod
     def exclude(cls, *args):
         """Constructs a compatibility condition to enforce required conditions.
-        
+
         The condition will raise a :any:`IncompatibleRecordError` if the specified attribute is
         defined or equal to the specified value (if given).
-        
+
         Args:
-            *args: Corresponds to `args` in :any:`construct_condition`. 
-        
+            *args: Corresponds to `args` in :any:`construct_condition`.
+
         Returns:
             Callable condition object for use with :any:`check_compatibility`
-            
+
         Examples:
             'yellow_cheese' must not be 'American'::
-            
+
                 CheeseShop.exclude('yellow_cheese', 'American')
-             
+
             'blue_cheese' must not be set to any value::
-                
+
                 CheeseShop.exclude('blue_cheese')
-            
+
             The value of 'have_cheese' will be checked for correctness by 'cheese_callback'::
-            
+
                 CheeseShop.exclude('have_cheese', cheese_callback)
         """
         def attr_defined(lhs, lhs_attr, lhs_value, rhs, rhs_attr):
@@ -515,35 +515,35 @@ class Model(StorageRecord):
             rhs_name = rhs.name.lower()
             raise IncompatibleRecordError("%s = %s in %s is incompatible with %s = %s in %s" %
                                           (lhs_attr, lhs_value, lhs_name, rhs_attr, checked_value, rhs_name))
-        return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)        
+        return cls.construct_condition(args, attr_defined=attr_defined, attr_eq=attr_eq)
 
     def check_compatibility(self, rhs):
         """Test this record for compatibility with another record.
-        
-        Operations combining data from multiple records must know that the records are mutually 
+
+        Operations combining data from multiple records must know that the records are mutually
         compatible.  This routine checks the 'compat' property of each attribute (if set) to enforce
-        compatibility.  'compat' is a dictionary where the keys are values or callables and the 
+        compatibility.  'compat' is a dictionary where the keys are values or callables and the
         values are tuples of compatibility conditions.  If the attribute with the 'compat' property
         is one of the key values then the conditions are checked.  The general form of 'compat' is::
-        
+
             {
             (value|callable): (condition, [condition, ...]),
             [(value|callable): (condition, [condition, ...]), ...]
             }
-            
+
         Use tuples to join multiple conditions.  If only one condition is needed then you do
         not need to use a tuple.
-        
+
         'value' may either be a literal value (e.g. True or "oranges") or a callable accepting
         one argument and returning either True or False.  The attribute's value is passed to the
         callable to determine if the listed conditions should be checked.  If 'value' is a literal
-        then the listed conditions are checked when the attribute's value matches 'value'.     
-        
+        then the listed conditions are checked when the attribute's value matches 'value'.
+
         See :any:`require`, :any:`encourage`, :any:`discourage`, :any:`exclude` for common conditions.
-        
+
         Args:
             rhs (Model): Check compatibility with this data record.
-            
+
         Raises:
             IncompatibleRecordError: The two records are not compatible.
 
@@ -551,7 +551,7 @@ class Model(StorageRecord):
 
             Suppose we have this data:
             ::
-            
+
                 Programmer.attributes = {
                     'hungry': {
                         'type': 'boolean',
@@ -567,18 +567,18 @@ class Model(StorageRecord):
                 cheese_wizzard = CheeseShop({'have_cheese': True, 'chedder': 'California'})
                 louis = ProgramManager({'holding_long_meeting': True})
                 keith = Roommate({'steals_food': True})
-                
+
             These expressions raise :any:`IncompatibleRecordError`::
-            
+
                 bob.check_compatibility(world_o_cheese)   # Because have_cheese == False
                 bob.check_compatibility(keith)            # Because steals_food == True
-            
+
             These expressions generate warning messages::
-            
+
                 bob.check_compatibility(cheese_wizzard)   # Because chedder != Wisconsin
                 bob.check_compatibility(louis)            # Because holding_long_meeting == True
-                
-            If ``bob['hungry'] == False`` or if the 'hungry' attribute were not set then all 
+
+            If ``bob['hungry'] == False`` or if the 'hungry' attribute were not set then all
             the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
@@ -592,7 +592,7 @@ class Model(StorageRecord):
             except KeyError:
                 continue
             for value, conditions in compat.iteritems():
-                if (callable(value) and value(attr_value)) or attr_value == value: 
+                if (callable(value) and value(attr_value)) or attr_value == value:
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
 

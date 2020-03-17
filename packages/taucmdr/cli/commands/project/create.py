@@ -40,7 +40,7 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 class ProjectCreateCommand(CreateCommand):
     """``project create`` subcommand."""
-    
+
     def _parse_implicit(self, args, targets, applications, measurements):
         targ_ctrl = Target.controller(PROJECT_STORAGE)
         app_ctrl = Application.controller(PROJECT_STORAGE)
@@ -71,13 +71,13 @@ class ProjectCreateCommand(CreateCommand):
         except AttributeError:
             pass
         else:
-            for name in names: 
+            for name in names:
                 found = ctrl.one({"name": name})
                 if not found:
                     self.parser.error('There is no %s named %s.' % (model_name, name))
                 else:
                     acc.add(found)
-    
+
     def _construct_parser(self):
         usage = "%s <project_name> [targets] [applications] [measurements] [arguments]" % self.command
         parser = arguments.get_parser_from_model(self.model, prog=self.command, usage=usage, description=self.summary)
@@ -130,7 +130,7 @@ class ProjectCreateCommand(CreateCommand):
         self._parse_explicit(args, Target, targets)
         self._parse_explicit(args, Application, applications)
         self._parse_explicit(args, Measurement, measurements)
-    
+
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         data['targets'] = [model.eid for model in targets]
         data['applications'] = [model.eid for model in applications]
@@ -141,8 +141,8 @@ class ProjectCreateCommand(CreateCommand):
             self.model.controller().create(data)
         except UniqueAttributeError:
             self.parser.error("A project named '%s' already exists." % args.name)
-    
+
         self.logger.info("Created a new project named '%s'.", args.name)
         return EXIT_SUCCESS
 
-COMMAND = ProjectCreateCommand(Project, __name__)    
+COMMAND = ProjectCreateCommand(Project, __name__)

@@ -43,20 +43,20 @@ Enter: `tau application copy <existing_application_name> <new_application_name>`
 The new application has the same properties as the original existing application.
 
 Editing a TAU Commander Application:
-Enter: 
+Enter:
 `tau application edit <application_name> --<application_property> <property setting>`
 
 The following properties are set to True/False (T/F):
     cuda, mpc, mpi, opencl, openmp, pthreads, shmem, tbb
     e.g. tau application edit <application_name> --mpi T
-The property linkage is set to static/dynamic (default is dynamic) this is 
+The property linkage is set to static/dynamic (default is dynamic) this is
 changed by:
     `tau application edit <application_name> --linkage static`
 
 The application name can be changed with --new-name as shown below:
 `tau application edit <application_name> --new-name <new_application_name>`
 
-A selective instrumentation file may be specified with --select-file and 
+A selective instrumentation file may be specified with --select-file and
 its path.
 e.g. `tau application edit <application_name> --select_file <path>`
 

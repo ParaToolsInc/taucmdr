@@ -42,7 +42,7 @@ from taucmdr.model.experiment import Experiment
 
 class SelectCommand(AbstractCommand):
     """``select`` subcommand."""
-    
+
     def _construct_parser(self):
         usage = "%s [experiment] [target] [application] [measurement]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
@@ -83,7 +83,7 @@ class SelectCommand(AbstractCommand):
                             metavar='<name>',
                             default=arguments.SUPPRESS)
         return parser
-    
+
     def _parse_implicit(self, args):
         targets = set()
         applications = set()
@@ -130,7 +130,7 @@ class SelectCommand(AbstractCommand):
         if not acc:
             self.parser.error("Project '%s' has no %ss." % (proj['name'], model_name))
         if len(acc) > 1:
-            self.parser.error("Project '%s' has multiple %ss. Please specify which to use." % 
+            self.parser.error("Project '%s' has multiple %ss. Please specify which to use." %
                               (proj['name'], model_name))
         elif len(acc) == 1:
             return acc.pop()
@@ -177,7 +177,7 @@ class SelectCommand(AbstractCommand):
             Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)
         rebuild_required = Experiment.rebuild_required()
-        if rebuild_required: 
+        if rebuild_required:
             self.logger.info(rebuild_required)
         return EXIT_SUCCESS
 

@@ -38,7 +38,7 @@ from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_
 
 
 class SelectTest(tests.TestCase):
-    
+
     def test_noargs(self):
         self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, SELECT_COMMAND, [])
@@ -47,9 +47,9 @@ class SelectTest(tests.TestCase):
 
     def test_invalid_metric(self):
         self.reset_project_storage()
-        self.assertCommandReturnValue(0, measurement_create_cmd, 
+        self.assertCommandReturnValue(0, measurement_create_cmd,
                                       ['meas1', '--metrics', 'PAPI_TAUCMDR_INVALID_METRIC'])
-        self.assertCommandReturnValue(0, experiment_create_cmd, 
+        self.assertCommandReturnValue(0, experiment_create_cmd,
                                       ['exp2', '--application', 'app1', '--measurement', 'meas1', '--target', 'targ1'])
         stdout,_ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
         self.assertIn('WARNING', stdout)
