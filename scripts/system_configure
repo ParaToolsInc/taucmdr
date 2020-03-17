@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -101,7 +102,7 @@ def _configure_project(args):
         return
     proj_ctrl = Project.controller()
     proj = proj_ctrl.selected().populate()
-   
+
     # Add measurements requiring various features to create TAU configurations providing those features
     # **Be sure to repopulate the project** after creating new measurements.
     if getattr(args, 'papi', False):
@@ -116,7 +117,7 @@ def _configure_project(args):
                     _execute(measurement_copy_cmd, [meas['name'], meas['name']+'-'+pkg, '--openmp='+pkg])
     proj = proj_ctrl.selected().populate()
 
-    # Select each measurement to trigger TAU reconfiguration. 
+    # Select each measurement to trigger TAU reconfiguration.
     for targ in proj['targets']:
         targ.acquire_sources()
         for app in proj['applications']:
@@ -125,8 +126,8 @@ def _configure_project(args):
                 app_name = app['name']
                 meas_name = meas['name']
                 try:
-                    _execute(select_cmd, ['--target', targ_name, 
-                                          '--application', app_name, 
+                    _execute(select_cmd, ['--target', targ_name,
+                                          '--application', app_name,
                                           '--measurement', meas_name])
                 except Error as err:
                     LOGGER.warning("An error occurred configuring TAU for experiment %s-%s-%s: %s.\n\n"
@@ -137,27 +138,27 @@ def _configure_project(args):
 
 def _configure_full(args):
     """Proceedureally generated TAU configurations.
-    
+
     Iterate over as many valid TAU projects as possible for the provided command line arguments.
     For each project, iterate over possible experiments and select them to trigger TAU rebuild.
-    """    
+    """
     # If ``features[key]==False`` then only projects without feature `key` will be generated.
     # If True then projects both with and without the feature will be generated.
     # There is a maximum of 2^len(features) possible TAU project configurations.
     features = {'papi': HOST_ARCH is not DARWIN,
                 'openmp': HOST_ARCH is not DARWIN,
-                'mpi': (getattr(args, 'MPI_CC', False) and 
-                        getattr(args, 'MPI_CXX', False) and 
+                'mpi': (getattr(args, 'MPI_CC', False) and
+                        getattr(args, 'MPI_CXX', False) and
                         getattr(args, 'MPI_FC', False)),
-                'shmem': (getattr(args, 'SHMEM_CC', False) and 
-                          getattr(args, 'SHMEM_CXX', False) and 
+                'shmem': (getattr(args, 'SHMEM_CC', False) and
+                          getattr(args, 'SHMEM_CXX', False) and
                           getattr(args, 'SHMEM_FC', False)),
                 'cuda': (getattr(args, 'CUDA_CXX', False) and
                          getattr(args, 'cuda_toolkit', False))}
 
     # Build a bitmask to filter out TAU project configurations where ``features[key] == False``.
     # From Python documentation: https://docs.python.org/2/library/stdtypes.html#dict.items
-    #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with 
+    #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with
     #    no intervening modifications to the dictionary, the lists will directly correspond."
     mask = 0
     for i, val in enumerate(features.itervalues()):
@@ -173,7 +174,7 @@ def _configure_full(args):
 def _configure_minimal(_):
     tau = TauInstallation.get_minimal()
     tau.install()
-    return tau.install_prefix 
+    return tau.install_prefix
 
 
 def _configure_override_tau_source(args):
@@ -189,17 +190,17 @@ def main(argv):
     TauInstallation.check_env_compat()
 
     prog = sys.argv[0]
-    parser = arguments.get_parser(prog=prog, usage='%s [arguments]' % prog, 
+    parser = arguments.get_parser(prog=prog, usage='%s [arguments]' % prog,
                                   description="Pre-build TAU configurations.")
     parser.add_argument('--tau-config', help="Specify TAU configuration level.",
                         default='full', action=ParseTauAction)
     parser.merge(initialize_cmd.parser, include_positional=False,
                  exclude_groups=['project arguments'],
-                 exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name', 
+                 exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name',
                                     'tau-options', 'from-tau-makefile', 'bare'])
     args = parser.parse_args(argv)
-    
-    os.chdir(util.mkdtemp())   
+
+    os.chdir(util.mkdtemp())
     if args.tau_config == 'minimal':
         tau_prefix = _configure_minimal(args)
     elif args.tau_config == 'full':
