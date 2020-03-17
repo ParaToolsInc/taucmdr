@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../../',
-        VERSION:     '1.4.0.9
+        VERSION:     '1.4.0.17
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -86,7 +86,7 @@
 
 <div class="viewcode-block" id="CreateLauncherTest"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create_launcher.html#taucmdr.cli.commands.trial.tests.test_create_launcher.CreateLauncherTest">[docs]</a><span class="k">class</span> <span class="nc">CreateLauncherTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Tests for :any:`trial.create` with an application launcher.</span>
-<span class="sd">    </span>
+
 <span class="sd">    https://github.com/ParaToolsInc/taucmdr/issues/210</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -100,7 +100,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;executable is &#39;./foo_launcher&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;FOO LAUNCHER</span><span class="se">\n</span><span class="s2">Done&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRegexpMatches</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;tau_exec .* ./foo_launcher ./a.out&#39;</span><span class="p">)</span></div>
- 
+
 <div class="viewcode-block" id="CreateLauncherTest.test_launcher_flag"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create_launcher.html#taucmdr.cli.commands.trial.tests.test_create_launcher.CreateLauncherTest.test_launcher_flag">[docs]</a>    <span class="k">def</span> <span class="nf">test_launcher_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;foo_launcher&#39;</span><span class="p">)</span>
@@ -111,7 +111,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;executable is &#39;./foo_launcher&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;FOO LAUNCHER</span><span class="se">\n</span><span class="s2">Done&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRegexpMatches</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;./foo_launcher tau_exec .* ./a.out&#39;</span><span class="p">)</span></div>
-         
+
 <div class="viewcode-block" id="CreateLauncherTest.test_invalid_exe"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create_launcher.html#taucmdr.cli.commands.trial.tests.test_create_launcher.CreateLauncherTest.test_invalid_exe">[docs]</a>    <span class="k">def</span> <span class="nf">test_invalid_exe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;foo_launcher&#39;</span><span class="p">)</span>
@@ -121,7 +121,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;executable is &#39;./foo_launcher&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;FOO LAUNCHER&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRegexpMatches</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;tau_exec .* ./foo_launcher ./invalid&#39;</span><span class="p">)</span></div>
-         
+
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;mpirun&#39;</span><span class="p">),</span> <span class="s2">&quot;mpirun required for this test&quot;</span><span class="p">)</span>
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnlessHaveCompiler</span><span class="p">(</span><span class="n">MPI_CC</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateLauncherTest.test_mpirun"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create_launcher.html#taucmdr.cli.commands.trial.tests.test_create_launcher.CreateLauncherTest.test_mpirun">[docs]</a>    <span class="k">def</span> <span class="nf">test_mpirun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -151,14 +151,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--mpi&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertManagedBuild</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;-DTAU_MPI&#39;</span><span class="p">],</span> <span class="s1">&#39;matmult.c&#39;</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="s1">&#39;./a.out&#39;</span><span class="p">,</span> <span class="s1">&#39;./b.out&#39;</span><span class="p">)</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> 
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span>
                                                        <span class="p">[</span><span class="s1">&#39;mpirun&#39;</span><span class="p">,</span> <span class="s1">&#39;-np&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;./a.out&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;-np&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="s1">&#39;./b.out&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;Multiple executables were found&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;executable is &#39;./foo_launcher&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;produced 4 profile files&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRegexpMatches</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out&#39;</span><span class="p">)</span></div>
-         
+
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;cafrun&#39;</span><span class="p">),</span> <span class="s2">&quot;cafrun required for this test&quot;</span><span class="p">)</span>
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnlessHaveCompiler</span><span class="p">(</span><span class="n">CAF_FC</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateLauncherTest.test_cafrun"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create_launcher.html#taucmdr.cli.commands.trial.tests.test_create_launcher.CreateLauncherTest.test_cafrun">[docs]</a>    <span class="k">def</span> <span class="nf">test_cafrun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -181,8 +181,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;executable is &#39;./foo_launcher&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;produced 9 profile files&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertRegexpMatches</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;cafrun -np 9 tau_exec .* ./a.out&#39;</span><span class="p">)</span></div></div>
-
-
 </pre></div>
 
       </div>
@@ -196,7 +194,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 16, 2020 at 02:14:01 UTC.
+      Last updated on Mar 17, 2020 at 02:14:31 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

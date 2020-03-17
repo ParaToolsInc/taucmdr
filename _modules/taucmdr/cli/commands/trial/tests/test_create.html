@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../../',
-        VERSION:     '1.4.0.9
+        VERSION:     '1.4.0.17
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -106,17 +106,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Trial 0 produced&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;profile files&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
-          
+
 <div class="viewcode-block" id="CreateTest.test_h_arg"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_h_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_h_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;-h&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div>
-  
+
 <div class="viewcode-block" id="CreateTest.test_help_arg"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_help_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_help_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;--help&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Show this help message and exit&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div>
-  
+
 <div class="viewcode-block" id="CreateTest.test_no_time_metric"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_no_time_metric">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_time_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;meas_no_time&#39;</span><span class="p">,</span> <span class="s1">&#39;--metrics&#39;</span><span class="p">,</span> <span class="s1">&#39;PAPI_FP_INS&#39;</span><span class="p">,</span> <span class="s1">&#39;--source-inst&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">]</span>
@@ -128,12 +128,12 @@
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;./a.out&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;TAU_METRICS=TIME,&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
- 
+
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipIf</span><span class="p">(</span><span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="s2">&quot;Sampling not supported on Darwin&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_heap_usage_memory_alloc_sample"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_heap_usage_memory_alloc_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_heap_usage_memory_alloc_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;https://github.com/ParaToolsInc/taucmdr/issues/14&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">measurement_edit_cmd</span><span class="p">,</span> 
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">measurement_edit_cmd</span><span class="p">,</span>
                                                        <span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;--heap-usage&#39;</span><span class="p">,</span> <span class="s1">&#39;--memory-alloc&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;Updated measurement &#39;sample&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
@@ -155,11 +155,11 @@
         <span class="c1"># TAU bug: the dynamic malloc wrapper (e.g. tau_exec -memory) doesn&#39;t always capture malloc().</span>
         <span class="c1">#self.assertInLastTrialData(&quot;Heap Allocate&quot;)</span>
         <span class="c1">#self.assertInLastTrialData(&quot;malloc&quot;)</span>
- 
+
 <div class="viewcode-block" id="CreateTest.test_heap_usage_memory_alloc_profile"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_heap_usage_memory_alloc_profile">[docs]</a>    <span class="k">def</span> <span class="nf">test_heap_usage_memory_alloc_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;https://github.com/ParaToolsInc/taucmdr/issues/14&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">measurement_edit_cmd</span><span class="p">,</span> 
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">measurement_edit_cmd</span><span class="p">,</span>
                                                        <span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="s1">&#39;--heap-usage&#39;</span><span class="p">,</span> <span class="s1">&#39;--memory-alloc&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;Updated measurement &#39;profile&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
@@ -183,7 +183,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;compute_interchange&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;compute&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;malloc&quot;</span><span class="p">)</span></div>
- 
+
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipIf</span><span class="p">(</span><span class="n">HOST_OS</span> <span class="ow">is</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="s2">&quot;Sampling not supported on Darwin&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_system_load_sample"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_system_load_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_system_load_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test TAU_TRACK_LOAD w/ sampling&quot;&quot;&quot;</span>
@@ -195,7 +195,7 @@
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">select_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;Selected experiment &#39;targ1-app1-sample&#39;&quot;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span></div>
- 
+
 <div class="viewcode-block" id="CreateTest.test_system_load_profile"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_system_load_profile">[docs]</a>    <span class="k">def</span> <span class="nf">test_system_load_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test TAU_TRACK_LOAD w/ profiling&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
@@ -231,7 +231,7 @@
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">trial_list_cmd</span><span class="p">,</span> <span class="p">[])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;test desc&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span></div>
 
-    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 or 3 required for this test&quot;</span><span class="p">)</span>    
+    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 or 3 required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_run_python"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_run_python">[docs]</a>    <span class="k">def</span> <span class="nf">test_run_python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)</span>
@@ -242,7 +242,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;firstPrimeAfter&quot;</span><span class="p">)</span></div>
 
-    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python2&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 required for this test&quot;</span><span class="p">)</span>    
+    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python2&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_run_python2"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_run_python2">[docs]</a>    <span class="k">def</span> <span class="nf">test_run_python2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python2&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)</span>
@@ -253,7 +253,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;firstPrimeAfter&quot;</span><span class="p">)</span></div>
 
-    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python3&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 3 required for this test&quot;</span><span class="p">)</span>    
+    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python3&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 3 required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_run_python3"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.trial.tests.test_create.html#taucmdr.cli.commands.trial.tests.test_create.CreateTest.test_run_python3">[docs]</a>    <span class="k">def</span> <span class="nf">test_run_python3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python3&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">copy_testfile</span><span class="p">(</span><span class="s1">&#39;firstprime.py&#39;</span><span class="p">)</span>
@@ -263,8 +263,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;profile files&#39;</span><span class="p">,</span> <span class="n">stdout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertInLastTrialData</span><span class="p">(</span><span class="s2">&quot;firstPrimeAfter&quot;</span><span class="p">)</span></div></div>
-
-
 </pre></div>
 
       </div>
@@ -278,7 +276,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 16, 2020 at 02:14:01 UTC.
+      Last updated on Mar 17, 2020 at 02:14:31 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

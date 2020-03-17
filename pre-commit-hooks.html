@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>TAU Commander git hooks &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.4.0.17
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>TAU Commander git hooks</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="tau-commander-git-hooks">
+<h1><a class="toc-backref" href="#id1">TAU Commander git hooks</a><a class="headerlink" href="#tau-commander-git-hooks" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#tau-commander-git-hooks" id="id1">TAU Commander git hooks</a><ul>
+<li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
+<li><a class="reference internal" href="#getting-setup" id="id3">Getting Setup</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>TAU Commander developers and contributors should enable the local git hooks.
+The purpose of these hooks is to catch simple style, syntax, and other miscelaneous errors
+before they are committed to the repository and free up CI testing resources to find more complicate problems.
+The hooks will only check files (and the specific lines of code) touched in a given commit, and,
+therefore, can be used to help incrementally implement new style standards or other requirements.</p>
+</div>
+<div class="section" id="getting-setup">
+<h2><a class="toc-backref" href="#id3">Getting Setup</a><a class="headerlink" href="#getting-setup" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://pre-commit.com">pre-commit</a> package has been added to <code class="docutils literal"><span class="pre">requirements-dev.txt</span></code> and therefore will be installed
+when the other development packages are installed using <code class="docutils literal"><span class="pre">pip</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ pip install -r requirements-dev.txt
+</pre></div>
+</div>
+<p>You can also install <code class="docutils literal"><span class="pre">pre-commit</span></code> manually with <code class="docutils literal"><span class="pre">pip</span></code> (or <code class="docutils literal"><span class="pre">pip3</span></code>), using macOS Homebrew, or various other package managers.</p>
+<p>Once pre-commit is installed on your system or in your virtualenv, you can follow the <a class="reference external" href="https://pre-commit.com/#quick-start">online instructions</a> for setting up a local repository.
+It is recommended that you remove any local git hooks you may have already installed before installing the TAU Commander hooks,
+as sometimes hooks can assume the existence of other hooks and do sneaky things like stashing changes and then poping them.
+If you have any such hooks installed, then pre-commit hook(s) may overwrite one of them.
+Hooks get installed into <code class="docutils literal"><span class="pre">.git/hooks</span></code> and it is worth having alook at what is there and removing any existing hooks.</p>
+<p>Finally, you can proceed with installing the hooks into your local TAU Commander git repository:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ cd ~/src/taucmdr
+$ pre-commit --version
+# &gt;= pre-commit 2.2.0
+$ ls -la .git/hooks
+# Should be empty
+$ pre-commit install
+# Optionally, see if your branch has any violations
+$ pre-commit run --all-files
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

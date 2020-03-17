@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.4.0.9
+        VERSION:     '1.4.0.17
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -74,7 +74,7 @@
 <span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;Supported computing platforms.</span>
 
-<span class="sd">I&#39;d rather call this module &quot;taucmdr.cf.platform&quot; but that would conflict with :any:`platform`. </span>
+<span class="sd">I&#39;d rather call this module &quot;taucmdr.cf.platform&quot; but that would conflict with :any:`platform`.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -91,30 +91,30 @@
 
 <div class="viewcode-block" id="Architecture"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture">[docs]</a><span class="k">class</span> <span class="nc">Architecture</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about a processor architecture.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): Short string identifying this architecture.</span>
-<span class="sd">        description (str): Description of the architecture. </span>
+<span class="sd">        description (str): Description of the architecture.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
 
 <div class="viewcode-block" id="Architecture.is_bluegene"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.is_bluegene">[docs]</a>    <span class="k">def</span> <span class="nf">is_bluegene</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="ow">in</span> <span class="p">(</span><span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_BGQ</span><span class="p">)</span></div>
-    
+
 <div class="viewcode-block" id="Architecture.is_mic"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.is_mic">[docs]</a>    <span class="k">def</span> <span class="nf">is_mic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="ow">in</span> <span class="p">(</span><span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">INTEL_KNL</span><span class="p">)</span></div>
-    
+
 <div class="viewcode-block" id="Architecture.is_ibm"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.is_ibm">[docs]</a>    <span class="k">def</span> <span class="nf">is_ibm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="ow">in</span> <span class="p">(</span><span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">IBM64</span><span class="p">,</span> <span class="n">PPC64</span><span class="p">,</span> <span class="n">PPC64LE</span><span class="p">)</span></div>
-    
+
 <div class="viewcode-block" id="Architecture.is_arm"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.is_arm">[docs]</a>    <span class="k">def</span> <span class="nf">is_arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ARM32</span><span class="p">,</span> <span class="n">ARM64</span><span class="p">)</span></div>
-    
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_parse_proc_cpuinfo</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -136,19 +136,19 @@
             <span class="bp">cls</span><span class="o">.</span><span class="n">_cpuinfo</span> <span class="o">=</span> <span class="n">cpuinfo</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_cpuinfo</span>
 
-    
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Architecture.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Detect the processor architecture we are currently executing on.</span>
-<span class="sd">            </span>
-<span class="sd">        Mostly relies on Python&#39;s platform module but may also probe </span>
-<span class="sd">        environment variables and file systems in cases where the arch </span>
+
+<span class="sd">        Mostly relies on Python&#39;s platform module but may also probe</span>
+<span class="sd">        environment variables and file systems in cases where the arch</span>
 <span class="sd">        isn&#39;t immediately known to Python.  These tests may be expensive</span>
-<span class="sd">        so the detected value is cached to improve performance. </span>
-<span class="sd">        </span>
+<span class="sd">        so the detected value is cached to improve performance.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Architecture: The matching architecture description.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: Host architecture not supported.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -182,14 +182,14 @@
 
 <div class="viewcode-block" id="OperatingSystem"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.OperatingSystem">[docs]</a><span class="k">class</span> <span class="nc">OperatingSystem</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about an operating system.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): Short string identifying this operating system.</span>
 <span class="sd">        description (str): Description of the operating system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
@@ -202,19 +202,19 @@
                 <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
-        
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="OperatingSystem.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.OperatingSystem.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Detect the operating system we are currently running on.</span>
-<span class="sd">        </span>
-<span class="sd">        Mostly relies on Python&#39;s platform module but may also probe </span>
+
+<span class="sd">        Mostly relies on Python&#39;s platform module but may also probe</span>
 <span class="sd">        environment variables and file systems in cases where the arch</span>
 <span class="sd">        isn&#39;t immediately known to Python.  These tests may be expensive</span>
 <span class="sd">        so the detected value is cached to improve performance.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            OperatingSystem: The matching operating system description.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: Host operating system not supported.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -234,25 +234,25 @@
                     <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Host operating system &#39;</span><span class="si">%s</span><span class="s2">&#39; is not yet supported&quot;</span> <span class="o">%</span> <span class="n">python_os</span><span class="p">)</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_detect</span> <span class="o">=</span> <span class="n">inst</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_detect</span></div></div>
-        
+
 
 <div class="viewcode-block" id="TauMagic"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.TauMagic">[docs]</a><span class="k">class</span> <span class="nc">TauMagic</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Maps (architecture, operating system) tuples to TAU&#39;s magic words.</span>
-<span class="sd">    </span>
-<span class="sd">    The key is a (Architecture, OperatingSystem) tuple since TAU&#39;s architecture mapping is not one-to-one. </span>
-<span class="sd">    The magic word &#39;ibm64linux&#39; corresponds to several different archiectures and operating sytems and </span>
+
+<span class="sd">    The key is a (Architecture, OperatingSystem) tuple since TAU&#39;s architecture mapping is not one-to-one.</span>
+<span class="sd">    The magic word &#39;ibm64linux&#39; corresponds to several different archiectures and operating sytems and</span>
 <span class="sd">    TAU&#39;s magic &#39;x86_64&#39; could be a tradional CPU or a KNL.  TAU Commander needs to know the &quot;real&quot; CPU</span>
 <span class="sd">    architecture and operating system so it can chose the right compilers and dependencies for TAU.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): Name of the TAU architecture (the magic word)</span>
 <span class="sd">        architecture (Architecture): Architecture object for this TAU architecture.</span>
 <span class="sd">        operating_system (OperatingSystem): OperatingSystem object for this TAU architecture.</span>
 <span class="sd">        preferred_families (dict): Preferred compiler families indexed by :any:`Knowledgebase`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;_arch_os&#39;</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arch_os</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">preferred_families</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_arch_os</span> <span class="o">=</span> <span class="n">arch_os</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -263,15 +263,15 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="TauMagic.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.TauMagic.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Detect TAU magic for the target we are currently executing on.</span>
-<span class="sd">        </span>
-<span class="sd">        Mostly relies on Python&#39;s platform module but may also probe </span>
-<span class="sd">        environment variables and file systems in cases where the arch </span>
+
+<span class="sd">        Mostly relies on Python&#39;s platform module but may also probe</span>
+<span class="sd">        environment variables and file systems in cases where the arch</span>
 <span class="sd">        isn&#39;t immediately known to Python.  These tests may be expensive</span>
 <span class="sd">        so the detected value is cached to improve performance.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            TauMagic: The matching taucmdr architecture description.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: Host architecture or operating system not supported.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -307,80 +307,79 @@
 
 
 
-<span class="n">TAU_APPLE</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">X86_64</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">),</span> <span class="s1">&#39;apple&#39;</span><span class="p">,</span> 
-                     <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">APPLE_LLVM</span><span class="p">,</span> 
-                      <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span> 
+<span class="n">TAU_APPLE</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">X86_64</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">),</span> <span class="s1">&#39;apple&#39;</span><span class="p">,</span>
+                     <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">APPLE_LLVM</span><span class="p">,</span>
+                      <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                       <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
-<span class="n">TAU_X86_64</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">X86_64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;x86_64&#39;</span><span class="p">,</span> 
-                      <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span> 
-                       <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span> 
+<span class="n">TAU_X86_64</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">X86_64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;x86_64&#39;</span><span class="p">,</span>
+                      <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span>
+                       <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                        <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
- 
-<span class="n">TAU_CRAYCNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">X86_64</span><span class="p">,</span> <span class="n">CRAY_CNL</span><span class="p">),</span> <span class="s1">&#39;craycnl&#39;</span><span class="p">,</span> 
-                       <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span> 
-                        <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span> 
+
+<span class="n">TAU_CRAYCNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">X86_64</span><span class="p">,</span> <span class="n">CRAY_CNL</span><span class="p">),</span> <span class="s1">&#39;craycnl&#39;</span><span class="p">,</span>
+                       <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span>
+                        <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span>
                         <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">CRAY_SHMEM</span><span class="p">})</span>
- 
-<span class="n">TAU_MIC_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;mic_linux&#39;</span><span class="p">,</span> 
-                         <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span> 
-                          <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span> 
+
+<span class="n">TAU_MIC_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNC</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;mic_linux&#39;</span><span class="p">,</span>
+                         <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span>
+                          <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span>
                           <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
-<span class="n">TAU_KNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;x86_64&#39;</span><span class="p">,</span> 
-                   <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span> 
-                    <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span> 
-                    <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
- 
-<span class="n">TAU_CRAY_KNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">CRAY_CNL</span><span class="p">),</span> <span class="s1">&#39;craycnl&#39;</span><span class="p">,</span> 
-                        <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span> 
-                         <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span> 
-                         <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">CRAY_SHMEM</span><span class="p">})</span>
- 
-<span class="n">TAU_BGP</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_CNK</span><span class="p">),</span> <span class="s1">&#39;bgp&#39;</span><span class="p">,</span> 
-                   <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">,</span> 
-                    <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
-                    <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
- 
-<span class="n">TAU_BGQ</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">IBM_CNK</span><span class="p">),</span> <span class="s1">&#39;bgq&#39;</span><span class="p">,</span> 
-                   <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">,</span> 
-                    <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
+<span class="n">TAU_KNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;x86_64&#39;</span><span class="p">,</span>
+                   <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span>
+                    <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">INTEL</span><span class="p">,</span>
                     <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
-<span class="n">TAU_IBM64_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;ibm64linux&#39;</span><span class="p">,</span> 
-                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
-                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
+<span class="n">TAU_CRAY_KNL</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">INTEL_KNL</span><span class="p">,</span> <span class="n">CRAY_CNL</span><span class="p">),</span> <span class="s1">&#39;craycnl&#39;</span><span class="p">,</span>
+                        <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span>
+                         <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">CRAY</span><span class="p">,</span>
+                         <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">CRAY_SHMEM</span><span class="p">})</span>
+
+<span class="n">TAU_BGP</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM_BGP</span><span class="p">,</span> <span class="n">IBM_CNK</span><span class="p">),</span> <span class="s1">&#39;bgp&#39;</span><span class="p">,</span>
+                   <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">,</span>
+                    <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
+                    <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
+
+<span class="n">TAU_BGQ</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM_BGQ</span><span class="p">,</span> <span class="n">IBM_CNK</span><span class="p">),</span> <span class="s1">&#39;bgq&#39;</span><span class="p">,</span>
+                   <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM_BG</span><span class="p">,</span>
+                    <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
+                    <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
+
+<span class="n">TAU_IBM64_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">IBM64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;ibm64linux&#39;</span><span class="p">,</span>
+                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
+                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
                             <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
-<span class="n">TAU_PPC64_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">PPC64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;ibm64linux&#39;</span><span class="p">,</span> 
-                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
-                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
+<span class="n">TAU_PPC64_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">PPC64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;ibm64linux&#39;</span><span class="p">,</span>
+                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
+                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
                             <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
 <span class="n">TAU_PPC64LE_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">PPC64LE</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;ibm64linux&#39;</span><span class="p">,</span>
-                             <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
-                              <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span> 
+                             <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
+                              <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">IBM</span><span class="p">,</span>
                               <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
-<span class="n">TAU_ARM32_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">ARM32</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;arm_linux&#39;</span><span class="p">,</span> 
-                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span> 
-                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span> 
+<span class="n">TAU_ARM32_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">ARM32</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;arm_linux&#39;</span><span class="p">,</span>
+                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span>
+                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                             <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
 <span class="n">TAU_ARM64_LINUX</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">ARM64</span><span class="p">,</span> <span class="n">LINUX</span><span class="p">),</span> <span class="s1">&#39;arm64_linux&#39;</span><span class="p">,</span>
-                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span> 
-                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span> 
+                           <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span>
+                            <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                             <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
-<span class="n">TAU_ARM32_ANDROID</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">ARM32</span><span class="p">,</span> <span class="n">ANDROID</span><span class="p">),</span> <span class="s1">&#39;arm_android&#39;</span><span class="p">,</span> 
-                             <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span> 
-                              <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span> 
+<span class="n">TAU_ARM32_ANDROID</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="p">((</span><span class="n">ARM32</span><span class="p">,</span> <span class="n">ANDROID</span><span class="p">),</span> <span class="s1">&#39;arm_android&#39;</span><span class="p">,</span>
+                             <span class="p">{</span><span class="n">HOST_COMPILERS</span><span class="p">:</span> <span class="n">host</span><span class="o">.</span><span class="n">GNU</span><span class="p">,</span>
+                              <span class="n">MPI_COMPILERS</span><span class="p">:</span> <span class="n">mpi</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                               <span class="n">SHMEM_COMPILERS</span><span class="p">:</span> <span class="n">shmem</span><span class="o">.</span><span class="n">OPENSHMEM</span><span class="p">})</span>
 
 <span class="n">HOST_ARCH</span> <span class="o">=</span> <span class="n">Architecture</span><span class="o">.</span><span class="n">detect</span><span class="p">()</span>
 <span class="n">HOST_OS</span> <span class="o">=</span> <span class="n">OperatingSystem</span><span class="o">.</span><span class="n">detect</span><span class="p">()</span>
 <span class="n">HOST_TAU_MAGIC</span> <span class="o">=</span> <span class="n">TauMagic</span><span class="o">.</span><span class="n">detect</span><span class="p">()</span>
-
 </pre></div>
 
       </div>
@@ -394,7 +393,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 16, 2020 at 02:14:01 UTC.
+      Last updated on Mar 17, 2020 at 02:14:31 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

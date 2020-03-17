@@ -43,7 +43,7 @@ throws readers out of their rhythm when they go to read it. Avoid this.
 File Header
 -----------
 
-All files must begin with the correct file header. See the 
+All files must begin with the correct file header. See the
 :doc:`documentation` for more information.
 
 
@@ -218,7 +218,7 @@ cases when making library calls.
            pass
 
 -  Avoid catch-all ``except:`` statements, or catch ``Exception`` or
-   ``StandardError``.  Remember that Python is very tolerant in this 
+   ``StandardError``.  Remember that Python is very tolerant in this
    regard and ``except:`` will really
    catch everything including misspelled names, `sys.exit()` calls, Ctrl+C
    interrupts, unittest failures and all kinds of other exceptions.
@@ -1674,5 +1674,3 @@ operations that should not be executed when the file is being
 .. _Sphinx: http://sphinx-doc.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _EAFP Style: <http://stackoverflow.com/a/11360880/403516>
-
-
