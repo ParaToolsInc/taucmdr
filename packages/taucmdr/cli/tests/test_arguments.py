@@ -36,4 +36,4 @@ from taucmdr import tests
 
 class ArgumentsTest(tests.TestCase):
     def test_arguments(self):
-        self.assertEqual(1, 1) 
+        self.assertEqual(1, 1)

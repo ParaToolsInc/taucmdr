@@ -49,7 +49,7 @@ class ProjectEditCommand(EditCommand):
                                                  description=self.summary)
         parser.add_argument('--new-name',
                             help="change the project's name",
-                            metavar='<new_name>', 
+                            metavar='<new_name>',
                             dest='new_name',
                             default=arguments.SUPPRESS)
         parser.add_argument('--add',
@@ -106,7 +106,7 @@ class ProjectEditCommand(EditCommand):
                     self.parser.error("There is no %s named '%s'" % (ctrl.model.name, name))
                 dest.add(found.eid)
                 added.add(found)
-    
+
         for name in set(getattr(args, "add", [])):
             tar = tar_ctrl.one({'name': name})
             app = app_ctrl.one({'name': name})
@@ -139,7 +139,7 @@ class ProjectEditCommand(EditCommand):
                     self.parser.error('There is no %s named %r' % (ctrl.model.name, name))
                 dest.remove(found.eid)
                 removed.add(found)
-    
+
         for name in set(getattr(args, "remove", [])):
             tar = tar_ctrl.one({'name': name})
             app = app_ctrl.one({'name': name})
@@ -163,37 +163,37 @@ class ProjectEditCommand(EditCommand):
     def main(self, argv):
         from taucmdr.cli.commands.project.list import COMMAND as project_list
         args = self._parse_args(argv)
-    
+
         tar_ctrl = Target.controller(PROJECT_STORAGE)
         app_ctrl = Application.controller(PROJECT_STORAGE)
         meas_ctrl = Measurement.controller(PROJECT_STORAGE)
         proj_ctrl = Project.controller()
-    
+
         project_name = args.name
         project = proj_ctrl.one({'name': project_name})
         if not project:
-            self.parser.error("'%s' is not a project name. Type `%s` to see valid names." % 
+            self.parser.error("'%s' is not a project name. Type `%s` to see valid names." %
                               (project_name, project_list.command))
-    
+
         updates = dict(project)
         updates['name'] = getattr(args, 'new_name', project_name)
         targets = set(project['targets'])
         applications = set(project['applications'])
         measurements = set(project['measurements'])
-        
+
         added = self._parse_add_args(args, tar_ctrl, app_ctrl, meas_ctrl, targets, applications, measurements)
         removed = self._parse_remove_args(args, tar_ctrl, app_ctrl, meas_ctrl, targets, applications, measurements)
-    
+
         updates['targets'] = list(targets)
         updates['applications'] = list(applications)
         updates['measurements'] = list(measurements)
-        
+
         proj_ctrl.update(updates, {'name': project_name})
         for model in added:
-            self.logger.info("Added %s '%s' to project configuration '%s'.", 
+            self.logger.info("Added %s '%s' to project configuration '%s'.",
                              model.name.lower(), model[model.key_attribute], project_name)
         for model in removed:
-            self.logger.info("Removed %s '%s' from project configuration '%s'.", 
+            self.logger.info("Removed %s '%s' from project configuration '%s'.",
                              model.name.lower(), model[model.key_attribute], project_name)
         return EXIT_SUCCESS
 

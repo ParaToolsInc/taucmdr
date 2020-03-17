@@ -36,7 +36,7 @@ from taucmdr.cli.commands.help import COMMAND as help_command
 
 class HelpTest(tests.TestCase):
     """Unit tests for `taucmdr help`"""
-    
+
     def test_help(self):
         self.reset_project_storage()
         argv = ['build']

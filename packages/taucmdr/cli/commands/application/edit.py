@@ -38,7 +38,7 @@ from taucmdr.model.experiment import Experiment
 
 class ApplicationEditCommand(EditCommand):
     """``application edit`` subcommand."""
-    
+
     def _update_record(self, store, data, key):
         try:
             retval = super(ApplicationEditCommand, self)._update_record(store, data, key)
@@ -48,9 +48,9 @@ class ApplicationEditCommand(EditCommand):
             raise err
         if not retval:
             rebuild_required = Experiment.rebuild_required()
-            if rebuild_required: 
+            if rebuild_required:
                 self.logger.info(rebuild_required)
-        return retval       
+        return retval
 
 
 COMMAND = ApplicationEditCommand(Application, __name__)

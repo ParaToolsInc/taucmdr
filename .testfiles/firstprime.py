@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #Program written by Devin Shende on August 5th 2018
 
 def firstPrimeAfter(x):

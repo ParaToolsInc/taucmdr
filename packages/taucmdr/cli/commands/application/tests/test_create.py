@@ -42,14 +42,14 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
         self.assertIn('Added application \'test01\' to project configuration', stdout)
         self.assertFalse(stderr)
-        
+
     def test_duplicatename(self):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['app1'])
         self.assertIn('application create <application_name> [arguments]', stderr)
         self.assertIn('application create: error: A application with name', stderr)
         self.assertIn('already exists', stderr)
-        
+
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])

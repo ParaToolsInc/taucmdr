@@ -36,7 +36,7 @@ from taucmdr.cli.commands.target import delete, create
 
 class DeleteTest(tests.TestCase):
     """Tests for :any:`target.delete`."""
-    
+
     def test_delete(self):
         self.reset_project_storage()
         argv = ['targ2']
@@ -44,7 +44,7 @@ class DeleteTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, delete.COMMAND, argv)
         self.assertIn('Deleted target \'targ2\'', stdout)
         self.assertFalse(stderr)
-        
+
     def test_wrongname(self):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, delete.COMMAND, ['targ2'])

@@ -36,7 +36,7 @@ from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 
 class DashboardTest(tests.TestCase):
     """Unit tests for `taucmdr dashboard`"""
-    
+
     def test_dashboard(self):
         self.reset_project_storage()
         self.assertCommandReturnValue(0, dashboard_cmd, [])

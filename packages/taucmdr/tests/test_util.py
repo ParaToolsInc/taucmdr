@@ -36,31 +36,31 @@ from taucmdr import util, tests
 
 class HumanSizeTest(tests.TestCase):
     """Class to test the human_size function in utils."""
-    
+
     def test_humansize(self):
-        self.assertEqual(util.human_size(20000000), '19.1MiB') 
+        self.assertEqual(util.human_size(20000000), '19.1MiB')
         with self.assertRaises(TypeError):
             util.human_size('abc')
 
 
 class ParseBoolTest(tests.TestCase):
     """Class to test the parse_bool function in utils."""
-    
+
     def test_true(self):
         self.assertTrue(util.parse_bool('yes'))
         with self.assertRaises(TypeError):
             util.parse_bool('ye')
-    
+
     def test_false(self):
         self.assertFalse(util.parse_bool('off'))
         with self.assertRaises(TypeError):
             util.parse_bool('offf')
-    
+
     def test_extendtrue(self):
         self.assertTrue(util.parse_bool('2', ['correct', '2', '3', '4', '5'], ['incorrect']))
         with self.assertRaises(TypeError):
             util.parse_bool('6')
-    
+
     def test_extendfalse(self):
         self.assertFalse(util.parse_bool('incorrect', ['correct', '2', '3', '4', '5'], ['incorrect']))
         with self.assertRaises(TypeError):
@@ -69,10 +69,10 @@ class ParseBoolTest(tests.TestCase):
 
 class IsUrlTest(tests.TestCase):
     """Class to test the is_url function in utils."""
-    
+
     def test_true(self):
         self.assertTrue(util.is_url("http://www.paratools.com"))
-    
+
     def test_false(self):
         self.assertFalse(util.is_url("www.paratools.com"))
 

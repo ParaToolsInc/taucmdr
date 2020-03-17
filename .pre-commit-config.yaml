@@ -3,6 +3,15 @@
 default_language_version:
   python: python2.7
 fail_fast: true
+exclude: >
+  (?x)^(
+  packages/fasteners/.*|
+  packages/six/.*|
+  packages/termcolor/.*|
+  packages/texttable/.*|
+  packages/tinydb/.*|
+  packages/unidecode/.*
+  )$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.5.0
@@ -21,6 +30,7 @@ repos:
     - id: debug-statements
     - id: detect-private-key
     - id: end-of-file-fixer
+    - id: fix-encoding-pragma
     - id: mixed-line-ending
 #    - id: name-tests-test
     - id: pretty-format-json

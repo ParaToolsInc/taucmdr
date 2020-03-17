@@ -44,7 +44,7 @@ class DeleteTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, delete_cmd, ['proj2'])
         self.assertIn('Deleted project', stdout)
         self.assertFalse(stderr)
-        
+
     def test_wrongname(self):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, delete_cmd, ['proj2'])

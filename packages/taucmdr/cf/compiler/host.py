@@ -51,19 +51,19 @@ PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group|NVIDIA CORPORA
 
 IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                          version_flags=['-qversion'],
-                         CC=('xlc_r', 'xlc'), 
-                         CXX=('xlc++_r', 'xlc++', 'xlC_r', 'xlC', 'xlcuf'), 
-                         FC=('xlf_r', 'xlf', 'xlf90_r', 'xlf90', 'xlf95_r', 'xlf95', 
+                         CC=('xlc_r', 'xlc'),
+                         CXX=('xlc++_r', 'xlc++', 'xlC_r', 'xlC', 'xlcuf'),
+                         FC=('xlf_r', 'xlf', 'xlf90_r', 'xlf90', 'xlf95_r', 'xlf95',
                              'xlf2003_r', 'xlf2003', 'xlf2008_r', 'xlf2008'))
 
 IBM_BG = HOST_COMPILERS.add('BlueGene',
                             CC=('bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r'),
                             CXX=('bgxlc++', 'bgxlc++_r', 'bgxlC', 'bgxlC_r'),
-                            FC=('bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90', 
-                                'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003', 
-                                'bgxlf2008', 'bgxlf2008_r', 'bgf2008')) 
+                            FC=('bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90',
+                                'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003',
+                                'bgxlf2008', 'bgxlf2008_r', 'bgf2008'))
 
-CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray', 
+CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                           version_flags=['-craype-verbose', '--version', '-E'],
                           show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                           CC='cc', CXX='CC', FC='ftn', UPC='cc')

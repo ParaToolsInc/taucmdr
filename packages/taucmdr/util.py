@@ -120,9 +120,9 @@ def copy_file(src, dest, show_progress=True):
 
 def mkdirp(*args):
     """Creates a directory and all its parents.
-    
+
     Works just like ``mkdir -p``.
-    
+
     Args:
         *args: Paths to create.
     """
@@ -148,7 +148,7 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     Args:
         path (str): A directory but not a symbolic link to a directory.
         ignore_errors (bool): If True then errors resulting from failed removals will be ignored.
-                              If False or omitted, such errors are handled by calling a handler 
+                              If False or omitted, such errors are handled by calling a handler
                               specified by `onerror` or, if that is omitted, they raise an exception.
         onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
@@ -167,10 +167,10 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
 @contextmanager
 def umask(new_mask):
     """Context manager to temporarily set the process umask.
-    
+
     Args:
         new_mask: The argument to :any:`os.umask`.
-    """ 
+    """
     old_mask = os.umask(new_mask)
     yield
     os.umask(old_mask)
@@ -179,15 +179,15 @@ def umask(new_mask):
 _WHICH_CACHE = {}
 def which(program, use_cached=True):
     """Returns the full path to a program command.
-    
+
     Program must exist and be executable.
     Searches the system PATH and the current directory.
     Caches the result.
-    
+
     Args:
         program (str): program to find.
         use_cached (bool): If False then don't use cached results.
-        
+
     Returns:
         str: Full path to program or None if program can't be found.
     """
@@ -222,15 +222,15 @@ def which(program, use_cached=True):
 
 def download(src, dest, timeout=8):
     """Downloads or copies files.
-    
-    `src` may be a file path or URL.  The destination folder will be created 
+
+    `src` may be a file path or URL.  The destination folder will be created
     if it doesn't exist.  Download is via curl, wget, or Python's urllib as appropriate.
-    
+
     Args:
         src (str): Path or URL to source file.
         dest (str): Path to file copy or download destination.
         timeout (int): Maximum time in seconds for the connection to the server.  0 for no timeout.
-        
+
     Raises:
         IOError: File copy or download failed.
     """
@@ -249,7 +249,7 @@ def download(src, dest, timeout=8):
             abs_cmd = which(cmd)
             if abs_cmd and _create_dl_subprocess(abs_cmd, src, dest, timeout) == 0:
                 return
-            LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)                    
+            LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)
         # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
         if timeout:
             raise IOError("Failed to download '%s'" % src)
@@ -298,21 +298,21 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
 
 def archive_toplevel(archive):
     """Returns the name of the top-level directory in an archive.
-    
+
     Assumes that the archive file is rooted in a single top-level directory::
         foo
             /bar
             /baz
-    
+
     The top-level directory here is "foo"
     This routine will return stupid results for archives with multiple top-level elements.
-    
+
     Args:
         archive (str): Path to archive file.
-        
+
     Raises:
         IOError: `archive` could not be read.
-        
+
     Returns:
         str: Directory name.
     """
@@ -349,17 +349,17 @@ def _show_extract_progress(members):
 
 def extract_archive(archive, dest, show_progress=True):
     """Extracts archive file to dest.
-    
+
     Supports compressed and uncompressed tar archives. Destination folder will
     be created if it doesn't exist.
-    
+
     Args:
         archive (str): Path to archive file to extract.
         dest (str): Destination folder.
-    
+
     Returns:
         str: Full path to extracted files.
-        
+
     Raises:
         IOError: Failed to extract archive.
     """
@@ -383,12 +383,12 @@ def extract_archive(archive, dest, show_progress=True):
 
 def create_archive(fmt, dest, items, cwd=None, show_progress=True):
     """Creates a new archive file in the specified format.
-    
+
     Args:
         fmt (str): Archive fmt, e.g. 'zip' or 'tgz'.
         dest (str): Path to the archive file that will be created.
         items (list): Items (i.e. files or folders) to add to the archive.
-        cwd (str): Current working directory while creating the archive. 
+        cwd (str): Current working directory while creating the archive.
     """
     if cwd:
         oldcwd = os.getcwd()
@@ -422,16 +422,16 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
 
 def path_accessible(path, mode='r'):
     """Check if a file or directory exists and is accessable.
-    
+
     Files are checked by attempting to open them with the given mode.
-    Directories are checked by testing their access bits only, which may fail for 
-    some filesystems which may have permissions semantics beyond the usual POSIX 
-    permission-bit model. We'll fix this if it becomes a problem. 
-    
+    Directories are checked by testing their access bits only, which may fail for
+    some filesystems which may have permissions semantics beyond the usual POSIX
+    permission-bit model. We'll fix this if it becomes a problem.
+
     Args:
         path (str): Path to file or directory to check.
         mode (str): File access mode to test, e.g. 'r' or 'rw'
-    
+
     Returns:
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
@@ -468,9 +468,9 @@ def _null_context(label):
 
 def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False):
     """Create a subprocess.
-    
+
     See :any:`subprocess.Popen`.
-    
+
     Args:
         cmd (list): Command and its command line arguments.
         cwd (str): If not None, change directory to `cwd` before creating the subprocess.
@@ -481,12 +481,12 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
                           non-zero then send last `error_buf` lines of subprocess stdout and stderr
                           to this processes' stdout.
         record_output (bool): If True return output.
-        
+
     Returns:
         int: Subprocess return code.
     """
     subproc_env = dict(os.environ)
-    if env: 
+    if env:
         for key, val in env.iteritems():
             if val is None:
                 subproc_env.pop(key, None)
@@ -500,7 +500,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
         if error_buf:
             buf = deque(maxlen=error_buf)
         output = []
-        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, 
+        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
             # Use iter to avoid hidden read-ahead buffer bug in named pipes:
@@ -528,16 +528,16 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
 
 def get_command_output(cmd):
     """Return the possibly cached output of a command.
-    
+
     Just :any:`subprocess.check_output` with a cache.
     Subprocess stderr is always sent to subprocess stdout.
-    
+
     Args:
         cmd (list): Command and its command line arguments.
 
     Raises:
         subprocess.CalledProcessError: return code was non-zero.
-        
+
     Returns:
         str: Subprocess output.
     """
@@ -579,13 +579,13 @@ def page_output(output_string):
 
 def human_size(num, suffix='B'):
     """Converts a byte count to human readable units.
-    
+
     Args:
         num (int): Number to convert.
         suffix (str): Unit suffix, e.g. 'B' for bytes.
-        
-    Returns: 
-        str: `num` as a human readable string. 
+
+    Returns:
+        str: `num` as a human readable string.
     """
     if not num:
         num = 0
@@ -598,20 +598,20 @@ def human_size(num, suffix='B'):
 
 def parse_bool(value, additional_true=None, additional_false=None):
     """Parses a value to a boolean value.
-    
+
     If `value` is a string try to interpret it as a bool:
     * ['1', 't', 'y', 'true', 'yes', 'on'] ==> True
     * ['0', 'f', 'n', 'false', 'no', 'off'] ==> False
     Otherwise raise TypeError.
-    
+
     Args:
         value: value to parse to a boolean.
         additional_true (list): optional additional string values that stand for True.
         additional_false (list): optional additional string values that stand for False.
-        
+
     Returns:
         bool: True if  `value` is true, False if `value` is false.
-        
+
     Raises:
         ValueError: `value` does not parse.
     """
@@ -634,10 +634,10 @@ def parse_bool(value, additional_true=None, additional_false=None):
 
 def is_url(url):
     """Check if `url` is a URL.
-    
+
     Args:
         url (str): String to check
-        
+
     Returns:
         bool: True if `url` is a URL, False otherwise.
     """
@@ -646,10 +646,10 @@ def is_url(url):
 
 def camelcase(name):
     """Converts a string to CamelCase.
-    
+
     Args:
         name (str): String to convert.
-        
+
     Returns:
         str: `name` in CamelCase.
     """
@@ -658,16 +658,16 @@ def camelcase(name):
 
 def hline(title, *args, **kwargs):
     """Build a colorful horizontal rule for console output.
-    
+
     Uses :any:`logger.LINE_WIDTH` to generate a string of '=' characters
     as wide as the terminal.  `title` is included in the string near the
-    left of the horizontal line. 
-    
+    left of the horizontal line.
+
     Args:
         title (str): Text to put on the horizontal rule.
         *args: Positional arguments to pass to :any:`termcolor.colored`.
         **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.
-    
+
     Returns:
         str: The horizontal rule.
     """
@@ -677,12 +677,12 @@ def hline(title, *args, **kwargs):
 
 def color_text(text, *args, **kwargs):
     """Use :any:`termcolor.colored` to colorize text.
-    
+
     Args:
         text (str): Text to colorize.
         *args: Positional arguments to pass to :any:`termcolor.colored`.
         **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.
-        
+
     Returns:
         str: The colorized text.
     """
@@ -694,10 +694,10 @@ def color_text(text, *args, **kwargs):
 
 def uncolor_text(text):
     """Remove color control chars from a string.
-    
+
     Args:
         text (str): Text to colorize.
-        
+
     Returns:
         str: The text without control chars.
     """
@@ -730,7 +730,7 @@ def _zipimporter_iter_modules(archive, path):
     libdir, _, pkgpath = path.partition(archive + os.sep)
     with ZipFile(os.path.join(libdir, archive)) as zipfile:
         namelist = zipfile.namelist()
-    
+
     def iter_modules(prefix):
         for fname in namelist:
             fname, ext = os.path.splitext(fname)

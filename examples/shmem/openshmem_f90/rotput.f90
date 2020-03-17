@@ -4,7 +4,7 @@
 !
 ! rotate PE id to right neighbor (dest), with wrap-around
 !
- 
+
 program rotput
 
   integer, save :: dest

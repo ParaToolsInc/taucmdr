@@ -55,7 +55,7 @@ class DeleteTest(tests.TestCase):
     def test_issue187(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/187"""
         self.reset_project_storage()
-        stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND, 
+        stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND,
                                                        ['profile2', '--profile', 'tau', '--trace', 'none',
                                                         '--source-inst', 'automatic', '--sample', 'false'])
         self.assertIn("Added measurement 'profile2' to project configuration", stdout)

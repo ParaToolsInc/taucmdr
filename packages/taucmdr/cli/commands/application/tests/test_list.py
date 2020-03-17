@@ -42,7 +42,7 @@ class ListTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, [])
         self.assertIn('app1', stdout)
         self.assertFalse(stderr)
-        
+
     def test_wrongname(self):
         self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['app2'])

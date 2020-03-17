@@ -41,5 +41,5 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'I/O', 'yesno': 'io'},
                      {'header': 'MPI', 'yesno': 'mpi'},
                      {'header': 'SHMEM', 'yesno': 'shmem'}]
- 
+
 COMMAND = ListCommand(Measurement, __name__, dashboard_columns=DASHBOARD_COLUMNS)

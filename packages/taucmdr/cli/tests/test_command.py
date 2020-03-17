@@ -36,4 +36,4 @@ from taucmdr import tests
 
 class CommandTest(tests.TestCase):
     def test_command(self):
-        self.assertEqual(1, 1) 
+        self.assertEqual(1, 1)

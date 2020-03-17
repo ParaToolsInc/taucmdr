@@ -28,9 +28,9 @@
 """TAU Commander command line interface (CLI).
 
 The TAU Commander CLI is composed of a single top-level command that invokes
-subcommands, much like `git`_.  For example, the command line 
+subcommands, much like `git`_.  For example, the command line
 ``tau project create my_new_project`` invokes the `create` subcommand of the
-`project` subcommand with the arguments `my_new_project`. 
+`project` subcommand with the arguments `my_new_project`.
 
 Every package in :py:mod:`taucmdr.cli.commands` is a TAU Commander subcommand. Modules
 in the package are that subcommand's subcommands.  This can be nested as deep as
@@ -57,8 +57,8 @@ COMMANDS_PACKAGE_NAME = __name__ + '.commands'
 USAGE_FORMAT = "console"
 """Specify usage formatting:
     console: colorized and formatted to fit current console dimensions.
-    markdown: plain text markdown. 
-""" 
+    markdown: plain text markdown.
+"""
 
 _COMMANDS = {SCRIPT_COMMAND: {}}
 
@@ -83,7 +83,7 @@ class AmbiguousCommandError(ConfigurationError):
 
 def _command_as_list(module_name):
     """Converts a module name to a command name list.
-    
+
     Maps command module names to their command line equivilants, e.g.
     'taucmdr.cli.commands.target.create' => ['tau', 'target', 'create']
 
@@ -103,17 +103,17 @@ def _command_as_list(module_name):
 def _get_commands(package_name):
     # pylint: disable=line-too-long
     """Returns a dictionary mapping commands to Python modules.
-    
+
     Given a root module name, return a dictionary that maps commands and their
     subcommands to Python modules.  The special key ``__module__`` maps to the
     command module.  Other strings map to subcommands of the command.
-    
+
     Args:
         package_name (str): A string naming the module to search for cli.
-    
+
     Returns:
         dict: Strings mapping to dictionaries or modules.
-        
+
     Example:
     ::
 
@@ -153,13 +153,13 @@ def _get_commands(package_name):
 
 def command_from_module_name(module_name):
     """Converts a module name to a command name string.
-    
+
     Maps command module names to their command line equivilants, e.g.
     'taucmdr.cli.commands.target.create' => 'tau target create'
-    
+
     Args:
         module_name (str): Name of a module.
-        
+
     Returns:
         str: A string that identifies the command.
     """
@@ -171,10 +171,10 @@ def command_from_module_name(module_name):
 
 def commands_description(package_name=COMMANDS_PACKAGE_NAME):
     """Builds listing of command names with short description.
-    
+
     Args:
         package_name (str): A dot-seperated string naming the module to search for cli.
-    
+
     Returns:
         str: Help string describing all commands found at or below `root`.
     """
@@ -186,7 +186,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
         try:
             command_obj = module.COMMAND
         except AttributeError:
-            continue 
+            continue
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
         if usage_fmt == 'console':
@@ -244,17 +244,17 @@ def _resolve(cmd, c, d):
         raise UnknownCommandError(' '.join(cmd))
     elif len(matches) > 1:
         raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
-    
+
 def find_command(cmd):
     """Import the command module and return its COMMAND member.
-    
+
     Args:
         cmd (list): List of strings identifying the command, i.e. from :any:`_command_as_list`.
-        
+
     Raises:
         UnknownCommandError: `cmd` is invalid.
         AmbiguousCommandError: `cmd` is ambiguous.
-        
+
     Returns:
         AbstractCommand: Command object for the subcommand.
     """
@@ -290,20 +290,20 @@ def _permute(cmd, cmd_args):
 
 def execute_command(cmd, cmd_args=None, parent_module=None):
     """Import the command module and run its main routine.
-    
+
     Partial commands are allowed, e.g. cmd=['tau', 'cli', 'commands', 'app', 'cre'] will resolve
-    to 'taucmdr.cli.commands.application.create'.  If the command can't be found then the parent 
+    to 'taucmdr.cli.commands.application.create'.  If the command can't be found then the parent
     command (if any) will be invoked with the ``--help`` flag.
-    
+
     Args:
         cmd (list): List of strings identifying the command, i.e. from :any:`_command_as_list`.
         cmd_args (list): Command line arguments to be parsed by command.
         parent_module (str): Dot-seperated name of the command's parent.
-        
+
     Raises:
         UnknownCommandError: `cmd` is invalid.
         AmbiguousCommandError: `cmd` is ambiguous.
-        
+
     Returns:
         int: Command return code.
     """

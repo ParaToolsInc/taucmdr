@@ -34,7 +34,7 @@ CUDA_COMPILERS = Knowledgebase('CUDA', 'Compilers supporting CUDA',
                                CXX=('CUDA', 'CU'),
                                FC=('CUDA Fortran', 'CUF'))
 
-NVIDIA = CUDA_COMPILERS.add('NVIDIA', CXX='nvcc') 
+NVIDIA = CUDA_COMPILERS.add('NVIDIA', CXX='nvcc')
 
 IBM = CUDA_COMPILERS.add('IBM', family_regex=r'^IBM XL', version_flags=['-qversion'],
                          FC='xlcuf')

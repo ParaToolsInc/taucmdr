@@ -69,7 +69,7 @@ class TargetEditCommand(EditCommand):
         return Action
 
     def _configure_argument_group(self, group, kbase, family_flag, family_attr):
-        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case. 
+        # Add the compiler family flag. If the knowledgebase keyword isn't all-caps then show in lower case.
         keyword = kbase.keyword
         if keyword.upper() != keyword:
             keyword = keyword.lower()
@@ -94,14 +94,14 @@ class TargetEditCommand(EditCommand):
         parser = super(TargetEditCommand, self)._construct_parser()
         group = parser.add_argument_group('host arguments')
         self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
-        
+
         group = parser.add_argument_group('Message Passing Interface (MPI) arguments')
         self._configure_argument_group(group, MPI_COMPILERS, '--mpi-wrappers', 'mpi_family')
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')
         return parser
-     
+
     def _update_record(self, store, data, key):
         from taucmdr.cli.commands.target.copy import COMMAND as target_copy_cmd
         from taucmdr.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
@@ -113,7 +113,7 @@ class TargetEditCommand(EditCommand):
             raise err
         if not retval:
             rebuild_required = Experiment.rebuild_required()
-            if rebuild_required: 
+            if rebuild_required:
                 self.logger.info(rebuild_required)
         return retval
 
@@ -123,13 +123,13 @@ class TargetEditCommand(EditCommand):
         store = arguments.parse_storage_flag(args)[0]
         compilers = target_create_cmd.parse_compiler_flags(args)
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
-        
+
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
- 
+
         key_attr = self.model.key_attribute
         try:
             data[key_attr] = args.new_key

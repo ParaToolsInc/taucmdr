@@ -37,7 +37,7 @@ from taucmdr.cli.commands.trial import show, create
 from taucmdr.cf.compiler.host import CC
 
 class ShowTest(tests.TestCase):
-    
+
     @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_show(self):
         self.reset_project_storage()

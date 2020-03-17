@@ -40,7 +40,7 @@ class TrialDeleteCommand(DeleteCommand):
     def _construct_parser(self):
         usage = "%s <trial_number> [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('number', 
+        parser.add_argument('number',
                             help="Number of the trial to delete",
                             nargs='+',
                             metavar='<trial_number>')

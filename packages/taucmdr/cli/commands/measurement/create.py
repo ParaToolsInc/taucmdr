@@ -43,16 +43,16 @@ class MeasurementCreateCommand(CreateCommand):
             if args.select_file.lower() == 'none':
                 args.select_file = None
         return args
-    
+
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        
+
         # Set callpath depth to 0 unless the user specified a non-default callpath depth on the command line
         if data.get('trace', 'none') != 'none' and data['callpath'] == self.model.attributes['callpath']['default']:
             data['callpath'] = 0
-        
+
         return self._create_record(store, data)
 
 
