@@ -33,7 +33,6 @@ Just patches through to tau.cli.commands.__main__
 
 from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import unicode_literals
 from pyannotate_runtime import collect_types
 
 if __name__ == '__main__':

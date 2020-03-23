@@ -37,11 +37,11 @@ TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.
 
 from __future__ import absolute_import
 from __future__ import print_function
-from __future__ import unicode_literals
 
 from pyannotate_runtime import collect_types
 from typing import List
 from typing import Tuple
+from io import open
 collect_types.init_types_collection()
 collect_types.start()
 

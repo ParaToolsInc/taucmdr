@@ -34,6 +34,7 @@ import glob
 import six
 from six.moves import range
 from pyannotate_runtime import collect_types
+from io import open
 collect_types.init_types_collection()
 collect_types.start()
 
