@@ -37,8 +37,8 @@ The key/value store is accessed via the `[]` operator, i.e. treat the storage ob
 
 from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
-from taucmdr.error import Error
 import six
+from taucmdr.error import Error
 
 
 class StorageError(Error):

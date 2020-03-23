@@ -35,14 +35,14 @@ both the database and the key/value store.
 from __future__ import absolute_import
 import os
 import json
-import tinydb
+import six
 import tempfile
+import tinydb
 from tinydb import operations
 from tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
-import six
 
 LOGGER = logger.get_logger(__name__)
 

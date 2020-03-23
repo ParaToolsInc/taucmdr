@@ -28,9 +28,9 @@
 """TODO: FIXME: Docs"""
 
 from __future__ import absolute_import
+import six
 from taucmdr import logger
 from taucmdr.error import InternalError, UniqueAttributeError, ModelError
-import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -461,7 +461,7 @@ class Controller(object):
                 for key in affected:
                     foreign_record = database.get(key, table_name=foreign_model.name)
                     updated = list(set(foreign_record[via]) - {record.eid})
-                    if 'required' in foreign_props and len(updated) == 0:
+                    if 'required' in foreign_props and not updated:
                         _heavy_debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
                         foreign_model.controller(database).delete(key)
                     else:

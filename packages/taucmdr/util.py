@@ -40,24 +40,25 @@ import atexit
 import subprocess
 import errno
 import shutil
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import pkgutil
 import tarfile
 import gzip
 import tempfile
-import six.moves.urllib.parse
 import hashlib
 from collections import deque
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
+import six
+import six.moves.urllib.request
+import six.moves.urllib.parse
+import six.moves.urllib.error
+from six.moves import range
 from termcolor import termcolor
 from unidecode import unidecode
 from taucmdr import logger
 from taucmdr.error import InternalError
 from taucmdr.progress import ProgressIndicator
-import six
-from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)
@@ -157,15 +158,16 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
     """
-    if not os.path.exists(path):
-        return
-    for i in range(attempts-1):
-        try:
-            return shutil.rmtree(path)
-        except Exception as err:        # pylint: disable=broad-except
-            LOGGER.warning("Unexpected error: %s", err)
-            time.sleep(i+1)
-    shutil.rmtree(path, ignore_errors, onerror)
+    if os.path.exists(path):
+        for i in range(attempts-1):
+            try:
+                return shutil.rmtree(path)
+            except Exception as err:        # pylint: disable=broad-except
+                LOGGER.warning("Unexpected error: %s", err)
+                time.sleep(i+1)
+        shutil.rmtree(path, ignore_errors, onerror)
+    else:
+        return None
 
 
 @contextmanager
@@ -466,7 +468,7 @@ def path_accessible(path, mode='r'):
         return False
 
 @contextmanager
-def _null_context(label):
+def _null_context():
     yield
 
 
@@ -755,7 +757,7 @@ def _zipimporter_iter_modules(archive, path):
 
 
 def _iter_modules(paths, prefix):
-    # pylint: disable=no-member,redefined-variable-type
+    # pylint: disable=no-member
     yielded = {}
     for path in paths:
         importer = pkgutil.get_importer(path)

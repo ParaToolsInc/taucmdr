@@ -28,11 +28,12 @@
 """TODO: FIXME: Docs"""
 
 from __future__ import absolute_import
+import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
 from taucmdr.cf.storage import StorageRecord
 from taucmdr.mvc.controller import Controller
-import six
+
 
 LOGGER = logger.get_logger(__name__)
 

@@ -70,10 +70,10 @@ import stat
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
+import six
 from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
-import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -329,7 +329,7 @@ class _CompilerFamily(TrackedInstance):
                         return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        if len(without_regex) > 0:
+        if without_regex:
             guess = without_regex[0]
             if len(without_regex) > 1:
                 LOGGER.warning(("Assuming '%s' is a %s compiler but it could be to any of these: %s\n"
@@ -373,7 +373,7 @@ class _CompilerInfo(TrackedInstance):
             return [info for info in family.members.get(role, []) if info.command == command]
         elif command and family:
             return [
-                    info for info_list in six.itervalues(family.members) for info in info_list if info.command == command
+                info for info_list in six.itervalues(family.members) for info in info_list if info.command == command
             ]
         elif command and role:
             return [info for info in cls.all() if info.role is role and info.command == command]

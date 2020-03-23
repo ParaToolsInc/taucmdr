@@ -33,6 +33,7 @@ import os
 import multiprocessing
 from subprocess import CalledProcessError
 from contextlib import contextmanager
+import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator
@@ -43,7 +44,6 @@ from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
 from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_OS, DARWIN
-import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -381,16 +381,16 @@ class Installation(object):
                     except IOError:
                         pass
                 try:
-                    LOGGER.warning("Unable to acquire %s source package '%s'" % (self.name, self.src))
+                    LOGGER.warning("Unable to acquire %s source package '%s'", self.name, self.src)
                     self.src = self.srcs.pop(0)
-                    LOGGER.warning("falling back to '%s'" % self.src)
+                    LOGGER.warning("falling back to '%s'", self.src)
                 except IndexError:
                     self.src = None
             else:
                 return archive
         if self.src is None:
             raise ConfigurationError(
-                    "Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail))
+                "Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail))
             )
         else:
             return archive

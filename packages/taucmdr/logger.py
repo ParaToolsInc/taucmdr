@@ -48,9 +48,9 @@ import string
 import logging
 from logging import handlers
 from datetime import datetime
+from six.moves import map
 from termcolor import termcolor
 from taucmdr import USER_PREFIX, TAUCMDR_VERSION
-from six.moves import map
 
 
 def get_terminal_size():
@@ -107,9 +107,6 @@ def _get_term_size_windows():
         sizex = right - left + 1
         sizey = bottom - top + 1
         return sizex, sizey
-    else:
-        return None
-
 
 def _get_term_size_tput():
     """Discover the size of the user's terminal via `tput`_.

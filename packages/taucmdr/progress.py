@@ -37,11 +37,11 @@ import sys
 import threading
 import itertools
 from datetime import datetime, timedelta
-from taucmdr import logger
-from taucmdr.error import ConfigurationError
 import six
 from six.moves import range
 from six.moves import zip
+from taucmdr import logger
+from taucmdr.error import ConfigurationError
 
 
 LOGGER = logger.get_logger(__name__)
