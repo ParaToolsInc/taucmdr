@@ -796,30 +796,30 @@ def find_version():
 print(find_version())
                     '''
             path = self.compilers[PY].absolute_path
-            new_file, name = tempfile.mkstemp(suffix='py',text=True) # make a temporary file
+            new_file, name = tempfile.mkstemp(suffix='py', text=True) # make a temporary file
             with os.fdopen(new_file, 'w') as f:
                 f.write(program)
-            data = get_command_output([path,name])
+            data = get_command_output([path, name])
             # literal_eval converts string of dict to an actual python dict
             # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
             data = ast.literal_eval(data)
             # pythonlib = data['path']
             pythoninc = data['path']+data['version']
-            pythoninc = os.path.join(os.path.dirname(data['path']),'include')
-            pythoninc = os.path.join(pythoninc,'python'+data['version'])
+            pythoninc = os.path.join(os.path.dirname(data['path']), 'include')
+            pythoninc = os.path.join(pythoninc, 'python'+data['version'])
 
             # run ldd /usr/lib and save output
-            out = get_command_output(['ldd',path])
+            out = get_command_output(['ldd', path])
             pattern = re.compile(r'.*=> (.*libpython[23a-z]\.\d.so[0-9\.]+)')
-            pythonlib = pattern.search(out,re.MULTILINE)
+            pythonlib = pattern.search(out, re.MULTILINE)
             if pythonlib is not None:
                 pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
                 pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
             else:
-                print('output of ldd',out)
+                print('output of ldd', out)
                 raise InternalError('output of ldd %s failed to match regex' % path)
-            print('pythonlib',pythonlib)
-            print('pythoninc',pythoninc)
+            print('pythonlib', pythonlib)
+            print('pythoninc', pythoninc)
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -1826,7 +1826,7 @@ print(find_version())
             dyninstroot = os.path.join(self.install_prefix, self.target_arch.name, 'dyninst-9.3.2-working')
             env['DYNINST_ROOT'] = dyninstroot
             env['DYNINSTAPI_RT_LIB'] = '%s/lib/libdyninstAPI_RT.so' %dyninstroot
-            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib') , env['LD_LIBRARY_PATH'])
+            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib'), env['LD_LIBRARY_PATH'])
         elif rewrite_package == 'pebil':
             rewrite_cmd = 'tau_pebil_rewrite'
         elif rewrite_package == 'maqao':
@@ -1839,7 +1839,7 @@ print(find_version())
 
     def get_python_version(self, python_path):
         _, env = self.runtime_config()
-        cmd = [python_path , '--version']
+        cmd = [python_path, '--version']
         out = util.get_command_output(cmd)
         p=re.compile(r'\d+\.\d+\.\d+')
         m = p.search(out)

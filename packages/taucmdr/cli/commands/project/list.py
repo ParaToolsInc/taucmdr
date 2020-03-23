@@ -97,8 +97,8 @@ class ProjectListCommand(ListCommand):
             try:
                 expr = proj.experiment()
             except ExperimentSelectionError:
-                print((util.color_text('No selected experiment: ', 'red') +
-                       'Use `%s` to create or select an experiment.' % select_cmd))
+                print(util.color_text('No selected experiment: ', 'red') +
+                       'Use `%s` to create or select an experiment.' % select_cmd)
             else:
                 print(util.color_text("Selected Experiment: ", 'cyan') + expr['name'])
 
