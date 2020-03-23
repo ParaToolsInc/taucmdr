@@ -502,8 +502,9 @@ class TauInstallation(Installation):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
-        python_version = self.get_python_version(self.python_path)
-        uid_parts.extend([self.python_path, python_version])
+        if self.python_path:
+            python_version = self.get_python_version(self.python_path)
+            uid_parts.extend([self.python_path, python_version])
         return uid_parts
 
     def _get_max_threads(self):
