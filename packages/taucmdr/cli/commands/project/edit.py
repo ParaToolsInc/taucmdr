@@ -111,7 +111,7 @@ class ProjectEditCommand(EditCommand):
             tar = tar_ctrl.one({'name': name})
             app = app_ctrl.one({'name': name})
             mes = meas_ctrl.one({'name': name})
-            tam = set([tar, app, mes]) - set([None])
+            tam = {tar, app, mes} - {None}
             if len(tam) > 1:
                 self.parser.error("'%s' is ambiguous. Use --add-targets, --add-applications,"
                                   " or --add-measurements to specify configuration type" % name)
@@ -144,7 +144,7 @@ class ProjectEditCommand(EditCommand):
             tar = tar_ctrl.one({'name': name})
             app = app_ctrl.one({'name': name})
             mes = meas_ctrl.one({'name': name})
-            tam = set([tar, app, mes]) - set([None])
+            tam = {tar, app, mes} - {None}
             if len(tam) > 1:
                 self.parser.error("'%s' is ambiguous. Use --remove-targets, --remove-applications,"
                                   " or --remove-measurements to specify configuration type" % name)

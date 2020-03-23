@@ -99,7 +99,7 @@ class SelectCommand(AbstractCommand):
                 app = app_ctrl.one({"name": name})
                 mes = meas_ctrl.one({"name": name})
                 expr = expr_ctrl.one({"name": name})
-                found = set([tar, app, mes, expr]) - set([None])
+                found = {tar, app, mes, expr} - {None}
                 if len(found) > 1:
                     self.parser.error("'%s' is ambiguous. "
                                       "Please use a command line flag to specify configuration type." % name)

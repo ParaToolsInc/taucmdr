@@ -435,7 +435,7 @@ def path_accessible(path, mode='r'):
     Returns:
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
-    assert mode and set(mode) <= set(('r', 'w'))
+    assert mode and set(mode) <= {'r', 'w'}
     if not os.path.exists(path):
         return False
     if os.path.isdir(path):

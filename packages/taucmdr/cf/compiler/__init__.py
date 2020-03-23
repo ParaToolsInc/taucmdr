@@ -555,7 +555,7 @@ class InstalledCompiler(object):
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
                                      (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
-        known_commands = set(info.command for info in _CompilerInfo.all())
+        known_commands = {info.command for info in _CompilerInfo.all()}
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
             if not line:
                 continue
@@ -717,7 +717,7 @@ class InstalledCompiler(object):
         """
 
         if self.info.family.name == 'Intel' and self.info.role.keyword == 'Host_CC':
-            version_tuple = re.findall("(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
+            version_tuple = re.findall(r"(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
         else:
             version_tuple = None
         return version_tuple
@@ -736,7 +736,7 @@ class InstalledCompiler(object):
                                                     'taucmdr_script': TAUCMDR_SCRIPT,
                                                     'command': self.command}
             fout.write(wrapper)
-        os.chmod(script_file, os.stat(script_file).st_mode | 0111)
+        os.chmod(script_file, os.stat(script_file).st_mode | 0o111)
 
 
 class InstalledCompilerFamily(object):

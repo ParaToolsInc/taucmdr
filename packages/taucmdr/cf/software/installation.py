@@ -316,7 +316,7 @@ class Installation(object):
         LOGGER.info("Checking installed files...")
         with ProgressIndicator(""):
             for root, dirs, _ in os.walk(self.install_prefix):
-                paths.extend((os.path.join(root, x) for x in dirs))
+                paths.extend(os.path.join(root, x) for x in dirs)
         LOGGER.info("Setting file permissions...")
         with ProgressIndicator("", total_size=len(paths)) as progress_bar:
             for i, path in enumerate(paths):

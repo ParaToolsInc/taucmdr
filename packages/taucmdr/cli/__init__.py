@@ -217,7 +217,7 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
         list: List of modules corresponding to all commands and subcommands.
     """
     all_commands = []
-    commands = sorted((i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'))
+    commands = sorted(i for i in _get_commands(package_name).iteritems() if i[0] != '__module__')
     for _, topcmd in commands:
         for _, mod in topcmd.iteritems():
             if isinstance(mod, dict):

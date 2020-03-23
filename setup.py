@@ -402,7 +402,7 @@ class Release(SDistCommand):
 
     def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
-        targets = set([(magic.architecture, magic.operating_system) for magic in TauMagic.all()])
+        targets = {(magic.architecture, magic.operating_system) for magic in TauMagic.all()}
         for target in targets:
             targ_arch, targ_os = target
             # Setuptools is a dirty, stateful animal.
