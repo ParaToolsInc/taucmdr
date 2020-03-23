@@ -31,6 +31,7 @@ Functions used for unit tests of create.py.
 """
 #pylint: disable=missing-docstring
 
+from __future__ import absolute_import
 import os
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError

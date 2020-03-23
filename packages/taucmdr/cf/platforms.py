@@ -30,6 +30,7 @@
 I'd rather call this module "taucmdr.cf.platform" but that would conflict with :any:`platform`.
 """
 
+from __future__ import absolute_import
 import os
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError

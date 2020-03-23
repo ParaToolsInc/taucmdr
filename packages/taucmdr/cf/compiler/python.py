@@ -29,6 +29,7 @@
 Python Interpreter Knowledgebase (implemented using the compiler classes)
 
 """
+from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different versions of Python',

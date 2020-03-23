@@ -27,8 +27,10 @@
 #
 """TODO: FIXME: Docs"""
 
+from __future__ import absolute_import
 from taucmdr import logger
 from taucmdr.error import InternalError, UniqueAttributeError, ModelError
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -185,7 +187,7 @@ class Controller(object):
             return foreign.controller(self.storage).one(value)
 
     def _check_unique(self, data, match_any=True):
-        unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
+        unique = {attr: data[attr] for attr, props in six.iteritems(self.model.attributes) if 'unique' in props}
         if unique and self.storage.contains(unique, match_any=match_any, table_name=self.model.name):
             raise UniqueAttributeError(self.model, unique)
 
@@ -205,7 +207,7 @@ class Controller(object):
         self._check_unique(data)
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
-            for attr, foreign in self.model.associations.iteritems():
+            for attr, foreign in six.iteritems(self.model.associations):
                 if 'model' or 'collection' in self.model.attributes[attr]:
                     affected = record.get(attr, None)
                     if affected:
@@ -241,9 +243,9 @@ class Controller(object):
             database.update(data, keys, table_name=self.model.name)
             changes = {}
             for model in old_records:
-                changes[model.eid] = {attr: (model.get(attr), new_value) for attr, new_value in data.iteritems()
+                changes[model.eid] = {attr: (model.get(attr), new_value) for attr, new_value in six.iteritems(data)
                                       if not (attr in model and model.get(attr) == new_value)}
-                for attr, foreign in self.model.associations.iteritems():
+                for attr, foreign in six.iteritems(self.model.associations):
                     try:
                         # 'collection' attribute is iterable
                         new_foreign_keys = set(data[attr])
@@ -298,7 +300,7 @@ class Controller(object):
             changes = {}
             for model in old_records:
                 changes[model.eid] = {attr: (model.get(attr), None) for attr in fields if attr in model}
-                for attr, foreign in self.model.associations.iteritems():
+                for attr, foreign in six.iteritems(self.model.associations):
                     if attr in fields:
                         foreign_cls, via = foreign
                         old_foreign_keys = model.get(attr, None)
@@ -329,7 +331,7 @@ class Controller(object):
             removed_data = []
             changing = self.search(keys)
             for model in changing:
-                for attr, foreign in model.associations.iteritems():
+                for attr, foreign in six.iteritems(model.associations):
                     foreign_model, via = foreign
                     affected_keys = model.get(attr, None)
                     if affected_keys:
@@ -401,7 +403,7 @@ class Controller(object):
             data = all_data.setdefault(record.model_name, {})
             if record.eid not in data:
                 data[record.eid] = record.data
-                for attr, foreign in record.associations.iteritems():
+                for attr, foreign in six.iteritems(record.associations):
                     for foreign_record in foreign[0].search(eids=record[attr]):
                         export_record(foreign_record, root)
         all_data = {}

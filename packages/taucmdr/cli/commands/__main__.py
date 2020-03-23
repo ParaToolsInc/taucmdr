@@ -31,6 +31,7 @@ Sets up logging verbosity and launches subcommands.  Avoid doing too much work h
 Instead, process arguments in the appropriate subcommand.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import taucmdr

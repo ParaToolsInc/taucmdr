@@ -37,6 +37,8 @@ TAU is the core software package of TAU Commander.
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-branches
 
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import re
 import sys
@@ -63,6 +65,7 @@ from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.compiler.python import PY
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
 from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
+import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -306,9 +309,9 @@ class TauInstallation(Installation):
         assert mpi_support in (True, False)
         assert isinstance(mpi_libraries, list) or mpi_libraries is None
         assert cuda_support in (True, False)
-        assert isinstance(cuda_prefix, basestring) or cuda_prefix is None
+        assert isinstance(cuda_prefix, six.string_types) or cuda_prefix is None
         assert opencl_support in (True, False)
-        assert isinstance(opencl_prefix, basestring) or opencl_prefix is None
+        assert isinstance(opencl_prefix, six.string_types) or opencl_prefix is None
         assert shmem_support in (True, False)
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
@@ -317,7 +320,7 @@ class TauInstallation(Installation):
         assert compiler_inst in ("always", "fallback", "never")
         assert keep_inst_files in (True, False)
         assert reuse_inst_files in (True, False)
-        assert isinstance(select_file, basestring) or select_file is None
+        assert isinstance(select_file, six.string_types) or select_file is None
         assert baseline in (True, False)
         assert profile in ("tau", "merged", "cubex", "none")
         assert trace in ("slog2", "otf2", "none")
@@ -346,7 +349,7 @@ class TauInstallation(Installation):
         assert isinstance(throttle_num_calls, int)
         assert isinstance(sampling_period, int)
         assert track_memory_footprint in (True, False)
-        assert isinstance(forced_makefile, basestring) or forced_makefile is None
+        assert isinstance(forced_makefile, six.string_types) or forced_makefile is None
         super(TauInstallation, self).__init__('tau', 'TAU Performance System',
                                               sources, target_arch, target_os, compilers,
                                               REPOS, COMMANDS, None, None)
@@ -495,7 +498,7 @@ class TauInstallation(Installation):
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        uid_parts.extend(sorted(comp.uid for comp in six.itervalues(self.compilers)))
         # TAU changes if any dependencies change.
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
             if getattr(self, 'uses_'+pkg):
@@ -813,10 +816,10 @@ print(find_version())
                 pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
                 pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
             else:
-                print 'output of ldd',out
+                print('output of ldd',out)
                 raise InternalError('output of ldd %s failed to match regex' % path)
-            print 'pythonlib',pythonlib
-            print 'pythoninc',pythoninc
+            print('pythonlib',pythonlib)
+            print('pythoninc',pythoninc)
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -874,7 +877,7 @@ print(find_version())
         if self.uses_python:
             flags.append('-python')
         if self.mpit:
-            print 'append mpit'
+            print('append mpit')
             flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.
@@ -951,7 +954,7 @@ print(find_version())
                                        *unmanaged_hints)
         # Check dependencies after verifying TAU instead of before in case
         # we're using an unmanaged TAU or forced makefile.
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         with new_os_environ(), util.umask(0o02):
@@ -1059,7 +1062,7 @@ print(find_version())
         # On non-Cray systems, exclude tags from incompatible compilers.
         compiler_tags = self._compiler_tags() if self.tau_magic.operating_system is not CRAY_CNL else {}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
-        tags.update(tag for tag in compiler_tags.itervalues() if tag != compiler_tag)
+        tags.update(tag for tag in six.itervalues(compiler_tags) if tag != compiler_tag)
         if not self.mpi_support:
             tags.add('mpi')
         if self.measure_openmp == 'ignore':
@@ -1151,11 +1154,11 @@ print(find_version())
             dict: `env` without TAU environment variables.
         """
         is_tau_var = lambda x: x.startswith('TAU_') or x.startswith('SCOREP_') or x in ('PROFILEDIR', 'TRACEDIR')
-        dirt = {key: val for key, val in env.iteritems() if is_tau_var(key)}
+        dirt = {key: val for key, val in six.iteritems(env) if is_tau_var(key)}
         if dirt:
             LOGGER.info("\nIgnoring TAU environment variables set in user's environment:\n%s\n",
-                        '\n'.join(["%s=%s" % item for item in dirt.iteritems()]))
-        return dict([item for item in env.iteritems() if item[0] not in dirt])
+                        '\n'.join(["%s=%s" % item for item in six.iteritems(dirt)]))
+        return dict([item for item in six.iteritems(env) if item[0] not in dirt])
 
     def compiletime_config(self, compiler, opts=None, env=None):
         """Configures environment for compilation with TAU.
@@ -1176,7 +1179,7 @@ print(find_version())
         env = self._sanitize_environment(env)
         if self.baseline:
             return opts, env
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             opts, env = pkg.compiletime_config(opts, env)
 
         try:
@@ -1377,7 +1380,7 @@ print(find_version())
         opts, env = self.compiletime_config(compiler)
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
-        tau_env_opts = sorted('%s=%s' % item for item in env.iteritems() if item[0].startswith('TAU_'))
+        tau_env_opts = sorted('%s=%s' % item for item in six.iteritems(env) if item[0].startswith('TAU_'))
         LOGGER.debug('\n'.join(tau_env_opts))
         LOGGER.debug(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
@@ -1687,7 +1690,7 @@ print(find_version())
         """
         self._prep_data_analysis_tools()
         _, env = self.runtime_config()
-        for fmt, paths in dataset.iteritems():
+        for fmt, paths in six.iteritems(dataset):
             if self.is_profile_format(fmt):
                 tools = profile_tools if profile_tools is not None else PROFILE_ANALYSIS_TOOLS
             elif self.is_trace_format(fmt):

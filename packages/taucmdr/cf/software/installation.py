@@ -43,6 +43,7 @@ from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
 from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_OS, DARWIN
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -187,8 +188,8 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(name, basestring)
-        assert isinstance(title, basestring)
+        assert isinstance(name, six.string_types)
+        assert isinstance(title, six.string_types)
         assert isinstance(sources, dict)
         assert isinstance(target_arch, Architecture)
         assert isinstance(target_os, OperatingSystem)
@@ -474,7 +475,7 @@ class Installation(object):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
         if self.unmanaged or not force_reinstall:
             try:

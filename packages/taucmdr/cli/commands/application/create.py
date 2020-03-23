@@ -27,6 +27,7 @@
 #
 """``application create`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.model.application import Application
 

@@ -37,6 +37,8 @@ TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.
 
 
 # Package name
+from __future__ import absolute_import
+from __future__ import print_function
 NAME = "taucmdr"
 
 # Package author information
@@ -128,7 +130,7 @@ except ImportError:
         def finalize_options(self):
             pass
         def run(self):
-            print "Sphinx must be installed to generate developer documentation."
+            print("Sphinx must be installed to generate developer documentation.")
             sys.exit(-1)
 
 else:
@@ -223,11 +225,11 @@ class Test(TestCommand):
         if self.system_sandbox:
             tmp_system_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix
-            print "Sandboxing system storage: %s" % tmp_system_prefix
+            print("Sandboxing system storage: %s" % tmp_system_prefix)
         if self.user_sandbox:
             tmp_user_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix
-            print "Sandboxing user storage: %s" % tmp_user_prefix
+            print("Sandboxing user storage: %s" % tmp_user_prefix)
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
@@ -303,23 +305,23 @@ class Release(SDistCommand):
         SDistCommand.finalize_options(self)
         from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
         if self.all and (self.web or self.target_arch or self.target_os):
-            print '--all must not be used with any other arguments'
+            print('--all must not be used with any other arguments')
             sys.exit(-1)
         elif self.web and (self.all or self.target_arch or self.target_os):
-            print '--web must not be used with any other arguments'
+            print('--web must not be used with any other arguments')
             sys.exit(-1)
         else:
             try:
                 self.target_arch = Architecture.find(self.target_arch or str(HOST_ARCH))
             except KeyError:
-                print 'Invalid architecture: %s' % self.target_arch
-                print 'Known architectures: %s' % Architecture.keys()
+                print('Invalid architecture: %s' % self.target_arch)
+                print('Known architectures: %s' % list(Architecture.keys()))
                 sys.exit(-1)
             try:
                 self.target_os = OperatingSystem.find(self.target_os or str(HOST_OS))
             except KeyError:
-                print 'Invalid operating system: %s' % self.target_os
-                print 'Known operating system: %s' % OperatingSystem.keys()
+                print('Invalid operating system: %s' % self.target_os)
+                print('Known operating system: %s' % list(OperatingSystem.keys()))
                 sys.exit(-1)
 
     def _software_packages(self):
@@ -352,7 +354,7 @@ class Release(SDistCommand):
         except IOError:
             cache = {}
         if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-            print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
+            print("Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os))
             util.download(src, cache_pkg)
         cache[cache_pkg] = src
         with open(cache_db, 'w') as fout:
@@ -385,7 +387,7 @@ class Release(SDistCommand):
     def _build_web_release(self):
         SDistCommand.run(self)
         for path in self.archive_files:
-            print "Wrote '%s'" % path
+            print("Wrote '%s'" % path)
 
     def _build_target_release(self):
         self._download_python()
@@ -398,7 +400,7 @@ class Release(SDistCommand):
             dest = '-'.join([dist_name, str(self.target_os), str(self.target_arch)]) + ext
             dest = os.path.join(self.dist_dir, dest)
             shutil.move(src, dest)
-            print "Wrote '%s'" % dest
+            print("Wrote '%s'" % dest)
 
     def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
@@ -507,7 +509,7 @@ class BuildMarkdown(Command):
             filename = os.path.join(self.dest, cmd_name.replace('.', '_')+'.md')
             with open(filename, 'w') as fout:
                 fout.write(unidecode('\n'.join(parts).decode('utf-8')))
-            print 'wrote %s' % filename
+            print('wrote %s' % filename)
             indentspace=''
 #close tocfile
         tocfile.close
@@ -546,7 +548,7 @@ def _data_files():
             try:
                 filelist.process_template_line(line)
             except (DistutilsTemplateError, ValueError) as err:
-                print "%s, line %d: %s" % (template.filename, template.current_line, err)
+                print("%s, line %d: %s" % (template.filename, template.current_line, err))
     finally:
         template.close()
     excluded = ['Makefile', 'VERSION', 'MANIFEST.in', '*Miniconda*']

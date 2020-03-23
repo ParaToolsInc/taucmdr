@@ -30,6 +30,7 @@
 The OTF2 library  provides an interface to write and read trace data.
 """
 
+from __future__ import absolute_import
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 

@@ -33,10 +33,12 @@ the available data in a single run since overhead would be extreme.  Different
 measurements allow us to take different views of the application's performance.
 """
 
+from __future__ import absolute_import
 import os
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -550,7 +552,7 @@ class Measurement(Model):
         self._check_select_file()
         self._check_metrics()
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 if self.attributes[attr].get('rebuild_required'):
                     if attr == 'metrics':
                         old_value, new_value = change

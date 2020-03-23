@@ -31,6 +31,7 @@ Functions used for unit tests of select.py.
 """
 
 
+from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd

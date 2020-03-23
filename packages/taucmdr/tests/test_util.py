@@ -31,6 +31,7 @@ Functions used for unit tests of util.py.
 """
 
 
+from __future__ import absolute_import
 from taucmdr import util, tests
 
 

@@ -27,6 +27,7 @@
 #
 """Unit tests for taucmdr.cf.platforms"""
 
+from __future__ import absolute_import
 from taucmdr.tests import TestCase
 from taucmdr.cf.platforms import Architecture, OperatingSystem, TauMagic
 

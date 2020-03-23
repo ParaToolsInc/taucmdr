@@ -27,6 +27,7 @@
 #
 """``trial list`` subcommand."""
 
+from __future__ import absolute_import
 from texttable import Texttable
 from taucmdr import util, logger
 from taucmdr.error import InternalError

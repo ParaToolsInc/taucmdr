@@ -27,6 +27,7 @@
 #
 """``target list`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.compiler.shmem import SHMEM_CC

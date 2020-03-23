@@ -27,6 +27,7 @@
 #
 """``trial edit`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli.cli_view import EditCommand
 from taucmdr.model.trial import Trial

@@ -32,6 +32,7 @@ source code and TAU itself.  If the system compiler changes TAU can break entire
 This data tracks the system compilers so we can warn the user if they have changed.
 """
 
+from __future__ import absolute_import
 import os
 from taucmdr import logger
 from taucmdr.error import InternalError, ConfigurationError

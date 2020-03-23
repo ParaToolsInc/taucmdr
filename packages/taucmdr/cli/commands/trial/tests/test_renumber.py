@@ -30,6 +30,7 @@
 Functions used for unit tests of edit.py.
 """
 #pylint: disable=missing-docstring
+from __future__ import absolute_import
 import os
 
 from taucmdr import tests
@@ -42,6 +43,7 @@ from taucmdr.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from taucmdr.cli.commands.trial.edit import COMMAND as EDIT_COMMAND
 from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
+from six.moves import range
 
 
 class RenumberTest(tests.TestCase):
@@ -90,7 +92,7 @@ class RenumberTest(tests.TestCase):
     def test_swaptrials(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        for i in xrange(3):
+        for i in range(3):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
             self.assertCommandReturnValue(0, EDIT_COMMAND, [str(i), '--description', 'desc%s' %i])
         self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['0', '1', '2', '--to', '1', '2', '0'])

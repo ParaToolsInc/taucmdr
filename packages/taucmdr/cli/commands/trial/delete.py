@@ -27,11 +27,13 @@
 #
 """``trial delete`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import DeleteCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
+from six.moves import range
 
 
 class TrialDeleteCommand(DeleteCommand):

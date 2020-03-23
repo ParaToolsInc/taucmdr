@@ -30,6 +30,7 @@
 Asserts that pylint score doesn't drop below minimum.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import subprocess

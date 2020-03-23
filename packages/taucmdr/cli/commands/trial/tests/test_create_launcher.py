@@ -30,6 +30,7 @@
 Functions used for unit tests of create.py.
 """
 
+from __future__ import absolute_import
 import shutil
 from taucmdr import tests, util
 from taucmdr.cf.compiler.host import CC

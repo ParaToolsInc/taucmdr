@@ -30,6 +30,8 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
@@ -39,6 +41,7 @@ from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STOR
 from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
+import six
 
 
 class AbstractCliView(AbstractCommand):
@@ -340,7 +343,7 @@ class ListCommand(AbstractCliView):
         for record in records:
             rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
             populated = record.populate()
-            for key, val in sorted(populated.iteritems()):
+            for key, val in sorted(six.iteritems(populated)):
                 if key != self.model.key_attribute:
                     rows.append(self._format_long_item(key, val))
             table = Texttable(logger.LINE_WIDTH)
@@ -416,7 +419,7 @@ class ListCommand(AbstractCliView):
                 parts.extend(self._count_records(user_ctl))
             if not project:
                 parts.extend(self._count_records(project_ctl))
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
 
     def main(self, argv):

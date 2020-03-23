@@ -27,6 +27,7 @@
 #
 """``build`` subcommand."""
 
+from __future__ import absolute_import
 import os
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand

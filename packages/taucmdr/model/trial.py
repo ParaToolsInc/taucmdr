@@ -32,6 +32,7 @@ record completely describes the hardware and software environment that produced
 the performance data.
 """
 
+from __future__ import absolute_import
 import os
 import glob
 import errno
@@ -50,6 +51,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation, PROGRAM_LAUNCHERS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
+import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -144,10 +146,10 @@ class TrialController(Controller):
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
         # Move TAU environment parameters to the command line
         env_parts = {}
-        for key, val in env.iteritems():
+        for key, val in six.iteritems(env):
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        env_str = ':'.join(['%s=%s' % item for item in six.iteritems(env_parts)])
         cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
@@ -321,7 +323,7 @@ class Trial(Model):
         else:
             return cmd[:idx], cmd[idx+1:]
         cmd0 = cmd[0]
-        for launcher, appfile_flags in PROGRAM_LAUNCHERS.iteritems():
+        for launcher, appfile_flags in six.iteritems(PROGRAM_LAUNCHERS):
             if launcher not in cmd0:
                 continue
             # No '--' to indicate start of application, so look for first executable
@@ -509,7 +511,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -543,7 +545,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -621,7 +623,7 @@ class Trial(Model):
             raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in data.iteritems():
+        for fmt, path in six.iteritems(data):
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.get_minimal()
@@ -640,7 +642,7 @@ class Trial(Model):
             elif fmt == 'otf2':
                 export_file = os.path.join(dest, stem+'.tgz')
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
-                items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
+                items = [os.path.join(trial_dir, item) for item in ('traces', 'traces.def', 'traces.otf2')]
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)

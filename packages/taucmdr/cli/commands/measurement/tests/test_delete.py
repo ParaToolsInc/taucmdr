@@ -31,6 +31,7 @@ Functions used for unit tests of delete.py.
 """
 
 
+from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.measurement import delete, create
 from taucmdr.cli.commands import select

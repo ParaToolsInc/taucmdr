@@ -27,12 +27,14 @@
 #
 """``help`` subcommand."""
 
+from __future__ import absolute_import
 import os
 import mimetypes
 from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
 from taucmdr.cli.command import AbstractCommand
+from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)
@@ -82,7 +84,7 @@ def _guess_filetype(filename):
     mimetypes.init()
     filetype = mimetypes.guess_type(filename)
     if not filetype[0]:
-        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(range(0x20, 0x100))
+        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(list(range(0x20, 0x100)))
         with open(filename) as fd:
             if fd.read(1024).translate(None, textchars):
                 filetype = ('application/unknown', None)

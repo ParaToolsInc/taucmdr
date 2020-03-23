@@ -27,6 +27,7 @@
 #
 """``project edit`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli import arguments
