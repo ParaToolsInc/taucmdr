@@ -221,7 +221,7 @@ class TargetCreateCommand(CreateCommand):
                 pass
             else:
                 for role, comp in compilers.iteritems():
-                    if comp is None:
+                    if comp is None and role in family:
                         compilers[role] = family[role]
         sibling = next((comp for comp in compilers.itervalues() if comp is not None), None)
         for role, comp in compilers.iteritems():
