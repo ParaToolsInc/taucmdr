@@ -127,7 +127,7 @@ CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
 	PYTHON_EXE = $(CONDA)
-	PYTHON_FLAGS = -EOu
+	PYTHON_FLAGS = -EOu3
 else
 	$(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
 	CONDA_SRC =
@@ -153,6 +153,7 @@ help:
 	@echo "-------------------------------------------------------------------------------"
 
 build: python_check
+	$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 

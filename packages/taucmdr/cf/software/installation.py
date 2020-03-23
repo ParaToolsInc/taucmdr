@@ -27,6 +27,8 @@
 #
 """Software installation management."""
 
+from __future__ import absolute_import
+from __future__ import division
 import os
 import multiprocessing
 from subprocess import CalledProcessError
@@ -116,7 +118,7 @@ def tmpfs_prefix():
                     candidate = tmp_prefix
                 continue
             else:
-                free_mib = (statvfs.f_frsize*statvfs.f_bavail)/0x100000
+                free_mib = (statvfs.f_frsize*statvfs.f_bavail)//0x100000
                 LOGGER.debug("%s: %sMB free", tmp_prefix, free_mib)
                 if free_mib < 2000:
                     continue

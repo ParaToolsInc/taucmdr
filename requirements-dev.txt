@@ -1,5 +1,8 @@
 codecov==1.6.3
 coverage==4.0.3
+modernize
 pre-commit
+pyannotate
 pylint==1.6.4
+pyupgrade
 sphinx==1.3.6
