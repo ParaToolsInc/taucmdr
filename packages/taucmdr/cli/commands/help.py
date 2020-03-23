@@ -102,10 +102,10 @@ class HelpCommand(AbstractCommand):
         cmd_obj = cli.find_command(name)
         command = cmd_obj.command
         parts = [
-                 "", util.hline("Help: " + command),
-                 cmd_obj.help_page,
-                 "", util.hline("Usage: " + command),
-                 cmd_obj.usage]
+            "", util.hline("Help: " + command),
+            cmd_obj.help_page,
+            "", util.hline("Usage: " + command),
+            cmd_obj.usage]
         util.page_output('\n'.join(parts))
         return EXIT_SUCCESS
 

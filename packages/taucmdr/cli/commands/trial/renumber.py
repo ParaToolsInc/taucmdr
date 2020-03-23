@@ -32,7 +32,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import itertools
 
-from taucmdr import EXIT_SUCCESS, logger
+from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.trial import Trial

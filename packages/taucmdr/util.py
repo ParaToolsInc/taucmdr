@@ -470,7 +470,9 @@ def _null_context(label):
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False):
+def create_subprocess(
+        cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False
+):
     """Create a subprocess.
 
     See :any:`subprocess.Popen`.

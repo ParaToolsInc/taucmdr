@@ -40,7 +40,6 @@ class MeasurementCreateCommand(CreateCommand):
     def _parse_args(self, argv):
         args = super(MeasurementCreateCommand, self)._parse_args(argv)
         if hasattr(args, 'select_file'):
-            absolute_path = os.path.abspath(args.select_file)
             if args.select_file.lower() == 'none':
                 args.select_file = None
         return args

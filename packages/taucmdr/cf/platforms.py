@@ -149,10 +149,10 @@ class OperatingSystem(KeyedRecord):
         self.description = description
 
     def is_cray_login(self):
-	if self is CRAY_CNL:
+        if self is CRAY_CNL:
             if util.which('aprun'):
                 return False
-	    else:
+            else:
                 return True
         else:
             return False
