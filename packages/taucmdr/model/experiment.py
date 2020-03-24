@@ -120,10 +120,10 @@ class ExperimentController(Controller):
         """Ensures that we only operate on experiment records in the selected project."""
         try:
             return dict(keys, project=self._project_eid)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, ProjectSelectionError):
             try:
                 return [dict(key, project=self._project_eid) for key in keys]
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, ProjectSelectionError):
                 pass
         return keys
 
