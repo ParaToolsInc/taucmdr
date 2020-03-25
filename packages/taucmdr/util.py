@@ -50,7 +50,7 @@ from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
 import six
-import six.moves.urllib.request
+import six.moves.urllib.request # pylint: disable=import-error
 import six.moves.urllib.parse
 import six.moves.urllib.error
 from six.moves import range
@@ -530,8 +530,7 @@ def create_subprocess(
             print(line, end=' ')
     if record_output:
         return retval, output
-    else:
-        return retval
+    return retval
 
 
 def get_command_output(cmd):
@@ -696,8 +695,7 @@ def color_text(text, *args, **kwargs):
     """
     if sys.stdout.isatty():
         return termcolor.colored(text, *args, **kwargs)
-    else:
-        return text
+    return text
 
 
 def uncolor_text(text):
