@@ -41,6 +41,7 @@ jobs:
           gcc --version
           export INSTALLDIR="${HOME}/${INSTALLDIR}"
           echo "::set-output name=install_dir::${INSTALLDIR}"
+          echo "::set-output name=home_dir::${HOME}"
           echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
 
       - name: Cache dependencies
@@ -51,10 +52,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install system packages
-        run: |
-          sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends mpich libmpich-dev
+      # - name: Install system packages
+      #   run: |
+      #     sudo apt-get update -qq || true
+      #     sudo apt-get install -y --no-install-recommends mpich libmpich-dev
 
       - name: Install TAU Commander
         run: |
@@ -79,8 +80,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: taucmdr-debug-log-${{ matrix.os }}
-          path: ~/.local/taucmdr/debug_log
-
+          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
