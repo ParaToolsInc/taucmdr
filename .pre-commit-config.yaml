@@ -37,3 +37,11 @@ repos:
     - id: requirements-txt-fixer
     - id: sort-simple-yaml
     - id: trailing-whitespace
+# - repo: https://github.com/PyCQA/pylint
+#   rev: pylint-1.9.4
+#   hooks:
+#     - id: pylint
+# - repo: https://github.com/asottile/dead
+#   rev: v1.3.0
+#   hooks:
+#     - id: dead
