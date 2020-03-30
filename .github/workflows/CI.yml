@@ -88,6 +88,7 @@ jobs:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           enable_jekyll: false
           allow_empty_commit: true
-          publish_dir: ./site
+          publish_dir: ./build/sphinx/html
           username: ${{ github.actor }}
           commitMessage: "Documentation for commit ${{ github.sha }}"
+          keep_files: false
