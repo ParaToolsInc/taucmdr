@@ -6,7 +6,7 @@ on:
     types: [opened, synchronize]
 
 env:
-  __TUACMDR_PROGRESS_BARS__: "disabled"
+  __TAUCMDR_PROGRESS_BARS__: "disabled"
   CI: "ON"
   INSTALLDIR: "taucmdr-test"
   PIP_NO_CLEAN: "ON"
