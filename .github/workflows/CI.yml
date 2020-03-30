@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  __TUACMDR_PROGRESS_BARS__: "disabled"
+  CI: "ON"
+  INSTALLDIR: "taucmdr-test"
+  PIP_NO_CLEAN: "ON"
+  PIP_PREFER_BINARY: "ON"
+  TZ: "UTC"
+
+jobs:
+  Build and test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-16.04]
+        python-version: ['2.7']
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 9999
+
+      # - name: Setup Python
+      #   uses: actions/setup-python@v1
+      #   with:
+      #     python-version: '3.6'
+      #     architecture: 'x64'
+
+      - name: System info
+        id: info
+        run: |
+          uname -a
+          mount
+          gcc --version
+          export INSTALLDIR="${HOME}/${INSTALLDIR}"
+          echo "::set-output name=install_dir::${INSTALLDIR}"
+          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.install_dir}}/conda
+          key: ${{ runner.os }}-pip${{ matrix.python-version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -qq || true
+          sudo apt-get install -y --no-install-recommends mpich libmpich-dev
+
+      - name: Install TAU Commander
+        run: |
+          make INSTALLDIR="${INSTALLDIR}"
+          echo "::add-path::${INSTALLDIR}/conda/bin"
+          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
+          which python
+          which pip
+          python -m pip install -U pip
+          python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
+
+      - name: Test TAU Commander
+        run: coverage run setup.py test
+
+      - name: Build sphinx docs
+        run: |
+          python setup.py build_sphinx
+          ls -la
+
+      - name: Upload TAU Commander log
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: taucmdr-debug-log
+          path: ~/.local/taucmdr/debug_log
+
+
+      - name: Deploy Sphinx docs
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          enable_jekyll: false
+          allow_empty_commit: true
+          publish_dir: ./site
+          username: ${{ github.actor }}
+          commitMessage: "Documentation for commit ${{ github.sha }}"
