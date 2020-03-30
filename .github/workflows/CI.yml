@@ -14,7 +14,7 @@ env:
   TZ: "UTC"
 
 jobs:
-  Build and test:
+  Build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
