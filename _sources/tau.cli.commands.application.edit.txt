@@ -1,7 +1,0 @@
-tau.cli.commands.application.edit module
-========================================
-
-.. automodule:: tau.cli.commands.application.edit
-    :members:
-    :undoc-members:
-    :show-inheritance:

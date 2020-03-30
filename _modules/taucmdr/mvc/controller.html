@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -93,31 +93,31 @@
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        model (AbstractModel): Data model.</span>
-<span class="sd">        storage (AbstractDatabase): Record storage. </span>
-<span class="sd">    </span>
+<span class="sd">        storage (AbstractDatabase): Record storage.</span>
+
 <span class="sd">    .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">messages</span> <span class="o">=</span> <span class="p">{}</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
-        
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Controller.push_to_topic"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.push_to_topic">[docs]</a>    <span class="k">def</span> <span class="nf">push_to_topic</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
-        
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Controller.pop_topic"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.pop_topic">[docs]</a>    <span class="k">def</span> <span class="nf">pop_topic</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[])</span></div>
 
 <div class="viewcode-block" id="Controller.one"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.one">[docs]</a>    <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get a record.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            key: See :any:`AbstractStorage.get`.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Model: The model for the matching record or None if no such record exists.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -126,26 +126,26 @@
 
 <div class="viewcode-block" id="Controller.all"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get all records.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Models for all records or an empty lists if no records exist.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
-    
+
 <div class="viewcode-block" id="Controller.count"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the number of records.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Effectively ``len(self.all())``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
-    
+
 <div class="viewcode-block" id="Controller.search"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return records that have all given keys.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            keys: See :any:`AbstractStorage.search`.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Models for records with the given keys or an empty lists if no records have all keys.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -153,24 +153,24 @@
 
 <div class="viewcode-block" id="Controller.match"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return records that have a field matching a regular expression or test function.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            field: See :any:`AbstractStorage.match`.</span>
 <span class="sd">            regex: See :any:`AbstractStorage.match`.</span>
 <span class="sd">            test: See :any:`AbstractStorage.match`.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            list: Models for records that have a matching field.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="Controller.exists"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if a record exists.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            keys: See :any:`AbstractStorage.exists`.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if a record matching `keys` exists, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -178,30 +178,30 @@
 
 <div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merges associated data into the model record.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Example:</span>
 <span class="sd">            Suppose we have the following Person records::</span>
-<span class="sd">            </span>
+
 <span class="sd">                1: {&#39;name&#39;: &#39;Katie&#39;, &#39;friends&#39;: [2, 3]}</span>
 <span class="sd">                2: {&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}</span>
 <span class="sd">                3: {&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]}</span>
 
 <span class="sd">            Populating ``Person({&#39;name&#39;: &#39;Katie&#39;, &#39;friends&#39;: [2, 3]})`` produces this dictionary::</span>
-<span class="sd">            </span>
+
 <span class="sd">                {&#39;name&#39;: &#39;Katie&#39;,</span>
 <span class="sd">                 &#39;friends&#39;: [Person({&#39;name&#39;: &#39;Ryan&#39;, &#39;friends&#39;: [1]}),</span>
 <span class="sd">                             Person({&#39;name&#39;: &#39;John&#39;, &#39;friends&#39;: [1]}]})</span>
-<span class="sd">                             </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            attribute (Optional[str]): If given, return only the populated attribute.</span>
 <span class="sd">            defaults (Optional[bool]): If given, set undefined attributes to their default values.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            If attribute is None, a dictionary of controlled data merged with associated records.</span>
-<span class="sd">            If attribute is not None, the value of the populated attribute. </span>
-<span class="sd">            </span>
+<span class="sd">            If attribute is not None, the value of the populated attribute.</span>
+
 <span class="sd">        Raises:</span>
-<span class="sd">            KeyError: `attribute` is undefined in the record. </span>
+<span class="sd">            KeyError: `attribute` is undefined in the record.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">attribute</span><span class="p">:</span>
             <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Populating </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)[</span><span class="si">%s</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
@@ -235,18 +235,18 @@
         <span class="n">unique</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;unique&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">unique</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">unique</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">UniqueAttributeError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">unique</span><span class="p">)</span>
-    
+
 <div class="viewcode-block" id="Controller.create"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Atomically store a new record and update associations.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Invokes the `on_create` callback **after** the data is recorded.  If this callback raises</span>
 <span class="sd">        an exception then the operation is reverted.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            data (dict): Data to record.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
-<span class="sd">            Model: The newly created data. </span>
+<span class="sd">            Model: The newly created data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_unique</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -262,16 +262,16 @@
             <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
             <span class="n">model</span><span class="o">.</span><span class="n">on_create</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">model</span></div>
-    
+
 <div class="viewcode-block" id="Controller.update"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Change recorded data and update associations.</span>
-<span class="sd">        </span>
+
 <span class="sd">        The behavior depends on the type of `keys`:</span>
 <span class="sd">            * Record.ElementIdentifier: update the record with that element identifier.</span>
 <span class="sd">            * dict: update all records with attributes matching `keys`.</span>
 <span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
 <span class="sd">            * ``bool(keys) == False``: raise ValueError.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Invokes the `on_update` callback **after** the data is modified.  If this callback raises</span>
 <span class="sd">        an exception then the operation is reverted.</span>
 
@@ -321,7 +321,7 @@
 
 <div class="viewcode-block" id="Controller.unset"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Unset recorded data fields and update associations.</span>
-<span class="sd">        </span>
+
 <span class="sd">        The behavior depends on the type of `keys`:</span>
 <span class="sd">            * Record.ElementIdentifier: update the record with that element identifier.</span>
 <span class="sd">            * dict: update all records with attributes matching `keys`.</span>
@@ -358,7 +358,7 @@
 
 <div class="viewcode-block" id="Controller.delete"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete recorded data and update associations.</span>
-<span class="sd">        </span>
+
 <span class="sd">        The behavior depends on the type of `keys`:</span>
 <span class="sd">            * Record.ElementIdentifier: delete the record with that element identifier.</span>
 <span class="sd">            * dict: delete all records with attributes matching `keys`.</span>
@@ -380,19 +380,19 @@
                     <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
                     <span class="n">affected_keys</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">affected_keys</span><span class="p">:</span>
-                        <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> 
+                        <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">references</span><span class="p">:</span>
                     <span class="c1"># pylint complains because `model` is changing on every iteration so we&#39;ll have</span>
                     <span class="c1"># a different lambda function `test` on each iteration.  This is exactly what</span>
-                    <span class="c1"># we want so we disble the warning. </span>
+                    <span class="c1"># we want so we disble the warning.</span>
                     <span class="c1"># pylint: disable=cell-var-from-loop, undefined-loop-variable</span>
                     <span class="n">test</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span> <span class="o">==</span> <span class="n">x</span>
                     <span class="n">affected</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="n">affected_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">record</span><span class="o">.</span><span class="n">eid</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">affected</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">affected_keys</span><span class="p">:</span>
-                        <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> 
+                        <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Deleting </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">) affects &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
                 <span class="n">removed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
@@ -403,17 +403,17 @@
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="Controller.import_records"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.import_records">[docs]</a>    <span class="k">def</span> <span class="nf">import_records</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Import data records.</span>
-<span class="sd">        </span>
+
 <span class="sd">        TODO: Docs</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
-        
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Controller.export_records"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.export_records">[docs]</a>    <span class="k">def</span> <span class="nf">export_records</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Export data records.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Constructs a dictionary containing records matching `keys` or `eids` and all their</span>
 <span class="sd">        associated records.  Association fields (`model` and `collection`) are **not** updated</span>
-<span class="sd">        and may contain eids of undefined records. </span>
+<span class="sd">        and may contain eids of undefined records.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            keys (dict): Attributes to match.</span>
@@ -421,10 +421,10 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Dictionary of tables containing records.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Example:</span>
 <span class="sd">        ::</span>
-<span class="sd">            </span>
+
 <span class="sd">            {</span>
 <span class="sd">             &#39;Brewery&#39;: {100: {&#39;address&#39;: &#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;,</span>
 <span class="sd">                               &#39;brews&#39;: [10, 12, 14]}},</span>
@@ -432,9 +432,9 @@
 <span class="sd">                      12: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;dark&#39;, &#39;ibu&#39;: 15},</span>
 <span class="sd">                      14: {&#39;origin&#39;: 100, &#39;color&#39;: &#39;pale&#39;, &#39;ibu&#39;: 30}}</span>
 <span class="sd">            }</span>
-<span class="sd">        </span>
+
 <span class="sd">            Beer.export_records(eids=[10])</span>
-<span class="sd">            </span>
+
 <span class="sd">            {</span>
 <span class="sd">             &#39;Brewery&#39;: {100: {&#39;address&#39;: &#39;4615 Hollins Ferry Rd, Halethorpe, MD 21227&#39;,</span>
 <span class="sd">                               &#39;brews&#39;: [10, 12, 14]}},</span>
@@ -455,16 +455,16 @@
         <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">eids</span><span class="p">):</span>
             <span class="n">export_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">all_data</span></div>
-          
+
 <div class="viewcode-block" id="Controller._associate"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller._associate">[docs]</a>    <span class="k">def</span> <span class="nf">_associate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected</span><span class="p">,</span> <span class="n">via</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Associates a record with another record.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            record (Record): Record to associate.</span>
 <span class="sd">            foreign_model (Model): Foreign record&#39;s data model.</span>
 <span class="sd">            affected (list): Identifiers for the records that will be updated to associate with `record`.</span>
 <span class="sd">            via (str): The name of the associated foreign attribute.</span>
-<span class="sd">        &quot;&quot;&quot;</span> 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Adding </span><span class="si">%s</span><span class="s2"> to &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(eids=</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">affected</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">affected</span> <span class="o">=</span> <span class="p">[</span><span class="n">affected</span><span class="p">]</span>
@@ -483,13 +483,13 @@
 
 <div class="viewcode-block" id="Controller._disassociate"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller._disassociate">[docs]</a>    <span class="k">def</span> <span class="nf">_disassociate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected</span><span class="p">,</span> <span class="n">via</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Disassociates a record from another record.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            record (Record): Record to disassociate.</span>
 <span class="sd">            foreign_model (Model): Foreign record&#39;s data model.</span>
 <span class="sd">            affected (list): Identifiers for the records that will be updated to disassociate from `record`.</span>
 <span class="sd">            via (str): The name of the associated foreign attribute.</span>
-<span class="sd">        &quot;&quot;&quot;</span> 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Removing </span><span class="si">%s</span><span class="s2"> from &#39;</span><span class="si">%s</span><span class="s2">&#39; in </span><span class="si">%s</span><span class="s2">(eids=</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">affected</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">affected</span> <span class="o">=</span> <span class="p">[</span><span class="n">affected</span><span class="p">]</span>
@@ -524,7 +524,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

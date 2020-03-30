@@ -1,7 +1,0 @@
-tau.cli.commands.dashboard module
-=================================
-
-.. automodule:: tau.cli.commands.dashboard
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-tau.cli.commands.measurement.list module
-========================================
-
-.. automodule:: tau.cli.commands.measurement.list
-    :members:
-    :undoc-members:
-    :show-inheritance:

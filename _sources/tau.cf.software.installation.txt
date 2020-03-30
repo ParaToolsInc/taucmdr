@@ -1,7 +1,0 @@
-tau.cf.software.installation module
-===================================
-
-.. automodule:: tau.cf.software.installation
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-tau.cf.storage.tests.test_project module
-========================================
-
-.. automodule:: tau.cf.storage.tests.test_project
-    :members:
-    :undoc-members:
-    :show-inheritance:

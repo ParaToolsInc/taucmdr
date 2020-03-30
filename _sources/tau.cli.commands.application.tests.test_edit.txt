@@ -1,7 +1,0 @@
-tau.cli.commands.application.tests.test_edit module
-===================================================
-
-.. automodule:: tau.cli.commands.application.tests.test_edit
-    :members:
-    :undoc-members:
-    :show-inheritance:

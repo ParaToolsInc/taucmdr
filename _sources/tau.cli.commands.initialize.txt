@@ -1,7 +1,0 @@
-tau.cli.commands.initialize module
-==================================
-
-.. automodule:: tau.cli.commands.initialize
-    :members:
-    :undoc-members:
-    :show-inheritance:

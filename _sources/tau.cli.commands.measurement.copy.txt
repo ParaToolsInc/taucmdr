@@ -1,7 +1,0 @@
-tau.cli.commands.measurement.copy module
-========================================
-
-.. automodule:: tau.cli.commands.measurement.copy
-    :members:
-    :undoc-members:
-    :show-inheritance:

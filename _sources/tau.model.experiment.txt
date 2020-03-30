@@ -1,7 +1,0 @@
-tau.model.experiment module
-===========================
-
-.. automodule:: tau.model.experiment
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-tau.model.tests.test_measurement module
-=======================================
-
-.. automodule:: tau.model.tests.test_measurement
-    :members:
-    :undoc-members:
-    :show-inheritance:

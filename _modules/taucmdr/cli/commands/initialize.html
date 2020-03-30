@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -100,18 +100,18 @@
 <span class="s2">TAU Commander Initialize:</span>
 <span class="s2">============================================================================</span>
 
-<span class="s2">To begin Initialize TAU Commander, enter: `tau initialize` or simply </span>
-<span class="s2">`tau init`.  </span>
-<span class="s2">This first initialization will take quite a bit of time.  Not only is this </span>
-<span class="s2">command creating a project it is also downloading and building the </span>
-<span class="s2">TAU Performance System® and associated libraries that it depends on.  </span>
-<span class="s2">Let this run and check for successful completion. When it completes it will </span>
-<span class="s2">display the tau dashboard (which can be viewed at anytime by entering: </span>
+<span class="s2">To begin Initialize TAU Commander, enter: `tau initialize` or simply</span>
+<span class="s2">`tau init`.</span>
+<span class="s2">This first initialization will take quite a bit of time.  Not only is this</span>
+<span class="s2">command creating a project it is also downloading and building the</span>
+<span class="s2">TAU Performance System® and associated libraries that it depends on.</span>
+<span class="s2">Let this run and check for successful completion. When it completes it will</span>
+<span class="s2">display the tau dashboard (which can be viewed at anytime by entering:</span>
 <span class="s2">&#39;tau dashboard&#39;).</span>
 
-<span class="s2">Many parameters may be defined at initialization.  The full list of options is </span>
-<span class="s2">displayed below this help section.   It is easier to define options at </span>
-<span class="s2">initialization (eg. tau init --MPI T) than it is to edit application and </span>
+<span class="s2">Many parameters may be defined at initialization.  The full list of options is</span>
+<span class="s2">displayed below this help section.   It is easier to define options at</span>
+<span class="s2">initialization (eg. tau init --MPI T) than it is to edit application and</span>
 <span class="s2">measurement later.</span>
 <span class="s2">___________________________________________________________________________</span>
 
@@ -120,7 +120,7 @@
 
 <div class="viewcode-block" id="InitializeCommand"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.initialize.html#taucmdr.cli.commands.initialize.InitializeCommand">[docs]</a><span class="k">class</span> <span class="nc">InitializeCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``tau initialize`` subcommand.&quot;&quot;&quot;</span>
-       
+
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
@@ -157,17 +157,17 @@
                                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Name of the new application configuration&quot;</span><span class="p">,</span>
                                        <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
                                        <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span> <span class="ow">or</span> <span class="s1">&#39;default_application&#39;</span><span class="p">))</span>
-        
-        <span class="c1"># If an argument appears in both application and measurement (e.g. --mpi, --openmp, --cuda, etc.) </span>
+
+        <span class="c1"># If an argument appears in both application and measurement (e.g. --mpi, --openmp, --cuda, etc.)</span>
         <span class="c1"># then use the measurement form instead of the application form.</span>
         <span class="n">excluded</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">measurement_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
             <span class="n">excluded</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">option_strings</span><span class="p">)</span>
-        
+
         <span class="n">parser</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">target_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">application_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="p">,</span> <span class="n">exclude_arguments</span><span class="o">=</span><span class="n">excluded</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">measurement_create_cmd</span><span class="o">.</span><span class="n">parser</span><span class="p">)</span>
-        
+
         <span class="c1"># OpenMP is a special case, see https://github.com/ParaToolsInc/taucmdr/issues/209</span>
         <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">actions</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">dest</span> <span class="o">==</span> <span class="s1">&#39;openmp&#39;</span><span class="p">:</span>
@@ -196,7 +196,7 @@
             <span class="k">raise</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">project_select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">project_name</span><span class="p">])</span>
-            
+
     <span class="k">def</span> <span class="nf">_create_measurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">ArgumentsNamespace</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
         <span class="n">args</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -217,7 +217,7 @@
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">openmp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">args</span><span class="o">.</span><span class="n">openmp</span> <span class="o">=</span> <span class="s1">&#39;ignore&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_safe_execute</span><span class="p">(</span><span class="n">application_create_cmd</span><span class="p">,</span> <span class="n">cmd_args</span><span class="p">)</span>
-        
+
         <span class="c1"># Create default target</span>
         <span class="n">target_name</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">target_name</span>
         <span class="n">cmd_args</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">filter_arguments</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
@@ -235,7 +235,7 @@
         <span class="n">measurements</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">profile</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_create_measurement</span><span class="p">(</span>
-                <span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">baseline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">profile</span><span class="o">=</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">baseline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">profile</span><span class="o">=</span><span class="s1">&#39;tau&#39;</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
                 <span class="n">sample</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">source_inst</span><span class="o">=</span><span class="s1">&#39;never&#39;</span><span class="p">,</span> <span class="n">compiler_inst</span><span class="o">=</span><span class="s1">&#39;never&#39;</span><span class="p">,</span>
                 <span class="n">mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">opencl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">openmp</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">shmem</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="n">track_memory_footprint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">callsite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">comm_matrix</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -265,10 +265,10 @@
             <span class="n">measurement_name</span> <span class="o">=</span> <span class="n">measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="n">measurement_name</span> <span class="o">=</span> <span class="s1">&#39;baseline&#39;</span>
-        
+
         <span class="c1"># Create default experiment</span>
-        <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--target&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">,</span> 
-                         <span class="s1">&#39;--application&#39;</span><span class="p">,</span> <span class="n">application_name</span><span class="p">,</span> 
+        <span class="n">select_cmd</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s1">&#39;--target&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">,</span>
+                         <span class="s1">&#39;--application&#39;</span><span class="p">,</span> <span class="n">application_name</span><span class="p">,</span>
                          <span class="s1">&#39;--measurement&#39;</span><span class="p">,</span> <span class="n">measurement_name</span><span class="p">])</span>
 
 <div class="viewcode-block" id="InitializeCommand.main"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.initialize.html#taucmdr.cli.commands.initialize.InitializeCommand.main">[docs]</a>    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
@@ -307,7 +307,7 @@
                                 <span class="s2">&quot; &#39;</span><span class="si">%s</span><span class="s2">&#39; to reset to a fresh environment. </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">proj_ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">force_str</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">EXIT_WARNING</span></div></div>
 
-<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">InitializeCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="n">HELP_PAGE</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Initialize TAU Commander.&quot;</span><span class="p">)</span> 
+<span class="n">COMMAND</span> <span class="o">=</span> <span class="n">InitializeCommand</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="n">HELP_PAGE</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="s2">&quot;Initialize TAU Commander.&quot;</span><span class="p">)</span>
 </pre></div>
 
       </div>
@@ -321,7 +321,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

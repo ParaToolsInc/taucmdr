@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -345,22 +345,22 @@
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
 
     <span class="n">__controller__</span> <span class="o">=</span> <span class="n">TrialController</span>
-    
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_separate_launcher_cmd</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Separate the launcher command and it&#39;s arguments from the application command(s) and arguments.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            cmd (list): Command line.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (Launcher command, Remainder of command line)</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: No application config files or executables found after a recognized launcher command.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># If &#39;--&#39; appears in the command then everything before it is a launcher + args </span>
-        <span class="c1"># and everything after is the application + args </span>
+        <span class="c1"># If &#39;--&#39; appears in the command then everything before it is a launcher + args</span>
+        <span class="c1"># and everything after is the application + args</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -396,17 +396,17 @@
                                       <span class="s2">&quot;command, e.g. `mpirun -np 4 -- ./a.out -l hello`&quot;</span> <span class="o">%</span> <span class="n">cmd0</span><span class="p">))</span>
         <span class="c1"># No launcher command, just an application command</span>
         <span class="k">return</span> <span class="p">[],</span> <span class="n">cmd</span>
-    
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Trial.parse_launcher_cmd"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.parse_launcher_cmd">[docs]</a>    <span class="k">def</span> <span class="nf">parse_launcher_cmd</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Parses a command line to split the launcher command and application commands.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            cmd (list): Command line.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: (Launcher command, possibly empty list of application commands).</span>
-<span class="sd">        &quot;&quot;&quot;</span> 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd0</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">launcher_cmd</span><span class="p">,</span> <span class="n">cmd</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_separate_launcher_cmd</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
         <span class="n">num_exes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cmd</span> <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
@@ -504,13 +504,13 @@
                 <span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Trial.get_data_files"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.get_data_files">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return paths to the trial&#39;s data files or directories maped by data type. </span>
-<span class="sd">        </span>
-<span class="sd">        Post-process trial data if necessary and return a dictionary mapping the types of data produced </span>
-<span class="sd">        by this trial to paths to related data files or directories.  The paths should be suitable for </span>
-<span class="sd">        passing on a command line to one of the known data analysis tools. For example, a trial producing </span>
+        <span class="sd">&quot;&quot;&quot;Return paths to the trial&#39;s data files or directories maped by data type.</span>
+
+<span class="sd">        Post-process trial data if necessary and return a dictionary mapping the types of data produced</span>
+<span class="sd">        by this trial to paths to related data files or directories.  The paths should be suitable for</span>
+<span class="sd">        passing on a command line to one of the known data analysis tools. For example, a trial producing</span>
 <span class="sd">        SLOG2 traces and TAU profiles would return ``{&quot;slog2&quot;: &quot;/path/to/tau.slog2&quot;, &quot;tau&quot;: &quot;/path/to/directory/&quot;}``.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Keys are strings indicating the data type; values are filesystem paths.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -556,9 +556,9 @@
 <span class="sd">            int: Subprocess return code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-        <span class="n">tau_env_opts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> 
-                              <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;TAU_&#39;</span><span class="p">)</span> <span class="ow">or</span> 
-                                  <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SCOREP_&#39;</span><span class="p">)</span> <span class="ow">or</span> 
+        <span class="n">tau_env_opts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
+                              <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;TAU_&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                                  <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SCOREP_&#39;</span><span class="p">)</span> <span class="ow">or</span>
                                   <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;PROFILEDIR&#39;</span><span class="p">,</span> <span class="s1">&#39;TRACEDIR&#39;</span><span class="p">)))</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_env_opts</span><span class="p">))</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd_str</span><span class="p">)</span>
@@ -590,9 +590,9 @@
 <span class="sd">            int: Subprocess return code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
-        <span class="n">tau_env_opts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> 
-                              <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;TAU_&#39;</span><span class="p">)</span> <span class="ow">or</span> 
-                                  <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SCOREP_&#39;</span><span class="p">)</span> <span class="ow">or</span> 
+        <span class="n">tau_env_opts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
+                              <span class="k">if</span> <span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;TAU_&#39;</span><span class="p">)</span> <span class="ow">or</span>
+                                  <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SCOREP_&#39;</span><span class="p">)</span> <span class="ow">or</span>
                                   <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;PROFILEDIR&#39;</span><span class="p">,</span> <span class="s1">&#39;TRACEDIR&#39;</span><span class="p">)))</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tau_env_opts</span><span class="p">))</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">cmd_str</span><span class="p">)</span>
@@ -611,7 +611,7 @@
                           <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span> <span class="s2">&quot;Check paths and command line arguments&quot;</span><span class="p">,</span>
                           <span class="n">errno</span><span class="o">.</span><span class="n">ENOEXEC</span><span class="p">:</span> <span class="s2">&quot;Check that this host supports &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">target</span><span class="p">[</span><span class="s1">&#39;host_arch&#39;</span><span class="p">]}</span>
             <span class="k">raise</span> <span class="n">TrialError</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t execute </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd_str</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span> <span class="n">errno_hint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">errno</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-        
+
         <span class="n">measurement</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="s1">&#39;measurement&#39;</span><span class="p">)</span>
 
         <span class="n">profiles</span> <span class="o">=</span> <span class="p">[]</span>
@@ -627,7 +627,7 @@
                                <span class="s2">&quot; Check the compilation output and verify that MPI_Init (or similar) was called.&quot;</span><span class="p">,</span>
                                <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
                 <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">negative_profiles</span><span class="p">:</span>
-                    <span class="n">new_name</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.-1.&quot;</span><span class="p">,</span> <span class="s2">&quot;.0.&quot;</span><span class="p">)</span> 
+                    <span class="n">new_name</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.-1.&quot;</span><span class="p">,</span> <span class="s2">&quot;.0.&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_name</span><span class="p">):</span>
                         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Renaming </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
                         <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
@@ -653,13 +653,13 @@
             <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">elapsed</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">elapsed</span></div>
-    
+
 <div class="viewcode-block" id="Trial.export"><a class="viewcode-back" href="../../../taucmdr.model.trial.html#taucmdr.model.trial.Trial.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Export experiment trial data.</span>
-<span class="sd"> </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            dest (str): Path to directory to contain exported data.</span>
-<span class="sd"> </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            ConfigurationError: This trial has no data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -668,7 +668,7 @@
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Trial </span><span class="si">%s</span><span class="s2"> of experiment &#39;</span><span class="si">%s</span><span class="s2">&#39; has no data&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_files</span><span class="p">()</span>
         <span class="n">stem</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.trial</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span> 
+        <span class="k">for</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span>
                 <span class="n">export_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">stem</span><span class="o">+</span><span class="s1">&#39;.ppk&#39;</span><span class="p">)</span>
                 <span class="n">tau</span> <span class="o">=</span> <span class="n">TauInstallation</span><span class="o">.</span><span class="n">get_minimal</span><span class="p">()</span>
@@ -704,7 +704,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

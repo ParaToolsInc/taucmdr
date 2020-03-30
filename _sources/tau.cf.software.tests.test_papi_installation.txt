@@ -1,7 +1,0 @@
-tau.cf.software.tests.test_papi_installation module
-===================================================
-
-.. automodule:: tau.cf.software.tests.test_papi_installation
-    :members:
-    :undoc-members:
-    :show-inheritance:

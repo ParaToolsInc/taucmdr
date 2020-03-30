@@ -1,7 +1,0 @@
-tau.model.tests.test_trial module
-=================================
-
-.. automodule:: tau.model.tests.test_trial
-    :members:
-    :undoc-members:
-    :show-inheritance:

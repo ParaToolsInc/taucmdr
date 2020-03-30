@@ -1,7 +1,0 @@
-tau.cli.commands.trial.export module
-====================================
-
-.. automodule:: tau.cli.commands.trial.export
-    :members:
-    :undoc-members:
-    :show-inheritance:

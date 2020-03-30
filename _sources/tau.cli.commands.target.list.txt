@@ -1,7 +1,0 @@
-tau.cli.commands.target.list module
-===================================
-
-.. automodule:: tau.cli.commands.target.list
-    :members:
-    :undoc-members:
-    :show-inheritance:

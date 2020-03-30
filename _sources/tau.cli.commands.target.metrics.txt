@@ -1,7 +1,0 @@
-tau.cli.commands.target.metrics module
-======================================
-
-.. automodule:: tau.cli.commands.target.metrics
-    :members:
-    :undoc-members:
-    :show-inheritance:

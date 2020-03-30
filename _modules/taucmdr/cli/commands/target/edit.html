@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -116,7 +116,7 @@
         <span class="k">return</span> <span class="n">Action</span>
 
     <span class="k">def</span> <span class="nf">_configure_argument_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">kbase</span><span class="p">,</span> <span class="n">family_flag</span><span class="p">,</span> <span class="n">family_attr</span><span class="p">):</span>
-        <span class="c1"># Add the compiler family flag. If the knowledgebase keyword isn&#39;t all-caps then show in lower case. </span>
+        <span class="c1"># Add the compiler family flag. If the knowledgebase keyword isn&#39;t all-caps then show in lower case.</span>
         <span class="n">keyword</span> <span class="o">=</span> <span class="n">kbase</span><span class="o">.</span><span class="n">keyword</span>
         <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">keyword</span><span class="p">:</span>
             <span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -141,14 +141,14 @@
         <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TargetEditCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_construct_parser</span><span class="p">()</span>
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;host arguments&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">HOST_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;host_family&#39;</span><span class="p">)</span>
-        
+
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Message Passing Interface (MPI) arguments&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">MPI_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--mpi-wrappers&#39;</span><span class="p">,</span> <span class="s1">&#39;mpi_family&#39;</span><span class="p">)</span>
 
         <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s1">&#39;Symmetric Hierarchical Memory (SHMEM) arguments&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_configure_argument_group</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">SHMEM_COMPILERS</span><span class="p">,</span> <span class="s1">&#39;--shmem-compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;shmem_family&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span>
-     
+
     <span class="k">def</span> <span class="nf">_update_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.target.copy</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">target_copy_cmd</span>
         <span class="kn">from</span> <span class="nn">taucmdr.cli.commands.experiment.delete</span> <span class="kn">import</span> <span class="n">COMMAND</span> <span class="k">as</span> <span class="n">experiment_delete_cmd</span>
@@ -160,7 +160,7 @@
             <span class="k">raise</span> <span class="n">err</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">retval</span><span class="p">:</span>
             <span class="n">rebuild_required</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">rebuild_required</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">rebuild_required</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="n">rebuild_required</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">rebuild_required</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">retval</span>
 
@@ -170,13 +170,13 @@
         <span class="n">store</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">parse_storage_flag</span><span class="p">(</span><span class="n">args</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">compilers</span> <span class="o">=</span> <span class="n">target_create_cmd</span><span class="o">.</span><span class="n">parse_compiler_flags</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Arguments after parsing compiler flags: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-        
+
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">attr</span><span class="p">)}</span>
         <span class="k">for</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">compilers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span>
             <span class="n">record</span> <span class="o">=</span> <span class="n">Compiler</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span>
             <span class="n">data</span><span class="p">[</span><span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">eid</span>
- 
+
         <span class="n">key_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[</span><span class="n">key_attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">new_key</span>
@@ -200,7 +200,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

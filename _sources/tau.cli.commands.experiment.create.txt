@@ -1,7 +1,0 @@
-tau.cli.commands.experiment.create module
-=========================================
-
-.. automodule:: tau.cli.commands.experiment.create
-    :members:
-    :undoc-members:
-    :show-inheritance:

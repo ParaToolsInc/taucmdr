@@ -1,7 +1,0 @@
-tau.cli.commands.trial.show module
-==================================
-
-.. automodule:: tau.cli.commands.trial.show
-    :members:
-    :undoc-members:
-    :show-inheritance:

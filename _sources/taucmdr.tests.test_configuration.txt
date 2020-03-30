@@ -1,7 +1,0 @@
-taucmdr.tests.test_configuration module
-=======================================
-
-.. automodule:: taucmdr.tests.test_configuration
-    :members:
-    :undoc-members:
-    :show-inheritance:

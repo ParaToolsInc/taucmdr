@@ -1,7 +1,0 @@
-tau.model.tests.test_application module
-=======================================
-
-.. automodule:: tau.model.tests.test_application
-    :members:
-    :undoc-members:
-    :show-inheritance:

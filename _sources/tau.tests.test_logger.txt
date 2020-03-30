@@ -1,7 +1,0 @@
-tau.tests.test_logger module
-============================
-
-.. automodule:: tau.tests.test_logger
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,0 @@
-tau.cli.commands.tests.test_build module
-========================================
-
-.. automodule:: tau.cli.commands.tests.test_build
-    :members:
-    :undoc-members:
-    :show-inheritance:

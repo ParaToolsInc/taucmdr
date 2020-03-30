@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -85,15 +85,15 @@
 <span class="n">DASHBOARD_COLUMNS</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;align&#39;</span><span class="p">:</span> <span class="s1">&#39;r&#39;</span><span class="p">},</span>
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Host OS&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;host_os&#39;</span><span class="p">},</span>
                      <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Host Arch&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;host_arch&#39;</span><span class="p">},</span>
-                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Host Compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> 
+                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;Host Compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span>
                       <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">][</span><span class="s1">&#39;family&#39;</span><span class="p">]},</span>
-                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI Compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> 
+                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;MPI Compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span>
                       <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">MPI_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})[</span><span class="s1">&#39;family&#39;</span><span class="p">]},</span>
-                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM Compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> 
+                     <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="s1">&#39;SHMEM Compilers&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span>
                       <span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SHMEM_CC</span><span class="o">.</span><span class="n">keyword</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})[</span><span class="s1">&#39;family&#39;</span><span class="p">]}]</span>
 
 <div class="viewcode-block" id="TargetListCommand"><a class="viewcode-back" href="../../../../../taucmdr.cli.commands.target.list.html#taucmdr.cli.commands.target.list.TargetListCommand">[docs]</a><span class="k">class</span> <span class="nc">TargetListCommand</span><span class="p">(</span><span class="n">ListCommand</span><span class="p">):</span>
-    
+
     <span class="k">def</span> <span class="nf">_format_long_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="n">fmt_key</span><span class="p">,</span> <span class="n">fmt_val</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">description</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TargetListCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_format_long_item</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
         <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
@@ -116,7 +116,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

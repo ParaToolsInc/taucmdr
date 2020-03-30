@@ -1,7 +1,0 @@
-tau.cf.objects module
-=====================
-
-.. automodule:: tau.cf.objects
-    :members:
-    :undoc-members:
-    :show-inheritance:

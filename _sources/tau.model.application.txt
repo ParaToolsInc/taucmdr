@@ -1,7 +1,0 @@
-tau.model.application module
-============================
-
-.. automodule:: tau.model.application
-    :members:
-    :undoc-members:
-    :show-inheritance:

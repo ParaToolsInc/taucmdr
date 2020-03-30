@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -89,7 +89,7 @@
 
 <div class="viewcode-block" id="SelectCommand"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.select.html#taucmdr.cli.commands.select.SelectCommand">[docs]</a><span class="k">class</span> <span class="nc">SelectCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;``select`` subcommand.&quot;&quot;&quot;</span>
-    
+
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [experiment] [target] [application] [measurement]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
@@ -130,7 +130,7 @@
                             <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&lt;name&gt;&#39;</span><span class="p">,</span>
                             <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span>
-    
+
     <span class="k">def</span> <span class="nf">_parse_implicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
         <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">applications</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -177,7 +177,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">acc</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Project &#39;</span><span class="si">%s</span><span class="s2">&#39; has no </span><span class="si">%s</span><span class="s2">s.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">model_name</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Project &#39;</span><span class="si">%s</span><span class="s2">&#39; has multiple </span><span class="si">%s</span><span class="s2">s. Please specify which to use.&quot;</span> <span class="o">%</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Project &#39;</span><span class="si">%s</span><span class="s2">&#39; has multiple </span><span class="si">%s</span><span class="s2">s. Please specify which to use.&quot;</span> <span class="o">%</span>
                               <span class="p">(</span><span class="n">proj</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">model_name</span><span class="p">))</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">acc</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
@@ -224,7 +224,7 @@
             <span class="n">Experiment</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Selected experiment &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">rebuild_required</span> <span class="o">=</span> <span class="n">Experiment</span><span class="o">.</span><span class="n">rebuild_required</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">rebuild_required</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="n">rebuild_required</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">rebuild_required</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div></div>
 
@@ -243,7 +243,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

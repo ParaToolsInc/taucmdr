@@ -1,7 +1,0 @@
-tau.cli.tests.test_arguments module
-===================================
-
-.. automodule:: tau.cli.tests.test_arguments
-    :members:
-    :undoc-members:
-    :show-inheritance:

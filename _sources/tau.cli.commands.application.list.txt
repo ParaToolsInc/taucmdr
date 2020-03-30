@@ -1,7 +1,0 @@
-tau.cli.commands.application.list module
-========================================
-
-.. automodule:: tau.cli.commands.application.list
-    :members:
-    :undoc-members:
-    :show-inheritance:

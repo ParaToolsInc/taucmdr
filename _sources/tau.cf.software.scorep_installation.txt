@@ -1,7 +1,0 @@
-tau.cf.software.scorep_installation module
-==========================================
-
-.. automodule:: tau.cf.software.scorep_installation
-    :members:
-    :undoc-members:
-    :show-inheritance:

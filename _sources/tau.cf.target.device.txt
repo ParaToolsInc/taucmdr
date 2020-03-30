@@ -1,7 +1,0 @@
-tau.cf.target.device module
-===========================
-
-.. automodule:: tau.cf.target.device
-    :members:
-    :undoc-members:
-    :show-inheritance:

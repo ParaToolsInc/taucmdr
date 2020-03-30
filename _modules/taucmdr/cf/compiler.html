@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -75,25 +75,25 @@
 <span class="sd">&quot;&quot;&quot;TAU compiler knowledgebase.</span>
 
 <span class="sd">TAU Commander uses this knowledgebase to try to work out what kind of compiler</span>
-<span class="sd">the user is using to build their code.  We can get away with this because TAU </span>
-<span class="sd">will take care of most of the version-specific details if only we get the </span>
+<span class="sd">the user is using to build their code.  We can get away with this because TAU</span>
+<span class="sd">will take care of most of the version-specific details if only we get the</span>
 <span class="sd">configuration line correct.</span>
 
 <span class="sd">TAU depends very strongly on compiler characteristics. Each TAU configuration</span>
 <span class="sd">is only valid for a single compiler, TAU&#39;s feature set changes depending on compiler</span>
 <span class="sd">family and version, TAU&#39;s configure script is easily confused by compilers with</span>
-<span class="sd">strange names or unusual installation paths, etc.  In most cases, TAU doesn&#39;t even </span>
-<span class="sd">try to detect the compiler and trusts the user to specify the right &quot;magic words&quot; </span>
+<span class="sd">strange names or unusual installation paths, etc.  In most cases, TAU doesn&#39;t even</span>
+<span class="sd">try to detect the compiler and trusts the user to specify the right &quot;magic words&quot;</span>
 <span class="sd">at configuration. Worse, TAU sometimes does probe the compiler to discover things</span>
 <span class="sd">like MPI headers, except it does such a poor job that many time we get the wrong</span>
 <span class="sd">answer or simply cause the configure script to fail entirely. This has been a major</span>
 <span class="sd">painpoint for TAU users.</span>
 
-<span class="sd">The reason for this mess is that compiler detection is very hard.  Projects like </span>
+<span class="sd">The reason for this mess is that compiler detection is very hard.  Projects like</span>
 <span class="sd">`SciPy`_ that depend on a compiler&#39;s stdout stream for compiler detection have more</span>
 <span class="sd">or less failed in this since compiler messages are exceptionally difficult to parse.</span>
 <span class="sd">`CMake`_ does a good job by invoking the compiler command and parsing strings out of</span>
-<span class="sd">a compiled object to detect compiler characteristcs, but that approach is complex </span>
+<span class="sd">a compiled object to detect compiler characteristcs, but that approach is complex</span>
 <span class="sd">and still breaks easily.</span>
 
 <span class="sd">The TAU Commander compiler knowledgebase associates a compiler command (`icc`)</span>
@@ -102,8 +102,8 @@
 <span class="sd">characteristics.</span>
 
 <span class="sd">The knowledgebase lists all compilers known to TAU Commander but only some of those</span>
-<span class="sd">will actually be available on any given system.  Use :any:`InstalledCompiler` and  </span>
-<span class="sd">related classes to discover installed compilers and to determine features that </span>
+<span class="sd">will actually be available on any given system.  Use :any:`InstalledCompiler` and</span>
+<span class="sd">related classes to discover installed compilers and to determine features that</span>
 <span class="sd">change from system to system.</span>
 
 <span class="sd">.. _SciPy: http://www.scipy.org/</span>
@@ -132,13 +132,13 @@
 <span class="s2"># Created: </span><span class="si">%(date)s</span><span class="s2"></span>
 <span class="s2"># Author: </span><span class="si">%(user)s</span><span class="s2"></span>
 <span class="s2">#</span>
-<span class="si">%(taucmdr_script)s</span><span class="s2"> build </span><span class="si">%(command)s</span><span class="s2"> &quot;$@&quot; </span>
+<span class="si">%(taucmdr_script)s</span><span class="s2"> build </span><span class="si">%(command)s</span><span class="s2"> &quot;$@&quot;</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="Knowledgebase"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase">[docs]</a><span class="k">class</span> <span class="nc">Knowledgebase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;TAU compiler knowledgebase front-end.&quot;&quot;&quot;</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
@@ -147,26 +147,26 @@
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="n">language</span><span class="p">,</span> <span class="n">envars</span> <span class="o">=</span> <span class="n">val</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">envars</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
-                <span class="n">envars</span> <span class="o">=</span> <span class="p">(</span><span class="n">envars</span><span class="p">,)</span> 
+                <span class="n">envars</span> <span class="o">=</span> <span class="p">(</span><span class="n">envars</span><span class="p">,)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_roles</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_CompilerRole</span><span class="p">(</span><span class="n">keyword</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">envars</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;Knowledgebase(</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span>
-    
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Knowledgebase.all_roles"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.all_roles">[docs]</a>    <span class="k">def</span> <span class="nf">all_roles</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all known compiler roles.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> </div>
-    
+        <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Knowledgebase.find_role"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.find_role">[docs]</a>    <span class="k">def</span> <span class="nf">find_role</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find a compiler role with the given keyword.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">keyword</span><span class="p">)</span></div>
-    
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Knowledgebase.all_compilers"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.all_compilers">[docs]</a>    <span class="k">def</span> <span class="nf">all_compilers</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
-    
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Knowledgebase.find_compiler"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.find_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">find_compiler</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span></div>
@@ -181,7 +181,7 @@
 
 <div class="viewcode-block" id="Knowledgebase.iterfamilies"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.iterfamilies">[docs]</a>    <span class="k">def</span> <span class="nf">iterfamilies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over compiler families in the knowledgebase.</span>
-<span class="sd">        </span>
+
 <span class="sd">        The first family yielded is the host&#39;s preferred compiler family.</span>
 <span class="sd">        All other families may be yielded in any order.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -195,18 +195,18 @@
 
 <div class="viewcode-block" id="Knowledgebase.add"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add a new compiler family to the knowledgebase.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Compilers in the family are specified via keyword arguments.  The key is the same that was</span>
 <span class="sd">        used to define the role in the knowledgebase **not** :any:`_CompilerRole.keyword`, which is</span>
-<span class="sd">        calculated from the knowledgebase name and the role keyword. The value is a string or </span>
+<span class="sd">        calculated from the knowledgebase name and the role keyword. The value is a string or</span>
 <span class="sd">        collection of strings specifying compiler commands, e.g. &#39;gcc&#39; or (&#39;xlf&#39;, &#39;xlf_r&#39;).</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): The compiler family name.</span>
 <span class="sd">            *args: Positional arguments passed to the :any:`_CompilerFamily` constructor.</span>
 <span class="sd">            **kwargs: Keyword arguments passed to the :any:`_CompilerFamily` constructor, after</span>
 <span class="sd">                      any keyword arguments specifying compiler commands are removed.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            _CompilerFamily: The new compiler family object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -221,7 +221,7 @@
         <span class="n">family</span> <span class="o">=</span> <span class="n">_CompilerFamily</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_families</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">family</span>
         <span class="k">return</span> <span class="n">family</span></div>
-    
+
 <div class="viewcode-block" id="Knowledgebase.family_names"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.family_names">[docs]</a>    <span class="k">def</span> <span class="nf">family_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return an alphabetical list of all compiler family names.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_families</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div></div>
@@ -229,21 +229,21 @@
 
 <div class="viewcode-block" id="_CompilerRole"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerRole">[docs]</a><span class="k">class</span> <span class="nc">_CompilerRole</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about a compiler&#39;s role.</span>
-<span class="sd">    </span>
+
 <span class="sd">    A compiler role identifies how the compiler is used in the build process. All compilers</span>
-<span class="sd">    play at least one *role* in their compiler family.  Many compilers can play multiple </span>
-<span class="sd">    roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role, </span>
+<span class="sd">    play at least one *role* in their compiler family.  Many compilers can play multiple</span>
+<span class="sd">    roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role,</span>
 <span class="sd">    or even a linker.  TAU Commander must identify a compiler&#39;s role so it can configure TAU.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        keyword (str): Name of the compiler&#39;s role, e.g. &#39;CXX&#39;.</span>
 <span class="sd">        language (str): Name of the programming language corresponding to the compiler role, e.g. &#39;C++&#39;.</span>
 <span class="sd">        envars (tuple): Environment variables commonly used to identify the compiler in  this role, e.g. &quot;CXX&quot; or &quot;CC&quot;.</span>
 <span class="sd">        kbase (Knowledgebase): The knowledgebase instance that created this object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">__key__</span> <span class="o">=</span> <span class="s2">&quot;keyword&quot;</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keyword</span><span class="p">,</span> <span class="n">language</span><span class="p">,</span> <span class="n">envars</span><span class="p">,</span> <span class="n">kbase</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="n">language</span>
@@ -258,7 +258,7 @@
 
 <div class="viewcode-block" id="_CompilerFamily"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerFamily">[docs]</a><span class="k">class</span> <span class="nc">_CompilerFamily</span><span class="p">(</span><span class="n">TrackedInstance</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about a compiler family.</span>
-<span class="sd">    </span>
+
 <span class="sd">    A compiler&#39;s family creates associations between different compiler commands</span>
 <span class="sd">    and assigns compilers to roles.  All compiler commands within a family accept</span>
 <span class="sd">    similar arguments, and produce compatible object files.</span>
@@ -268,19 +268,19 @@
 <span class="sd">        name (str): Family name, e.g. &quot;Intel&quot;.</span>
 <span class="sd">        family_regex (str): Regular expression identifying compiler family in compiler version string.</span>
 <span class="sd">        version_flags (list): Command line flags that show the compiler version, e.g. &#39;--version&#39;.</span>
-<span class="sd">        include_path_flags (list): Command line flags that add a directory to the compiler&#39;s include path, e.g. &#39;-I&#39;. </span>
+<span class="sd">        include_path_flags (list): Command line flags that add a directory to the compiler&#39;s include path, e.g. &#39;-I&#39;.</span>
 <span class="sd">        library_path_flags (list): Command line flags that add a directory to the compiler&#39;s library path, e.g. &#39;-L&#39;.</span>
 <span class="sd">        link_library_flags (list): Command line flags that link a library, e.g. &#39;-l&#39;.</span>
 <span class="sd">        show_wrapper_flags (list): Command line flags that show the wrapped compiler&#39;s command line, e.g. &#39;-show&#39;.</span>
 <span class="sd">        members (dict): Compilers in this family indexed by role.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">_probe_cache</span> <span class="o">=</span> <span class="p">{}</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kbase</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span>
                  <span class="n">version_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">include_path_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">library_path_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">include_path_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">library_path_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">link_library_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">show_wrapper_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">family_regex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -297,13 +297,13 @@
         <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">commands</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">role</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_CompilerInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span> <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span>
-            
+
 <div class="viewcode-block" id="_CompilerFamily.installation"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerFamily.installation">[docs]</a>    <span class="k">def</span> <span class="nf">installation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">InstalledCompilerFamily</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-    
+
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;_CompilerFamily(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
@@ -335,7 +335,7 @@
         <span class="c1"># pylint: disable=no-member</span>
         <span class="k">if</span> <span class="n">candidates</span><span class="p">:</span>
             <span class="n">candidate_kbases</span> <span class="o">=</span> <span class="p">{</span><span class="n">candidate</span><span class="o">.</span><span class="n">kbase</span> <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">}</span>
-            <span class="n">families</span> <span class="o">=</span> <span class="n">candidates</span> <span class="o">+</span> <span class="p">[</span><span class="n">inst</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span> 
+            <span class="n">families</span> <span class="o">=</span> <span class="n">candidates</span> <span class="o">+</span> <span class="p">[</span><span class="n">inst</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span>
                                      <span class="k">if</span> <span class="n">inst</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">candidates</span> <span class="ow">and</span> <span class="n">inst</span><span class="o">.</span><span class="n">kbase</span> <span class="ow">in</span> <span class="n">candidate_kbases</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">families</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span>
@@ -378,7 +378,7 @@
             <span class="n">guess</span> <span class="o">=</span> <span class="n">without_regex</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">without_regex</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">((</span><span class="s2">&quot;Assuming &#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2"> compiler but it could be to any of these: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
-                                <span class="s2">&quot;If this assumption is incorrect then you should manually specify your compilers&quot;</span><span class="p">),</span> 
+                                <span class="s2">&quot;If this assumption is incorrect then you should manually specify your compilers&quot;</span><span class="p">),</span>
                                <span class="n">absolute_path</span><span class="p">,</span> <span class="n">guess</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">family</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">without_regex</span><span class="p">]))</span>
             <span class="k">return</span> <span class="n">guess</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot determine compiler family: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">messages</span><span class="p">))</span></div></div>
@@ -386,10 +386,10 @@
 
 <div class="viewcode-block" id="_CompilerInfo"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerInfo">[docs]</a><span class="k">class</span> <span class="nc">_CompilerInfo</span><span class="p">(</span><span class="n">TrackedInstance</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about a compiler.</span>
-<span class="sd">   </span>
+
 <span class="sd">    A compiler&#39;s basic information includes it&#39;s family (e.g. `Intel`) and role (e.g. CXX).</span>
-<span class="sd">    The compiler might not be installed.  </span>
-<span class="sd">    </span>
+<span class="sd">    The compiler might not be installed.</span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        family (_CompilerFamily): The family this compiler belongs to.</span>
 <span class="sd">        command (str): Command without path or arguments, e.g. &#39;icpc&#39;</span>
@@ -411,7 +411,7 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;_CompilerInfo(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span>
-        
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">command</span> <span class="ow">and</span> <span class="n">family</span> <span class="ow">and</span> <span class="n">role</span><span class="p">:</span>
@@ -434,7 +434,7 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="_CompilerInfo.find"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerInfo.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find _CompilerInfo instances that matches the given command and/or family and/or role.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            command (str): A compiler command without path.</span>
 <span class="sd">            family (_CompilerFamily): Compiler family to search for.</span>
@@ -456,23 +456,23 @@
                         <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_CompilerInfo.find(command=&#39;</span><span class="si">%s</span><span class="s2">&#39;, family=&#39;</span><span class="si">%s</span><span class="s2">&#39;, role=&#39;</span><span class="si">%s</span><span class="s2">&#39;): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> 
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;_CompilerInfo.find(command=&#39;</span><span class="si">%s</span><span class="s2">&#39;, family=&#39;</span><span class="si">%s</span><span class="s2">&#39;, role=&#39;</span><span class="si">%s</span><span class="s2">&#39;): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                      <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">found</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">found</span></div></div>
 
 
 <div class="viewcode-block" id="InstalledCompilerCreator"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerCreator">[docs]</a><span class="k">class</span> <span class="nc">InstalledCompilerCreator</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Cache compiler probe results.</span>
-<span class="sd">     </span>
-<span class="sd">    InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.  </span>
-<span class="sd">    This can be very expensive, so this metaclass changes the instance creation procedure to only </span>
+
+<span class="sd">    InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.</span>
+<span class="sd">    This can be very expensive, so this metaclass changes the instance creation procedure to only</span>
 <span class="sd">    probe the compiler when the compiler command has never been seen before and avoid dupliate</span>
 <span class="sd">    invocations in a case like::</span>
-<span class="sd">     </span>
-<span class="sd">        a = InstalledCompiler(&#39;/path/to/icc&#39;)</span>
-<span class="sd">        b = InstalledCompiler(&#39;/path/to/icc&#39;)    </span>
 
-<span class="sd">    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler </span>
+<span class="sd">        a = InstalledCompiler(&#39;/path/to/icc&#39;)</span>
+<span class="sd">        b = InstalledCompiler(&#39;/path/to/icc&#39;)</span>
+
+<span class="sd">    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler</span>
 <span class="sd">    and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -483,7 +483,7 @@
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> 
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">) not in compiler cache&#39;</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
             <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InstalledCompilerCreator</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
@@ -495,12 +495,12 @@
 
 <div class="viewcode-block" id="InstalledCompiler"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler">[docs]</a><span class="k">class</span> <span class="nc">InstalledCompiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about an installed compiler command.</span>
-<span class="sd">    </span>
+
 <span class="sd">    There are relatively few well known compilers, but a potentially infinite</span>
-<span class="sd">    number of commands that can invoke those compilers.  Additionally, an installed </span>
+<span class="sd">    number of commands that can invoke those compilers.  Additionally, an installed</span>
 <span class="sd">    compiler command may be a wrapper around another command.  This class links a</span>
 <span class="sd">    command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        absolute_path (str): Absolute path to the compiler command.</span>
 <span class="sd">        info (_CompilerInfo): Information about the compiler invoked by the compiler command.</span>
@@ -513,30 +513,30 @@
 <span class="sd">        compiler_flags (list): Additional flags used when compiling with the wrapped compiler.</span>
 <span class="sd">        libraries (list): Additional libraries to link when linking with the wrapped compiler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">InstalledCompilerCreator</span>
-    
+
     <span class="n">__instances__</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">wrapped</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">library_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compiler_flags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initializes the InstalledCompiler instance.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Any information not provided on the argument list may be probed from the system.</span>
-<span class="sd">        This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions, </span>
+<span class="sd">        This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions,</span>
 <span class="sd">        or other conditions in the system to determine if a compiler command is present and executable.</span>
 <span class="sd">        If this compiler command wraps another command, that command is also probed.  The probes recurse</span>
 <span class="sd">        to the &quot;root&quot; compiler that doesn&#39;t wrap any other command.</span>
-<span class="sd">        </span>
+
 <span class="sd">        :any:`uid` uniquely identifies this compiler as installed in the system.  If the compiler&#39;s installation</span>
 <span class="sd">        changes substantially (e.g. significant version upgrades or changes in the compiler wrapper) then the UID</span>
 <span class="sd">        will change as well.</span>
-<span class="sd">               </span>
-<span class="sd">        These probes are necessary because TAU is highly dependent on the compiler used to install TAU.  </span>
+
+<span class="sd">        These probes are necessary because TAU is highly dependent on the compiler used to install TAU.</span>
 <span class="sd">        If that compiler changes, or the user tries to &quot;fake out&quot; TAU Commander by renaming compiler</span>
 <span class="sd">        commands, then the user should be warned that the compiler has changed.  If the change is severe</span>
 <span class="sd">        then the operation should halt before an invalid operation.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            absolute_path (str): Absolute path to the compiler command.</span>
 <span class="sd">            info (_CompilerInfo): Information about the compiler invoked by the compiler command.</span>
@@ -599,7 +599,7 @@
         <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
             <span class="c1"># If this command didn&#39;t accept show_wrapper_flags then it&#39;s not a compiler wrapper to begin with,</span>
             <span class="c1"># i.e. another command just happens to be the same as a known compiler command.</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; isn&#39;t actually a </span><span class="si">%s</span><span class="s2"> since it doesn&#39;t accept arguments </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> 
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; isn&#39;t actually a </span><span class="si">%s</span><span class="s2"> since it doesn&#39;t accept arguments </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span>
                                      <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">show_wrapper_flags</span><span class="p">))</span>
         <span class="c1"># Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.</span>
         <span class="n">known_commands</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">command</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
@@ -628,7 +628,7 @@
             <span class="n">wrapped_role</span> <span class="o">=</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
             <span class="k">if</span> <span class="n">role</span> <span class="o">!=</span> <span class="n">wrapped_role</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot use &#39;</span><span class="si">%s</span><span class="s2">&#39; as a </span><span class="si">%s</span><span class="s2">: wrapped compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; is a </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
-                                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> 
+                                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span>
                                           <span class="n">wrapped</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">))</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39; wraps &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
@@ -670,7 +670,7 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="InstalledCompiler.probe"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Probe the system to discover information about an installed compiler.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            command (str): Absolute or relative path to an installed compiler command.</span>
 <span class="sd">            family (_CompilerFamily): Installed compiler&#39;s family if known, None otherwise.</span>
@@ -705,7 +705,7 @@
                      <span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">language</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="k">if</span> <span class="n">role</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
                      <span class="s2">&quot;compiler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">absolute_path</span><span class="p">]</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg_parts</span><span class="p">))</span></div>
-    
+
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="InstalledCompiler.find_any"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.find_any">[docs]</a>    <span class="k">def</span> <span class="nf">find_any</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">role</span><span class="o">.</span><span class="n">kbase</span><span class="o">.</span><span class="n">iterfamilies</span><span class="p">():</span>
@@ -721,7 +721,7 @@
 
 <div class="viewcode-block" id="InstalledCompiler.unwrap"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.unwrap">[docs]</a>    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate through layers of compiler wrappers to find the true compiler.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            InstalledCompiler: Compiler wrapped by this compiler, ``self`` if this compiler doesn&#39;t wrap another.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -729,13 +729,13 @@
         <span class="k">while</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span><span class="p">:</span>
             <span class="n">comp</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">wrapped</span>
         <span class="k">return</span> <span class="n">comp</span></div>
-    
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">version_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the compiler&#39;s self-reported version info.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Usually whatever the compiler prints when the --version flag is provided.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The compilers&#39; version string.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -749,7 +749,7 @@
                                          <span class="s2">&quot;Check loaded modules and environment variables.&quot;</span><span class="p">,</span>
                                          <span class="s2">&quot;Verify that the compiler&#39;s license is valid.&quot;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; no longer exists or is not executable&quot;</span> <span class="o">%</span> 
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Compiler &#39;</span><span class="si">%s</span><span class="s2">&#39; no longer exists or is not executable&quot;</span> <span class="o">%</span>
                                          <span class="bp">self</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version_string</span>
 
@@ -768,10 +768,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">version_tuple</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">version_tuple</span>
-    
+
 <div class="viewcode-block" id="InstalledCompiler.generate_wrapper"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.generate_wrapper">[docs]</a>    <span class="k">def</span> <span class="nf">generate_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Generate a compiler wrapper script that uses :any:`taucmdr.TAUCMDR_SCRIPT` to invoke the compiler.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            prefix (str): Path to a directory in which the wrapper script will be created.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -788,16 +788,16 @@
 
 <div class="viewcode-block" id="InstalledCompilerFamily"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerFamily">[docs]</a><span class="k">class</span> <span class="nc">InstalledCompilerFamily</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Information about an installed compiler family.</span>
-<span class="sd">     </span>
+
 <span class="sd">    Compiler families are usually installed at a common prefix but there is no</span>
 <span class="sd">    guarantee that all members of the family will be installed.  For example,</span>
 <span class="sd">    it is often the case that C and C++ compilers are installed but no Fortran</span>
 <span class="sd">    compiler is installed.  This class tracks which members of a compiler family</span>
 <span class="sd">    are actually installed on the system.</span>
-<span class="sd">     </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        family (_CompilerFamily): The installed family.</span>
-<span class="sd">        FIXME: members </span>
+<span class="sd">        FIXME: members</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="p">):</span>
@@ -828,22 +828,22 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">role</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">default</span> </div>
+            <span class="k">return</span> <span class="n">default</span></div>
 
 <div class="viewcode-block" id="InstalledCompilerFamily.__getitem__"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerFamily.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the preferred installed compiler for a given role.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Since compiler can perform multiple roles we often have many commands</span>
 <span class="sd">        that could fit a given role, but only one *preferred* command for the</span>
 <span class="sd">        role.  For example, `icpc` can fill the CC or CXX roles but `icc` is</span>
 <span class="sd">        preferred over `icpc` for the CC role.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            role (_CompilerRole): The compiler role to fill.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            InstalledCompiler: The installed compiler for the role.</span>
-<span class="sd">            </span>
+
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: This family has no compiler in the given role.</span>
 <span class="sd">            IndexError: No installed compiler fills the given role.</span>
@@ -864,34 +864,34 @@
 
 <div class="viewcode-block" id="InstalledCompilerSet"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerSet">[docs]</a><span class="k">class</span> <span class="nc">InstalledCompilerSet</span><span class="p">(</span><span class="n">KeyedRecord</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A collection of installed compilers, one per role if the role can be filled.</span>
-<span class="sd">    </span>
+
 <span class="sd">    To actually build a software package (or user&#39;s application) we must have exactly</span>
 <span class="sd">    one compiler in each required compiler role.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Attributes:</span>
 <span class="sd">        uid: A unique identifier for this particular combination of compilers.</span>
 <span class="sd">        members: (_CompilerRole, InstalledCompiler) dictionary containing members of this set</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">__key__</span> <span class="o">=</span> <span class="s1">&#39;uid&#39;</span>
-    
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">uid</span> <span class="o">=</span> <span class="n">uid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_members</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            
+
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span>
-    
+
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 <div class="viewcode-block" id="InstalledCompilerSet.iterkeys"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerSet.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()</span></div>
-    
+
 <div class="viewcode-block" id="InstalledCompilerSet.itervalues"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerSet.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()</span></div>
 
@@ -906,7 +906,7 @@
 
 <div class="viewcode-block" id="InstalledCompilerSet.modify"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompilerSet.modify">[docs]</a>    <span class="k">def</span> <span class="nf">modify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Build a modified copy of this object.&quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=protected-access </span>
+        <span class="c1"># pylint: disable=protected-access</span>
         <span class="n">uid_parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))]</span>
         <span class="n">compilers</span> <span class="o">=</span> <span class="p">{</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">:</span> <span class="n">comp</span> <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()}</span>
         <span class="n">modified</span> <span class="o">=</span> <span class="n">InstalledCompilerSet</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">calculate_uid</span><span class="p">(</span><span class="n">uid_parts</span><span class="p">),</span> <span class="o">**</span><span class="n">compilers</span><span class="p">)</span>
@@ -925,7 +925,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

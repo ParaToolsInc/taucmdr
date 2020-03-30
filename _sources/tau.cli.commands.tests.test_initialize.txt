@@ -1,7 +1,0 @@
-tau.cli.commands.tests.test_initialize module
-=============================================
-
-.. automodule:: tau.cli.commands.tests.test_initialize
-    :members:
-    :undoc-members:
-    :show-inheritance:

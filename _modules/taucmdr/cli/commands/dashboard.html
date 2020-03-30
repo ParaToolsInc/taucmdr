@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -84,19 +84,19 @@
 
 <div class="viewcode-block" id="DashboardCommand"><a class="viewcode-back" href="../../../../taucmdr.cli.commands.dashboard.html#taucmdr.cli.commands.dashboard.DashboardCommand">[docs]</a><span class="k">class</span> <span class="nc">DashboardCommand</span><span class="p">(</span><span class="n">AbstractCommand</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A command line dashboard for TAU Commander.&quot;&quot;&quot;</span>
-    
+
     <span class="k">def</span> <span class="nf">_construct_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [arguments]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get_parser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">)</span>
         <span class="n">style_dest</span> <span class="o">=</span> <span class="s1">&#39;style&#39;</span>
         <span class="n">style_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
-        <span class="n">style_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--dashboard&#39;</span><span class="p">,</span> 
+        <span class="n">style_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--dashboard&#39;</span><span class="p">,</span>
                                  <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show data in a fancy dasboard&quot;</span><span class="p">,</span>
-                                 <span class="n">const</span><span class="o">=</span><span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">style_dest</span><span class="p">,</span> 
+                                 <span class="n">const</span><span class="o">=</span><span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">style_dest</span><span class="p">,</span>
                                  <span class="n">default</span><span class="o">=</span><span class="s1">&#39;dashboard&#39;</span><span class="p">)</span>
-        <span class="n">style_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="s1">&#39;--long&#39;</span><span class="p">,</span> 
+        <span class="n">style_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="s1">&#39;--long&#39;</span><span class="p">,</span>
                                  <span class="n">help</span><span class="o">=</span><span class="s2">&quot;show data in long format&quot;</span><span class="p">,</span>
-                                 <span class="n">const</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">style_dest</span><span class="p">,</span> 
+                                 <span class="n">const</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_const&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="n">style_dest</span><span class="p">,</span>
                                  <span class="n">default</span><span class="o">=</span><span class="n">arguments</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span>
 
@@ -136,7 +136,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

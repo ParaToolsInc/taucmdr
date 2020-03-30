@@ -1,7 +1,0 @@
-tau.cf.compiler.tests.test_installed module
-===========================================
-
-.. automodule:: tau.cf.compiler.tests.test_installed
-    :members:
-    :undoc-members:
-    :show-inheritance:

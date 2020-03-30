@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../../',
-        VERSION:     '1.4.0.17
+        VERSION:     '0.0.0
 ',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -71,7 +71,7 @@
 <span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
 <span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
 <span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
-<span class="c1"># </span>
+<span class="c1">#</span>
 <span class="sd">&quot;&quot;&quot;Measurement data model.</span>
 
 <span class="sd">:any:`Measurement` completely describes the performance data measurements</span>
@@ -90,10 +90,10 @@
 
 <div class="viewcode-block" id="attributes"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.attributes">[docs]</a><span class="k">def</span> <span class="nf">attributes</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Construct attributes dictionary for the measurement model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    We build the attributes in a function so that classes like ``taucmdr.module.project.Project`` are</span>
 <span class="sd">    fully initialized and usable in the returned dictionary.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: Attributes dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -103,13 +103,13 @@
     <span class="kn">from</span> <span class="nn">taucmdr.cf.platforms</span> <span class="kn">import</span> <span class="n">HOST_OS</span><span class="p">,</span> <span class="n">DARWIN</span><span class="p">,</span> <span class="n">IBM_CNK</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.mpi</span> <span class="kn">import</span> <span class="n">MPI_CC</span><span class="p">,</span> <span class="n">MPI_CXX</span><span class="p">,</span> <span class="n">MPI_FC</span>
     <span class="kn">from</span> <span class="nn">taucmdr.cf.compiler.shmem</span> <span class="kn">import</span> <span class="n">SHMEM_CC</span><span class="p">,</span> <span class="n">SHMEM_CXX</span><span class="p">,</span> <span class="n">SHMEM_FC</span>
-    
+
     <span class="k">def</span> <span class="nf">_merged_profile_compat</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Application</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;mpi&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">rhs</span><span class="p">[</span><span class="s1">&#39;shmem&#39;</span><span class="p">]):</span>
                 <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                 <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires either mpi = True or shmem = True in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
+                <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires either mpi = True or shmem = True in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
                                               <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
 
 
@@ -126,7 +126,7 @@
             <span class="k">if</span> <span class="n">rhs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_inst&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span> <span class="ow">and</span> <span class="n">rhs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;compiler_inst&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;never&#39;</span><span class="p">:</span>
                 <span class="n">lhs_name</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                 <span class="n">rhs_name</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-                <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires source_inst and compiler_inst are not both &#39;never&#39; in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> 
+                <span class="k">raise</span> <span class="n">IncompatibleRecordError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2"> requires source_inst and compiler_inst are not both &#39;never&#39; in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
                                               <span class="p">(</span><span class="n">lhs_attr</span><span class="p">,</span> <span class="n">lhs_value</span><span class="p">,</span> <span class="n">lhs_name</span><span class="p">,</span> <span class="n">rhs_name</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="p">{</span>
@@ -201,7 +201,7 @@
                          <span class="s1">&#39;nargs&#39;</span><span class="p">:</span> <span class="s1">&#39;?&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;choices&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">),</span>
                          <span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="s1">&#39;automatic&#39;</span><span class="p">},</span>
-            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">):</span> 
+            <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span> <span class="s1">&#39;manual&#39;</span><span class="p">):</span>
                        <span class="p">(</span><span class="n">Target</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;pdt_source&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                         <span class="n">Measurement</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;baseline&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))},</span>
             <span class="s1">&#39;rebuild_required&#39;</span><span class="p">:</span> <span class="kc">True</span>
@@ -464,7 +464,7 @@
         <span class="p">},</span>
         <span class="s1">&#39;ptts_sample_flags&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="c1">#None, </span>
+            <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span><span class="c1">#None,</span>
             <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;flags to pass to PTTS sample_ts command&#39;</span><span class="p">,</span>
             <span class="s1">&#39;argparse&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;flags&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;--ptts-sample-flags&#39;</span><span class="p">,),</span>
                          <span class="s1">&#39;metavar&#39;</span><span class="p">:</span> <span class="s1">&#39;sample_flags&#39;</span><span class="p">},</span>
@@ -549,7 +549,7 @@
 
 <div class="viewcode-block" id="Measurement"><a class="viewcode-back" href="../../../taucmdr.model.measurement.html#taucmdr.model.measurement.Measurement">[docs]</a><span class="k">class</span> <span class="nc">Measurement</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Measurement data model.&quot;&quot;&quot;</span>
-    
+
     <span class="n">__attributes__</span> <span class="o">=</span> <span class="n">attributes</span>
 
     <span class="k">def</span> <span class="nf">_check_select_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -629,7 +629,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 17, 2020 at 02:14:31 UTC.
+      Last updated on Mar 30, 2020 at 21:50:23 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
