@@ -58,7 +58,7 @@ jobs:
 
       - name: Install TAU Commander
         run: |
-          make INSTALLDIR="${INSTALLDIR}"
+          make INSTALLDIR="${INSTALLDIR}" install
           echo "::add-path::${INSTALLDIR}/conda/bin"
           export PATH="${INSTALLDIR}/conda/bin:${PATH}"
           which python
@@ -78,7 +78,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: taucmdr-debug-log
+          name: taucmdr-debug-log-${{ matrix.os }}
           path: ~/.local/taucmdr/debug_log
 
 
