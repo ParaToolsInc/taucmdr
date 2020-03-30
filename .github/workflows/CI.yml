@@ -84,6 +84,7 @@ jobs:
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
+        if: success() && github.event_name == 'push' && ( github.ref == 'refs/head/master' || github.ref == 'refs/head/unstable' ) && matrix.os == 'ubuntu-18.04'
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           enable_jekyll: false
