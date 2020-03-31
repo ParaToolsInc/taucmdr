@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-16.04]
-        python-version: ['2.7']
+        python_version: ['2.7']
 
     steps:
       - uses: actions/checkout@v2
@@ -48,9 +48,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python-version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python-version }}-
+            ${{ runner.os }}-pip${{ matrix.python_version }}-
 
       # - name: Install system packages
       #   run: |
