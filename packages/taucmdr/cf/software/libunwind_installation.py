@@ -46,8 +46,8 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-         ARM64: {LINUX: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3.1.tar.gz',
+         ARM64: {LINUX: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3-rc1.tar.gz'}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
