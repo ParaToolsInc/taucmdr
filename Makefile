@@ -154,7 +154,7 @@ help:
 	@echo "-------------------------------------------------------------------------------"
 
 build: python_check
-#	$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
+	$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 

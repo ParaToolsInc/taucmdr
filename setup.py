@@ -580,7 +580,7 @@ setuptools.setup(
     data_files=_data_files(),
     # Testing
     test_suite='taucmdr',
-    tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
+    tests_require=['pylint==1.9.5', 'backports.functools_lru_cache'],
     # Custom commands
     cmdclass={'install': Install,
               'install_lib': InstallLib,

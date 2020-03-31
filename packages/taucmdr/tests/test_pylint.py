@@ -50,7 +50,7 @@ class PylintTest(tests.TestCase):
 
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
-        self.assertFalse(stderr)
+        self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
         try:
             version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
         except IndexError:
@@ -60,7 +60,7 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
-        self.assertFalse(stderr)
+        self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
         self.assertGreaterEqual(score, 9.0, "%s\nPylint score %s/10 is too low!" % (stdout, score))
