@@ -33,14 +33,12 @@ Each application of the :any:`Experiment` generates a new :any:`Trial` record al
 some performance data (profiles, traces, etc.).
 """
 
-from __future__ import absolute_import
 import os
 from taucmdr import logger
 from taucmdr.error import InternalError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
-import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -152,7 +150,7 @@ class Project(Model):
                 if old_expr[model_attr] != new_expr[model_attr]:
                     new_model = new_expr.populate(model_attr)
                     old_model = old_expr.populate(model_attr)
-                    for attr, props in six.iteritems(new_model.attributes):
+                    for attr, props in new_model.attributes.iteritems():
                         if props.get('rebuild_required'):
                             new_value = new_model.get(attr, None)
                             old_value = old_model.get(attr, None)

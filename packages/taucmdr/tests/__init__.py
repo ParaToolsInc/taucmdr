@@ -27,8 +27,6 @@
 #
 """Unit test initializations and utility functions."""
 
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import sys
 import glob
@@ -155,8 +153,8 @@ class TestCase(unittest.TestCase):
 
     def run(self, result=None):
         # Whenever running a test, set the terminal size large enough to avoid any regex failures due to line wrap
-        logger.TERM_SIZE = (150, 150)
-        logger.LINE_WIDTH = logger.TERM_SIZE[0]
+        logger.TERM_SIZE=(150,150)
+        logger.LINE_WIDTH=logger.TERM_SIZE[0]
         logger._STDOUT_HANDLER.setFormatter(logger.LogFormatter(line_width=logger.LINE_WIDTH, printable_only=True))
         # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
         # pylint: disable=attribute-defined-outside-init
@@ -301,7 +299,7 @@ class TestRunner(unittest.TextTestRunner):
     def run(self, test):
         result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
-            print("WARNING: %s" % item)
+            print "WARNING: %s" % item
         if result.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE

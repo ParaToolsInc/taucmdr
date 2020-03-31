@@ -31,7 +31,6 @@ Functions used for unit tests of edit.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.application import edit
 

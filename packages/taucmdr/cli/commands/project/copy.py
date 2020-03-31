@@ -27,7 +27,6 @@
 #
 """``project copy`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CopyCommand

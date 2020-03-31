@@ -29,16 +29,13 @@
 
 from __future__ import print_function
 
-from __future__ import absolute_import
 import itertools
 
-from taucmdr import EXIT_SUCCESS
+from taucmdr import EXIT_SUCCESS, logger
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
-from six.moves import range
-from six.moves import zip
 
 
 class TrialRenumberCommand(AbstractCommand):
@@ -85,7 +82,7 @@ class TrialRenumberCommand(AbstractCommand):
                               " Number of old trials ids should be equal to number of new trial ids.")
 
         self.logger.info("Renumbering " + ', '.join(
-            ['{} => {}'.format(i, j) for (i, j) in zip(trial_numbers, new_trial_numbers)]))
+            ['{} => {}'.format(i, j) for (i, j) in itertools.izip(trial_numbers, new_trial_numbers)]))
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
         expr = Project.selected().experiment()

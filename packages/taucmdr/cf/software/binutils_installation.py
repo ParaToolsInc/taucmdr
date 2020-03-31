@@ -31,7 +31,6 @@ GNU binutils provildes BFD, which TAU uses for symbol resolution during
 sampling, compiler-based instrumentation, and other measurement approaches.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import glob

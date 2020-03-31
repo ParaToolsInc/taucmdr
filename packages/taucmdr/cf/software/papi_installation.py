@@ -30,12 +30,11 @@
 PAPI is used to measure hardware performance counters.
 """
 
-from __future__ import absolute_import
 import os
 import re
 import sys
 import fileinput
-from six.moves.html_parser import HTMLParser
+from HTMLParser import HTMLParser
 from subprocess import CalledProcessError
 from xml.etree import ElementTree
 from taucmdr import logger, util

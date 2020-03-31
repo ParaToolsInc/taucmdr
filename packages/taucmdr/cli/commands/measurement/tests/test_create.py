@@ -31,7 +31,6 @@ Functions used for unit tests of create.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.model.measurement import Measurement

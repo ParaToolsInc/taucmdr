@@ -31,16 +31,10 @@
 Just patches through to tau.cli.commands.__main__
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-from pyannotate_runtime import collect_types
-
 if __name__ == '__main__':
     import os
     import sys
     from contextlib import contextmanager
-    collect_types.init_types_collection()
-    collect_types.start()
 
     if getattr(sys, 'frozen', False):
         __file__ = sys.executable
@@ -62,8 +56,8 @@ if __name__ == '__main__':
                     prof.print_stats(sort="tottime")
                 else:
                     prof.dump_stats(profile_taucmdr)
-                    print("Profile written to '%s'" % profile_taucmdr)
-                    print("Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr)
+                    print "Profile written to '%s'" % profile_taucmdr
+                    print "Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr
 
     here = os.path.realpath(os.path.dirname(__file__))
     os.environ['__TAUCMDR_HOME__'] = os.path.join(here, '..')
@@ -74,5 +68,3 @@ if __name__ == '__main__':
     with profiler():
         from taucmdr.cli.commands.__main__ import COMMAND as cli_main_cmd
         sys.exit(cli_main_cmd.main(sys.argv[1:]))
-    collect_types.stop()
-    collect_types.dump_stats('tau_main_types.json')

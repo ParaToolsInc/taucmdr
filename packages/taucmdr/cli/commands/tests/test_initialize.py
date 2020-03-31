@@ -31,7 +31,6 @@
 Functions used for unit tests of initialize.py.
 """
 
-from __future__ import absolute_import
 import os
 from taucmdr import tests
 from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd

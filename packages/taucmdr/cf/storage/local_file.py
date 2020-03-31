@@ -32,12 +32,10 @@ A persistant, transactional record storage system useing :py:class:`TinyDB` for
 both the database and the key/value store.
 """
 
-from __future__ import absolute_import
 import os
 import json
-import six
-import tempfile
 import tinydb
+import tempfile
 from tinydb import operations
 from tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
@@ -242,8 +240,8 @@ class LocalFileStorage(AbstractStorage):
         def _or(lhs, rhs):
             return lhs | rhs
         join = _or if match_any else _and
-        itr = six.iteritems(keys)
-        key, val = next(itr)
+        itr = keys.iteritems()
+        key, val = itr.next()
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))

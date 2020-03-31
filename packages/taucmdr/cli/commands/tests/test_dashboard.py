@@ -31,7 +31,6 @@ Functions used for unit tests of dashboard.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 

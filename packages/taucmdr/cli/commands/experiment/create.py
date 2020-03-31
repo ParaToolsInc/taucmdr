@@ -27,7 +27,6 @@
 #
 """``experiment create`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import UniqueAttributeError
 from taucmdr.model.experiment import Experiment

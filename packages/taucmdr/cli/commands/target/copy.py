@@ -27,7 +27,6 @@
 #
 """``target copy`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CopyCommand
 from taucmdr.cli.commands.target.create import COMMAND as target_create_cmd
@@ -38,7 +37,6 @@ from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.software.tau_installation import TauInstallation
-import six
 
 
 class TargetCopyCommand(CopyCommand):
@@ -84,7 +82,7 @@ class TargetCopyCommand(CopyCommand):
 
         # Monkey-patch default actions for compiler arguments
         # pylint: disable=protected-access
-        for role in six.itervalues(kbase.roles):
+        for role in kbase.roles.itervalues():
             action = next(act for act in group._actions if act.dest == role.keyword)
             action.__action_call__ = action.__call__
             action.__call__ = TargetCopyCommand._compiler_flag_action_call(family_attr)
@@ -107,7 +105,7 @@ class TargetCopyCommand(CopyCommand):
         store = arguments.parse_storage_flag(args)[0]
         compilers = target_create_cmd.parse_compiler_flags(args)
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        for keyword, comp in six.iteritems(compilers):
+        for keyword, comp in compilers.iteritems():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid

@@ -30,7 +30,6 @@
 Functions used for unit tests of build.py.
 """
 
-from __future__ import absolute_import
 import os
 from taucmdr import tests
 from taucmdr.cf.compiler.host import CC

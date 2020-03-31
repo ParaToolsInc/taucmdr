@@ -31,7 +31,6 @@ Functions used for unit tests of list.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.project.list import COMMAND as list_cmd
 

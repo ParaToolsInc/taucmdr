@@ -31,7 +31,6 @@ Functions used for unit tests of create.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.project.copy import COMMAND as PROJECT_COPY_COMMAND
 

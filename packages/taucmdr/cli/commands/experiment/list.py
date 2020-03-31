@@ -27,8 +27,6 @@
 #
 """``experiment list`` subcommand."""
 
-from __future__ import absolute_import
-from __future__ import print_function
 from taucmdr import util, EXIT_SUCCESS
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli.cli_view import ListCommand
@@ -76,10 +74,10 @@ class ExperimentListCommand(ListCommand):
             try:
                 expr = proj.experiment()
             except ExperimentSelectionError:
-                print(util.color_text('No selected experiment: ', 'red') +
+                print (util.color_text('No selected experiment: ', 'red') +
                        'Use `%s` to create or select an experiment.' % select_cmd)
             else:
-                print(expr['name'])
+                print expr['name']
             retval = EXIT_SUCCESS
         else:
             retval = super(ExperimentListCommand, self).main(argv)

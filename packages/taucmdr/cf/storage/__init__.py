@@ -35,9 +35,7 @@ The key/value store is accessed via the `[]` operator, i.e. treat the storage ob
 """
 
 
-from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
-import six
 from taucmdr.error import Error
 
 
@@ -67,7 +65,7 @@ class StorageRecord(dict):
         return hash(self.eid)
 
 
-class AbstractStorage(six.with_metaclass(ABCMeta, object)):
+class AbstractStorage(object):
     """Abstract base class for storage containers.
 
     A storage container provides a record database, a persistent filesystem, and a key/value store.
@@ -80,6 +78,8 @@ class AbstractStorage(six.with_metaclass(ABCMeta, object)):
         prefix (str): Absolute path to the top-level directory of the container's filesystem.
         database (str): Database object implementing :any:`AbstractDatabase`.
     """
+
+    __metaclass__ = ABCMeta
 
     Record = StorageRecord
 

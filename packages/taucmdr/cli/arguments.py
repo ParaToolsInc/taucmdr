@@ -30,7 +30,6 @@
 Extensions to :any:`argparse` to support the TAU Commander command line interface.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import re
@@ -42,8 +41,6 @@ from taucmdr import logger, util
 from taucmdr.cli import USAGE_FORMAT
 from taucmdr.error import InternalError
 from taucmdr.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
-import six
-from six.moves import range
 
 
 Action = argparse.Action
@@ -371,8 +368,8 @@ class MarkdownHelpFormatter(HelpFormatter):
         trans = {'<': '*',
                  '>': '*',
                  '|': r'\|'}
-        self._escape_rep = {re.escape(k): v for k, v in six.iteritems(trans)}
-        self._escape_pattern = re.compile("|".join(list(self._escape_rep.keys())))
+        self._escape_rep = {re.escape(k): v for k, v in trans.iteritems()}
+        self._escape_pattern = re.compile("|".join(self._escape_rep.keys()))
 
 
     class _Section(argparse.HelpFormatter._Section):
@@ -580,7 +577,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
     """
     parser = get_parser(prog, usage, description, epilog)
     groups = {}
-    for attr, props in six.iteritems(model.attributes):
+    for attr, props in model.attributes.iteritems():
         try:
             options = dict(props['argparse'])
         except KeyError:

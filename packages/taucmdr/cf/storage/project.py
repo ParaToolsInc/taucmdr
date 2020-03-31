@@ -33,7 +33,6 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 
-from __future__ import absolute_import
 import os
 from taucmdr import logger, util
 from taucmdr import PROJECT_DIR

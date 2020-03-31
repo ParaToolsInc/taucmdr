@@ -27,7 +27,6 @@
 #
 """``application list`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.application import Application
 

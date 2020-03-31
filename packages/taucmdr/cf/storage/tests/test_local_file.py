@@ -30,7 +30,6 @@
 Functions used for unit tests of local_file.py.
 """
 
-from __future__ import absolute_import
 from taucmdr import tests
 
 @tests.not_implemented

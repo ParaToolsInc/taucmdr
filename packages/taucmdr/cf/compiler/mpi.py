@@ -35,7 +35,6 @@ MPI compilers are a special case for several reasons including:
 We keep a separate knowledge base for MPI compilers to simplify compiler
 identification and because TAU doesn't require MPI for all configurations.
 """
-from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 

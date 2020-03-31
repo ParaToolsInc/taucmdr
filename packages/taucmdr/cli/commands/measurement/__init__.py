@@ -27,7 +27,6 @@
 #
 """``measurement`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.measurement import Measurement
 

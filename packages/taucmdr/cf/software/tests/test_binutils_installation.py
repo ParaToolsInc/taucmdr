@@ -30,7 +30,6 @@
 Functions used for unit tests of binutils_installation.py
 """
 
-from __future__ import absolute_import
 from taucmdr.tests import TestCase, not_implemented
 
 @not_implemented

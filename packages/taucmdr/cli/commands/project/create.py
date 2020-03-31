@@ -27,7 +27,6 @@
 #
 """``project create`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import UniqueAttributeError
 from taucmdr.cli import arguments
@@ -51,7 +50,7 @@ class ProjectCreateCommand(CreateCommand):
                 tar = targ_ctrl.one({"name": name})
                 app = app_ctrl.one({"name": name})
                 mes = meas_ctrl.one({"name": name})
-                tam = {tar, app, mes} - {None}
+                tam = set([tar, app, mes]) - set([None])
                 if len(tam) > 1:
                     self.parser.error("'%s' is ambiguous.  Please use --target, --application,"
                                       " or --measurement to specify configuration type" % name)

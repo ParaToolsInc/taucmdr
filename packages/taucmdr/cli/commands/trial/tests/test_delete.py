@@ -31,7 +31,6 @@ Functions used for unit tests of delete.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC

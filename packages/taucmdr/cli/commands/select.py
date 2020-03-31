@@ -27,7 +27,6 @@
 #
 """``select`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
@@ -100,7 +99,7 @@ class SelectCommand(AbstractCommand):
                 app = app_ctrl.one({"name": name})
                 mes = meas_ctrl.one({"name": name})
                 expr = expr_ctrl.one({"name": name})
-                found = {tar, app, mes, expr} - {None}
+                found = set([tar, app, mes, expr]) - set([None])
                 if len(found) > 1:
                     self.parser.error("'%s' is ambiguous. "
                                       "Please use a command line flag to specify configuration type." % name)

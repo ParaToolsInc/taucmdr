@@ -31,7 +31,6 @@ Sets up logging verbosity and launches subcommands.  Avoid doing too much work h
 Instead, process arguments in the appropriate subcommand.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import taucmdr
@@ -40,6 +39,7 @@ from taucmdr.cli import UnknownCommandError, arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cli.commands.build import COMMAND as build_command
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_command
+from taucmdr.model.project import Project
 
 LOGGER = logger.get_logger(__name__)
 

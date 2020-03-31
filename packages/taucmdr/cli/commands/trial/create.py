@@ -27,7 +27,6 @@
 #
 """``trial create`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import util
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CreateCommand

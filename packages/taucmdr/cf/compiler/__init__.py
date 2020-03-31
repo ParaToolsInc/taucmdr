@@ -63,14 +63,12 @@ change from system to system.
 .. _CMake: http://www.cmake.org/
 """
 
-from __future__ import absolute_import
 import os
 import re
 import stat
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
-import six
 from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
@@ -99,9 +97,9 @@ class Knowledgebase(object):
         self.description = description
         self._families = {}
         self._roles = {}
-        for key, val in six.iteritems(kwargs):
+        for key, val in kwargs.iteritems():
             language, envars = val
-            if isinstance(envars, six.string_types):
+            if isinstance(envars, basestring):
                 envars = (envars,)
             self._roles[key] = _CompilerRole(keyword+'_'+key, language, envars, self)
 
@@ -144,7 +142,7 @@ class Knowledgebase(object):
         preferred = HOST_TAU_MAGIC.preferred_families.get(self, None)
         if preferred is not None:
             yield preferred
-        for family in six.itervalues(self._families):
+        for family in self._families.itervalues():
             if family is not preferred:
                 yield family
 
@@ -166,12 +164,12 @@ class Knowledgebase(object):
             _CompilerFamily: The new compiler family object.
         """
         members = {}
-        for key, role in six.iteritems(self._roles):
+        for key, role in self._roles.iteritems():
             try:
                 member_arg = kwargs.pop(key)
             except KeyError:
                 continue
-            members[role] = (member_arg,) if isinstance(member_arg, six.string_types) else member_arg
+            members[role] = (member_arg,) if isinstance(member_arg, basestring) else member_arg
         kwargs['members'] = members
         family = _CompilerFamily(self, name, *args, **kwargs)
         self._families[name] = family
@@ -249,7 +247,7 @@ class _CompilerFamily(TrackedInstance):
         self.show_wrapper_flags = show_wrapper_flags or []
         self.members = {}
         self.commands = set()
-        for role, commands in six.iteritems(members):
+        for role, commands in members.iteritems():
             self.members[role] = [_CompilerInfo(self, cmd, role) for cmd in commands]
             self.commands.update(commands)
 
@@ -329,7 +327,7 @@ class _CompilerFamily(TrackedInstance):
                         return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        if without_regex:
+        if len(without_regex) > 0:
             guess = without_regex[0]
             if len(without_regex) > 1:
                 LOGGER.warning(("Assuming '%s' is a %s compiler but it could be to any of these: %s\n"
@@ -354,7 +352,7 @@ class _CompilerInfo(TrackedInstance):
 
     def __init__(self, family, command, role):
         assert isinstance(family, _CompilerFamily)
-        assert isinstance(command, six.string_types)
+        assert isinstance(command, basestring)
         assert isinstance(role, _CompilerRole)
         self.family = family
         self.command = command
@@ -372,9 +370,7 @@ class _CompilerInfo(TrackedInstance):
         if command and family and role:
             return [info for info in family.members.get(role, []) if info.command == command]
         elif command and family:
-            return [
-                info for info_list in six.itervalues(family.members) for info in info_list if info.command == command
-            ]
+            return [info for info_list in family.members.itervalues() for info in info_list if info.command == command]
         elif command and role:
             return [info for info in cls.all() if info.role is role and info.command == command]
         elif family and role:
@@ -382,7 +378,7 @@ class _CompilerInfo(TrackedInstance):
         elif command:
             return [info for info in cls.all() if info.command == command]
         elif family:
-            return [info for info_list in six.itervalues(family.members) for info in info_list]
+            return [info for info_list in family.members.itervalues() for info in info_list]
         elif role:
             return [info for info in cls.all() if info.role is role]
         else:
@@ -400,7 +396,7 @@ class _CompilerInfo(TrackedInstance):
         Returns:
             list: _CompilerInfo instances matching given compiler information.
         """
-        assert command is None or isinstance(command, six.string_types)
+        assert command is None or isinstance(command, basestring)
         assert family is None or isinstance(family, _CompilerFamily)
         assert role is None or isinstance(role, _CompilerRole)
         found = cls._find(command, family, role)
@@ -433,7 +429,7 @@ class InstalledCompilerCreator(type):
     and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
     def __call__(cls, absolute_path, info, **kwargs):
-        assert isinstance(absolute_path, six.string_types) and os.path.isabs(absolute_path)
+        assert isinstance(absolute_path, basestring) and os.path.isabs(absolute_path)
         assert isinstance(info, _CompilerInfo)
         # Don't allow unchecked values into the instance cache
         if kwargs:
@@ -450,7 +446,7 @@ class InstalledCompilerCreator(type):
         return instance
 
 
-class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
+class InstalledCompiler(object):
     """Information about an installed compiler command.
 
     There are relatively few well known compilers, but a potentially infinite
@@ -470,6 +466,8 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         compiler_flags (list): Additional flags used when compiling with the wrapped compiler.
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
+
+    __metaclass__ = InstalledCompilerCreator
 
     __instances__ = {}
 
@@ -557,7 +555,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
                                      (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
-        known_commands = {info.command for info in _CompilerInfo.all()}
+        known_commands = set(info.command for info in _CompilerInfo.all())
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
             if not line:
                 continue
@@ -637,7 +635,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         Returns:
             InstalledCompiler: A new InstalledCompiler instance describing the compiler.
         """
-        assert isinstance(command, six.string_types)
+        assert isinstance(command, basestring)
         assert isinstance(family, _CompilerFamily) or family is None
         assert isinstance(role, _CompilerRole) or role is None
         absolute_path = util.which(command)
@@ -719,7 +717,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
         """
 
         if self.info.family.name == 'Intel' and self.info.role.keyword == 'Host_CC':
-            version_tuple = re.findall(r"(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
+            version_tuple = re.findall("(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
         else:
             version_tuple = None
         return version_tuple
@@ -738,7 +736,7 @@ class InstalledCompiler(six.with_metaclass(InstalledCompilerCreator, object)):
                                                     'taucmdr_script': TAUCMDR_SCRIPT,
                                                     'command': self.command}
             fout.write(wrapper)
-        os.chmod(script_file, os.stat(script_file).st_mode | 0o111)
+        os.chmod(script_file, os.stat(script_file).st_mode | 0111)
 
 
 class InstalledCompilerFamily(object):
@@ -759,7 +757,7 @@ class InstalledCompilerFamily(object):
         self.family = family
         self.members = {}
         LOGGER.debug("Detecting %s compiler installation", family.name)
-        for role, info_list in six.iteritems(family.members):
+        for role, info_list in family.members.iteritems():
             for info in info_list:
                 absolute_path = util.which(info.command)
                 if absolute_path:
@@ -771,7 +769,7 @@ class InstalledCompilerFamily(object):
                         continue
                     self.members.setdefault(role, []).append(installed)
         if not self.members:
-            cmds = [info.command for info_list in six.itervalues(family.members) for info in info_list]
+            cmds = [info.command for info_list in family.members.itervalues() for info in info_list]
             raise ConfigurationError("%s %s not found." % (self.family.name, self.family.kbase.description),
                                      "Check that these commands are in your PATH: %s" % ', '.join(cmds))
 
@@ -810,7 +808,7 @@ class InstalledCompilerFamily(object):
 
     def __iter__(self):
         """Yield one InstalledCompiler for each role filled by any compiler in this installation."""
-        for role in six.itervalues(self.family.kbase.roles):
+        for role in self.family.kbase.roles.itervalues():
             try:
                 yield self.members[role][0]
             except (KeyError, IndexError):
@@ -845,16 +843,16 @@ class InstalledCompilerSet(KeyedRecord):
         return self.members[key]
 
     def iterkeys(self):
-        return six.iterkeys(self.members)
+        return self.members.iterkeys()
 
     def itervalues(self):
-        return six.itervalues(self.members)
+        return self.members.itervalues()
 
     def iteritems(self):
-        return six.iteritems(self.members)
+        return self.members.iteritems()
 
     def _add_members(self, **kwargs):
-        for key, val in six.iteritems(kwargs):
+        for key, val in kwargs.iteritems():
             assert isinstance(val, InstalledCompiler)
             role = Knowledgebase.find_role(key)
             self.members[role] = val
@@ -863,7 +861,7 @@ class InstalledCompilerSet(KeyedRecord):
         """Build a modified copy of this object."""
         # pylint: disable=protected-access
         uid_parts = [self.uid, str(sorted(kwargs))]
-        compilers = {role.keyword: comp for role, comp in six.iteritems(self.members)}
+        compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
         modified = InstalledCompilerSet(util.calculate_uid(uid_parts), **compilers)
         modified._add_members(**kwargs)
         return modified

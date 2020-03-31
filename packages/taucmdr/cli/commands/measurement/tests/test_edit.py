@@ -31,7 +31,6 @@ Functions used for unit tests of edit.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.error import IncompatibleRecordError
 from taucmdr.model.project import Project

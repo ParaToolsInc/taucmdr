@@ -32,7 +32,6 @@ and will have zero or more :any:`Trial`. There is one selected experiment per pr
 The selected experiment will be used for application compilation and trial visualization.
 """
 
-from __future__ import absolute_import
 import os
 import fasteners
 from taucmdr import logger, util
@@ -43,7 +42,6 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
-import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -212,7 +210,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, six.string_types):
+            elif isinstance(val, basestring):
                 return "'%s'" % val
             else:
                 return str(val)
@@ -221,7 +219,7 @@ class Experiment(Model):
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
-            for attr, change in six.iteritems(changed):
+            for attr, change in changed.iteritems():
                 old, new = (_fmt(x) for x in change)
                 if old is None:
                     parts.append("  - %s is now set to %s" % (attr, new))
@@ -408,9 +406,7 @@ class Experiment(Model):
             pass
         else:
             #LOGGER.warning("Measurement '%s' adds extra options TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.extra_tau_options))
-            LOGGER.warning(
-                    "Measurement '%s' forces adds '%s' to TAU_OPTIONS", meas['name'], ' '.join(tau.extra_tau_options)
-            )
+            LOGGER.warning("Measurement '%s' forces adds '%s' to TAU_OPTIONS", meas['name'], ' '.join(tau.extra_tau_options))
         return tau.compile(installed_compiler, compiler_args)
 
     def managed_run(self, launcher_cmd, application_cmds, description=None):
@@ -544,7 +540,7 @@ class Experiment(Model):
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self['name'])
         if trial_numbers:
-            all_numbers = {trial['number'] for trial in trials}
+            all_numbers = set(trial['number'] for trial in trials)
             not_found = [i for i in trial_numbers if i not in all_numbers]
             if not_found:
                 raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." %

@@ -32,16 +32,14 @@ is invoked in any way. This module establishes global constants and checks the P
 It should be as short and simple.
 """
 
-from __future__ import absolute_import
 import os
 import sys
-import six
 # Python3 compatibility
 try:
-    six.string_types
+    basestring
 except NameError:
     # pylint: disable=invalid-name
-    six.string_types = str
+    basestring = str
 
 __version__ = "0.0.0"
 """str: TAU Commander Version"""

@@ -31,7 +31,6 @@ Only error base classes should be defined here.
 Error classes should be defined in their appropriate modules.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import traceback

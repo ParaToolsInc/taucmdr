@@ -29,19 +29,18 @@
 Python Interpreter Knowledgebase (implemented using the compiler classes)
 
 """
-from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different versions of Python',
-                                    PY=('python', 'python') # language: python, envars: python
-                                   )
+                               PY=('python','python') # language: python, envars: python
+                               )
 
 PYTHON2 = PYTHON_INTERPRETERS.add('PY2_INTERPRETER', family_regex=r'^Python 2',
-                                  version_flags=['--version'],
-                                  PY=('python2', 'python'))
+								version_flags=['--version'],
+								PY=('python2','python'))
 
-PYTHON3 = PYTHON_INTERPRETERS.add('PY3_INTERPRETER', family_regex=r'^Python 3',
-                                  version_flags=['--version'],
-                                  PY=('python3', 'python'))
+PYTHON3 = PYTHON_INTERPRETERS.add('PY3_INTERPRETER', family_regex=r'^Python 3'
+								,version_flags=['--version'],
+								PY=('python3','python'))
 
 PY = PYTHON_INTERPRETERS.roles['PY']

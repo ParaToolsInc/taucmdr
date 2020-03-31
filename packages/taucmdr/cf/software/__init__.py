@@ -27,7 +27,6 @@
 #
 """Software managment common objects."""
 
-from __future__ import absolute_import
 from taucmdr import util
 from taucmdr.error import ConfigurationError
 

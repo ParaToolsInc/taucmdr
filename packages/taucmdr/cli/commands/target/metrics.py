@@ -28,8 +28,6 @@
 """``target metrics`` subcommand."""
 
 
-from __future__ import absolute_import
-from __future__ import print_function
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util
@@ -106,7 +104,7 @@ class TargetMetricsCommand(AbstractCommand):
             parts.extend(self._format_papi_metrics(targ, 'NATIVE', args.modifiers))
         if 'TAU' in args.systems:
             parts.extend(self._format_tau_metrics(targ))
-        print('\n'.join(parts))
+        print '\n'.join(parts)
         return EXIT_SUCCESS
 
 

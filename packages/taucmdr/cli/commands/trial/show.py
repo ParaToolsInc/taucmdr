@@ -27,13 +27,11 @@
 #
 """``trial show`` subcommand."""
 
-from __future__ import absolute_import
 import os
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.project import Project
 from taucmdr.cf.software.tau_installation import TauInstallation, PROFILE_ANALYSIS_TOOLS, TRACE_ANALYSIS_TOOLS
-import six
 
 
 class TrialShowCommand(AbstractCommand):
@@ -85,12 +83,12 @@ class TrialShowCommand(AbstractCommand):
         dataset = {}
         if not (data_files or trial_numbers):
             expr = Project.selected().experiment()
-            for fmt, path in six.iteritems(expr.trials()[0].get_data_files()):
+            for fmt, path in expr.trials()[0].get_data_files().iteritems():
                 dataset[fmt] = [path]
         elif trial_numbers:
             expr = Project.selected().experiment()
             for trial in expr.trials(trial_numbers):
-                for fmt, path in six.iteritems(trial.get_data_files()):
+                for fmt, path in trial.get_data_files().iteritems():
                     dataset.setdefault(fmt, []).append(path)
         for path in data_files:
             fmt = tau.get_data_format(path)

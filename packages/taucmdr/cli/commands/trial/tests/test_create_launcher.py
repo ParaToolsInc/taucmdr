@@ -30,7 +30,6 @@
 Functions used for unit tests of create.py.
 """
 
-from __future__ import absolute_import
 import shutil
 from taucmdr import tests, util
 from taucmdr.cf.compiler.host import CC
@@ -116,9 +115,7 @@ class CreateLauncherTest(tests.TestCase):
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
     def test_cafrun(self):
-        self.reset_project_storage(
-                ['--caf', '--caf-fc', 'caf', '--source-inst', 'never', '--compiler-inst', 'always', '--mpi']
-        )
+        self.reset_project_storage(['--caf','--caf-fc','caf','--source-inst','never','--compiler-inst','always','--mpi'])
         self.assertManagedBuild(0, CAF_FC, [], 'blockmatrix-coarray.f90')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['cafrun', '-np', '9', './a.out'])
         self.assertFalse(stderr)
@@ -129,10 +126,7 @@ class CreateLauncherTest(tests.TestCase):
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
     def test_cafrun_with_flag(self):
-        """ Pro forma function/method docstring """
-        self.reset_project_storage(
-                ['--caf', '--caf-fc', 'caf', '--source-inst', 'never', '--compiler-inst', 'always', '--mpi']
-        )
+        self.reset_project_storage(['--caf','--caf-fc','caf','--source-inst','never','--compiler-inst','always','--mpi'])
         self.assertManagedBuild(0, CAF_FC, [], 'blockmatrix-coarray.f90')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['cafrun', '-np', '9', '--', './a.out'])
         self.assertFalse(stderr)
