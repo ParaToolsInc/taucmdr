@@ -73,7 +73,9 @@ jobs:
       - name: Build sphinx docs
         run: |
           python setup.py build_sphinx
-          ls -la
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.ref:        ${{ github.ref }}"
+          echo "matrix.os:         ${{ matrix.os }}"
 
       - name: Upload TAU Commander log
         if: always()
