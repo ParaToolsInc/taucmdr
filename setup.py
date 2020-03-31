@@ -35,15 +35,6 @@ It is assumed that this script is run with the same python interpreter as
 TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
-
-from pyannotate_runtime import collect_types
-from typing import List
-from typing import Tuple
-from io import open
-collect_types.init_types_collection()
-collect_types.start()
 
 # Package name
 NAME = "taucmdr"
@@ -115,7 +106,7 @@ from setuptools.command.install_lib import install_lib as InstallLibCommand
 from setuptools.command.sdist import sdist as SDistCommand
 
 # Don't show `setup.py` as the root command
-os.environ['__TAUCMDR_SCRIPT__'] = 'tau' # type: ignore
+os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
@@ -131,13 +122,13 @@ except ImportError:
     class BuildSphinx(distutils_cmd.Command):
         """Report that Sphinx is required to build documentation."""
         description = 'Sphinx not installed!'
-        user_options = []  # type: List[str]
+        user_options = []
         def initialize_options(self):
             pass
         def finalize_options(self):
             pass
         def run(self):
-            print("Sphinx must be installed to generate developer documentation.")
+            print "Sphinx must be installed to generate developer documentation."
             sys.exit(-1)
 
 else:
@@ -232,11 +223,11 @@ class Test(TestCommand):
         if self.system_sandbox:
             tmp_system_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix
-            print("Sandboxing system storage: %s" % tmp_system_prefix)
+            print "Sandboxing system storage: %s" % tmp_system_prefix
         if self.user_sandbox:
             tmp_user_prefix = tempfile.mkdtemp()
             os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix
-            print("Sandboxing user storage: %s" % tmp_user_prefix)
+            print "Sandboxing user storage: %s" % tmp_user_prefix
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
@@ -252,18 +243,15 @@ class InstallLib(InstallLibCommand):
     """Custom install_lib command to always compile with optimization."""
 
     def initialize_options(self):
-        # type: () -> None
         InstallLibCommand.initialize_options(self)
 
     def finalize_options(self):
-        # type: () -> None
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
         InstallLibCommand.finalize_options(self)
         self.optimize = 1
 
     def run(self):
-        # type: () -> None
         InstallLibCommand.run(self)
 
 
@@ -271,11 +259,9 @@ class Install(InstallCommand):
     """Customize the install command with new lib, script, and data installation locations."""
 
     def initialize_options(self):
-        # type: () -> None
         InstallCommand.initialize_options(self)
 
     def finalize_options(self):
-        # type: () -> None
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
         InstallCommand.finalize_options(self)
@@ -286,7 +272,6 @@ class Install(InstallCommand):
         self.optimize = 1
 
     def run(self):
-        # type: () -> None
         from taucmdr import util
         InstallCommand.run(self)
         util.mkdirp(os.path.join(self.prefix, 'system'))
@@ -318,23 +303,23 @@ class Release(SDistCommand):
         SDistCommand.finalize_options(self)
         from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
         if self.all and (self.web or self.target_arch or self.target_os):
-            print('--all must not be used with any other arguments')
+            print '--all must not be used with any other arguments'
             sys.exit(-1)
         elif self.web and (self.all or self.target_arch or self.target_os):
-            print('--web must not be used with any other arguments')
+            print '--web must not be used with any other arguments'
             sys.exit(-1)
         else:
             try:
                 self.target_arch = Architecture.find(self.target_arch or str(HOST_ARCH))
             except KeyError:
-                print('Invalid architecture: %s' % self.target_arch)
-                print('Known architectures: %s' % list(Architecture.keys()))
+                print 'Invalid architecture: %s' % self.target_arch
+                print 'Known architectures: %s' % Architecture.keys()
                 sys.exit(-1)
             try:
                 self.target_os = OperatingSystem.find(self.target_os or str(HOST_OS))
             except KeyError:
-                print('Invalid operating system: %s' % self.target_os)
-                print('Known operating system: %s' % list(OperatingSystem.keys()))
+                print 'Invalid operating system: %s' % self.target_os
+                print 'Known operating system: %s' % OperatingSystem.keys()
                 sys.exit(-1)
 
     def _software_packages(self):
@@ -367,7 +352,7 @@ class Release(SDistCommand):
         except IOError:
             cache = {}
         if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-            print("Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os))
+            print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
             util.download(src, cache_pkg)
         cache[cache_pkg] = src
         with open(cache_db, 'w') as fout:
@@ -400,7 +385,7 @@ class Release(SDistCommand):
     def _build_web_release(self):
         SDistCommand.run(self)
         for path in self.archive_files:
-            print("Wrote '%s'" % path)
+            print "Wrote '%s'" % path
 
     def _build_target_release(self):
         self._download_python()
@@ -413,11 +398,11 @@ class Release(SDistCommand):
             dest = '-'.join([dist_name, str(self.target_os), str(self.target_arch)]) + ext
             dest = os.path.join(self.dist_dir, dest)
             shutil.move(src, dest)
-            print("Wrote '%s'" % dest)
+            print "Wrote '%s'" % dest
 
     def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
-        targets = {(magic.architecture, magic.operating_system) for magic in TauMagic.all()}
+        targets = set([(magic.architecture, magic.operating_system) for magic in TauMagic.all()])
         for target in targets:
             targ_arch, targ_os = target
             # Setuptools is a dirty, stateful animal.
@@ -469,7 +454,7 @@ class BuildMarkdown(Command):
         cli.USAGE_FORMAT = "markdown"
         os.environ['ANSI_COLORS_DISABLED'] = '1'
 #setup toc file
-        tocfilename=os.path.join(self.dest, 'tau-commander-user-manual-toc.md')
+        tocfilename=os.path.join(self.dest,'tau-commander-user-manual-toc.md')
         tocfile = open(tocfilename, 'w')
         usemanpath ='http://taucommander.paratools.com/tau-commander-user-manual/'
 #write preliminary entries not based on commands
@@ -502,15 +487,15 @@ class BuildMarkdown(Command):
                    indentspace=''
                    tocfile.write('\n')
             cmd_obj = cli.find_command(name.split()[1:])
-            tocname=  cmd_name.replace('taucmdr.cli.commands.', 'tau-commander-')
+            tocname=  cmd_name.replace('taucmdr.cli.commands.','tau-commander-')
             tocfile.write(indentspace)
             tocfile.write('<a href="')
             tocfile.write(usemanpath)
-            tocfile.write(tocname.replace('.', '-'))
+            tocfile.write(tocname.replace('.','-'))
             tocfile.write('">')
-            tocname=  tocname.replace('tau-commander-', '')
+            tocname=  tocname.replace('tau-commander-','')
 
-            tocname=tocname.replace('.', ' ')
+            tocname=tocname.replace('.',' ')
             tocfile.write(tocname.capitalize())
             tocfile.write('</a>\n')
             parts = [cmd_obj.help_page,
@@ -522,14 +507,13 @@ class BuildMarkdown(Command):
             filename = os.path.join(self.dest, cmd_name.replace('.', '_')+'.md')
             with open(filename, 'w') as fout:
                 fout.write(unidecode('\n'.join(parts).decode('utf-8')))
-            print('wrote %s' % filename)
+            print 'wrote %s' % filename
             indentspace=''
 #close tocfile
         tocfile.close
 
 
 def _version():
-    # type: () -> str
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
     if os.path.exists(version_file):
         with open(version_file) as fin:
@@ -543,7 +527,6 @@ def _version():
 
 
 def _data_files():
-    # type: () -> List[Tuple[str, List[str]]]
     """List files to be copied to the TAU Commander installation.
 
     Start with the files listed in MANIFEST.in, then exclude files that should not be installed.
@@ -563,7 +546,7 @@ def _data_files():
             try:
                 filelist.process_template_line(line)
             except (DistutilsTemplateError, ValueError) as err:
-                print("%s, line %d: %s" % (template.filename, template.current_line, err))
+                print "%s, line %d: %s" % (template.filename, template.current_line, err)
     finally:
         template.close()
     excluded = ['Makefile', 'VERSION', 'MANIFEST.in', '*Miniconda*']
@@ -576,36 +559,33 @@ def _data_files():
             data_files.append((os.path.dirname(path), [path]))
     return data_files
 
-collect_types.stop()
 
-with collect_types.collect():
-    setuptools.setup(
-        # Package metadata
-        name=NAME,
-        version=_version(),
-        author=AUTHOR,
-        author_email=AUTHOR_EMAIL,
-        description=DESCRIPTION,
-        long_description=LONG_DESCRIPTION,
-        license=LICENSE,
-        keywords=KEYWORDS,
-        url=HOMEPAGE,
-        classifiers=CLASSIFIERS,
-        # Package configuration
-        packages=setuptools.find_packages("packages"),
-        package_dir={"": "packages"},
-        scripts=['scripts/tau', 'scripts/system_configure'],
-        zip_safe=False,
-        data_files=_data_files(),
-        # Testing
-        test_suite='taucmdr',
-        tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
-        # Custom commands
-        cmdclass={'install': Install,
-                  'install_lib': InstallLib,
-                  'test': Test,
-                  'build_sphinx': BuildSphinx,
-                  'release': Release,
-                  'build_markdown': BuildMarkdown}
-    )
-collect_types.dump_stats('setup_py_type_info.json')
+setuptools.setup(
+    # Package metadata
+    name=NAME,
+    version=_version(),
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    description=DESCRIPTION,
+    long_description=LONG_DESCRIPTION,
+    license=LICENSE,
+    keywords=KEYWORDS,
+    url=HOMEPAGE,
+    classifiers=CLASSIFIERS,
+    # Package configuration
+    packages=setuptools.find_packages("packages"),
+    package_dir={"": "packages"},
+    scripts=['scripts/tau', 'scripts/system_configure'],
+    zip_safe=False,
+    data_files=_data_files(),
+    # Testing
+    test_suite='taucmdr',
+    tests_require=['pylint==1.6.4', 'backports.functools_lru_cache'],
+    # Custom commands
+    cmdclass={'install': Install,
+              'install_lib': InstallLib,
+              'test': Test,
+              'build_sphinx': BuildSphinx,
+              'release': Release,
+              'build_markdown': BuildMarkdown}
+)

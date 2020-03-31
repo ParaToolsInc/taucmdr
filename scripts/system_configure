@@ -27,16 +27,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """Build TAU configurations when TAU Commander is installed."""
-from __future__ import absolute_import
 import os
 import sys
 import glob
-import six
-from six.moves import range
-from pyannotate_runtime import collect_types
-from io import open
-collect_types.init_types_collection()
-collect_types.start()
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, '..', 'packages'))
@@ -77,7 +70,7 @@ def _translate_arg(flag, arg):
             return [flag, 'ignore']
         else:
             return [flag, arg]
-    if isinstance(arg, six.string_types):
+    if isinstance(arg, basestring):
         return [flag, arg]
     if isinstance(arg, bool):
         return ['%s=%s' % (flag, arg)]
@@ -96,7 +89,7 @@ def _execute(cmd, argv):
 def _configure_project(args):
     PROJECT_STORAGE.destroy()
     argv = []
-    for key, val in six.iteritems(vars(args)):
+    for key, val in vars(args).iteritems():
         for action in initialize_cmd.parser.actions:
             if key == action.dest:
                 argv.extend(_translate_arg(action.option_strings[0], val))
@@ -168,11 +161,11 @@ def _configure_full(args):
     #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with
     #    no intervening modifications to the dictionary, the lists will directly correspond."
     mask = 0
-    for i, val in enumerate(six.itervalues(features)):
+    for i, val in enumerate(features.itervalues()):
         mask |= (not val) << i
-    for j in range(1 << len(features)):
+    for j in xrange(1 << len(features)):
         if not j & mask:
-            for i, key in enumerate(six.iterkeys(features)):
+            for i, key in enumerate(features.iterkeys()):
                 setattr(args, key, bool(j & (1 << i)))
             _configure_project(args)
     return _configure_minimal(args)
@@ -219,9 +212,7 @@ def main(argv):
     LOGGER.info('\n'.join(tau_makefiles))
     LOGGER.info("%s TAU makefiles are available at %s", len(tau_makefiles), tau_prefix)
     return EXIT_SUCCESS
-collect_types.stop()
+
 
 if __name__ == '__main__':
-    with collect_types.collect():
-        sys.exit(main(sys.argv[1:]))
-    collect_types.dump_stats('sys_confi_types.json')
+    sys.exit(main(sys.argv[1:]))
