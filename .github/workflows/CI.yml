@@ -50,7 +50,7 @@ jobs:
           path: ${{ steps.info.outputs.install_dir}}/conda
           key: ${{ runner.os }}-pip${{ matrix.python-version }}-${{ hashFiles('**/requirements-dev.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip${{ matrix.python-version }}-
 
       # - name: Install system packages
       #   run: |
