@@ -33,7 +33,6 @@ Show bars or spinners, possibly with instantaneous CPU load average.
 import os
 import sys
 import threading
-import logging
 import itertools
 from datetime import datetime, timedelta
 from taucmdr import logger

@@ -80,7 +80,7 @@ class Architecture(KeyedRecord):
                     if line.startswith('processor'):
                         core = {}
                         continue
-                    elif core and not len(line.strip()):
+                    elif core and not line.strip():
                         cpuinfo.append(core)
                     else:
                         key, val = line.split(':')
@@ -148,13 +148,11 @@ class OperatingSystem(KeyedRecord):
         self.description = description
 
     def is_cray_login(self):
-	if self is CRAY_CNL:
+        if self is CRAY_CNL:
             if util.which('aprun'):
                 return False
-	    else:
-                return True
-        else:
-            return False
+            return True
+        return False
 
     @classmethod
     def detect(cls):

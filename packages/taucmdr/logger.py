@@ -105,8 +105,7 @@ def _get_term_size_windows():
         sizex = right - left + 1
         sizey = bottom - top + 1
         return sizex, sizey
-    else:
-        return None
+    return None
 
 
 def _get_term_size_tput():
@@ -280,8 +279,7 @@ class LogFormatter(logging.Formatter, object):
         """
         if self.allow_colors and color_args:
             return termcolor.colored(text, *color_args)
-        else:
-            return text
+        return text
 
     def _msgbox(self, record, marker):
         width = self.line_width

@@ -27,7 +27,6 @@
 #
 """``rewrite`` subcommand."""
 
-import os
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.error import ConfigurationError
@@ -66,7 +65,7 @@ class RewriteCommand(AbstractCommand):
             rewrite_packages.append('dyninst')
         if args.pebil:
             rewrite_packages.append('pebil')
-        if len(rewrite_packages) == 0:
+        if not rewrite_packages:
             raise ConfigurationError(
                 'Instrumentation package not specified.', 'Specify one of --dyninst, --maqao, or --pebil.'
             )

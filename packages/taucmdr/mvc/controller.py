@@ -161,7 +161,7 @@ class Controller(object):
             return self._populate_attribute(model, attribute, defaults)
         else:
             _heavy_debug("Populating %s(%s)", model.name, model.eid)
-            return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
+        return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
 
     def _populate_attribute(self, model, attr, defaults):
         try:
@@ -459,7 +459,7 @@ class Controller(object):
                 for key in affected:
                     foreign_record = database.get(key, table_name=foreign_model.name)
                     updated = list(set(foreign_record[via]) - {record.eid})
-                    if 'required' in foreign_props and len(updated) == 0:
+                    if 'required' in foreign_props and not updated:
                         _heavy_debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
                         foreign_model.controller(database).delete(key)
                     else:
