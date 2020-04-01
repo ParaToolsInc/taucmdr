@@ -1845,8 +1845,7 @@ print(find_version())
         return retval
 
     def get_python_version(self, python_path):
-        _, env = self.runtime_config()
-        cmd = [python_path , '--version']
+        cmd = [python_path, '--version']
         out = util.get_command_output(cmd)
         p = re.compile('\d+\.\d+\.\d+')
         m = p.search(out)

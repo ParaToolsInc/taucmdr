@@ -36,7 +36,6 @@ class TrialEditCommand(EditCommand):
     """``trial edit`` subcommand."""
 
     def _update_record(self, store, data, key):
-        proj_ctrl = Project.controller()
         expr = Project.selected().experiment()
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute

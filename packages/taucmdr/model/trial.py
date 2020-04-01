@@ -252,7 +252,7 @@ class TrialController(Controller):
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
             else:
                 if record_output:
-                    retval, output = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
+                    retval, _ = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
                 else:
                     retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
         except Exception as err:
