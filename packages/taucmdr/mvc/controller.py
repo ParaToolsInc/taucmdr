@@ -249,7 +249,7 @@ class Controller(object):
                         new_foreign_keys = set(data[attr])
                     except TypeError:
                         # 'model' attribute is not iterable, so make a tuple
-                        new_foreign_keys = set((data[attr],))
+                        new_foreign_keys = {data[attr]}
                     except KeyError:
                         continue
                     try:
@@ -257,7 +257,7 @@ class Controller(object):
                         old_foreign_keys = set(model[attr])
                     except TypeError:
                         # 'model' attribute is not iterable, so make a tuple
-                        old_foreign_keys = set((model[attr],))
+                        old_foreign_keys = {model[attr]}
                     except KeyError:
                         old_foreign_keys = set()
                     foreign_cls, via = foreign
@@ -458,7 +458,7 @@ class Controller(object):
             with self.storage as database:
                 for key in affected:
                     foreign_record = database.get(key, table_name=foreign_model.name)
-                    updated = list(set(foreign_record[via]) - set([record.eid]))
+                    updated = list(set(foreign_record[via]) - {record.eid})
                     if 'required' in foreign_props and len(updated) == 0:
                         _heavy_debug("Empty required attr '%s': deleting %s(key=%s)", via, foreign_model.name, key)
                         foreign_model.controller(database).delete(key)

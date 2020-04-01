@@ -50,7 +50,7 @@ class ProjectCreateCommand(CreateCommand):
                 tar = targ_ctrl.one({"name": name})
                 app = app_ctrl.one({"name": name})
                 mes = meas_ctrl.one({"name": name})
-                tam = set([tar, app, mes]) - set([None])
+                tam = {tar, app, mes} - {None}
                 if len(tam) > 1:
                     self.parser.error("'%s' is ambiguous.  Please use --target, --application,"
                                       " or --measurement to specify configuration type" % name)

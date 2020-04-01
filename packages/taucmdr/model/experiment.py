@@ -542,7 +542,7 @@ class Experiment(Model):
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self['name'])
         if trial_numbers:
-            all_numbers = set(trial['number'] for trial in trials)
+            all_numbers = {trial['number'] for trial in trials}
             not_found = [i for i in trial_numbers if i not in all_numbers]
             if not_found:
                 raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." %

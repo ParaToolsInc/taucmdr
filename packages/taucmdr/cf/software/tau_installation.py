@@ -960,7 +960,7 @@ print(find_version())
         for pkg in self.dependencies.itervalues():
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
-        with new_os_environ(), util.umask(002):
+        with new_os_environ(), util.umask(0o02):
             try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
@@ -1847,6 +1847,6 @@ print(find_version())
     def get_python_version(self, python_path):
         cmd = [python_path, '--version']
         out = util.get_command_output(cmd)
-        p = re.compile('\d+\.\d+\.\d+')
+        p = re.compile(r'\d+\.\d+\.\d+')
         m = p.search(out)
         return m.group()
