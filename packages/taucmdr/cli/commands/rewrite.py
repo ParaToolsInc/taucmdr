@@ -68,7 +68,7 @@ class RewriteCommand(AbstractCommand):
             rewrite_packages.append('pebil')
         if len(rewrite_packages) == 0:
             raise ConfigurationError(
-                    'Instrumentation package not specified.', 'Specify one of --dyninst, --maqao, or --pebil.'
+                'Instrumentation package not specified.', 'Specify one of --dyninst, --maqao, or --pebil.'
             )
         elif len(rewrite_packages) > 1:
             raise ConfigurationError('Only one instrumentation paclages should be specified.')

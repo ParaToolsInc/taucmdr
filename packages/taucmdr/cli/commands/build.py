@@ -91,5 +91,5 @@ class BuildCommand(AbstractCommand):
 
 
 COMMAND = BuildCommand(
-        __name__, help_page_fmt=HELP_PAGE, summary_fmt="Instrument programs during compilation and/or linking."
+    __name__, help_page_fmt=HELP_PAGE, summary_fmt="Instrument programs during compilation and/or linking."
 )

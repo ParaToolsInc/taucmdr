@@ -541,7 +541,7 @@ class TauInstallation(Installation):
                     self._install_tag = self._install_tag + current_date
                     # Move to new tgz file
                     new_archive_name = os.path.join(
-                            os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz'
+                        os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz'
                     )
                     os.rename(source_archive, new_archive_name)
                     self.src = new_archive_name
@@ -1494,7 +1494,7 @@ print(find_version())
                 if not self.mpi_support:
                     tags.add('serial')
                 tau_exec = [
-                        'tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path
+                    'tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path
                 ] + opts
                 launcher_cmd = []
         else:
@@ -1632,7 +1632,7 @@ print(find_version())
                     for subdir in [file_name.startswith("MULTI__") for file_name in files]:
                         LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(subdir))
                         retval += util.create_subprocess(
-                                [os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env
+                            [os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env
                         )
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
