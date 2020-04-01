@@ -28,10 +28,8 @@
 """``rewrite`` subcommand."""
 
 import os
-from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
-from taucmdr.cf.compiler import Knowledgebase
 from taucmdr.error import ConfigurationError
 from taucmdr.model.project import Project
 
