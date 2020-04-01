@@ -47,4 +47,4 @@ class TrialEditCommand(EditCommand):
         return EXIT_SUCCESS
 
 COMMAND = TrialEditCommand(Trial, __name__, summary_fmt="Edit experiment trials.",
-                      include_storage_flag=False, include_new_key_flag=False)
+                           include_storage_flag=False, include_new_key_flag=False)

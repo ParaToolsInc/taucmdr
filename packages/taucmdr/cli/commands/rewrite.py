@@ -41,7 +41,7 @@ class RewriteCommand(AbstractCommand):
 
     def _construct_parser(self):
         usage_head = "%s --dynist|--maqao|--pebil <executable> <inst-file>" %self.command
-        parser = arguments.get_parser(prog=self.command, usage=usage_head, description = self.summary)
+        parser = arguments.get_parser(prog=self.command, usage=usage_head, description=self.summary)
         parser.add_argument('--dyninst',
                             help="Use dyninst to rewrite executable",
                             const=True, default=False, action='store_const')
@@ -69,7 +69,9 @@ class RewriteCommand(AbstractCommand):
         if args.pebil:
             rewrite_packages.append('pebil')
         if len(rewrite_packages) == 0:
-            raise ConfigurationError('Instrumentation package not specified.', 'Specify one of --dyninst, --maqao, or --pebil.')
+            raise ConfigurationError(
+                    'Instrumentation package not specified.', 'Specify one of --dyninst, --maqao, or --pebil.'
+            )
         elif len(rewrite_packages) > 1:
             raise ConfigurationError('Only one instrumentation paclages should be specified.')
         expr = Project.selected().experiment()

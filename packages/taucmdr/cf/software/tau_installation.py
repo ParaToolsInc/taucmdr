@@ -287,7 +287,8 @@ class TauInstallation(Installation):
             ptts (bool): If True then enable PTTS support.
             ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
             ptts_sample_flags (str): flags to pass to PTTS sample_ts command
-            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and be reinstrumented after stop
+            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and
+                                 be reinstrumented after stop
             ptts_start (str): address at which to start a PTTS sampling region
             ptts_stop (str): address at which to stop a PTTS sampling region
             ptts_report_flags (str): flags to pass to PTTS report_ts command
@@ -533,13 +534,15 @@ class TauInstallation(Installation):
             self._install_tag = util.archive_toplevel(source_archive)
             # If tau nightly, add current date to tag
             if self.src == NIGHTLY:
-                nightlies=glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
+                nightlies = glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
                 nightlies_downloaded = True if nightlies else False
                 if self.update_nightly or not nightlies_downloaded:
                     current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
                     self._install_tag = self._install_tag + current_date
                     # Move to new tgz file
-                    new_archive_name = os.path.join(os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz')
+                    new_archive_name = os.path.join(
+                            os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz'
+                    )
                     os.rename(source_archive, new_archive_name)
                     self.src = new_archive_name
                 else:
@@ -747,7 +750,7 @@ class TauInstallation(Installation):
             try:
                 fortran_magic = fc_magic_map[fc_family]
                 if self.caf_support:
-                    fortran_magic=self.compilers[CAF_FC].info.command
+                    fortran_magic = self.compilers[CAF_FC].info.command
             except KeyError:
                 LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
@@ -793,30 +796,30 @@ def find_version():
 print(find_version())
                     '''
             path = self.compilers[PY].absolute_path
-            new_file, name = tempfile.mkstemp(suffix='py',text=True) # make a temporary file
+            new_file, name = tempfile.mkstemp(suffix='py', text=True) # make a temporary file
             with os.fdopen(new_file, 'w') as f:
                 f.write(program)
-            data = get_command_output([path,name])
+            data = get_command_output([path, name])
             # literal_eval converts string of dict to an actual python dict
             # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
             data = ast.literal_eval(data)
             # pythonlib = data['path']
             pythoninc = data['path']+data['version']
-            pythoninc = os.path.join(os.path.dirname(data['path']),'include')
-            pythoninc = os.path.join(pythoninc,'python'+data['version'])
+            pythoninc = os.path.join(os.path.dirname(data['path']), 'include')
+            pythoninc = os.path.join(pythoninc, 'python'+data['version'])
 
             # run ldd /usr/lib and save output
-            out = get_command_output(['ldd',path])
+            out = get_command_output(['ldd', path])
             pattern = re.compile(r'.*=> (.*libpython[23a-z]\.\d.so[0-9\.]+)')
-            pythonlib = pattern.search(out,re.MULTILINE)
+            pythonlib = pattern.search(out, re.MULTILINE)
             if pythonlib is not None:
                 pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
                 pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
             else:
-                print 'output of ldd',out
+                print 'output of ldd', out
                 raise InternalError('output of ldd %s failed to match regex' % path)
-            print 'pythonlib',pythonlib
-            print 'pythoninc',pythoninc
+            print 'pythonlib', pythonlib
+            print 'pythoninc', pythoninc
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -857,7 +860,10 @@ print(find_version())
                 if self.measure_openmp == 'ompt':
                     if ompt:
                         comp_version = self.compilers[CC].version
-                        if comp_version is not None and self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19:
+                        if (
+                                comp_version is not None and
+                                self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
+                        ):
                             flags.append('-ompt')
                         else:
                             flags.append('-ompt=%s' % ompt.install_prefix)
@@ -1468,7 +1474,7 @@ print(find_version())
             return cmd, env
         if any('python' in subcmd for subcmd in launcher_cmd):
             #self.uses_python=True
-            self._tau_makefile=None
+            self._tau_makefile = None
             self._uid = None
             for subcmd in launcher_cmd:
                 if 'python' in subcmd:
@@ -1487,7 +1493,9 @@ print(find_version())
                 tags = self._makefile_tags(makefile)
                 if not self.mpi_support:
                     tags.add('serial')
-                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path] + opts
+                tau_exec = [
+                        'tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path
+                ] + opts
                 launcher_cmd = []
         else:
             makefile = self.get_makefile()
@@ -1623,7 +1631,9 @@ print(find_version())
                 elif any(subdir.startswith("MULTI__") for subdir in subdirs):
                     for subdir in [file_name.startswith("MULTI__") for file_name in files]:
                         LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(subdir))
-                        retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env)
+                        retval += util.create_subprocess(
+                                [os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env
+                        )
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
         return retval
@@ -1823,7 +1833,7 @@ print(find_version())
             dyninstroot = os.path.join(self.install_prefix, self.target_arch.name, 'dyninst-9.3.2-working')
             env['DYNINST_ROOT'] = dyninstroot
             env['DYNINSTAPI_RT_LIB'] = '%s/lib/libdyninstAPI_RT.so' %dyninstroot
-            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib') , env['LD_LIBRARY_PATH'])
+            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib'), env['LD_LIBRARY_PATH'])
         elif rewrite_package == 'pebil':
             rewrite_cmd = 'tau_pebil_rewrite'
         elif rewrite_package == 'maqao':
@@ -1838,6 +1848,6 @@ print(find_version())
         _, env = self.runtime_config()
         cmd = [python_path , '--version']
         out = util.get_command_output(cmd)
-        p=re.compile('\d+\.\d+\.\d+')
+        p = re.compile('\d+\.\d+\.\d+')
         m = p.search(out)
         return m.group()

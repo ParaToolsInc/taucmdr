@@ -386,7 +386,9 @@ class Installation(object):
             else:
                 return archive
         if self.src is None:
-            raise ConfigurationError("Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail)))
+            raise ConfigurationError(
+                    "Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail))
+            )
         else:
             return archive
 

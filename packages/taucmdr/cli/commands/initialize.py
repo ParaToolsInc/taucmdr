@@ -94,12 +94,12 @@ class InitializeCommand(AbstractCommand):
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>', default=arguments.SUPPRESS)
         project_group.add_argument('--force',
-                            help="Force project to be created in current directory",
-                            nargs='?',
-                            const=True,
-                            default=False,
-                            metavar='T/F',
-                            action=ParseBooleanAction)
+                                   help="Force project to be created in current directory",
+                                   nargs='?',
+                                   const=True,
+                                   default=False,
+                                   metavar='T/F',
+                                   action=ParseBooleanAction)
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
                                   help="Name of the new target configuration",
@@ -251,7 +251,7 @@ class InitializeCommand(AbstractCommand):
             err.value = "The project has been initialized in %s but no project configuration is selected." %proj_ctrl.storage.prefix
             raise err
         else:
-            cwd_prefix=os.path.realpath(os.path.join(os.getcwd(), PROJECT_DIR))
+            cwd_prefix = os.path.realpath(os.path.join(os.getcwd(), PROJECT_DIR))
             force_str = ""
             if cwd_prefix != proj_ctrl.storage.prefix:
                 force_str = "Or use the `tau initialize --force` command to initialize a project in the current directory."

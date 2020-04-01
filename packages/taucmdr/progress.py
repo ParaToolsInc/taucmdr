@@ -252,7 +252,7 @@ class ProgressIndicator(object):
         label, tstart, _ = self._phases[-1]
         tdelta = (datetime.now() - tstart).total_seconds()
         self._line_reset()
-        if label =="":
+        if label == "":
             self._line_append("%0.1f seconds %s" % (tdelta, self._spinner.next()))
         else:
             self._line_append("%s: %0.1f seconds %s" % (label, tdelta, self._spinner.next()))

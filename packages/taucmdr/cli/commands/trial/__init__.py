@@ -30,7 +30,7 @@
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.trial import Trial
 
-HELP_PAGE="""
+HELP_PAGE = """
 TAU Commander trials
 =========================================================================
 
