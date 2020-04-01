@@ -160,7 +160,7 @@ else:
                 with open(os.devnull, 'w') as fnull:
                     subprocess.check_call(cmd, cwd=cwd or self.builder_target_dir, stderr=fnull, stdout=fnull)
             except subprocess.CalledProcessError as err:
-                sys.stderr.write('%s\nFAILURE: Return code %s' % (' '.join(cmd[:2]) + ' ...', err.returncode))
+                sys.stderr.write('{}\nFAILURE: Return code {}'.format(' '.join(cmd[:2]) + ' ...', err.returncode))
                 sys.exit(err.returncode)
 
         def _clone_gh_pages(self):
@@ -352,7 +352,7 @@ class Release(SDistCommand):
         except IOError:
             cache = {}
         if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-            print "Downloading '%s' for (%s, %s)" % (pkg, self.target_arch, self.target_os)
+            print "Downloading '{}' for ({}, {})".format(pkg, self.target_arch, self.target_os)
             util.download(src, cache_pkg)
         cache[cache_pkg] = src
         with open(cache_db, 'w') as fout:
@@ -402,7 +402,7 @@ class Release(SDistCommand):
 
     def _build_all(self):
         from taucmdr.cf.platforms import TauMagic
-        targets = set([(magic.architecture, magic.operating_system) for magic in TauMagic.all()])
+        targets = {(magic.architecture, magic.operating_system) for magic in TauMagic.all()}
         for target in targets:
             targ_arch, targ_os = target
             # Setuptools is a dirty, stateful animal.
