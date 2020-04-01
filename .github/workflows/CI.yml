@@ -61,6 +61,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip${{ matrix.python_version }}-
 
+      - name: Cache TAU sources
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.install_dir}}/system/src
+          key: ${{ matrix.os }}-system-src-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.os }}-system-src-
+
       - name: Install TAU Commander
         run: |
           make INSTALLDIR="${INSTALLDIR}" install
