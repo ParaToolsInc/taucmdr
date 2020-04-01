@@ -466,7 +466,9 @@ def _null_context(label):
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False):
+def create_subprocess(
+        cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False
+):
     """Create a subprocess.
 
     See :any:`subprocess.Popen`.
@@ -749,7 +751,7 @@ def _zipimporter_iter_modules(archive, path):
 
 
 def _iter_modules(paths, prefix):
-    # pylint: disable=no-member,redefined-variable-type
+    # pylint: disable=no-member
     yielded = {}
     for path in paths:
         importer = pkgutil.get_importer(path)

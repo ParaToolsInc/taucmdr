@@ -27,6 +27,8 @@
 #
 """TODO: FIXME: Docs"""
 
+from __future__ import absolute_import
+import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
 from taucmdr.cf.storage import StorageRecord
@@ -75,7 +77,7 @@ class ModelMeta(type):
         try:
             return cls._key_attribute
         except AttributeError:
-            for attr, props in cls.attributes.iteritems():
+            for attr, props in six.iteritems(cls.attributes):
                 if 'primary_key' in props:
                     cls._key_attribute = attr
                     break
