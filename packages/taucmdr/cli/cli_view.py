@@ -493,9 +493,8 @@ class ListCommand(AbstractCliView):
         elif count > 1:
             return ["There are %(count)d %(level)s %(model_name)ss."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields]
-        else:
-            #return ["There are no %(level)s %(model_name)ss." % fields]
-            return []
+        #return ["There are no %(level)s %(model_name)ss." % fields]
+        return []
 
 
 class CopyCommand(CreateCommand):

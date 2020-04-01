@@ -248,16 +248,19 @@ class InitializeCommand(AbstractCommand):
                 raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
-            err.value = "The project has been initialized in %s but no project configuration is selected." %proj_ctrl.storage.prefix
+            err.value = ("The project has been initialized in %s but no project configuration is selected."
+                         % proj_ctrl.storage.prefix)
             raise err
         else:
             cwd_prefix = os.path.realpath(os.path.join(os.getcwd(), PROJECT_DIR))
             force_str = ""
             if cwd_prefix != proj_ctrl.storage.prefix:
-                force_str = "Or use the `tau initialize --force` command to initialize a project in the current directory."
+                force_str = ("Or use the `tau initialize --force` command to initialize "
+                             "a project in the current directory.")
             self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
                                 " `tau application edit` to edit the selected project or delete"
-                                " '%s' to reset to a fresh environment. %s", proj['name'], proj_ctrl.storage.prefix, force_str)
+                                " '%s' to reset to a fresh environment. %s",
+                                proj['name'], proj_ctrl.storage.prefix, force_str)
             return EXIT_WARNING
 
 COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.")

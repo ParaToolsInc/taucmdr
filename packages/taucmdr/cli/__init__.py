@@ -129,8 +129,7 @@ def _get_commands(package_name):
             return dct
         elif len(cmd) == 1:
             return dct[cmd[0]]
-        else:
-            return lookup(cmd[1:], dct[cmd[0]])
+        return lookup(cmd[1:], dct[cmd[0]])
 
     def walking_import(module, cmd, dct):
         car, cdr = cmd[0], cmd[1:]
@@ -165,8 +164,7 @@ def command_from_module_name(module_name):
     """
     if module_name == '__main__':
         return os.path.basename(TAUCMDR_SCRIPT)
-    else:
-        return ' '.join(_command_as_list(module_name))
+    return ' '.join(_command_as_list(module_name))
 
 
 def commands_description(package_name=COMMANDS_PACKAGE_NAME):
@@ -240,7 +238,7 @@ def _resolve(cmd, c, d):
         matches = [i for i in d.iteritems() if i[0].startswith(car)]
     if len(matches) == 1:
         return [matches[0][0]] + _resolve(cmd, cdr, matches[0][1])
-    elif len(matches) == 0:
+    elif not matches:
         raise UnknownCommandError(' '.join(cmd))
     elif len(matches) > 1:
         raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
@@ -276,7 +274,7 @@ def find_command(cmd):
 def _permute(cmd, cmd_args):
     cmd_len = len(cmd)
     full_len = len(cmd) + len(cmd_args)
-    skip = [x[0] == '-' or os.path.isfile(x) for x in (cmd+cmd_args)]
+    skip = [x[0] == '-' or os.path.isfile(x) for x in cmd+cmd_args]
     yield cmd, cmd_args
     for i in xrange(full_len):
         if skip[i]:

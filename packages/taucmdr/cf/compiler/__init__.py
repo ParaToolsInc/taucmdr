@@ -327,7 +327,7 @@ class _CompilerFamily(TrackedInstance):
                         return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        if len(without_regex) > 0:
+        if without_regex:
             guess = without_regex[0]
             if len(without_regex) > 1:
                 LOGGER.warning(("Assuming '%s' is a %s compiler but it could be to any of these: %s\n"
@@ -381,8 +381,7 @@ class _CompilerInfo(TrackedInstance):
             return [info for info_list in family.members.itervalues() for info in info_list]
         elif role:
             return [info for info in cls.all() if info.role is role]
-        else:
-            return []
+        return []
 
     @classmethod
     def find(cls, command=None, family=None, role=None):

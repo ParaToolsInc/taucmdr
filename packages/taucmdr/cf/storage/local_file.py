@@ -34,8 +34,8 @@ both the database and the key/value store.
 
 import os
 import json
-import tinydb
 import tempfile
+import tinydb
 from tinydb import operations
 from tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
@@ -229,8 +229,7 @@ class LocalFileStorage(AbstractStorage):
         self.connect_database()
         if table_name is None:
             return self._database
-        else:
-            return self._database.table(table_name)
+        return self._database.table(table_name)
 
     @staticmethod
     def _query(keys, match_any):
@@ -368,9 +367,9 @@ class LocalFileStorage(AbstractStorage):
         elif regex is not None:
             #LOGGER.debug('%s: search(where(%s).matches(%r))', table_name, field, regex)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(regex))]
-        else:
+        #else:
             #LOGGER.debug("%s: search(where(%s).matches('.*'))", table_name, field)
-            return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(".*"))]
+        return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(".*"))]
 
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.

@@ -39,7 +39,6 @@ TAU is the core software package of TAU Commander.
 
 import os
 import re
-import sys
 import ast
 import glob
 import shutil
@@ -287,8 +286,8 @@ class TauInstallation(Installation):
             ptts (bool): If True then enable PTTS support.
             ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
             ptts_sample_flags (str): flags to pass to PTTS sample_ts command
-            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and
-                                 be reinstrumented after stop
+            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running
+                                 and be reinstrumented after stop
             ptts_start (str): address at which to start a PTTS sampling region
             ptts_stop (str): address at which to stop a PTTS sampling region
             ptts_report_flags (str): flags to pass to PTTS report_ts command
@@ -516,12 +515,10 @@ class TauInstallation(Installation):
                 if self.target_arch in (INTEL_KNC, INTEL_KNL):
                     nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
                     return nprocs
-                else:
-                    nprocs = multiprocessing.cpu_count()
-                    # Assume 2 HTs/core
-                    return max(64, 2*nprocs)
-            else:
-                return 25 # This is currently TAU's default.
+                nprocs = multiprocessing.cpu_count()
+                # Assume 2 HTs/core
+                return max(64, 2*nprocs)
+            return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
         return len(self.metrics)
@@ -1293,7 +1290,7 @@ print(find_version())
             if self.sampling_period > 0:
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
             else:
-                self.smapling_period = arch_period.get(self.target_arch, 10000)
+                self.sampling_period = arch_period.get(self.target_arch, 10000)
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
@@ -1359,8 +1356,7 @@ print(find_version())
                         self.application_linkage == 'static'))
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
-        else:
-            return compiler.absolute_path
+        return compiler.absolute_path
 
     def compile(self, compiler, compiler_args):
         """Executes a compilation command.
@@ -1438,8 +1434,7 @@ print(find_version())
                 fout.write(tau_line)
         if with_equals:
             return cmd[:appfile_arg_idx] + [appfile_flag+'='+tau_appfile] + cmd[appfile_arg_idx+1:]
-        else:
-            return cmd[:appfile_arg_idx] + [appfile_flag, tau_appfile] + cmd[appfile_arg_idx+2:]
+        return cmd[:appfile_arg_idx] + [appfile_flag, tau_appfile] + cmd[appfile_arg_idx+2:]
 
     def get_application_command(self, launcher_cmd, application_cmds):
         """Build a command line to launch an application under TAU.
@@ -1494,7 +1489,10 @@ print(find_version())
                 if not self.mpi_support:
                     tags.add('serial')
                 tau_exec = [
-                    'tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path
+                    'tau_python',
+                    '-T',
+                    ','.join([tag for tag in tags if tag != 'python']),
+                    '-tau-python-interpreter=%s' % self.python_path
                 ] + opts
                 launcher_cmd = []
         else:
@@ -1614,8 +1612,7 @@ print(find_version())
             for path in paths:
                 retval += util.create_subprocess([os.path.join(self.bin_path, 'paraprof')], cwd=path, env=env)
             return retval
-        else:
-            return util.create_subprocess([os.path.join(self.bin_path, 'paraprof')] + paths, env=env)
+        return util.create_subprocess([os.path.join(self.bin_path, 'paraprof')] + paths, env=env)
 
     def _show_pprof(self, fmt, paths, env):
         if fmt != 'tau':
