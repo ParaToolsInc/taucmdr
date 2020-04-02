@@ -892,6 +892,10 @@ print(find_version())
             raise SoftwarePackageError('TAU configure failed')
 
     def make_install_minimal(self):
+        cmd = ['make'] + parallel_make_flags()
+        LOGGER.info('Compiling trace input library...')
+        util.create_subprocess(cmd, cwd=os.path.join(self._src_prefix, 'src/TraceInput'), stdout=False, show_progress=True)
+
         cmd = ['make', '-k', 'install'] + parallel_make_flags()
         LOGGER.info('Compiling TAU utilities...')
         # Nonzero return value is ignored since a full make would be required for all utilities to build.
