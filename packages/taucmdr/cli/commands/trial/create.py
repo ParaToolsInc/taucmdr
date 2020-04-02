@@ -101,8 +101,7 @@ class TrialCreateCommand(CreateCommand):
         if args.tau_dir:
             Project.controller().storage.tau_dir(args.tau_dir)
             return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
-        else:
-            return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
+        return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Create new trial of the selected experiment.")

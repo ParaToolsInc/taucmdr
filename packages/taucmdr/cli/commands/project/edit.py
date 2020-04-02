@@ -115,7 +115,7 @@ class ProjectEditCommand(EditCommand):
             if len(tam) > 1:
                 self.parser.error("'%s' is ambiguous. Use --add-targets, --add-applications,"
                                   " or --add-measurements to specify configuration type" % name)
-            elif len(tam) == 0:
+            elif not tam:
                 self.parser.error("'%s' is not a target, application, or measurement" % name)
             else:
                 added.update(tam)
@@ -148,7 +148,7 @@ class ProjectEditCommand(EditCommand):
             if len(tam) > 1:
                 self.parser.error("'%s' is ambiguous. Use --remove-targets, --remove-applications,"
                                   " or --remove-measurements to specify configuration type" % name)
-            elif len(tam) == 0:
+            elif not tam:
                 self.parser.error("'%s' is not a target, application, or measurement" % name)
             else:
                 removed.update(tam)

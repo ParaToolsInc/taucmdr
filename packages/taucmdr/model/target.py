@@ -636,7 +636,8 @@ class Target(Model):
                      "The known compiler commands are:"]
             parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
-                     "Create and select a new target configuration that uses the '%s' compiler" % (absolute_path or compiler_cmd),
+                     "Create and select a new target configuration that uses the '%s' compiler" % (
+                         absolute_path or compiler_cmd),
                      "Check loaded modules and the PATH environment variable")
             raise ConfigurationError('\n'.join(parts), *hints)
         return found

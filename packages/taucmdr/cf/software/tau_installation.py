@@ -286,8 +286,8 @@ class TauInstallation(Installation):
             ptts (bool): If True then enable PTTS support.
             ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
             ptts_sample_flags (str): flags to pass to PTTS sample_ts command
-            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running
-                                 and be reinstrumented after stop
+            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue
+                                 running and be reinstrumented after stop
             ptts_start (str): address at which to start a PTTS sampling region
             ptts_stop (str): address at which to stop a PTTS sampling region
             ptts_report_flags (str): flags to pass to PTTS report_ts command

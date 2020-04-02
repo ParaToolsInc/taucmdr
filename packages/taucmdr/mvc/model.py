@@ -175,8 +175,7 @@ class Model(StorageRecord):
         if attribute:
             if self._populated is not None and not defaults:
                 return self._populated[attribute]
-            else:
-                return self.controller(self.storage).populate(self, attribute, defaults)
+            return self.controller(self.storage).populate(self, attribute, defaults)
         else:
             if self._populated is None:
                 self._populated = self.controller(self.storage).populate(self, attribute, defaults)

@@ -79,8 +79,9 @@ def attributes():
             if rhs.get('source_inst') == 'never' and rhs.get('compiler_inst') == 'never':
                 lhs_name = lhs.name.lower()
                 rhs_name = rhs.name.lower()
-                raise IncompatibleRecordError("%s = %s in %s requires source_inst and compiler_inst are not both 'never' in %s" %
-                                              (lhs_attr, lhs_value, lhs_name, rhs_name))
+                raise IncompatibleRecordError(
+                    "%s = %s in %s requires source_inst and compiler_inst are not both 'never' in %s" %
+                    (lhs_attr, lhs_value, lhs_name, rhs_name))
 
     return {
         'projects': {
@@ -426,7 +427,8 @@ def attributes():
         'ptts_restart': {
             'type': 'boolean',
             'default': False,
-            'description': 'enable restart support within PTTS, allowing application to continue running and be reinstrumented after stop',
+            'description': ('enable restart support within PTTS, allowing application to continue'
+                            'running and be reinstrumented after stop'),
             'argparse': {'flags': ('--ptts-restart',)},
             'compat': {bool: (Measurement.require('ptts', True))},
         },
@@ -452,13 +454,14 @@ def attributes():
             'compat': {bool: (Measurement.require('ptts', True))},
         },
         'extra_tau_options': {
-            'type': 'string',
-            'description': 'forcibly add to the TAU_OPTIONS environment variable (not recommended)',
+            'type': 'array',
+            'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
             'rebuild_on_change': True,
             'argparse': {'flags': ('--extra-tau-options',),
                          'nargs': '+',
                          'metavar': '<option>'},
             'compat': {bool: (Measurement.discourage('extra_tau_options'),
+                              Measurement.exclude('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         },
         'mpit': {
@@ -486,17 +489,6 @@ def attributes():
                          'nargs': '+',
                          'metavar': '<tags>'}
         },
-        'extra_tau_options': {
-            'type': 'array',
-            'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
-            'rebuild_on_change': True,
-            'argparse': {'flags': ('--extra-tau-options',),
-                         'nargs': '+',
-                         'metavar': '<option>'},
-            'compat': {bool: (Measurement.discourage('extra_tau_options'),
-                              Measurement.exclude('force_tau_options'),
-                              Measurement.exclude('baseline', True))}
-        }
     }
 
 

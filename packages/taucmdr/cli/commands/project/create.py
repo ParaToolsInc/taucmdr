@@ -54,7 +54,7 @@ class ProjectCreateCommand(CreateCommand):
                 if len(tam) > 1:
                     self.parser.error("'%s' is ambiguous.  Please use --target, --application,"
                                       " or --measurement to specify configuration type" % name)
-                elif len(tam) == 0:
+                elif not tam:
                     self.parser.error("'%s' is not a target, application, or measurement" % name)
                 elif tar:
                     targets.add(tar)
@@ -119,7 +119,7 @@ class ProjectCreateCommand(CreateCommand):
 
     def main(self, argv):
         init_options = []
-        if 'init_options=' == argv[-1][:13]:
+        if argv[-1][:13] == 'init_options=':
             init_options = argv[-1][13:]
             argv.pop()
         args = self._parse_args(argv)

@@ -174,7 +174,7 @@ class TrialController(Controller):
         try:
             self.update({'phase': 'executing', 'begin_time': begin_time}, trial.eid)
             if record_output:
-                retval, output, elapsed =  trial.execute_command(expr, cmd, cwd, env, record_output)
+                retval, output, elapsed = trial.execute_command(expr, cmd, cwd, env, record_output)
             else:
                 retval, elapsed = trial.execute_command(expr, cmd, cwd, env, record_output)
         except:
@@ -209,8 +209,7 @@ class TrialController(Controller):
         LOGGER.info('Elapsed seconds: %s', elapsed)
         if record_output:
             return retval, output
-        else:
-            return retval
+        return retval
 
     def perform(self, proj, cmd, cwd, env, description, record_output=False):
         """Performs a trial of an experiment.
@@ -604,8 +603,7 @@ class Trial(Model):
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         if record_output:
             return retval, output, elapsed
-        else:
-            return retval, elapsed
+        return retval, elapsed
 
     def export(self, dest):
         """Export experiment trial data.

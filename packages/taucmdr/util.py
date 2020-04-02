@@ -524,8 +524,7 @@ def create_subprocess(
             print line,
     if record_output:
         return retval, output
-    else:
-        return retval
+    return retval
 
 
 def get_command_output(cmd):
@@ -690,8 +689,7 @@ def color_text(text, *args, **kwargs):
     """
     if sys.stdout.isatty():
         return termcolor.colored(text, *args, **kwargs)
-    else:
-        return text
+    return text
 
 
 def uncolor_text(text):

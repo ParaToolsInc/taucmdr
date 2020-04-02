@@ -103,7 +103,7 @@ class SelectCommand(AbstractCommand):
                 if len(found) > 1:
                     self.parser.error("'%s' is ambiguous. "
                                       "Please use a command line flag to specify configuration type." % name)
-                elif len(found) == 0:
+                elif not found:
                     self.parser.error("'%s' is not an experiment, target, application, or measurement." % name)
                 elif tar:
                     targets.add(tar)

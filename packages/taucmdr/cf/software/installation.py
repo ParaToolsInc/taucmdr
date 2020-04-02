@@ -378,9 +378,9 @@ class Installation(object):
                     except IOError:
                         pass
                 try:
-                    LOGGER.warning("Unable to acquire %s source package '%s'" % (self.name, self.src))
+                    LOGGER.warning("Unable to acquire %s source package '%s'", self.name, self.src)
                     self.src = self.srcs.pop(0)
-                    LOGGER.warning("falling back to '%s'" % self.src)
+                    LOGGER.warning("falling back to '%s'", self.src)
                 except IndexError:
                     self.src = None
             else:
