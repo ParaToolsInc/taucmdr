@@ -3,10 +3,10 @@
 echo "FOO LAUNCHER"
 
 args=()
-while [[ $# -gt 0 ]] ; do
+while [[ $# -gt 0 ]]; do
   case "$1" in
-  -np|-G|foo_file)
-    ;;
+  -np | -G | foo_file) ;;
+
   *)
     args+=("$1")
     ;;
@@ -14,4 +14,4 @@ while [[ $# -gt 0 ]] ; do
   shift
 done
 
-${args[@]}
+${args[*]}
