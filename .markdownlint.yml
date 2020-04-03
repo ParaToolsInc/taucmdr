@@ -1,0 +1,6 @@
+default: true
+single-h1: false
+single-title: false
+no-trailing-punctuation: false
+ul-indent:
+  start_indented: true

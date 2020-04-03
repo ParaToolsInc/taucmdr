@@ -24,11 +24,11 @@ benchmarking, and purchasing efforts where the intricacies of multi-layered
 software parallelism are difficult to intuit.  The principal components of
 TAU Commander are:
 
-- An intuitive user interface for the
+  - An intuitive user interface for the
   [TAU Performance System](http://tau.uoregon.edu/) that simplifies the
   process of acquiring and displaying software performance data on a
   variety of computer systems.
-- A suite of cloud-based performance data analysis, storage, visualization,
+  - A suite of cloud-based performance data analysis, storage, visualization,
   and reporting services that enhances the performance engineer's ability
   to mine actionable information from software application performance data.
 
@@ -36,27 +36,31 @@ Getting Started
 ===============
 
 Install TAU Commander to the default location:
+
   - `make install`
 
 Or, to install to a different location:
+
   - `make install INSTALLDIR=/path/to/installation`
 
 Add TAU Commander to your PATH:
+
   - bash-like shells (nearly everyone):
     - `export PATH=/path/to/taucmdr/bin:$PATH`
   - csh-like shells (nearly everyone else):
     - `set path=(/path/to/taucmdr/bin $path)`
 
 Initialize a new TAU project:
+
   - cd `/path/to/your/code`
   - `tau initialize`
 
 Need help?
 ==========
 
-- Add `--help` to any TAU Commander command line to see command line usage.
-- Use `tau help` to view online documentation.  (Very incomplete at the moment.)
-- Contact support@paratools.com with questions or feedback.
+  - Add `--help` to any TAU Commander command line to see command line usage.
+  - Use `tau help` to view online documentation.  (Very incomplete at the moment.)
+  - Contact support@paratools.com with questions or feedback.
 
 Developers
 ==========
@@ -73,7 +77,6 @@ The work on extending TAU Commander for OpenSHMEM was supported by the
 United States Department of Defense (DoD) and used resources of the
 Computational Research and Development Programs and the Oak Ridge
 Leadership Computing Facility (OLCF) at Oak Ridge National Laboratory.
-
 
 ---------------------------------------------------------------------------
 

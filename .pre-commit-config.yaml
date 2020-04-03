@@ -72,3 +72,8 @@ repos:
     - id: python-no-log-warn
     - id: rst-backticks
 #    - id: text-unicode-replacement-char
+- repo: https://github.com/igorshubovych/markdownlint-cli.git
+  rev: v0.22.0
+  hooks:
+    - id: markdownlint
+      args: [--fix]
