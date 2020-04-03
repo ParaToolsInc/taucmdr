@@ -197,7 +197,7 @@ def main(argv):
     parser.merge(initialize_cmd.parser, include_positional=False,
                  exclude_groups=['project arguments'],
                  exclude_arguments=['project-name', 'target-name', 'application-name', 'measurement-name',
-                                    'tau-options', 'from-tau-makefile', 'bare'])
+                                    'tau-options', 'from-tau-makefile', 'bare', 'tag'])
     args = parser.parse_args(argv)
 
     os.chdir(util.mkdtemp())
