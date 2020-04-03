@@ -30,7 +30,8 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends zlib1g-dev gcc g++ gfortran mpi-default-bin mpi-default-dev llvm llvm-dev llvm-runtime
+          sudo apt-get install -y --no-install-recommends zlib1g-dev gcc g++ gfortran
+          sudo apt-get install -y mpi-default-bin mpi-default-dev build-essential
 
       # - name: Setup Python
       #   uses: actions/setup-python@v1
@@ -70,7 +71,7 @@ jobs:
 
       - name: Install TAU Commander
         run: |
-          make INSTALLDIR="${INSTALLDIR}" TAU=full install
+          make INSTALLDIR="${INSTALLDIR}" install
           echo "::add-path::${INSTALLDIR}/conda/bin"
           export PATH="${INSTALLDIR}/conda/bin:${PATH}"
           which python
