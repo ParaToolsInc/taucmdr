@@ -7,6 +7,7 @@ on:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
+  __TAUCMDR_SYSTEM_PREFIX__: "~/taucmdr/system"
   CI: "ON"
   INSTALLDIR: "taucmdr-test"
   PIP_NO_CLEAN: "ON"
