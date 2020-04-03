@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 
 
    /* Create a new file */
-   fd0 = creat("out.dat", 0655);
+   fd0 = create("out.dat", 0655);
    fd = dup(fd0);
 
 

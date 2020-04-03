@@ -418,7 +418,7 @@ class InstalledCompilerCreator(type):
 
     InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.
     This can be very expensive, so this metaclass changes the instance creation procedure to only
-    probe the compiler when the compiler command has never been seen before and avoid dupliate
+    probe the compiler when the compiler command has never been seen before and avoid duplicate
     invocations in a case like::
 
         a = InstalledCompiler('/path/to/icc')

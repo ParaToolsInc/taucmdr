@@ -31,7 +31,7 @@ double runWorker()
 
     while ( notDone )
     {
-       for ( int i = 0; i < numRands; ) // build up a set of random nummbers
+       for ( int i = 0; i < numRands; ) // build up a set of random numbers
        {
            rands[i] = computeRandom();
            if ( rands[i] <= INT_MAX ) ++i;

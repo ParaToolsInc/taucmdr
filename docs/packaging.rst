@@ -18,7 +18,7 @@ setup.py
 
 TAU Commander follows the `Python Packaging Guide`_, the same resource that guides package deployment to the
 `Python Package Index (PyPI)`_.  All tasks related to packaging and releasing TAU Commander are handled via the
-setup.py script in the project root directory.  The script has many commands but most aren't relevent to
+setup.py script in the project root directory.  The script has many commands but most aren't relevant to
 TAU Commander.  The important ones are:
 
 :build:

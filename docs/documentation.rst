@@ -10,7 +10,7 @@ Introduction
 
 If you can, write the function's `docstring`_ first, before you write the
 actual code. This can help you clarify in your own mind what the code does and
-help you write code that *actually does* what it was *intented to do*.
+help you write code that *actually does* what it was *intended to do*.
 
 Python has documentation built into the language and this makes it very easy to
 keep your code documented.  It also makes it easy to keep the project design

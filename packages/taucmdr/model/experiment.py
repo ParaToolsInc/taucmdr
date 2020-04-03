@@ -298,7 +298,7 @@ class Experiment(Model):
                     compilers=target.compilers(),
                     # Use a minimal configuration for the baseline measurement
                     minimal=baseline,
-                    # TAU feature suppport
+                    # TAU feature support
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
                     pthreads_support=application.get_or_default('pthreads'),
@@ -412,7 +412,7 @@ class Experiment(Model):
     def managed_run(self, launcher_cmd, application_cmds, description=None):
         """Uses this experiment to run an application command.
 
-        Performs all relevent system preparation tasks to run the user's application
+        Performs all relevant system preparation tasks to run the user's application
         under the specified experimental configuration.
 
         Args:
@@ -460,7 +460,7 @@ class Experiment(Model):
                     target_arch=target.architecture(),
                     target_os=target.operating_system(),
                     compilers=target.compilers(),
-                    # TAU feature suppport
+                    # TAU feature support
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
                     pthreads_support=application.get_or_default('pthreads'),

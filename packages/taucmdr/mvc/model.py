@@ -117,7 +117,7 @@ class Model(StorageRecord):
                 title = "%s '%s'" % (self.name, record[self.key_attribute])
             except (KeyError, ModelError):
                 title = "%s" % self.name
-            LOGGER.debug("Ignorning deprecated attributes %s in %s", deprecated, title)
+            LOGGER.debug("Ignoring deprecated attributes %s in %s", deprecated, title)
         super(Model, self).__init__(record.storage, record.eid,
                                     (item for item in record.iteritems() if item[0] not in deprecated))
         self._populated = None
@@ -316,7 +316,7 @@ class Model(StorageRecord):
 
         args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare
         the specified attribute against or a callback function.  If args[1] is callable, it must check attribute
-        existance and value correctness and throw the appropriate exception and/or emit log messages.
+        existence and value correctness and throw the appropriate exception and/or emit log messages.
 
         Args:
             args (tuple): Attribute name in args[0] and, optionally, attribute value in args[1].

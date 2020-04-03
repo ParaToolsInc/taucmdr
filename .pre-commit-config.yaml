@@ -35,7 +35,6 @@ repos:
 #    - id: name-tests-test
     - id: pretty-format-json
     - id: requirements-txt-fixer
-    - id: sort-simple-yaml
     - id: trailing-whitespace
 # - repo: https://github.com/PyCQA/pylint
 #   rev: pylint-1.9.4
@@ -51,7 +50,7 @@ repos:
     - id: script-must-have-extension
       types: [shell, non-executable]
     - id: shellcheck
-      args: [--color=always, -a, -x]
+      args: [--color=always, --check-sourced, --external-sources]
       additional_dependencies: [shellcheck]
     - id: shfmt
       additional_dependencies: [shfmt]
@@ -60,3 +59,4 @@ repos:
   rev: v1.16.0
   hooks:
     - id: codespell
+      args: [--check-filenames, --check-hidden, --write-changes, --ignore-words-list, "iff"]

@@ -28,7 +28,7 @@
 """
 Local file backend for storage containers.
 
-A persistant, transactional record storage system useing :py:class:`TinyDB` for
+A persistent, transactional record storage system using :py:class:`TinyDB` for
 both the database and the key/value store.
 """
 
@@ -85,7 +85,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
 
 
 class LocalFileStorage(AbstractStorage):
-    """A persistant, transactional record storage system.
+    """A persistent, transactional record storage system.
 
     Uses :py:class:`TinyDB` for both the database and the key/value store.
 
@@ -377,7 +377,7 @@ class LocalFileStorage(AbstractStorage):
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: check for the record with that element identifier.
             * dict: check for the record with attributes matching `keys`.
-            * list or tuple: return the equivilent of ``map(contains, keys)``.
+            * list or tuple: return the equivalent of ``map(contains, keys)``.
             * None: return False.
 
         Args:
@@ -438,7 +438,7 @@ class LocalFileStorage(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
@@ -472,7 +472,7 @@ class LocalFileStorage(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
@@ -505,7 +505,7 @@ class LocalFileStorage(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):

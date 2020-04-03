@@ -7,7 +7,7 @@ Introduction
 ------------
 
 TAU Commander is written in Python so style is actually important.
-Remeber the `Zen of Python`_:
+Remember the `Zen of Python`_:
 
 * Beautiful is better than ugly.
 * Explicit is better than implicit.
@@ -1439,7 +1439,7 @@ many downsides, including:
 -  Holding files open may prevent other actions being performed on them,
    such as moves or deletion.
 -  Files and sockets that are shared throughout a program may
-   inadvertantly be read from or written to after logically being
+   inadvertently be read from or written to after logically being
    closed. If they are actually closed, attempts to read or write from
    them will throw exceptions, making the problem known sooner.
 

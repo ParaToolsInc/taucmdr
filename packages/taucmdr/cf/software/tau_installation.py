@@ -176,7 +176,7 @@ class TauInstallation(Installation):
     def __init__(self, sources, target_arch, target_os, compilers,
                  # Minimal configuration support
                  minimal=False,
-                 # TAU feature suppport
+                 # TAU feature support
                  application_linkage='dynamic',
                  openmp_support=False,
                  pthreads_support=False,
@@ -286,7 +286,7 @@ class TauInstallation(Installation):
             ptts (bool): If True then enable PTTS support.
             ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
             ptts_sample_flags (str): flags to pass to PTTS sample_ts command
-            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue
+            ptts_restart (bool): If true then enable restart support within PTTS, allowing application to continue
                                  running and be reinstrumented after stop
             ptts_start (str): address at which to start a PTTS sampling region
             ptts_stop (str): address at which to stop a PTTS sampling region
@@ -617,7 +617,7 @@ class TauInstallation(Installation):
                                                        (tau_makefile, libotf2.include_path))
 
     def _verify_iowrapper(self, tau_makefile):
-        # Replace right-most occurance of 'Makefile.tau' with 'shared'
+        # Replace right-most occurrence of 'Makefile.tau' with 'shared'
         tagged_shared_dir = 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
         for shared_dir in tagged_shared_dir, 'shared':
             iowrap_libs = glob.glob(os.path.join(shared_dir, 'libTAU-iowrap*'))
@@ -922,7 +922,7 @@ print(find_version())
     def install(self, force_reinstall=False):
         """Installs TAU.
 
-        Configures, compiles, and installs TAU with all necessarry makefiles and libraries.
+        Configures, compiles, and installs TAU with all necessary makefiles and libraries.
 
         Args:
             force_reinstall (bool): Set to True to force reinstall even if TAU is already installed and working.
@@ -1803,7 +1803,7 @@ print(find_version())
                                           "PAPI virtual clock that calls PAPI_get_virt_usec.")),
                    ("CPU_TIME", "CPU timer that calls getrusage."),
                    ("LINUX_TIMERS", "Linux high resolution wall clock."),
-                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI messsage sizes."),
+                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI message sizes."),
                    ("MEMORY_DELTA", "Instantaneous resident set size (RSS)")]
         if self.cuda_support:
             metrics.append(("TAUGPU_TIME", "Wall clock that uses TAU's GPU timestamps."))

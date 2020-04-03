@@ -148,7 +148,7 @@ def tau_source_default():
         return 'download'
     path = path.strip()
     if not (os.path.isdir(path) and util.path_accessible(path)):
-        LOGGER.warning("'%s' does not exist or is not accessable.")
+        LOGGER.warning("'%s' does not exist or is not accessible.")
         return 'download'
     return path
 
@@ -584,7 +584,7 @@ class Target(Model):
         """Checks a compiler command its arguments for compatibility with this target configuration.
 
         Checks that the given compiler matches at least one, **but possibly more**, of the compilers
-        used in the target. Also performs any special checkes for invalid compiler arguments,
+        used in the target. Also performs any special checks for invalid compiler arguments,
         e.g. -mmic is only for native KNC.
 
         If the given compiler command and arguments are compatible with this target then information about

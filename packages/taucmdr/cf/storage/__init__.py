@@ -51,7 +51,7 @@ class StorageRecord(dict):
 
     Attributes:
         eid_type: Element identifier type.
-        storage: Storage container whos database contains this record.
+        storage: Storage container whose database contains this record.
         eid: Element identifier value.
     """
     eid_type = str
@@ -261,7 +261,7 @@ class AbstractStorage(object):
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: check for the record with that element identifier.
             * dict: check for the record with attributes matching `keys`.
-            * list or tuple: return the equivilent of ``map(contains, keys)``.
+            * list or tuple: return the equivalent of ``map(contains, keys)``.
 
         Args:
             keys: Fields or element identifiers to match.
@@ -307,7 +307,7 @@ class AbstractStorage(object):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
 
     @abstractmethod
@@ -330,7 +330,7 @@ class AbstractStorage(object):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
 
     @abstractmethod
@@ -349,7 +349,7 @@ class AbstractStorage(object):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
 
     @abstractmethod

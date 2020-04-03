@@ -16,7 +16,7 @@ prerequisites/build text
 *.cu text
 *.x64 text
 
-# dont add dev-ops files to release archives
+# don't add dev-ops files to release archives
 .gitignore export-ignore
 .gitattributes export-ignore
 .travis.yml export-ignore

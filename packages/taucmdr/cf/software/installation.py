@@ -97,7 +97,7 @@ def tmpfs_prefix():
             except (OSError, IOError) as err:
                 LOGGER.debug(err)
                 continue
-            # Check execute privilages some distros mount tmpfs with the noexec option.
+            # Check execute privileges some distros mount tmpfs with the noexec option.
             check_exe_script = None
             try:
                 with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:

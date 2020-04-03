@@ -170,7 +170,7 @@ class PdtInstallation(AutotoolsInstallation):
     """Encapsulates a PDT installation.
 
     PDT doesn't actually use an Autotools configure script but the installation
-    proceedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
+    procedure is the same otherwise, so we reuse what we can from AutotoolsInstallation.
     """
 
     def __init__(self, sources, target_arch, target_os, compilers):

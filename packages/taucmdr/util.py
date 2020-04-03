@@ -95,7 +95,7 @@ def calculate_uid(parts):
         parts (list): **Ordered** list of strings to include in the UID calcuation.
 
     Returns:
-        str: A string of hexidecimal digits uniquely calculated from `parts`.
+        str: A string of hexadecimal digits uniquely calculated from `parts`.
     """
     uid = hashlib.sha1()
     for part in parts:
@@ -421,7 +421,7 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
 
 
 def path_accessible(path, mode='r'):
-    """Check if a file or directory exists and is accessable.
+    """Check if a file or directory exists and is accessible.
 
     Files are checked by attempting to open them with the given mode.
     Directories are checked by testing their access bits only, which may fail for

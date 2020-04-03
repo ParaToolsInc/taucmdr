@@ -339,7 +339,7 @@ class Controller(object):
                 for foreign_model, via in model.references:
                     # pylint complains because `model` is changing on every iteration so we'll have
                     # a different lambda function `test` on each iteration.  This is exactly what
-                    # we want so we disble the warning.
+                    # we want so we disable the warning.
                     # pylint: disable=cell-var-from-loop, undefined-loop-variable
                     test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
                     affected = database.match(via, test=test, table_name=foreign_model.name)

@@ -22,7 +22,7 @@ A knowledgebase looks a bit like this:
 .. image:: _static/tau.cf.compiler.png
    :height: 400px
 
-When TAU Commander encounters a compiler command it performs *compiler resolution* to determine all relevent
+When TAU Commander encounters a compiler command it performs *compiler resolution* to determine all relevant
 information about that compiler.  Given two pieces of information about a compiler (e.g. command line string and role),
 TAU Commander uses the knowlegebase to discover missing information (e.g. family).
 See :any:`Knowledgebase` for more information.
@@ -31,9 +31,9 @@ See :any:`Knowledgebase` for more information.
 Compiler Resolution Example
 ---------------------------
 
-The assocations defined in the compiler knowlegebase are very powerful.  TAU Commander can draw conclusions about which
+The associations defined in the compiler knowlegebase are very powerful.  TAU Commander can draw conclusions about which
 compilers should be used, and which compiler flags should be used, at any point in the workflow given a relatively small
-ammount of information.  Consider this target creation command::
+amount of information.  Consider this target creation command::
 
    tau target create --compilers=Intel --mpi-wrapper-style=System
 
@@ -52,7 +52,7 @@ wrapping ``icc``.  (For example, perhaps the user has forgotten to load the appr
 If ``mpicc`` does indeed wrap ``icc``, TAU Commander will check for a TAU installation that supports MPI and
 was configured with compatible Intel compilers.  If no such configuration exists, TAU Commander will create one.
 It will use :any:`_CompilerFamily.show_wrapper_flags` to discover how ``mpicc`` alters the ``icc`` command line, and
-combine this information with information from the compiler role and family to generate the correct TAU configration
+combine this information with information from the compiler role and family to generate the correct TAU configuration
 command line, e.g.::
 
    ./configure -cc=icc -c++=icpc -fortran=intel \
@@ -95,7 +95,7 @@ Compiler Families (:any:`_CompilerFamily`)
 ------------------------------------------
 
 The compiler's family assigns roles to compiler commands and tracks the various command line options used by that
-compiler family.  The family name (:any:`_CompilerFamily.name`) provides a convinent way to operate on many different
+compiler family.  The family name (:any:`_CompilerFamily.name`) provides a convenient way to operate on many different
 compiler commands at once.  Families are created via :any:`Knowledgebase.add`::
 
    INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation',
@@ -125,7 +125,7 @@ Compiler Information (:any:`_CompilerInfo`)
 -------------------------------------------
 
 A :any:`_CompilerInfo` instance is the abstract representation of a compiler.  It connects a compiler command with it's
-role and family. The process of compiler resultion completes by instantiating :any:`_CompilerInfo`, i.e. once TAU
+role and family. The process of compiler resolution completes by instantiating :any:`_CompilerInfo`, i.e. once TAU
 Commander can create a CompilerInfo object then TAU Commander is fully aware of the compiler.
 
 Note that :any:`_CompilerInfo.command` *may not* be the actual command used in the system.  For example, if someone
@@ -145,6 +145,6 @@ that compiler (e.g. the Intel C compiler, version 16.2), and tracks the addition
 may need.  :any:`InstalledCompiler` also tracks compiler *wrappers*. MPI is one very  common case of compiler
 wrapping, where the command ``mpicc`` is really a script or short program that invokes another C compiler.  Suppose the
 current experiment is configured with ``/usr/local/bin/mpicc`` as the MPI compiler, and that MPI compiler invokes the
-Portland Group C compiler, ``pgcc``.  The wrapped member of the :any:`InstalledCompiler` instace for ``/usr/local/bin/mpicc``
+Portland Group C compiler, ``pgcc``.  The wrapped member of the :any:`InstalledCompiler` instance for ``/usr/local/bin/mpicc``
 will be another :any:`InstalledCompiler` instance identifying ``pgcc`` as an installed Portland Group C compiler.  Wrappers
 can wrap wrappers as deep as you like, as long as they don't recurse.

@@ -8,7 +8,7 @@
    and the memory event is triggered with the current value. Also,
    this interrupt interval can be changed by calling
    TAU_SET_INTERRUPT_INTERVAL(value). The tracking of memory events in both
-   cases can be explictly enabled or disabled by calling the macros
+   cases can be explicitly enabled or disabled by calling the macros
    TAU_ENABLE_TRACKING_MEMORY() or TAU_DISABLE_TRACKING_MEMORY() respectively.*/
 
 int main(int argc, char **argv)
