@@ -45,9 +45,6 @@ REPOS = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
 
 COMMANDS = {None:
             [
-                'cube-config',
-                'cube-config-backend',
-                'cube-config-frontend',
                 'cube3to4',
                 'cube4to3',
                 'cube_calltree',
@@ -72,9 +69,12 @@ COMMANDS = {None:
                 'cube_remap2',
                 'cube_sanity',
                 'cube_score',
+                'cube_server',
                 'cube_stat',
                 'cube_test',
                 'cube_topoassist',
+                'cubelib-config',
+                'cubew-config',
                 'opari2',
                 'opari2-config',
                 'otf2-config',
@@ -85,12 +85,23 @@ COMMANDS = {None:
                 'otf2-template',
                 'scorep',
                 'scorep-backend-info',
+                'scorep-config',
+                'scorep-g++',
+                'scorep-gcc',
+                'scorep-gfortran',
+                'scorep-info',
+                'scorep-libwrap-init',
+                'scorep-mpicc',
+                'scorep-mpicxx',
+                'scorep-mpif77',
+                'scorep-mpif90',
+                'scorep-online-access-registry',
+                'scorep-preload-init',
                 'scorep-score',
                 'scorep-wrapper',
-                'scoreplib-config',
                 'tau2cube'
             ]
-}
+           }
 
 HEADERS = {None: ['otf2/otf2.h']}
 
