@@ -60,3 +60,15 @@ repos:
   hooks:
     - id: codespell
       args: [--check-filenames, --check-hidden, --write-changes, --ignore-words-list, "iff"]
+# - repo: https://github.com/Lucas-C/pre-commit-hooks-markup
+#   rev: 54db9d2ed7d626fabb237c86c4f12b67a254ae97
+#   hooks:
+#   - id: rst-linter
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.5.1
+  hooks:
+    - id: python-check-mock-methods
+    - id: python-no-eval
+    - id: python-no-log-warn
+    - id: rst-backticks
+#    - id: text-unicode-replacement-char

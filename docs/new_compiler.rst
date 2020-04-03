@@ -78,7 +78,7 @@ Compiler Roles (:any:`CompilerRole`)
 ------------------------------------
 
 Each individual compiler has a *Role* that is represented by an instance of the :any:`_CompilerRole` class.
-A compiler's role maps a compiler to it's primary language via a keyword.  For example, the `g++` compiler
+A compiler's role maps a compiler to it's primary language via a keyword.  For example, the ``g++`` compiler
 primarily functions as a C++ compiler so it's role keyword is "CXX" and it's language is "C++".  Roles are
 declared via keyword arguments when :any:`Knowledgebase` is instantiated, e.g.::
 

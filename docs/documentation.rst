@@ -354,7 +354,7 @@ Full Documentation Example
       Raises:
           AttributeError: The ``Raises`` section is a list of all exceptions
               that are relevant to the interface.
-          ValueError: If `param2` is equal to `param1`.
+          ValueError: If ``param2`` is equal to ``param1``.
 
 
       .. _PEP 484:
@@ -397,7 +397,7 @@ Full Documentation Example
       convention to document the __init__ method and be consistent with it.
 
       Note:
-          Do not include the `self` parameter in the ``Args`` section.
+          Do not include the ``self`` parameter in the ``Args`` section.
 
       Args:
           msg (str): Human readable string describing the exception.
@@ -429,8 +429,8 @@ Full Documentation Example
       to `PEP 484`_, though `PEP 484`_ conformance isn't required or enforced.
 
       Attributes:
-          attr1 (str): Description of `attr1`.
-          attr2 (Optional[int]): Description of `attr2`.
+          attr1 (str): Description of ``attr1``.
+          attr2 (Optional[int]): Description of ``attr2``.
 
 
       .. _PEP 484:
@@ -448,13 +448,13 @@ Full Documentation Example
           convention to document the __init__ method and be consistent with it.
 
           Note:
-              Do not include the `self` parameter in the ``Args`` section.
+              Do not include the ``self`` parameter in the ``Args`` section.
 
           Args:
-              param1 (str): Description of `param1`.
-              param2 (Optional[int]): Description of `param2`. Multiple
+              param1 (str): Description of ``param1``.
+              param2 (Optional[int]): Description of ``param2``. Multiple
                   lines are supported.
-              param3 (List[str]): Description of `param3`.
+              param3 (List[str]): Description of ``param3``.
 
           """
           self.attr1 = param1
@@ -490,7 +490,7 @@ Full Documentation Example
           """Class methods are similar to regular functions.
 
           Note:
-              Do not include the `self` parameter in the ``Args`` section.
+              Do not include the ``self`` parameter in the ``Args`` section.
 
           Args:
               param1: The first parameter.

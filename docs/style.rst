@@ -54,7 +54,7 @@ When writing new code, follow `Google Python Style`_ with a few exceptions.
 When editing existing code, follow the existing code style.
 The project's pylintrc file will enforce most of these rules.
 
-The exceptions to `Google Python Style` are:
+The exceptions to `Google Python Style`_ are:
 
 * Maximum line length is 120 characters.
 * Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
@@ -220,7 +220,7 @@ cases when making library calls.
 -  Avoid catch-all ``except:`` statements, or catch ``Exception`` or
    ``StandardError``.  Remember that Python is very tolerant in this
    regard and ``except:`` will really
-   catch everything including misspelled names, `sys.exit()` calls, Ctrl+C
+   catch everything including misspelled names, ``sys.exit()`` calls, Ctrl+C
    interrupts, unittest failures and all kinds of other exceptions.
 -  Minimize the amount of code in a ``try``/``except`` block. The larger
    the body of the ``try``, the more likely that an exception will be
@@ -1509,7 +1509,7 @@ Imports formatting
 ~~~~~~~~~~~~~~~~~~
 
 
-Imports should be on separate lines unless using the `from` keyword.
+Imports should be on separate lines unless using the ``from`` keyword.
 
 E.g.:
 
