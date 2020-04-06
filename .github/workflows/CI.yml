@@ -137,6 +137,8 @@ jobs:
           echo "::set-output name=home_dir::${HOME}"
           echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
           echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+          echo "::add-path::${INSTALLDIR}/conda/bin"
+          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
 
       - name: Cache dependencies
         uses: actions/cache@v1
@@ -162,11 +164,11 @@ jobs:
 
       - name: Extract TAU minimal install
         run: |
-          cd "${HOME}" && ls -la && unzip -o taucmdr.zip && ls -la
+          cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
 
       - name: Install Full TAU
         run: |
-          ${{ steps.info.taucmdr_system }}/configure
+          ${{ steps.info.outputs.taucmdr_system }}/configure
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
@@ -215,6 +217,8 @@ jobs:
           echo "::set-output name=home_dir::${HOME}"
           echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
           echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+          echo "::add-path::${INSTALLDIR}/conda/bin"
+          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
 
       - name: Cache dependencies
         uses: actions/cache@v1
@@ -240,7 +244,7 @@ jobs:
 
       - name: Extract TAU minimal install
         run: |
-          cd "${HOME}" && ls -la && unzip -o taucmdr.zip && ls -la
+          cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
 
       - name: Test TAU Commander
         run: coverage run setup.py test
