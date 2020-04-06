@@ -7,6 +7,7 @@ on:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
+  __TAUCMDR_SYSTEM_PREFIX__: "~/taucmdr/system"
   CI: "ON"
   INSTALLDIR: "taucmdr-test"
   PIP_NO_CLEAN: "ON"
@@ -20,12 +21,18 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-16.04]
-        python-version: ['2.7']
+        python_version: ['2.7']
 
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 9999
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -qq || true
+          sudo apt-get install -y --no-install-recommends zlib1g-dev gcc g++ gfortran
+          sudo apt-get install -y mpi-default-bin mpi-default-dev build-essential
 
       # - name: Setup Python
       #   uses: actions/setup-python@v1
@@ -39,6 +46,9 @@ jobs:
           uname -a
           mount
           gcc --version
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.ref:        ${{ github.ref }}"
+          echo "matrix.os:         ${{ matrix.os }}"
           export INSTALLDIR="${HOME}/${INSTALLDIR}"
           echo "::set-output name=install_dir::${INSTALLDIR}"
           echo "::set-output name=home_dir::${HOME}"
@@ -48,14 +58,17 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python-version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip${{ matrix.python_version }}-
 
-      # - name: Install system packages
-      #   run: |
-      #     sudo apt-get update -qq || true
-      #     sudo apt-get install -y --no-install-recommends mpich libmpich-dev
+      - name: Cache TAU sources
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.install_dir}}/system/src
+          key: ${{ matrix.os }}-system-src-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.os }}-system-src-
 
       - name: Install TAU Commander
         run: |
@@ -73,7 +86,6 @@ jobs:
       - name: Build sphinx docs
         run: |
           python setup.py build_sphinx
-          ls -la
 
       - name: Upload TAU Commander log
         if: always()
@@ -84,7 +96,7 @@ jobs:
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
-        if: success() && github.event_name == 'push' && ( github.ref == 'refs/head/master' || github.ref == 'refs/head/unstable' ) && matrix.os == 'ubuntu-18.04'
+        if: success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-18.04'
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           enable_jekyll: false
