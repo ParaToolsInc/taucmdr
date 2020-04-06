@@ -3,28 +3,30 @@
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
+*.F90 text
+*.c text
+*.cu text
+*.f90 text
+*.h text
+*.md text
 *.py
 *.rst
-*.c text
-*.h text
-*.f90 text
-*.F90 text
-*.md text
-*.txt text
 *.sh text
-prerequisites/build text
-*.cu text
-*.x64 text
+*.txt text
 
-# dont add dev-ops files to release archives
-.gitignore export-ignore
-.gitattributes export-ignore
-.travis.yml export-ignore
+# don't add dev-ops files to release archives
 .coveragerc export-ignore
+.dir-locals.el export-ignore
+.editorconfig export-ignore
+.gitattributes export-ignore
+.github export-ignore
+.gitignore export-ignore
+.markdownlint.yml export-ignore
+.pre-commit-config.yaml export-ignore
+.projectile export-ignore
+.travis.yml export-ignore
 codecov.yml export-ignore
-id_rsa_Travis2GH.enc export-ignore
 
 # Tell git explicitly about binary files
-id_rsa_Travis2GH.enc binary
-*.png binary
 *.ico binary
+*.png binary
