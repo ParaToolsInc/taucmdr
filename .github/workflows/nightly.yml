@@ -1,0 +1,133 @@
+# The last two jobs, unit testing and runnng TAU=full installation wait until the first finishes and re-uses the TAU=minimal install
+# Unfortunately, there is a lot of duplicated code that could be simplified/eliminated with YAML anchors and aliases,
+# but GitHub Actions does not yet support YAML anchors and aliases.
+# Clever use of global environment variables could help eliminate some of it, but the best options would be to just use aliases and anchors
+
+name: TAU nightly testing
+
+on:
+  schedule:
+    - cron: '18 10 * * *' # 10:18 UTC daily, 3:18 Pacific
+
+env:
+  __TAUCMDR_PROGRESS_BARS__: "disabled"
+  __TAUCMDR_SYSTEM_PREFIX__: "system"
+  CI: "ON"
+  INSTALLDIR: "taucmdr"
+  PIP_NO_CLEAN: "ON"
+  PIP_PREFER_BINARY: "ON"
+  TZ: "UTC"
+
+jobs:
+  Install-taucmdr-minimal:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-16.04]
+        python_version: ['2.7']
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 9999
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -qq || true
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
+
+      # - name: Setup Python
+      #   uses: actions/setup-python@v1
+      #   with:
+      #     python-version: '3.6'
+      #     architecture: 'x64'
+
+      - name: System info
+        id: info
+        run: |
+          uname -a
+          mount
+          gcc --version
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.ref:        ${{ github.ref }}"
+          echo "matrix.os:         ${{ matrix.os }}"
+          export INSTALLDIR="${HOME}/${INSTALLDIR}"
+          echo "::set-output name=install_dir::${INSTALLDIR}"
+          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
+          echo "::set-output name=home_dir::${HOME}"
+          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+          echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+
+# No caching available for cron jobs
+
+      - name: Install TAU Commander
+        run: |
+          make INSTALLDIR="${INSTALLDIR}" install
+          echo "::add-path::${INSTALLDIR}/conda/bin"
+          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
+          which python
+          which pip
+          python -m pip install -U pip
+          python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
+          cd "${HOME}"
+          zip -vr taucmdr-nightly.zip ${INSTALLDIR##*/} -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
+
+      - name: Upload TAU Commander install log
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
+          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+
+      - name: Upload TAU Commander minimal install
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: taucmdr-installation-${{ matrix.os }}
+          path: ${{ steps.info.outputs.home_dir }}/taucmdr-nightly.zip
+
+      - name: Install Full TAU
+        run: |
+          rm ~/.local/taucmdr/debug_log || true
+          ${{ steps.info.outputs.taucmdr_system }}/configure
+
+      - name: Upload TAU Commander full-TAU install log
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: taucmdr-full-tau-debug-log-${{ matrix.os }}
+          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+
+      - name: Test TAU Commander
+        run: |
+          rm ~/.local/taucmdr/debug_log || true
+          coverage run setup.py test
+
+      - name: Build sphinx docs
+        run: |
+          python setup.py build_sphinx
+
+      - name: Upload TAU Commander unit test log
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: taucmdr-unit-test-debug-log-${{ matrix.os }}
+          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+
+      - name: tau_validate-nightly
+        if: always()
+        run: |
+          cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
+          printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
+          export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
+          ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html
+          mkdir "${HOME}/tau-tests-validate"
+          cp index.html results.html "${HOME}/tau-tests-validate"
+
+      - name: Upload nightly TAU validate
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
+          path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate

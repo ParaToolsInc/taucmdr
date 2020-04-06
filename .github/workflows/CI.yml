@@ -1,3 +1,8 @@
+# The last two jobs, unit testing and runnng TAU=full installation wait until the first finishes and re-uses the TAU=minimal install
+# Unfortunately, there is a lot of duplicated code that could be simplified/eliminated with YAML anchors and aliases,
+# but GitHub Actions does not yet support YAML anchors and aliases.
+# Clever use of global environment variables could help eliminate some of it, but the best options would be to just use aliases and anchors
+
 name: CI
 
 on:
@@ -298,7 +303,7 @@ jobs:
           mkdir "${HOME}/tau-tests-validate"
           cp index.html results.html "${HOME}/tau-tests-validate"
 
-      - name: Upload unit tests'' TAU validate
+      - name: Upload unit tests TAU validate
         if: always()
         uses: actions/upload-artifact@v1
         with:
