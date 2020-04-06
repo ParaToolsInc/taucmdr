@@ -31,8 +31,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends zlib1g-dev gcc g++ gfortran
-          sudo apt-get install -y mpi-default-bin mpi-default-dev build-essential
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
 
       # - name: Setup Python
       #   uses: actions/setup-python@v1
@@ -96,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.homedir_dir }}/taucmdr.zip
+          path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
 
   Install-taucmdr-full:
     needs: Install-taucmdr-minimal
@@ -115,8 +114,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends zlib1g-dev gcc g++ gfortran
-          sudo apt-get install -y mpi-default-bin mpi-default-dev build-essential
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
 
       # - name: Setup Python
       #   uses: actions/setup-python@v1
@@ -178,8 +176,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends zlib1g-dev gcc g++ gfortran
-          sudo apt-get install -y mpi-default-bin mpi-default-dev build-essential
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
 
       # - name: Setup Python
       #   uses: actions/setup-python@v1
