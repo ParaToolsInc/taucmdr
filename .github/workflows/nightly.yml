@@ -121,7 +121,7 @@ jobs:
           cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
           printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
           export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
-          ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html
+          ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
           mkdir "${HOME}/tau-tests-validate"
           cp index.html results.html "${HOME}/tau-tests-validate"
 
