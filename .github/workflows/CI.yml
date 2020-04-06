@@ -81,7 +81,7 @@ jobs:
           python -m pip install -U pip
           python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
           cd "${HOME}"
-          zip -vr taucmdr.zip ${INSTALLDIR##*/} -x "system/src/" -x "conda/"
+          zip -vr taucmdr.zip ${INSTALLDIR##*/} -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
 
       - name: Upload TAU Commander install log
         if: always()
@@ -162,7 +162,7 @@ jobs:
 
       - name: Extract TAU minimal install
         run: |
-          cd "${HOME}" && ls -la && unzip taucmdr.zip && ls -la
+          cd "${HOME}" && ls -la && unzip -o taucmdr.zip && ls -la
 
       - name: Install Full TAU
         run: |
@@ -240,7 +240,7 @@ jobs:
 
       - name: Extract TAU minimal install
         run: |
-          cd "${HOME}" && ls -la && unzip taucmdr.zip && ls -la
+          cd "${HOME}" && ls -la && unzip -o taucmdr.zip && ls -la
 
       - name: Test TAU Commander
         run: coverage run setup.py test
