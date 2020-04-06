@@ -59,8 +59,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
             ${{ runner.os }}-pip${{ matrix.python_version }}-
 
       - name: Cache TAU sources
@@ -87,7 +88,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: taucmdr-debug-log-${{ matrix.os }}
+          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload TAU Commander minimal install
@@ -144,8 +145,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
             ${{ runner.os }}-pip${{ matrix.python_version }}-
 
       - name: Cache TAU sources
@@ -224,8 +226,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
             ${{ runner.os }}-pip${{ matrix.python_version }}-
 
       - name: Cache TAU sources
