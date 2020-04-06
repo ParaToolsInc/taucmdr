@@ -81,7 +81,7 @@ jobs:
           python -m pip install -U pip
           python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
           cd "${HOME}"
-          zip -vr taucmdr.zip ${INSTALLDIR} -x "system/src/*"
+          zip -vr taucmdr.zip ${INSTALLDIR##*/} -x "system/src/" -x "conda/"
 
       - name: Upload TAU Commander install log
         if: always()
@@ -138,6 +138,22 @@ jobs:
           echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
           echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
 
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.install_dir}}/conda
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip${{ matrix.python_version }}-
+
+      - name: Cache TAU sources
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.taucmdr_system}}/src
+          key: ${{ matrix.os }}-system-src-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.os }}-system-src-
+
       - name: Download installed TAU Commander
         uses: actions/download-artifact@v1
         with:
@@ -146,7 +162,7 @@ jobs:
 
       - name: Extract TAU minimal install
         run: |
-          cd "${HONME}" && ls -la && unzip taucmdr.zip && ls -la
+          cd "${HOME}" && ls -la && unzip taucmdr.zip && ls -la
 
       - name: Install Full TAU
         run: |
@@ -200,6 +216,22 @@ jobs:
           echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
           echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
 
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.install_dir}}/conda
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip${{ matrix.python_version }}-
+
+      - name: Cache TAU sources
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.info.outputs.taucmdr_system}}/src
+          key: ${{ matrix.os }}-system-src-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.os }}-system-src-
+
       - name: Download installed TAU Commander
         uses: actions/download-artifact@v1
         with:
@@ -208,7 +240,7 @@ jobs:
 
       - name: Extract TAU minimal install
         run: |
-          cd "${HONME}" && ls -la && unzip taucmdr.zip && ls -la
+          cd "${HOME}" && ls -la && unzip taucmdr.zip && ls -la
 
       - name: Test TAU Commander
         run: coverage run setup.py test
