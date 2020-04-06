@@ -59,10 +59,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ github.sha }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
-            ${{ runner.os }}-pip${{ matrix.python_version }}-
+            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}
 
       - name: Cache TAU sources
         uses: actions/cache@v1
@@ -145,10 +144,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ github.sha }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
-            ${{ runner.os }}-pip${{ matrix.python_version }}-
+            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}
 
       - name: Cache TAU sources
         uses: actions/cache@v1
@@ -226,10 +224,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ github.sha }}
+          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}
-            ${{ runner.os }}-pip${{ matrix.python_version }}-
+            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}
 
       - name: Cache TAU sources
         uses: actions/cache@v1
