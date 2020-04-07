@@ -34,12 +34,6 @@ It should be as short and simple.
 
 import os
 import sys
-# Python3 compatibility
-try:
-    basestring
-except NameError:
-    # pylint: disable=invalid-name
-    basestring = str
 
 __version__ = "0.0.0"
 """str: TAU Commander Version"""
@@ -105,7 +99,7 @@ USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PR
 PROJECT_DIR = '.tau'
 """str: Name of the project-level directory containing TAU Commander project files."""
 
-def version_banner():
+def version_banner(): # type: () -> str
     """Return a human readable text banner describing the TAU Commander installation."""
     import platform
     import socket
