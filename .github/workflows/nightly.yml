@@ -123,7 +123,7 @@ jobs:
           export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
           ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
           mkdir "${HOME}/tau-tests-validate"
-          cp index.html results.html "${HOME}/tau-tests-validate"
+          cp table.html results.html "${HOME}/tau-tests-validate"
 
       - name: Upload nightly TAU validate
         if: always()
