@@ -1,3 +1,7 @@
+# Emacs stuff
+.projectile
+.dir-locals.el
+
 # Compiled Object files
 *.slo
 *.lo
