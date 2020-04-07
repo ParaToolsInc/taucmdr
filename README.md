@@ -2,6 +2,7 @@ TAU Commander
 =============
 
 [![GitHub license][License img]](./LICENSE)
+[![CI][CI img]](https://github.com/ParaToolsInc/taucmdr/actions)
 [![Build Status][Build img]](https://travis-ci.org/ParaToolsInc/taucmdr)
 [![Coverage Status][Coverage img]](https://codecov.io/github/ParaToolsInc/taucmdr?branch=master)
 
@@ -80,6 +81,7 @@ Leadership Computing Facility (OLCF) at Oak Ridge National Laboratory.
 
 ---------------------------------------------------------------------------
 
+[CI img]: https://github.com/ParaToolsInc/taucmdr/workflows/CI/badge.svg?branch=GH-Actions&event=push "GH Actions CI image"
 [Build img]: https://travis-ci.org/ParaToolsInc/taucmdr.svg?branch=master "Travis-CI build status image"
 [Coverage img]: https://codecov.io/github/ParaToolsInc/taucmdr/coverage.svg?branch=master "Unit test code coverage image"
 [License img]: https://img.shields.io/badge/license-BSD--3-blue.svg "View BSD-3 License"
