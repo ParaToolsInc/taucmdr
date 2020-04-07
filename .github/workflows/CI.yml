@@ -189,7 +189,7 @@ jobs:
           export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
           ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
           mkdir "${HOME}/tau-full-validate"
-          cp index.html results.html "${HOME}/tau-full-validate"
+          cp table.html results.html "${HOME}/tau-full-validate"
 
       - name: Upload full-TAU validate
         if: always()
@@ -301,7 +301,7 @@ jobs:
           export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
           ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
           mkdir "${HOME}/tau-tests-validate"
-          cp index.html results.html "${HOME}/tau-tests-validate"
+          cp table.html results.html "${HOME}/tau-tests-validate"
 
       - name: Upload unit tests TAU validate
         if: always()
