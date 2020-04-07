@@ -40,10 +40,12 @@ repos:
 #   rev: pylint-1.9.4
 #   hooks:
 #     - id: pylint
+#       language_version: python3.7
 # - repo: https://github.com/asottile/dead
 #   rev: v1.3.0
 #   hooks:
 #     - id: dead
+#       language_version: python3.7
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
   rev: 1.11.0
   hooks:
@@ -77,3 +79,9 @@ repos:
   hooks:
     - id: markdownlint
       args: [--fix]
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.1.0
+  hooks:
+    - id: pyupgrade
+      language_version: python3.7
+      args: [--keep-percent-format]
