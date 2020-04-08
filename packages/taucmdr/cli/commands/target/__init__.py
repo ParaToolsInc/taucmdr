@@ -35,7 +35,7 @@ TAU Commander Target:
 ========================================================================
 
 The Target settings define the environment including: the host architecture,
-compiler family and instaled software libraries.
+compiler family and installed software libraries.
 
 Creating new targets:
 Enter: `tau target create <new_target_name>`

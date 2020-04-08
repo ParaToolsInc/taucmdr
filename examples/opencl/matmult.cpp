@@ -123,7 +123,7 @@ int main(int argc, char**argv)
 	float* b = (float*)malloc(matsize);
 	float* c = (float*)malloc(matsize);
 
-	//initalize matrices
+	//initialize matrices
 	for (int i=0; i<m; i++) {
 		for (int j=0; j<m; j++) {
 			//a[i*m+j] = i;
@@ -168,11 +168,11 @@ int main(int argc, char**argv)
 				break;
 			case '?':
 				if (optopt == 'd')
-					cerr << "Error, option -d requires argument: comma delimted list of devices to run on." << endl;
+					cerr << "Error, option -d requires argument: comma delimited list of devices to run on." << endl;
 				else if (optopt == 'i')
 					cerr << "Error, option -i requires argument: number of iterations to run." << endl;
 				else
-					cerr << "Error, unknow option. Usage:\nmatmult [-d <device id>,...] [-i <number of iterations]" << endl;
+					cerr << "Error, unknown option. Usage:\nmatmult [-d <device id>,...] [-i <number of iterations]" << endl;
 				return 1;
 			default:
 				break;
@@ -204,7 +204,7 @@ int main(int argc, char**argv)
 			}
 		}
 	}
-	//cout << "finnished mapping devices." << endl;
+	//cout << "finished mapping devices." << endl;
 
 	//cl_context GPUContext = clCreateContextFromType(0, CL_DEVICE_TYPE_GPU, NULL, NULL, &ci);
 	cl_context GPUContext = clCreateContext(0, nDevices, devices, NULL, NULL, &ci);

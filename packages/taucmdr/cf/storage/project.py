@@ -56,7 +56,8 @@ class ProjectStorageError(StorageError):
             search_root (str): Directory in which the search for a project directory was initiated.
         """
         value = "Project directory not found in '%s' or any of its parent directories." % search_root
-        hints = "Make sure that you have already run the `tau initialize` command in this directory or any of its parent directories."
+        hints = ("Make sure that you have already run the `tau initialize` command "
+                 "in this directory or any of its parent directories.")
         super(ProjectStorageError, self).__init__(value, hints)
         self.search_root = search_root
 

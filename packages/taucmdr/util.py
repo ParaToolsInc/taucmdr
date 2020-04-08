@@ -95,7 +95,7 @@ def calculate_uid(parts):
         parts (list): **Ordered** list of strings to include in the UID calcuation.
 
     Returns:
-        str: A string of hexidecimal digits uniquely calculated from `parts`.
+        str: A string of hexadecimal digits uniquely calculated from `parts`.
     """
     uid = hashlib.sha1()
     for part in parts:
@@ -421,7 +421,7 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
 
 
 def path_accessible(path, mode='r'):
-    """Check if a file or directory exists and is accessable.
+    """Check if a file or directory exists and is accessible.
 
     Files are checked by attempting to open them with the given mode.
     Directories are checked by testing their access bits only, which may fail for
@@ -435,7 +435,7 @@ def path_accessible(path, mode='r'):
     Returns:
         True if the file exists and can be opened in the specified mode, False otherwise.
     """
-    assert mode and set(mode) <= set(('r', 'w'))
+    assert mode and set(mode) <= {'r', 'w'}
     if not os.path.exists(path):
         return False
     if os.path.isdir(path):
@@ -466,7 +466,9 @@ def _null_context(label):
     yield
 
 
-def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False):
+def create_subprocess(
+        cmd, cwd=None, env=None, stdout=True, log=True, show_progress=False, error_buf=50, record_output=False
+):
     """Create a subprocess.
 
     See :any:`subprocess.Popen`.
@@ -522,8 +524,7 @@ def create_subprocess(cmd, cwd=None, env=None, stdout=True, log=True, show_progr
             print line,
     if record_output:
         return retval, output
-    else:
-        return retval
+    return retval
 
 
 def get_command_output(cmd):
@@ -688,8 +689,7 @@ def color_text(text, *args, **kwargs):
     """
     if sys.stdout.isatty():
         return termcolor.colored(text, *args, **kwargs)
-    else:
-        return text
+    return text
 
 
 def uncolor_text(text):
@@ -749,7 +749,7 @@ def _zipimporter_iter_modules(archive, path):
 
 
 def _iter_modules(paths, prefix):
-    # pylint: disable=no-member,redefined-variable-type
+    # pylint: disable=no-member
     yielded = {}
     for path in paths:
         importer = pkgutil.get_importer(path)

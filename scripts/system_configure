@@ -68,12 +68,11 @@ def _translate_arg(flag, arg):
             return [flag]
         elif arg is False:
             return [flag, 'ignore']
-        else:
-            return [flag, arg]
+        return [flag, arg]
     if isinstance(arg, basestring):
         return [flag, arg]
     if isinstance(arg, bool):
-        return ['%s=%s' % (flag, arg)]
+        return ['{}={}'.format(flag, arg)]
     try:
         return [flag] + list(arg)
     except TypeError:

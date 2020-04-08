@@ -28,14 +28,14 @@
 """
 Local file backend for storage containers.
 
-A persistant, transactional record storage system useing :py:class:`TinyDB` for
+A persistent, transactional record storage system using :py:class:`TinyDB` for
 both the database and the key/value store.
 """
 
 import os
 import json
-import tinydb
 import tempfile
+import tinydb
 from tinydb import operations
 from tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
@@ -85,7 +85,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
 
 
 class LocalFileStorage(AbstractStorage):
-    """A persistant, transactional record storage system.
+    """A persistent, transactional record storage system.
 
     Uses :py:class:`TinyDB` for both the database and the key/value store.
 
@@ -229,8 +229,7 @@ class LocalFileStorage(AbstractStorage):
         self.connect_database()
         if table_name is None:
             return self._database
-        else:
-            return self._database.table(table_name)
+        return self._database.table(table_name)
 
     @staticmethod
     def _query(keys, match_any):
@@ -368,9 +367,9 @@ class LocalFileStorage(AbstractStorage):
         elif regex is not None:
             #LOGGER.debug('%s: search(where(%s).matches(%r))', table_name, field, regex)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(regex))]
-        else:
+        #else:
             #LOGGER.debug("%s: search(where(%s).matches('.*'))", table_name, field)
-            return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(".*"))]
+        return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(".*"))]
 
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.
@@ -378,7 +377,7 @@ class LocalFileStorage(AbstractStorage):
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: check for the record with that element identifier.
             * dict: check for the record with attributes matching `keys`.
-            * list or tuple: return the equivilent of ``map(contains, keys)``.
+            * list or tuple: return the equivalent of ``map(contains, keys)``.
             * None: return False.
 
         Args:
@@ -439,7 +438,7 @@ class LocalFileStorage(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
@@ -473,7 +472,7 @@ class LocalFileStorage(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):
@@ -506,7 +505,7 @@ class LocalFileStorage(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
         table = self.table(table_name)
         if isinstance(keys, self.Record.eid_type):

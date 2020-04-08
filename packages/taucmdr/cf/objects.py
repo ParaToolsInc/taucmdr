@@ -83,8 +83,8 @@ class TrackedInstance(object):
 class KeyedRecordCreator(type):
     """Metaclass to create a new :any:`KeyedRecord` instance.
 
-    Change object creation proceedure so that only one instance of a :any:`KeyedRecord`
-    exists for a given key argument.  Overridding ``__new__`` would be less creepy,
+    Change object creation procedure so that only one instance of a :any:`KeyedRecord`
+    exists for a given key argument.  Overriding ``__new__`` would be less creepy,
     but then we can't prevent ``__init__`` from being called on the returned class instance,
     i.e. the instance returned is reinitialized every time it is retrieved.
     This metaclass guarantees we call ``__new__`` and ``__init__`` only once per class instance.
@@ -136,7 +136,7 @@ class KeyedRecord(object):
         for inst in Foo.all():
             print inst.a
 
-        >>> vegtable
+        >>> vegetable
         >>> meat
 
         potato is carrot

@@ -36,7 +36,6 @@ class TrialEditCommand(EditCommand):
     """``trial edit`` subcommand."""
 
     def _update_record(self, store, data, key):
-        proj_ctrl = Project.controller()
         expr = Project.selected().experiment()
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
@@ -47,4 +46,4 @@ class TrialEditCommand(EditCommand):
         return EXIT_SUCCESS
 
 COMMAND = TrialEditCommand(Trial, __name__, summary_fmt="Edit experiment trials.",
-                      include_storage_flag=False, include_new_key_flag=False)
+                           include_storage_flag=False, include_new_key_flag=False)

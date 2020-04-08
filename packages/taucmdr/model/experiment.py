@@ -212,8 +212,7 @@ class Experiment(Model):
                 return "[%s]" % ", ".join(val)
             elif isinstance(val, basestring):
                 return "'%s'" % val
-            else:
-                return str(val)
+            return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
         if not rebuild_required:
             return ''
@@ -299,7 +298,7 @@ class Experiment(Model):
                     compilers=target.compilers(),
                     # Use a minimal configuration for the baseline measurement
                     minimal=baseline,
-                    # TAU feature suppport
+                    # TAU feature support
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
                     pthreads_support=application.get_or_default('pthreads'),
@@ -405,14 +404,15 @@ class Experiment(Model):
         except KeyError:
             pass
         else:
-            #LOGGER.warning("Measurement '%s' adds extra options TAU_OPTIONS='%s'", meas['name'], ' '.join(tau.extra_tau_options))
-            LOGGER.warning("Measurement '%s' forces adds '%s' to TAU_OPTIONS", meas['name'], ' '.join(tau.extra_tau_options))
+            LOGGER.warning(
+                "Measurement '%s' forces adds '%s' to TAU_OPTIONS", meas['name'], ' '.join(tau.extra_tau_options)
+            )
         return tau.compile(installed_compiler, compiler_args)
 
     def managed_run(self, launcher_cmd, application_cmds, description=None):
         """Uses this experiment to run an application command.
 
-        Performs all relevent system preparation tasks to run the user's application
+        Performs all relevant system preparation tasks to run the user's application
         under the specified experimental configuration.
 
         Args:
@@ -460,7 +460,7 @@ class Experiment(Model):
                     target_arch=target.architecture(),
                     target_os=target.operating_system(),
                     compilers=target.compilers(),
-                    # TAU feature suppport
+                    # TAU feature support
                     application_linkage=application.get_or_default('linkage'),
                     openmp_support=application.get_or_default('openmp'),
                     pthreads_support=application.get_or_default('pthreads'),
@@ -540,7 +540,7 @@ class Experiment(Model):
         if not trials:
             raise ConfigurationError("No trials in experiment %s" % self['name'])
         if trial_numbers:
-            all_numbers = set(trial['number'] for trial in trials)
+            all_numbers = {trial['number'] for trial in trials}
             not_found = [i for i in trial_numbers if i not in all_numbers]
             if not_found:
                 raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." %

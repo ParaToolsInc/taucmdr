@@ -162,7 +162,7 @@ class TrialController(Controller):
                              "Verify that the right input parameters were specified.",
                              "Check the program output for error messages.",
                              "Does the selected application configuration correctly describe this program?",
-                             "Does the selected measurement configuration specifiy the right measurement methods?",
+                             "Does the selected measurement configuration specify the right measurement methods?",
                              "Does the selected target configuration match the runtime environment?")
         else:
             LOGGER.info("The job has been added to the queue.")
@@ -174,7 +174,7 @@ class TrialController(Controller):
         try:
             self.update({'phase': 'executing', 'begin_time': begin_time}, trial.eid)
             if record_output:
-                retval, output, elapsed =  trial.execute_command(expr, cmd, cwd, env, record_output)
+                retval, output, elapsed = trial.execute_command(expr, cmd, cwd, env, record_output)
             else:
                 retval, elapsed = trial.execute_command(expr, cmd, cwd, env, record_output)
         except:
@@ -200,7 +200,7 @@ class TrialController(Controller):
                                  "Verify that the right input parameters were specified.",
                                  "Check the program output for error messages.",
                                  "Does the selected application configuration correctly describe this program?",
-                                 "Does the selected measurement configuration specifiy the right measurement methods?",
+                                 "Does the selected measurement configuration specify the right measurement methods?",
                                  "Does the selected target configuration match the runtime environment?")
         LOGGER.info('Experiment: %s', expr['name'])
         LOGGER.info('Command: %s', ' '.join(cmd))
@@ -209,8 +209,7 @@ class TrialController(Controller):
         LOGGER.info('Elapsed seconds: %s', elapsed)
         if record_output:
             return retval, output
-        else:
-            return retval
+        return retval
 
     def perform(self, proj, cmd, cwd, env, description, record_output=False):
         """Performs a trial of an experiment.
@@ -252,7 +251,7 @@ class TrialController(Controller):
                 retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
             else:
                 if record_output:
-                    retval, output = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
+                    retval, _ = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
                 else:
                     retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
         except Exception as err:
@@ -328,7 +327,7 @@ class Trial(Model):
             for idx, exe in enumerate(cmd[1:], 1):
                 if util.which(exe):
                     return cmd[:idx], cmd[idx:]
-            # No exectuables, so look for application config file
+            # No executables, so look for application config file
             if appfile_flags:
                 for i, arg in enumerate(cmd[1:], 1):
                     try:
@@ -345,7 +344,7 @@ class Trial(Model):
                                       "commands or %s application files were found after "
                                       "the launcher command '%s'") % (cmd0, cmd0),
                                      "Check that the command is correct. Does it work without TAU?",
-                                     ("Use '--' to seperate '%s' and its arguments from the application "
+                                     ("Use '--' to separate '%s' and its arguments from the application "
                                       "command, e.g. `mpirun -np 4 -- ./a.out -l hello`" % cmd0))
         # No launcher command, just an application command
         return [], cmd
@@ -457,7 +456,7 @@ class Trial(Model):
                 progress_bar.update(count)
 
     def get_data_files(self):
-        """Return paths to the trial's data files or directories maped by data type.
+        """Return paths to the trial's data files or directories mapped by data type.
 
         Post-process trial data if necessary and return a dictionary mapping the types of data produced
         by this trial to paths to related data files or directories.  The paths should be suitable for
@@ -598,14 +597,13 @@ class Trial(Model):
         if traces:
             LOGGER.info("Trial %s produced %s trace files.", self['number'], len(traces))
         elif measurement['trace'] != 'none':
-            raise TrialError("Application completed successfuly but did not produce any traces.")
+            raise TrialError("Application completed successfully but did not produce any traces.")
 
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         if record_output:
             return retval, output, elapsed
-        else:
-            return retval, elapsed
+        return retval, elapsed
 
     def export(self, dest):
         """Export experiment trial data.

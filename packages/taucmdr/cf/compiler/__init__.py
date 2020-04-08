@@ -327,7 +327,7 @@ class _CompilerFamily(TrackedInstance):
                         return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        if len(without_regex) > 0:
+        if without_regex:
             guess = without_regex[0]
             if len(without_regex) > 1:
                 LOGGER.warning(("Assuming '%s' is a %s compiler but it could be to any of these: %s\n"
@@ -381,8 +381,7 @@ class _CompilerInfo(TrackedInstance):
             return [info for info_list in family.members.itervalues() for info in info_list]
         elif role:
             return [info for info in cls.all() if info.role is role]
-        else:
-            return []
+        return []
 
     @classmethod
     def find(cls, command=None, family=None, role=None):
@@ -419,7 +418,7 @@ class InstalledCompilerCreator(type):
 
     InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.
     This can be very expensive, so this metaclass changes the instance creation procedure to only
-    probe the compiler when the compiler command has never been seen before and avoid dupliate
+    probe the compiler when the compiler command has never been seen before and avoid duplicate
     invocations in a case like::
 
         a = InstalledCompiler('/path/to/icc')
@@ -555,7 +554,7 @@ class InstalledCompiler(object):
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
                                      (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
-        known_commands = set(info.command for info in _CompilerInfo.all())
+        known_commands = {info.command for info in _CompilerInfo.all()}
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
             if not line:
                 continue
@@ -717,7 +716,7 @@ class InstalledCompiler(object):
         """
 
         if self.info.family.name == 'Intel' and self.info.role.keyword == 'Host_CC':
-            version_tuple = re.findall("(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
+            version_tuple = re.findall(r"(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
         else:
             version_tuple = None
         return version_tuple
@@ -736,7 +735,7 @@ class InstalledCompiler(object):
                                                     'taucmdr_script': TAUCMDR_SCRIPT,
                                                     'command': self.command}
             fout.write(wrapper)
-        os.chmod(script_file, os.stat(script_file).st_mode | 0111)
+        os.chmod(script_file, os.stat(script_file).st_mode | 0o111)
 
 
 class InstalledCompilerFamily(object):

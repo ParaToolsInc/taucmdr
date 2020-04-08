@@ -80,7 +80,7 @@ class Architecture(KeyedRecord):
                     if line.startswith('processor'):
                         core = {}
                         continue
-                    elif core and not len(line.strip()):
+                    elif core and not line.strip():
                         cpuinfo.append(core)
                     else:
                         key, val = line.split(':')
@@ -148,13 +148,11 @@ class OperatingSystem(KeyedRecord):
         self.description = description
 
     def is_cray_login(self):
-	if self is CRAY_CNL:
+        if self is CRAY_CNL:
             if util.which('aprun'):
                 return False
-	    else:
-                return True
-        else:
-            return False
+            return True
+        return False
 
     @classmethod
     def detect(cls):
@@ -193,7 +191,7 @@ class TauMagic(KeyedRecord):
     """Maps (architecture, operating system) tuples to TAU's magic words.
 
     The key is a (Architecture, OperatingSystem) tuple since TAU's architecture mapping is not one-to-one.
-    The magic word 'ibm64linux' corresponds to several different archiectures and operating sytems and
+    The magic word 'ibm64linux' corresponds to several different architectures and operating systems and
     TAU's magic 'x86_64' could be a tradional CPU or a KNL.  TAU Commander needs to know the "real" CPU
     architecture and operating system so it can chose the right compilers and dependencies for TAU.
 

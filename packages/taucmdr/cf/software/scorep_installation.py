@@ -189,7 +189,7 @@ class ScorepInstallation(AutotoolsInstallation):
                 if not line.startswith(' '):
                     break
                 for flag in flags:
-                    if ("'%s'" % flag) in line:
+                    if "'%s'" % flag in line:
                         found_flags.add(flag)
                         break
                 else:

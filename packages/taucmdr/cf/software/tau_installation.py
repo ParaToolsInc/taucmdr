@@ -39,7 +39,6 @@ TAU is the core software package of TAU Commander.
 
 import os
 import re
-import sys
 import ast
 import glob
 import shutil
@@ -177,7 +176,7 @@ class TauInstallation(Installation):
     def __init__(self, sources, target_arch, target_os, compilers,
                  # Minimal configuration support
                  minimal=False,
-                 # TAU feature suppport
+                 # TAU feature support
                  application_linkage='dynamic',
                  openmp_support=False,
                  pthreads_support=False,
@@ -287,7 +286,8 @@ class TauInstallation(Installation):
             ptts (bool): If True then enable PTTS support.
             ptts_post (bool): If True then skip application sampling and post-process existing PTTS sample files
             ptts_sample_flags (str): flags to pass to PTTS sample_ts command
-            ptts_restart (bool): If true then enable restart suport within PTTS, allowing application to continue running and be reinstrumented after stop
+            ptts_restart (bool): If true then enable restart support within PTTS, allowing application to continue
+                                 running and be reinstrumented after stop
             ptts_start (str): address at which to start a PTTS sampling region
             ptts_stop (str): address at which to stop a PTTS sampling region
             ptts_report_flags (str): flags to pass to PTTS report_ts command
@@ -515,12 +515,10 @@ class TauInstallation(Installation):
                 if self.target_arch in (INTEL_KNC, INTEL_KNL):
                     nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
                     return nprocs
-                else:
-                    nprocs = multiprocessing.cpu_count()
-                    # Assume 2 HTs/core
-                    return max(64, 2*nprocs)
-            else:
-                return 25 # This is currently TAU's default.
+                nprocs = multiprocessing.cpu_count()
+                # Assume 2 HTs/core
+                return max(64, 2*nprocs)
+            return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
         return len(self.metrics)
@@ -533,13 +531,15 @@ class TauInstallation(Installation):
             self._install_tag = util.archive_toplevel(source_archive)
             # If tau nightly, add current date to tag
             if self.src == NIGHTLY:
-                nightlies=glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
+                nightlies = glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
                 nightlies_downloaded = True if nightlies else False
                 if self.update_nightly or not nightlies_downloaded:
                     current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
                     self._install_tag = self._install_tag + current_date
                     # Move to new tgz file
-                    new_archive_name = os.path.join(os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz')
+                    new_archive_name = os.path.join(
+                        os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz'
+                    )
                     os.rename(source_archive, new_archive_name)
                     self.src = new_archive_name
                 else:
@@ -617,7 +617,7 @@ class TauInstallation(Installation):
                                                        (tau_makefile, libotf2.include_path))
 
     def _verify_iowrapper(self, tau_makefile):
-        # Replace right-most occurance of 'Makefile.tau' with 'shared'
+        # Replace right-most occurrence of 'Makefile.tau' with 'shared'
         tagged_shared_dir = 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
         for shared_dir in tagged_shared_dir, 'shared':
             iowrap_libs = glob.glob(os.path.join(shared_dir, 'libTAU-iowrap*'))
@@ -747,7 +747,7 @@ class TauInstallation(Installation):
             try:
                 fortran_magic = fc_magic_map[fc_family]
                 if self.caf_support:
-                    fortran_magic=self.compilers[CAF_FC].info.command
+                    fortran_magic = self.compilers[CAF_FC].info.command
             except KeyError:
                 LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
                 raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
@@ -793,30 +793,30 @@ def find_version():
 print(find_version())
                     '''
             path = self.compilers[PY].absolute_path
-            new_file, name = tempfile.mkstemp(suffix='py',text=True) # make a temporary file
+            new_file, name = tempfile.mkstemp(suffix='py', text=True) # make a temporary file
             with os.fdopen(new_file, 'w') as f:
                 f.write(program)
-            data = get_command_output([path,name])
+            data = get_command_output([path, name])
             # literal_eval converts string of dict to an actual python dict
             # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
             data = ast.literal_eval(data)
             # pythonlib = data['path']
             pythoninc = data['path']+data['version']
-            pythoninc = os.path.join(os.path.dirname(data['path']),'include')
-            pythoninc = os.path.join(pythoninc,'python'+data['version'])
+            pythoninc = os.path.join(os.path.dirname(data['path']), 'include')
+            pythoninc = os.path.join(pythoninc, 'python'+data['version'])
 
             # run ldd /usr/lib and save output
-            out = get_command_output(['ldd',path])
+            out = get_command_output(['ldd', path])
             pattern = re.compile(r'.*=> (.*libpython[23a-z]\.\d.so[0-9\.]+)')
-            pythonlib = pattern.search(out,re.MULTILINE)
+            pythonlib = pattern.search(out, re.MULTILINE)
             if pythonlib is not None:
                 pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
                 pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
             else:
-                print 'output of ldd',out
+                print 'output of ldd', out
                 raise InternalError('output of ldd %s failed to match regex' % path)
-            print 'pythonlib',pythonlib
-            print 'pythoninc',pythoninc
+            print 'pythonlib', pythonlib
+            print 'pythoninc', pythoninc
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -857,7 +857,10 @@ print(find_version())
                 if self.measure_openmp == 'ompt':
                     if ompt:
                         comp_version = self.compilers[CC].version
-                        if comp_version is not None and self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19:
+                        if (
+                                comp_version is not None and
+                                self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
+                        ):
                             flags.append('-ompt')
                         else:
                             flags.append('-ompt=%s' % ompt.install_prefix)
@@ -919,7 +922,7 @@ print(find_version())
     def install(self, force_reinstall=False):
         """Installs TAU.
 
-        Configures, compiles, and installs TAU with all necessarry makefiles and libraries.
+        Configures, compiles, and installs TAU with all necessary makefiles and libraries.
 
         Args:
             force_reinstall (bool): Set to True to force reinstall even if TAU is already installed and working.
@@ -954,7 +957,7 @@ print(find_version())
         for pkg in self.dependencies.itervalues():
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
-        with new_os_environ(), util.umask(002):
+        with new_os_environ(), util.umask(0o02):
             try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
@@ -1287,7 +1290,7 @@ print(find_version())
             if self.sampling_period > 0:
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
             else:
-                self.smapling_period = arch_period.get(self.target_arch, 10000)
+                self.sampling_period = arch_period.get(self.target_arch, 10000)
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
@@ -1353,8 +1356,7 @@ print(find_version())
                         self.application_linkage == 'static'))
         if use_wrapper:
             return TAU_COMPILER_WRAPPERS[compiler.info.role]
-        else:
-            return compiler.absolute_path
+        return compiler.absolute_path
 
     def compile(self, compiler, compiler_args):
         """Executes a compilation command.
@@ -1432,8 +1434,7 @@ print(find_version())
                 fout.write(tau_line)
         if with_equals:
             return cmd[:appfile_arg_idx] + [appfile_flag+'='+tau_appfile] + cmd[appfile_arg_idx+1:]
-        else:
-            return cmd[:appfile_arg_idx] + [appfile_flag, tau_appfile] + cmd[appfile_arg_idx+2:]
+        return cmd[:appfile_arg_idx] + [appfile_flag, tau_appfile] + cmd[appfile_arg_idx+2:]
 
     def get_application_command(self, launcher_cmd, application_cmds):
         """Build a command line to launch an application under TAU.
@@ -1468,7 +1469,7 @@ print(find_version())
             return cmd, env
         if any('python' in subcmd for subcmd in launcher_cmd):
             #self.uses_python=True
-            self._tau_makefile=None
+            self._tau_makefile = None
             self._uid = None
             for subcmd in launcher_cmd:
                 if 'python' in subcmd:
@@ -1487,7 +1488,12 @@ print(find_version())
                 tags = self._makefile_tags(makefile)
                 if not self.mpi_support:
                     tags.add('serial')
-                tau_exec = ['tau_python', '-T', ','.join([tag for tag in tags if tag != 'python']), '-tau-python-interpreter=%s' % self.python_path] + opts
+                tau_exec = [
+                    'tau_python',
+                    '-T',
+                    ','.join([tag for tag in tags if tag != 'python']),
+                    '-tau-python-interpreter=%s' % self.python_path
+                ] + opts
                 launcher_cmd = []
         else:
             makefile = self.get_makefile()
@@ -1606,8 +1612,7 @@ print(find_version())
             for path in paths:
                 retval += util.create_subprocess([os.path.join(self.bin_path, 'paraprof')], cwd=path, env=env)
             return retval
-        else:
-            return util.create_subprocess([os.path.join(self.bin_path, 'paraprof')] + paths, env=env)
+        return util.create_subprocess([os.path.join(self.bin_path, 'paraprof')] + paths, env=env)
 
     def _show_pprof(self, fmt, paths, env):
         if fmt != 'tau':
@@ -1623,7 +1628,9 @@ print(find_version())
                 elif any(subdir.startswith("MULTI__") for subdir in subdirs):
                     for subdir in [file_name.startswith("MULTI__") for file_name in files]:
                         LOGGER.info("\nCurrent trial/metric directory: %s", os.path.basename(subdir))
-                        retval += util.create_subprocess([os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env)
+                        retval += util.create_subprocess(
+                            [os.path.join(self.bin_path, 'pprof'), '-a'], cwd=subdir, env=env
+                        )
                 else:
                     raise ConfigurationError("No profile files found in '%s'" % path)
         return retval
@@ -1796,7 +1803,7 @@ print(find_version())
                                           "PAPI virtual clock that calls PAPI_get_virt_usec.")),
                    ("CPU_TIME", "CPU timer that calls getrusage."),
                    ("LINUX_TIMERS", "Linux high resolution wall clock."),
-                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI messsage sizes."),
+                   ("TAU_MPI_MESSAGE_SIZE", "Running sum of all MPI message sizes."),
                    ("MEMORY_DELTA", "Instantaneous resident set size (RSS)")]
         if self.cuda_support:
             metrics.append(("TAUGPU_TIME", "Wall clock that uses TAU's GPU timestamps."))
@@ -1823,7 +1830,7 @@ print(find_version())
             dyninstroot = os.path.join(self.install_prefix, self.target_arch.name, 'dyninst-9.3.2-working')
             env['DYNINST_ROOT'] = dyninstroot
             env['DYNINSTAPI_RT_LIB'] = '%s/lib/libdyninstAPI_RT.so' %dyninstroot
-            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib') , env['LD_LIBRARY_PATH'])
+            env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib'), env['LD_LIBRARY_PATH'])
         elif rewrite_package == 'pebil':
             rewrite_cmd = 'tau_pebil_rewrite'
         elif rewrite_package == 'maqao':
@@ -1835,9 +1842,8 @@ print(find_version())
         return retval
 
     def get_python_version(self, python_path):
-        _, env = self.runtime_config()
-        cmd = [python_path , '--version']
+        cmd = [python_path, '--version']
         out = util.get_command_output(cmd)
-        p=re.compile('\d+\.\d+\.\d+')
+        p = re.compile(r'\d+\.\d+\.\d+')
         m = p.search(out)
         return m.group()

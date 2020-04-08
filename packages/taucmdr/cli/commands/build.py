@@ -45,7 +45,7 @@ require that you rebuild your application binaries – depending on
 what changes.  TAU Commander will remind you to rebuild your binary
 executable.
 
-The list of compilers suported by TAU Commander is in the list below this help
+The list of compilers supported by TAU Commander is in the list below this help
 section.
 
 To selectively control instrumentation for files or routines that are part of
@@ -90,4 +90,6 @@ class BuildCommand(AbstractCommand):
         return expr.managed_build(args.cmd, args.cmd_args)
 
 
-COMMAND = BuildCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Instrument programs during compilation and/or linking.")
+COMMAND = BuildCommand(
+    __name__, help_page_fmt=HELP_PAGE, summary_fmt="Instrument programs during compilation and/or linking."
+)

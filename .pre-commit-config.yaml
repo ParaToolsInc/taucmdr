@@ -35,13 +35,53 @@ repos:
 #    - id: name-tests-test
     - id: pretty-format-json
     - id: requirements-txt-fixer
-    - id: sort-simple-yaml
     - id: trailing-whitespace
 # - repo: https://github.com/PyCQA/pylint
 #   rev: pylint-1.9.4
 #   hooks:
 #     - id: pylint
+#       language_version: python3.7
 # - repo: https://github.com/asottile/dead
 #   rev: v1.3.0
 #   hooks:
 #     - id: dead
+#       language_version: python3.7
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 1.11.0
+  hooks:
+    - id: script-must-have-extension
+      types: [shell, non-executable]
+    - id: shellcheck
+      args: [--color=always, --check-sourced, --external-sources]
+      additional_dependencies: [shellcheck]
+    - id: shfmt
+      additional_dependencies: [shfmt]
+      args: [-s, -sr, -w, -i, "2"]
+- repo: https://github.com/codespell-project/codespell.git
+  rev: v1.16.0
+  hooks:
+    - id: codespell
+      args: [--check-filenames, --check-hidden, --write-changes, --ignore-words-list, 'iff,creat']
+# - repo: https://github.com/Lucas-C/pre-commit-hooks-markup
+#   rev: 54db9d2ed7d626fabb237c86c4f12b67a254ae97
+#   hooks:
+#   - id: rst-linter
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.5.1
+  hooks:
+    - id: python-check-mock-methods
+    - id: python-no-eval
+    - id: python-no-log-warn
+    - id: rst-backticks
+#    - id: text-unicode-replacement-char
+- repo: https://github.com/igorshubovych/markdownlint-cli.git
+  rev: v0.22.0
+  hooks:
+    - id: markdownlint
+      args: [--fix]
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.1.0
+  hooks:
+    - id: pyupgrade
+      language_version: python3.7
+      args: [--keep-percent-format]
