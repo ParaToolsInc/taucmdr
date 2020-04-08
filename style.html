@@ -103,7 +103,7 @@
 <div class="section" id="introduction">
 <h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>TAU Commander is written in Python so style is actually important.
-Remeber the <a class="reference external" href="https://www.python.org/dev/peps/pep-0020/">Zen of Python</a>:</p>
+Remember the <a class="reference external" href="https://www.python.org/dev/peps/pep-0020/">Zen of Python</a>:</p>
 <ul class="simple">
 <li>Beautiful is better than ugly.</li>
 <li>Explicit is better than implicit.</li>
@@ -145,7 +145,7 @@ throws readers out of their rhythm when they go to read it. Avoid this.</p>
 <p>When writing new code, follow <a class="reference external" href="http://google.github.io/styleguide/pyguide.html">Google Python Style</a> with a few exceptions.
 When editing existing code, follow the existing code style.
 The project&#8217;s pylintrc file will enforce most of these rules.</p>
-<p>The exceptions to <cite>Google Python Style</cite> are:</p>
+<p>The exceptions to <a class="reference external" href="http://google.github.io/styleguide/pyguide.html">Google Python Style</a> are:</p>
 <ul class="simple">
 <li>Maximum line length is 120 characters.</li>
 <li>Multiple imports per line are OK, e.g. <code class="docutils literal"><span class="pre">from</span> <span class="pre">tau</span> <span class="pre">import</span> <span class="pre">logger,</span> <span class="pre">error,</span> <span class="pre">util</span></code>.</li>
@@ -279,7 +279,7 @@ class. The base exception for a module should be called <code class="docutils li
 <li><p class="first">Avoid catch-all <code class="docutils literal"><span class="pre">except:</span></code> statements, or catch <code class="docutils literal"><span class="pre">Exception</span></code> or
 <code class="docutils literal"><span class="pre">StandardError</span></code>.  Remember that Python is very tolerant in this
 regard and <code class="docutils literal"><span class="pre">except:</span></code> will really
-catch everything including misspelled names, <cite>sys.exit()</cite> calls, Ctrl+C
+catch everything including misspelled names, <code class="docutils literal"><span class="pre">sys.exit()</span></code> calls, Ctrl+C
 interrupts, unittest failures and all kinds of other exceptions.</p>
 </li>
 <li><p class="first">Minimize the amount of code in a <code class="docutils literal"><span class="pre">try</span></code>/<code class="docutils literal"><span class="pre">except</span></code> block. The larger
@@ -1274,7 +1274,7 @@ use.</li>
 <li>Holding files open may prevent other actions being performed on them,
 such as moves or deletion.</li>
 <li>Files and sockets that are shared throughout a program may
-inadvertantly be read from or written to after logically being
+inadvertently be read from or written to after logically being
 closed. If they are actually closed, attempts to read or write from
 them will throw exceptions, making the problem known sooner.</li>
 </ul>
@@ -1333,7 +1333,7 @@ handle XML responses.&#8221;).</p>
 </div>
 <div class="section" id="imports-formatting">
 <h3><a class="toc-backref" href="#id36">Imports formatting</a><a class="headerlink" href="#imports-formatting" title="Permalink to this headline">¶</a></h3>
-<p>Imports should be on separate lines unless using the <cite>from</cite> keyword.</p>
+<p>Imports should be on separate lines unless using the <code class="docutils literal"><span class="pre">from</span></code> keyword.</p>
 <p>E.g.:</p>
 <p><strong>Yes:</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -1484,7 +1484,7 @@ operations that should not be executed when the file is being
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

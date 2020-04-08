@@ -130,8 +130,8 @@
 <div class="viewcode-block" id="KeyedRecordCreator"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecordCreator">[docs]</a><span class="k">class</span> <span class="nc">KeyedRecordCreator</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Metaclass to create a new :any:`KeyedRecord` instance.</span>
 
-<span class="sd">    Change object creation proceedure so that only one instance of a :any:`KeyedRecord`</span>
-<span class="sd">    exists for a given key argument.  Overridding ``__new__`` would be less creepy,</span>
+<span class="sd">    Change object creation procedure so that only one instance of a :any:`KeyedRecord`</span>
+<span class="sd">    exists for a given key argument.  Overriding ``__new__`` would be less creepy,</span>
 <span class="sd">    but then we can&#39;t prevent ``__init__`` from being called on the returned class instance,</span>
 <span class="sd">    i.e. the instance returned is reinitialized every time it is retrieved.</span>
 <span class="sd">    This metaclass guarantees we call ``__new__`` and ``__init__`` only once per class instance.</span>
@@ -183,7 +183,7 @@
 <span class="sd">        for inst in Foo.all():</span>
 <span class="sd">            print inst.a</span>
 
-<span class="sd">        &gt;&gt;&gt; vegtable</span>
+<span class="sd">        &gt;&gt;&gt; vegetable</span>
 <span class="sd">        &gt;&gt;&gt; meat</span>
 
 <span class="sd">        potato is carrot</span>
@@ -248,7 +248,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

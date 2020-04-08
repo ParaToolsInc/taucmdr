@@ -75,14 +75,14 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Local file backend for storage containers.</span>
 
-<span class="sd">A persistant, transactional record storage system useing :py:class:`TinyDB` for</span>
+<span class="sd">A persistent, transactional record storage system using :py:class:`TinyDB` for</span>
 <span class="sd">both the database and the key/value store.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">tinydb</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">tinydb</span>
 <span class="kn">from</span> <span class="nn">tinydb</span> <span class="kn">import</span> <span class="n">operations</span>
 <span class="kn">from</span> <span class="nn">tinydb.middlewares</span> <span class="kn">import</span> <span class="n">CachingMiddleware</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
@@ -132,7 +132,7 @@
 
 
 <div class="viewcode-block" id="LocalFileStorage"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.local_file.html#taucmdr.cf.storage.levels.LocalFileStorage">[docs]</a><span class="k">class</span> <span class="nc">LocalFileStorage</span><span class="p">(</span><span class="n">AbstractStorage</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A persistant, transactional record storage system.</span>
+    <span class="sd">&quot;&quot;&quot;A persistent, transactional record storage system.</span>
 
 <span class="sd">    Uses :py:class:`TinyDB` for both the database and the key/value store.</span>
 
@@ -276,8 +276,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">connect_database</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">table_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">):</span>
@@ -415,9 +414,9 @@
         <span class="k">elif</span> <span class="n">regex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1">#LOGGER.debug(&#39;%s: search(where(%s).matches(%r))&#39;, table_name, field, regex)</span>
             <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="n">elem</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">regex</span><span class="p">))]</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#else:</span>
             <span class="c1">#LOGGER.debug(&quot;%s: search(where(%s).matches(&#39;.*&#39;))&quot;, table_name, field)</span>
-            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="n">elem</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="s2">&quot;.*&quot;</span><span class="p">))]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="n">elem</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">tinydb</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="s2">&quot;.*&quot;</span><span class="p">))]</span></div>
 
 <div class="viewcode-block" id="LocalFileStorage.contains"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.local_file.html#taucmdr.cf.storage.levels.LocalFileStorage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if the specified table contains at least one matching record.</span>
@@ -425,7 +424,7 @@
 <span class="sd">        The behavior depends on the type of `keys`:</span>
 <span class="sd">            * self.Record.eid_type: check for the record with that element identifier.</span>
 <span class="sd">            * dict: check for the record with attributes matching `keys`.</span>
-<span class="sd">            * list or tuple: return the equivilent of ``map(contains, keys)``.</span>
+<span class="sd">            * list or tuple: return the equivalent of ``map(contains, keys)``.</span>
 <span class="sd">            * None: return False.</span>
 
 <span class="sd">        Args:</span>
@@ -486,7 +485,7 @@
 <span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
@@ -520,7 +519,7 @@
 <span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
@@ -553,7 +552,7 @@
 <span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: ``bool(keys) == False`` or invaild value for `keys`.</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
@@ -589,7 +588,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

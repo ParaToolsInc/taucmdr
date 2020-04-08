@@ -74,7 +74,7 @@ steak = Foo(&#39;meat&#39;)
 for inst in Foo.all():
     print inst.a
 
-&gt;&gt;&gt; vegtable
+&gt;&gt;&gt; vegetable
 &gt;&gt;&gt; meat
 
 potato is carrot
@@ -134,8 +134,8 @@ No instance has this key value.</td>
 <em class="property">class </em><code class="descclassname">taucmdr.cf.objects.</code><code class="descname">KeyedRecordCreator</code><a class="reference internal" href="_modules/taucmdr/cf/objects.html#KeyedRecordCreator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.objects.KeyedRecordCreator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.8)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
 <p>Metaclass to create a new <a class="reference internal" href="#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a> instance.</p>
-<p>Change object creation proceedure so that only one instance of a <a class="reference internal" href="#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a>
-exists for a given key argument.  Overridding <code class="docutils literal"><span class="pre">__new__</span></code> would be less creepy,
+<p>Change object creation procedure so that only one instance of a <a class="reference internal" href="#taucmdr.cf.objects.KeyedRecord" title="taucmdr.cf.objects.KeyedRecord"><code class="xref any py py-class docutils literal"><span class="pre">KeyedRecord</span></code></a>
+exists for a given key argument.  Overriding <code class="docutils literal"><span class="pre">__new__</span></code> would be less creepy,
 but then we can&#8217;t prevent <code class="docutils literal"><span class="pre">__init__</span></code> from being called on the returned class instance,
 i.e. the instance returned is reinitialized every time it is retrieved.
 This metaclass guarantees we call <code class="docutils literal"><span class="pre">__new__</span></code> and <code class="docutils literal"><span class="pre">__init__</span></code> only once per class instance.</p>
@@ -212,7 +212,7 @@ for inst in Bar.all():
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

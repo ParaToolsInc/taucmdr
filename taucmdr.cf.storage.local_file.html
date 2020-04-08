@@ -53,13 +53,13 @@
   <div class="section" id="module-taucmdr.cf.storage.local_file">
 <span id="taucmdr-cf-storage-local-file-module"></span><h1>taucmdr.cf.storage.local_file module<a class="headerlink" href="#module-taucmdr.cf.storage.local_file" title="Permalink to this headline">¶</a></h1>
 <p>Local file backend for storage containers.</p>
-<p>A persistant, transactional record storage system useing <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> for
+<p>A persistent, transactional record storage system using <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> for
 both the database and the key/value store.</p>
 <dl class="class">
 <dt id="taucmdr.cf.storage.local_file.LocalFileStorage">
 <em class="property">class </em><code class="descclassname">taucmdr.cf.storage.local_file.</code><code class="descname">LocalFileStorage</code><span class="sig-paren">(</span><em>name</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/local_file.html#LocalFileStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.local_file.LocalFileStorage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage" title="taucmdr.cf.storage.AbstractStorage"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.storage.AbstractStorage</span></code></a></p>
-<p>A persistant, transactional record storage system.</p>
+<p>A persistent, transactional record storage system.</p>
 <p>Uses <code class="xref py py-class docutils literal"><span class="pre">TinyDB</span></code> for both the database and the key/value store.</p>
 <dl class="attribute">
 <dt id="taucmdr.cf.storage.local_file.LocalFileStorage.dbfile">
@@ -113,7 +113,7 @@ both the database and the key/value store.</p>
 <dd><ul class="first last simple">
 <li>self.Record.eid_type: check for the record with that element identifier.</li>
 <li>dict: check for the record with attributes matching <cite>keys</cite>.</li>
-<li>list or tuple: return the equivilent of <code class="docutils literal"><span class="pre">map(contains,</span> <span class="pre">keys)</span></code>.</li>
+<li>list or tuple: return the equivalent of <code class="docutils literal"><span class="pre">map(contains,</span> <span class="pre">keys)</span></code>.</li>
 <li>None: return False.</li>
 </ul>
 </dd>
@@ -353,7 +353,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
-<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -434,7 +434,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
-<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -468,7 +468,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
-<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invaild value for <cite>keys</cite>.</p>
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invalid value for <cite>keys</cite>.</p>
 </td>
 </tr>
 </tbody>
@@ -509,7 +509,7 @@ This isn&#8217;t the case for system-level storage and possibly others.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

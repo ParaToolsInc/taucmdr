@@ -142,7 +142,7 @@
 <span class="sd">        parts (list): **Ordered** list of strings to include in the UID calcuation.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        str: A string of hexidecimal digits uniquely calculated from `parts`.</span>
+<span class="sd">        str: A string of hexadecimal digits uniquely calculated from `parts`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">uid</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
@@ -468,7 +468,7 @@
 
 
 <div class="viewcode-block" id="path_accessible"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.path_accessible">[docs]</a><span class="k">def</span> <span class="nf">path_accessible</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Check if a file or directory exists and is accessable.</span>
+    <span class="sd">&quot;&quot;&quot;Check if a file or directory exists and is accessible.</span>
 
 <span class="sd">    Files are checked by attempting to open them with the given mode.</span>
 <span class="sd">    Directories are checked by testing their access bits only, which may fail for</span>
@@ -482,7 +482,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        True if the file exists and can be opened in the specified mode, False otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">((</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">}</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -513,7 +513,9 @@
     <span class="k">yield</span>
 
 
-<div class="viewcode-block" id="create_subprocess"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.create_subprocess">[docs]</a><span class="k">def</span> <span class="nf">create_subprocess</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">error_buf</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="create_subprocess"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.create_subprocess">[docs]</a><span class="k">def</span> <span class="nf">create_subprocess</span><span class="p">(</span>
+        <span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">error_buf</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">record_output</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create a subprocess.</span>
 
 <span class="sd">    See :any:`subprocess.Popen`.</span>
@@ -569,8 +571,7 @@
             <span class="nb">print</span> <span class="n">line</span><span class="p">,</span>
     <span class="k">if</span> <span class="n">record_output</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">output</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">retval</span></div>
+    <span class="k">return</span> <span class="n">retval</span></div>
 
 
 <div class="viewcode-block" id="get_command_output"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.get_command_output">[docs]</a><span class="k">def</span> <span class="nf">get_command_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
@@ -735,8 +736,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">isatty</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">termcolor</span><span class="o">.</span><span class="n">colored</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">text</span></div>
+    <span class="k">return</span> <span class="n">text</span></div>
 
 
 <div class="viewcode-block" id="uncolor_text"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.uncolor_text">[docs]</a><span class="k">def</span> <span class="nf">uncolor_text</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
@@ -796,7 +796,7 @@
 
 
 <span class="k">def</span> <span class="nf">_iter_modules</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
-    <span class="c1"># pylint: disable=no-member,redefined-variable-type</span>
+    <span class="c1"># pylint: disable=no-member</span>
     <span class="n">yielded</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
         <span class="n">importer</span> <span class="o">=</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">get_importer</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -833,7 +833,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

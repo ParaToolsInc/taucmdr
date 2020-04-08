@@ -53,12 +53,12 @@
 <h1>How to Add Support for New TAU Features<a class="headerlink" href="#how-to-add-support-for-new-tau-features" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="step-1-update-the-target-model">
 <h2>Step 1: Update the <a class="reference internal" href="taucmdr.model.target.html#taucmdr.model.target.Target" title="taucmdr.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a> model<a class="headerlink" href="#step-1-update-the-target-model" title="Permalink to this headline">¶</a></h2>
-<p>If the new feature requres any external software pacakges make sure the
+<p>If the new feature requires any external software packages make sure the
 <a class="reference internal" href="taucmdr.model.target.html#taucmdr.model.target.Target" title="taucmdr.model.target.Target"><code class="xref any py py-class docutils literal"><span class="pre">Target</span></code></a> model has at least one attribute for those packages.</p>
 </div>
 <div class="section" id="step-2-update-the-application-model">
 <h2>Step 2: Update the <a class="reference internal" href="taucmdr.model.application.html#taucmdr.model.application.Application" title="taucmdr.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a> model<a class="headerlink" href="#step-2-update-the-application-model" title="Permalink to this headline">¶</a></h2>
-<p>If the new feature requres application-side support (e.g. OpenCL support
+<p>If the new feature requires application-side support (e.g. OpenCL support
 in TAU should correspond to OpenCL being used in the application) then
 make sure <a class="reference internal" href="taucmdr.model.application.html#taucmdr.model.application.Application" title="taucmdr.model.application.Application"><code class="xref any py py-class docutils literal"><span class="pre">Application</span></code></a> has at least one attribute for the feature.</p>
 </div>
@@ -74,7 +74,7 @@ control if the new feature should be enabled or not.</p>
 modules in <code class="xref any docutils literal"><span class="pre">tau.cf</span></code> to react to the new model attributes.  For
 example, you may need to add new parameters to
 <code class="xref any docutils literal"><span class="pre">TauInstallation.__init__</span></code> so the installation object can configure
-TAU appropriatly and enable support for the new feature.</p>
+TAU appropriately and enable support for the new feature.</p>
 </div>
 </div>
 
@@ -94,7 +94,7 @@ TAU appropriatly and enable support for the new feature.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

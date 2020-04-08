@@ -127,7 +127,7 @@
                     <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;processor&#39;</span><span class="p">):</span>
                         <span class="n">core</span> <span class="o">=</span> <span class="p">{}</span>
                         <span class="k">continue</span>
-                    <span class="k">elif</span> <span class="n">core</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span>
+                    <span class="k">elif</span> <span class="n">core</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
                         <span class="n">cpuinfo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">core</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
@@ -195,13 +195,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
 
 <div class="viewcode-block" id="OperatingSystem.is_cray_login"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.OperatingSystem.is_cray_login">[docs]</a>    <span class="k">def</span> <span class="nf">is_cray_login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-	<span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">CRAY_CNL</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">CRAY_CNL</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;aprun&#39;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
-	    <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="OperatingSystem.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.OperatingSystem.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -240,7 +238,7 @@
     <span class="sd">&quot;&quot;&quot;Maps (architecture, operating system) tuples to TAU&#39;s magic words.</span>
 
 <span class="sd">    The key is a (Architecture, OperatingSystem) tuple since TAU&#39;s architecture mapping is not one-to-one.</span>
-<span class="sd">    The magic word &#39;ibm64linux&#39; corresponds to several different archiectures and operating sytems and</span>
+<span class="sd">    The magic word &#39;ibm64linux&#39; corresponds to several different architectures and operating systems and</span>
 <span class="sd">    TAU&#39;s magic &#39;x86_64&#39; could be a tradional CPU or a KNL.  TAU Commander needs to know the &quot;real&quot; CPU</span>
 <span class="sd">    architecture and operating system so it can chose the right compilers and dependencies for TAU.</span>
 
@@ -393,7 +391,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

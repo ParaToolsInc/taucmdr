@@ -195,7 +195,7 @@
         <span class="k">return</span> <span class="s1">&#39;download&#39;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist or is not accessable.&quot;</span><span class="p">)</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist or is not accessible.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;download&#39;</span>
     <span class="k">return</span> <span class="n">path</span></div>
 
@@ -631,7 +631,7 @@
         <span class="sd">&quot;&quot;&quot;Checks a compiler command its arguments for compatibility with this target configuration.</span>
 
 <span class="sd">        Checks that the given compiler matches at least one, **but possibly more**, of the compilers</span>
-<span class="sd">        used in the target. Also performs any special checkes for invalid compiler arguments,</span>
+<span class="sd">        used in the target. Also performs any special checks for invalid compiler arguments,</span>
 <span class="sd">        e.g. -mmic is only for native KNC.</span>
 
 <span class="sd">        If the given compiler command and arguments are compatible with this target then information about</span>
@@ -683,7 +683,8 @@
                      <span class="s2">&quot;The known compiler commands are:&quot;</span><span class="p">]</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">absolute_path</span><span class="p">,</span> <span class="n">comp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">short_descr</span><span class="p">)</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">known_compilers</span><span class="p">)</span>
             <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Try one of the valid compiler commands&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;Create and select a new target configuration that uses the &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">absolute_path</span> <span class="ow">or</span> <span class="n">compiler_cmd</span><span class="p">),</span>
+                     <span class="s2">&quot;Create and select a new target configuration that uses the &#39;</span><span class="si">%s</span><span class="s2">&#39; compiler&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                         <span class="n">absolute_path</span> <span class="ow">or</span> <span class="n">compiler_cmd</span><span class="p">),</span>
                      <span class="s2">&quot;Check loaded modules and the PATH environment variable&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">found</span></div>
@@ -713,7 +714,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Apr 06, 2020 at 18:39:02 UTC.
+      Last updated on Apr 08, 2020 at 01:33:48 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
