@@ -100,10 +100,12 @@ import fileinput
 import subprocess
 import setuptools
 from setuptools import Command
+from typing import List, Dict, Tuple, Optional, Union, Sequence, IO, cast
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 from setuptools.command.install_lib import install_lib as InstallLibCommand
 from setuptools.command.sdist import sdist as SDistCommand
+from pyannotate_runtime import collect_types
 
 # Don't show `setup.py` as the root command
 os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
@@ -111,6 +113,7 @@ os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
 
+collect_types.init_types_collection()
 
 # Customize the BuildSphinx command depending on if Sphinx is installed
 try:
@@ -122,7 +125,7 @@ except ImportError:
     class BuildSphinx(distutils_cmd.Command):
         """Report that Sphinx is required to build documentation."""
         description = 'Sphinx not installed!'
-        user_options = []
+        user_options = [] # type: List[Tuple[str, Optional[str], str]]
         def initialize_options(self):
             pass
         def finalize_options(self):
@@ -132,7 +135,7 @@ except ImportError:
             sys.exit(-1)
 
 else:
-    class BuildSphinx(BuildDoc):
+    class BuildSphinx(BuildDoc): # type: ignore[no-redef]
         """Customize the build_sphinx command.
 
         Copy source files into the build directory to prevent generated files from mixing
@@ -179,6 +182,7 @@ else:
             self._shell(['git', 'push', '-q'])
 
         def _copy_docs_source(self):
+            assert isinstance(self, BuildDoc)
             copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
             shutil.rmtree(copy_source_dir, ignore_errors=True)
             shutil.copytree(self.source_dir, copy_source_dir)
@@ -229,6 +233,7 @@ class Test(TestCommand):
             os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix
             print "Sandboxing user storage: %s" % tmp_user_prefix
         args = ['--buffer']
+        assert isinstance(self, TestCommand)
         self.test_args = args + self.test_args
         try:
             return TestCommand.run_tests(self)
@@ -243,15 +248,18 @@ class InstallLib(InstallLibCommand):
     """Custom install_lib command to always compile with optimization."""
 
     def initialize_options(self):
+        # type: () -> None
         InstallLibCommand.initialize_options(self)
 
     def finalize_options(self):
+        # type: () -> None
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
         InstallLibCommand.finalize_options(self)
         self.optimize = 1
 
     def run(self):
+        # type: () -> None
         InstallLibCommand.run(self)
 
 
@@ -259,9 +267,11 @@ class Install(InstallCommand):
     """Customize the install command with new lib, script, and data installation locations."""
 
     def initialize_options(self):
+        # type: () -> None
         InstallCommand.initialize_options(self)
 
     def finalize_options(self):
+        # type: () -> None
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
         InstallCommand.finalize_options(self)
@@ -272,6 +282,7 @@ class Install(InstallCommand):
         self.optimize = 1
 
     def run(self):
+        # type: () -> None
         from taucmdr import util
         InstallCommand.run(self)
         util.mkdirp(os.path.join(self.prefix, 'system'))
@@ -291,6 +302,7 @@ class Release(SDistCommand):
                      ('all', None, "Build all-in-one packages for all supported (arch, os) combinations")])
 
     def initialize_options(self):
+        from taucmdr.cf.platforms import Architecture, OperatingSystem
         SDistCommand.initialize_options(self)
         self.target_arch = None
         self.target_os = None
@@ -325,6 +337,7 @@ class Release(SDistCommand):
     def _software_packages(self):
         import taucmdr.cf.software
         packages = []
+        assert isinstance(taucmdr.cf.software.__path__, list)
         for module_file in os.listdir(taucmdr.cf.software.__path__[0]):
             if module_file.endswith('_installation.py'):
                 packages.append(module_file[:-16])
@@ -360,7 +373,7 @@ class Release(SDistCommand):
         util.download(cache_pkg, os.path.join('system', 'src', pkg))
 
     def _download_python(self):
-        from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX
+        from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX, Architecture, OperatingSystem
         make_arch = self.target_arch
         make_os = self.target_os
         arch_map = {X86_64: 'x86_64',
@@ -372,12 +385,14 @@ class Release(SDistCommand):
         os_map = {DARWIN: 'Darwin',
                   LINUX: 'Linux'}
         try:
+            assert isinstance(self.target_arch, Architecture)
             make_arch = arch_map[self.target_arch]
-        except KeyError:
+        except (KeyError, AssertionError):
             return
         try:
+            assert isinstance(self.target_os, OperatingSystem)
             make_os = os_map[self.target_os]
-        except KeyError:
+        except (KeyError, AssertionError):
             return
         # Use `make` to download Python because we keep the Tau/Anaconda target translation in the Makefile
         subprocess.call(['make', 'python_download', 'HOST_ARCH='+make_arch, 'HOST_OS='+make_os])
@@ -416,8 +431,8 @@ class Release(SDistCommand):
         from taucmdr import util
         util.rmtree('system', ignore_errors=True)
         # Update package version number
-        for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=1):
-            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+        for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=True):
+            # fileinput.input with inplace=True redirects stdout to the input file ... freaky
             sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version()
                              if line.startswith('__version__') else line)
         if self.web:
@@ -454,6 +469,7 @@ class BuildMarkdown(Command):
         cli.USAGE_FORMAT = "markdown"
         os.environ['ANSI_COLORS_DISABLED'] = '1'
         #setup toc file
+        assert self.dest is not None
         tocfilename = os.path.join(self.dest, 'tau-commander-user-manual-toc.md')
         with open(tocfilename, 'w') as tocfile:
             usemanpath = 'http://taucommander.paratools.com/tau-commander-user-manual/'
@@ -512,6 +528,7 @@ class BuildMarkdown(Command):
 
 
 def _version():
+    # type: () -> str
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
     if os.path.exists(version_file):
         with open(version_file) as fin:
@@ -525,6 +542,7 @@ def _version():
 
 
 def _data_files():
+    # type: () -> List[Tuple[str, List[str]]]
     """List files to be copied to the TAU Commander installation.
 
     Start with the files listed in MANIFEST.in, then exclude files that should not be installed.
@@ -534,22 +552,22 @@ def _data_files():
     from distutils.errors import DistutilsTemplateError
     filelist = FileList()
     template = TextFile(os.path.join(PACKAGE_TOPDIR, 'MANIFEST.in'),
-                        strip_comments=1, skip_blanks=1, join_lines=1,
-                        lstrip_ws=1, rstrip_ws=1, collapse_join=1)
+                        strip_comments=True, skip_blanks=True, join_lines=True,
+                        lstrip_ws=True, rstrip_ws=True, collapse_join=True)
     try:
         while True:
             line = template.readline()
             if line is None:
                 break
             try:
-                filelist.process_template_line(line)
+                filelist.process_template_line(line) # type: ignore[attr-defined]
             except (DistutilsTemplateError, ValueError) as err:
-                print "%s, line %d: %s" % (template.filename, template.current_line, err)
+                print "%s, line %d: %s" % (template.filename, template.current_line, err) # type: ignore[attr-defined]
     finally:
         template.close()
     excluded = ['Makefile', 'VERSION', 'MANIFEST.in', '*Miniconda*']
     data_files = []
-    for path in filelist.files:
+    for path in filelist.files: # type: ignore[attr-defined]
         for excl in excluded:
             if fnmatch.fnmatchcase(path, excl):
                 break
@@ -558,32 +576,34 @@ def _data_files():
     return data_files
 
 
-setuptools.setup(
-    # Package metadata
-    name=NAME,
-    version=_version(),
-    author=AUTHOR,
-    author_email=AUTHOR_EMAIL,
-    description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
-    license=LICENSE,
-    keywords=KEYWORDS,
-    url=HOMEPAGE,
-    classifiers=CLASSIFIERS,
-    # Package configuration
-    packages=setuptools.find_packages("packages"),
-    package_dir={"": "packages"},
-    scripts=['scripts/tau', 'scripts/system_configure'],
-    zip_safe=False,
-    data_files=_data_files(),
-    # Testing
-    test_suite='taucmdr',
-    tests_require=['pylint==1.9.5', 'backports.functools_lru_cache'],
-    # Custom commands
-    cmdclass={'install': Install,
-              'install_lib': InstallLib,
-              'test': Test,
-              'build_sphinx': BuildSphinx,
-              'release': Release,
-              'build_markdown': BuildMarkdown}
-)
+with collect_types.collect():
+    setuptools.setup(
+        # Package metadata
+        name=NAME,
+        version=_version(),
+        author=AUTHOR,
+        author_email=AUTHOR_EMAIL,
+        description=DESCRIPTION,
+        long_description=LONG_DESCRIPTION,
+        license=LICENSE,
+        keywords=KEYWORDS,
+        url=HOMEPAGE,
+        classifiers=CLASSIFIERS,
+        # Package configuration
+        packages=setuptools.find_packages("packages"),
+        package_dir={"": "packages"},
+        scripts=['scripts/tau', 'scripts/system_configure'],
+        zip_safe=False,
+        data_files=_data_files(),
+        # Testing
+        test_suite='taucmdr',
+        tests_require=['pylint==1.9.5', 'backports.functools_lru_cache'],
+        # Custom commands
+        cmdclass={'install': Install,
+                  'install_lib': InstallLib,
+                  'test': Test,
+                  'build_sphinx': BuildSphinx,
+                  'release': Release,
+                  'build_markdown': BuildMarkdown}
+    )
+collect_types.dump_stats('type_info.json')
