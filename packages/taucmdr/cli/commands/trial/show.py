@@ -36,28 +36,28 @@ from taucmdr.cf.software.tau_installation import TauInstallation, PROFILE_ANALYS
 
 class TrialShowCommand(AbstractCommand):
     """``trial show`` subcommand."""
-    
+
     def _construct_parser(self):
         usage = "%s [trial_number... | data_file...] [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('--profile-tools', 
+        parser.add_argument('--profile-tools',
                             help="specify profile analysis tools",
                             metavar='<tool>',
                             nargs='+',
                             choices=PROFILE_ANALYSIS_TOOLS,
                             default=arguments.SUPPRESS)
-        parser.add_argument('--trace-tool', 
+        parser.add_argument('--trace-tool',
                             help="specify trace analysis tool",
                             metavar='<tool>',
                             nargs='+',
                             choices=TRACE_ANALYSIS_TOOLS,
                             default=arguments.SUPPRESS)
-        parser.add_argument('trial_numbers', 
+        parser.add_argument('trial_numbers',
                             help="Display data from trials",
                             metavar='<trial_number>',
                             nargs='*',
                             default=arguments.SUPPRESS)
-        parser.add_argument('data_files', 
+        parser.add_argument('data_files',
                             help="Display data from files",
                             metavar='<data_file>',
                             nargs='*',
@@ -97,4 +97,3 @@ class TrialShowCommand(AbstractCommand):
 
 
 COMMAND = TrialShowCommand(__name__, summary_fmt="Display trial data from a file path or trial number.")
-

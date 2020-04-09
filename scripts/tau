@@ -59,13 +59,12 @@ if __name__ == '__main__':
                     print "Profile written to '%s'" % profile_taucmdr
                     print "Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr
 
-    here = os.path.realpath(os.path.dirname(__file__))
-    os.environ['__TAUCMDR_HOME__'] = os.path.join(here, '..')
+    HERE = os.path.realpath(os.path.dirname(__file__))
+    os.environ['__TAUCMDR_HOME__'] = os.path.join(HERE, '..')
     os.environ['__TAUCMDR_SCRIPT__'] = os.path.basename(__file__)
-    packages = os.path.join(here, '..', 'packages')
-    sys.path.insert(0, packages)
+    PACKAGES = os.path.join(HERE, '..', 'packages')
+    sys.path.insert(0, PACKAGES)
 
     with profiler():
         from taucmdr.cli.commands.__main__ import COMMAND as cli_main_cmd
         sys.exit(cli_main_cmd.main(sys.argv[1:]))
-

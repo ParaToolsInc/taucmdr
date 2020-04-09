@@ -89,12 +89,12 @@ def attributes():
 
 class ProjectController(Controller):
     """Project data controller."""
-    
+
     def create(self, data):
         if self.storage is not PROJECT_STORAGE:
             raise InternalError("Projects may only be created in project-level storage")
         return super(ProjectController, self).create(data)
-    
+
     def delete(self, keys):
         super(ProjectController, self).delete(keys)
         try:
@@ -113,10 +113,10 @@ class ProjectController(Controller):
                     raise InternalError("Experiment contains %s not in project" % attr)
             self.update({'experiment': experiment.eid}, project.eid)
             experiment.configure()
-    
+
     def unselect(self):
         del self.storage['selected_project']
-        
+
     def selected(self):
         try:
             selected = self.one(self.storage['selected_project'])
@@ -130,11 +130,11 @@ class ProjectController(Controller):
 
 class Project(Model):
     """Project data controller."""
-    
+
     __attributes__ = attributes
 
     __controller__ = ProjectController
-    
+
     def on_update(self, changes):
         from taucmdr.model.experiment import Experiment
         from taucmdr.model.compiler import Compiler
@@ -175,21 +175,21 @@ class Project(Model):
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
-    
+
     @classmethod
     def selected(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage).selected()
-    
+
     @property
     def prefix(self):
         return os.path.join(self.storage.prefix, self['name'])
-        
+
     def experiment(self):
         """Gets the currently selected experiment configuration.
-        
+
         Returns:
             Experiment: The current experiment
-            
+
         Raises:
             ExperimentSelectionError: No experiment currently selected.
         """

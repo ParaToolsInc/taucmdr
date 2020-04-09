@@ -1,5 +1,5 @@
 CC = tau gcc
-CFLAGS = 
+CFLAGS =
 LDFLAGS =
 
 RM = /bin/rm -rf
@@ -25,4 +25,3 @@ matmult_initialize.o: matmult_initialize.c matmult_initialize.h
 
 clean:
 	$(RM) $(OBJS) $(TARGET) profile.* *.trc *.edf *.z MULT* *.inst.* *.pdb Comp_gnu.o *.pomp.* *.opari.inc pompregions.* *.output *.error *.cobaltlog
-

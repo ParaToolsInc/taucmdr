@@ -34,7 +34,7 @@ from taucmdr.cli.arguments import ArgumentsNamespace
 
 class AbstractCommand(object):
     """Abstract base class for TAU Commander commands.
-    
+
     Attributes:
         module_name (str): Name of the command module this command object belongs to.
         command (str): Command line string that executes this command.
@@ -42,14 +42,14 @@ class AbstractCommand(object):
         help_page (str): Long and informative description of the command.
         group (str): If not None, commands will be grouped together by group name in help messages.
     """
-    
+
     __metaclass__ = ABCMeta
-    
+
     def __init__(self, module_name, format_fields=None, summary_fmt=None, help_page_fmt=None, group=None):
         if not summary_fmt:
             summary_fmt = "No summary for '%(command)s'"
         if not help_page_fmt:
-            help_page_fmt = "No help page for '%(command)s'" 
+            help_page_fmt = "No help page for '%(command)s'"
         self.module_name = module_name
         self.logger = logger.get_logger(module_name)
         self.command = cli.command_from_module_name(module_name)
@@ -59,14 +59,14 @@ class AbstractCommand(object):
         self.help_page_fmt = help_page_fmt
         self.group = group
         self._parser = None
-        
+
     def __str__(self):
         return self.command
 
     @property
     def summary(self):
         return self.summary_fmt % self.format_fields
-    
+
     @property
     def help_page(self):
         return self.help_page_fmt % self.format_fields
@@ -76,7 +76,7 @@ class AbstractCommand(object):
         if self._parser is None:
             self._parser = self._construct_parser()
         return self._parser
-        
+
     @property
     def usage(self):
         return self.parser.format_help()
@@ -96,11 +96,10 @@ class AbstractCommand(object):
     @abstractmethod
     def main(self, argv):
         """Command program entry point.
-        
+
         Args:
             argv (list): Command line arguments.
-            
+
         Returns:
             int: Process return code: non-zero if a problem occurred, 0 otherwise
         """
-

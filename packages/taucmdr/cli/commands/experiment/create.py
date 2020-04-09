@@ -40,7 +40,7 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 class ExperimentCreateCommand(CreateCommand):
     """``experiment create`` subcommand."""
-    
+
     def _construct_parser(self):
         parser = super(ExperimentCreateCommand, self)._construct_parser()
         # All three options must be given to create the experiments
@@ -48,7 +48,7 @@ class ExperimentCreateCommand(CreateCommand):
         parser['--application'].required = True
         parser['--measurement'].required = True
         return parser
-    
+
     def _create_record(self, store, data):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
@@ -79,7 +79,7 @@ class ExperimentCreateCommand(CreateCommand):
                 'application': app.eid,
                 'measurement': meas.eid}
         return self._create_record(PROJECT_STORAGE, data)
-    
+
 
 COMMAND = ExperimentCreateCommand(Experiment, __name__, summary_fmt="Create a new experiment from project components.",
                                   include_storage_flag=False)

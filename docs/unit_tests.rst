@@ -49,4 +49,3 @@ Further information on the unit test package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The `page <https://docs.python.org/2/library/unittest.html>`_ has more
 information on writing a unit test function.
-

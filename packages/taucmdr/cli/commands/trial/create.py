@@ -40,10 +40,10 @@ class TrialCreateCommand(CreateCommand):
     @staticmethod
     def is_compatible(cmd):
         """Check if this subcommand can work with the given command.
-        
+
         Args:
             cmd (str): A command from the command line, e.g. sys.argv[1].
-            
+
         Returns:
             bool: True if this subcommand is compatible with `cmd`.
         """
@@ -78,7 +78,7 @@ class TrialCreateCommand(CreateCommand):
                             metavar='command_arguments',
                             nargs=arguments.REMAINDER)
         return parser
-    
+
     def main(self, argv):
         args = self._parse_args(argv)
         if args.tau_dir:
@@ -101,8 +101,7 @@ class TrialCreateCommand(CreateCommand):
         if args.tau_dir:
             Project.controller().storage.tau_dir(args.tau_dir)
             return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
-        else:
-            return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
+        return Project.selected().experiment().managed_run(launcher_cmd, application_cmds, description)
 
 
 COMMAND = TrialCreateCommand(Trial, __name__, summary_fmt="Create new trial of the selected experiment.")

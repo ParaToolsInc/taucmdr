@@ -44,6 +44,5 @@ class Libotf2Installation(AutotoolsInstallation):
     """Encapsulates a libotf2 installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources, 
+        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
-

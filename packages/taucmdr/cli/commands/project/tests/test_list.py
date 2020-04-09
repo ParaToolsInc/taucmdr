@@ -36,13 +36,13 @@ from taucmdr.cli.commands.project.list import COMMAND as list_cmd
 
 class ListTest(tests.TestCase):
     """Tests for :any:`project.edit`."""
-    
+
     def test_list(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, list_cmd, [])
         self.assertIn('proj1', stdout)
         self.assertFalse(stderr)
-    
+
     def test_wrongname(self):
         self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, list_cmd, ['proj2'])

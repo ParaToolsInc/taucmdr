@@ -53,7 +53,7 @@ class InitializeTest(tests.TestCase):
     def test_initialize(self):
         self.destroy_project_storage()
         self.assertCommandReturnValue(0, initialize_cmd, [])
-        
+
     def test_init_below_project(self):
         self.reset_project_storage()
         subdir = "foo"

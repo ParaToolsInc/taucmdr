@@ -59,4 +59,3 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
-

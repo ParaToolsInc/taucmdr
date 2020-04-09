@@ -10,4 +10,3 @@ void initialize(double **matrix, int rows, int cols) {
     }
   }
 }
-

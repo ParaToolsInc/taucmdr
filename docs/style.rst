@@ -7,7 +7,7 @@ Introduction
 ------------
 
 TAU Commander is written in Python so style is actually important.
-Remeber the `Zen of Python`_:
+Remember the `Zen of Python`_:
 
 * Beautiful is better than ugly.
 * Explicit is better than implicit.
@@ -43,7 +43,7 @@ throws readers out of their rhythm when they go to read it. Avoid this.
 File Header
 -----------
 
-All files must begin with the correct file header. See the 
+All files must begin with the correct file header. See the
 :doc:`documentation` for more information.
 
 
@@ -54,7 +54,7 @@ When writing new code, follow `Google Python Style`_ with a few exceptions.
 When editing existing code, follow the existing code style.
 The project's pylintrc file will enforce most of these rules.
 
-The exceptions to `Google Python Style` are:
+The exceptions to `Google Python Style`_ are:
 
 * Maximum line length is 120 characters.
 * Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
@@ -218,9 +218,9 @@ cases when making library calls.
            pass
 
 -  Avoid catch-all ``except:`` statements, or catch ``Exception`` or
-   ``StandardError``.  Remember that Python is very tolerant in this 
+   ``StandardError``.  Remember that Python is very tolerant in this
    regard and ``except:`` will really
-   catch everything including misspelled names, `sys.exit()` calls, Ctrl+C
+   catch everything including misspelled names, ``sys.exit()`` calls, Ctrl+C
    interrupts, unittest failures and all kinds of other exceptions.
 -  Minimize the amount of code in a ``try``/``except`` block. The larger
    the body of the ``try``, the more likely that an exception will be
@@ -1439,7 +1439,7 @@ many downsides, including:
 -  Holding files open may prevent other actions being performed on them,
    such as moves or deletion.
 -  Files and sockets that are shared throughout a program may
-   inadvertantly be read from or written to after logically being
+   inadvertently be read from or written to after logically being
    closed. If they are actually closed, attempts to read or write from
    them will throw exceptions, making the problem known sooner.
 
@@ -1509,7 +1509,7 @@ Imports formatting
 ~~~~~~~~~~~~~~~~~~
 
 
-Imports should be on separate lines unless using the `from` keyword.
+Imports should be on separate lines unless using the ``from`` keyword.
 
 E.g.:
 
@@ -1674,5 +1674,3 @@ operations that should not be executed when the file is being
 .. _Sphinx: http://sphinx-doc.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _EAFP Style: <http://stackoverflow.com/a/11360880/403516>
-
-

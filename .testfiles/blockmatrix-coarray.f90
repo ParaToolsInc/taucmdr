@@ -57,7 +57,7 @@ program blockmatrix
 
     do k=1,num_images()
         if (this_image() == k) then
-            print *, 'Image ', k, ' = ', myrow, ', ', mycol 
+            print *, 'Image ', k, ' = ', myrow, ', ', mycol
             do i=1,blockrows
                  print '(50(I5,1X))',(c(i,j),j=1,blockcols)
             enddo
@@ -68,7 +68,7 @@ program blockmatrix
     deallocate(b)
     deallocate(c)
 
-contains 
+contains
     subroutine nearsquare(n, a, b)
         implicit none
         integer, intent(in) :: n

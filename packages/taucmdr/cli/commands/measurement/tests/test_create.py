@@ -44,7 +44,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['meas01'])
         self.assertIn('Added measurement \'meas01\' to project configuration', stdout)
         self.assertFalse(stderr)
-        
+
     def test_duplicatename(self):
         self.reset_project_storage()
         self.assertCommandReturnValue(0, create_cmd, ['meas01'])
@@ -81,18 +81,17 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertIn("Added measurement '%s' to project" % name, stdout)
         self.assertNotIn("WARNING", stdout)
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
         self.assertIsInstance(meas, Measurement)
         self.assertEqual(meas['callpath'], 0)
 
     def test_trace_callpath_10(self):
         self.reset_project_storage()
-        name = 'test_discourage_callpath'       
+        name = 'test_discourage_callpath'
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace', '--callpath', '10'])
         self.assertFalse(stderr)
         self.assertIn("Added measurement '%s' to project" % name, stdout)
         self.assertIn("WARNING", stdout)
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
         self.assertIsInstance(meas, Measurement)
         self.assertEqual(meas['callpath'], 10)
-

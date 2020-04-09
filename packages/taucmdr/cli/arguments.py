@@ -69,10 +69,10 @@ class MutableArgumentGroup(argparse._ArgumentGroup):
     """Argument group that allows its actions to be modified after creation."""
     # We're changing the behavior of the superclass so we need to access protected members
     # pylint: disable=protected-access
-    
+
     def __init__(self, *args, **kwargs):
         super(MutableArgumentGroup, self).__init__(*args, **kwargs)
-    
+
     def __getitem__(self, option_string):
         return self._option_string_actions[option_string]
 
@@ -80,12 +80,12 @@ class MutableArgumentGroup(argparse._ArgumentGroup):
 class MutableArgumentGroupParser(argparse.ArgumentParser):
     """Argument parser with mutable groups and better help formatting.
 
-    :py:class:`argparse.ArgumentParser` doesn't allow groups to change once set 
+    :py:class:`argparse.ArgumentParser` doesn't allow groups to change once set
     and generates "scruffy" looking help, so we fix this problems in this subclass.
     """
     # We're changing the behavior of the superclass so we need to access protected members
     # pylint: disable=protected-access
-    
+
     def __init__(self, *args, **kwargs):
         super(MutableArgumentGroupParser, self).__init__(*args, **kwargs)
         self.actions = self._actions
@@ -95,9 +95,9 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
 
     def add_argument_group(self, *args, **kwargs):
         """Returns an argument group.
-        
+
         If the group doesn't exist it will be created.
-        
+
         Args:
             *args: Positional arguments to pass to :any:`ArgumentParser.add_argument_group`
             **kwargs: Keyword arguments to pass to :any:`ArgumentParser.add_argument_group`
@@ -112,7 +112,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         group = MutableArgumentGroup(self, *args, **kwargs)
         self._action_groups.append(group)
         return group
-    
+
     def _format_help_markdown(self):
         """Format command line help string."""
         formatter = self._get_formatter()
@@ -124,7 +124,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             formatter.end_section()
         formatter.add_text(self.epilog)
         return formatter.format_help()
-    
+
     def _format_help_console(self):
         """Format command line help string."""
         formatter = self._get_formatter()
@@ -138,14 +138,14 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             formatter.end_section()
         formatter.add_text(self.epilog)
         return formatter.format_help()
-    
+
     def format_help(self):
         try:
             func = getattr(self, '_format_help_'+USAGE_FORMAT.lower())
         except AttributeError:
             raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT)
         return func()
-    
+
     def _sorted_groups(self):
         """Iterate over action groups."""
         positional_title = 'positional arguments'
@@ -162,13 +162,13 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         for group in groups:
             if group.title not in [positional_title, optional_title]:
                 yield group
-                
-    def merge(self, parser, group_title=None, include_positional=False, include_optional=True, include_storage=False, 
+
+    def merge(self, parser, group_title=None, include_positional=False, include_optional=True, include_storage=False,
               exclude_groups=None, exclude_arguments=None):
         """Merge arguments from a parser into this parser.
-        
+
         Modify this parser by adding additional arguments copied from the supplied parser.
-        
+
         Args:
             parser (MutableArgumentGroupParser): Parser to pull arguments from.
             group_title (str): Optional group title for merged arguments.
@@ -184,7 +184,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
             dst_group = self.add_argument_group(group_title if group_title else action.container.title)
             optional = bool(action.option_strings)
             storage = '-'+STORAGE_LEVEL_FLAG in action.option_strings
-            excluded = exclude_arguments and bool([optstr for optstr in action.option_strings  
+            excluded = exclude_arguments and bool([optstr for optstr in action.option_strings
                                                    for substr in exclude_arguments if substr in optstr])
             # pylint: disable=too-many-boolean-expressions
             if (excluded or
@@ -201,23 +201,23 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
 
 class HelpFormatter(argparse.RawDescriptionHelpFormatter):
     """Custom help string formatter for argument parser.
-    
+
     Provide proper help message alignment, line width, and formatting.
-    Uses console line width (:any:`logger.LINE_WIDTH`) to format help 
+    Uses console line width (:any:`logger.LINE_WIDTH`) to format help
     messages appropriately so they don't wrap in strange ways.
-    
+
     Args:
         prog (str): Name of the program.
         indent_increment (int): Number of spaces to indent wrapped lines.
         max_help_position (int): Column on which to begin subsequent lines of wrapped help strings.
         width (int): Maximum help message length before wrapping.
     """
-    
+
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=None):
         if width is None:
             width = logger.LINE_WIDTH
         super(HelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
-        
+
     def _split_lines(self, text, width):
         parts = []
         for line in text.splitlines():
@@ -241,22 +241,22 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
                         default_str = str(action.default)
                     helpstr += '\n%s' % indent + '- default: %s' % default_str
         return helpstr
-    
+
     def _format_positional(self, argstr):
         return argstr
-    
+
     def _format_optional(self, argstr):
         return argstr
-    
+
     def _format_requred_arg(self, argstr):
         return argstr
-    
+
     def _format_optional_arg(self, argstr):
         return argstr
-    
+
     def _format_meta_arg(self, argstr):
         return argstr
-    
+
     def _format_args(self, action, default_metavar):
         get_metavar = self._metavar_formatter(action, default_metavar)
         if action.nargs is None:
@@ -267,7 +267,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
             result = self._format_optional_arg('[%s [%s ...]]' % get_metavar(2))
         elif action.nargs == argparse.ONE_OR_MORE:
             tpl = get_metavar(2)
-            result = self._format_requred_arg('%s' % tpl[0]) + self._format_optional_arg(' [%s ...]' % tpl[1])  
+            result = self._format_requred_arg('%s' % tpl[0]) + self._format_optional_arg(' [%s ...]' % tpl[1])
         elif action.nargs == argparse.REMAINDER:
             result = self._format_requred_arg('...')
         elif action.nargs == argparse.PARSER:
@@ -295,7 +295,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 class ConsoleHelpFormatter(HelpFormatter):
     """Custom help string formatter for console output."""
-         
+
     def start_section(self, heading):
         return super(ConsoleHelpFormatter, self).start_section(util.color_text(heading, attrs=['bold']))
 
@@ -309,19 +309,19 @@ class ConsoleHelpFormatter(HelpFormatter):
             action_length = invocation_length + self._current_indent
             self._action_max_length = max(self._action_max_length, action_length)
             self._add_item(self._format_action, [action])
-     
+
     def _format_positional(self, argstr):
         return util.color_text(argstr, 'red')
-    
+
     def _format_optional(self, argstr):
         return util.color_text(argstr, 'red')
-    
+
     def _format_requred_arg(self, argstr):
         return util.color_text(argstr, 'blue')
-    
+
     def _format_optional_arg(self, argstr):
         return util.color_text(argstr, 'cyan')
-    
+
     def _format_action(self, action):
         help_position = min(self._action_max_length + 2, self._max_help_position)
         help_width = max(self._width - help_position, 11)
@@ -360,18 +360,18 @@ class ConsoleHelpFormatter(HelpFormatter):
 
 class MarkdownHelpFormatter(HelpFormatter):
     """Custom help string formatter for markdown output."""
-    
+
     first_col_width = 30
-    
+
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
         super(MarkdownHelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
-        trans = {'<': '*', 
-                 '>': '*', 
+        trans = {'<': '*',
+                 '>': '*',
                  '|': r'\|'}
         self._escape_rep = {re.escape(k): v for k, v in trans.iteritems()}
         self._escape_pattern = re.compile("|".join(self._escape_rep.keys()))
 
-    
+
     class _Section(argparse.HelpFormatter._Section):
         """Override section help formatting."""
         # pylint: disable=protected-access
@@ -393,7 +393,7 @@ class MarkdownHelpFormatter(HelpFormatter):
             else:
                 heading = ''
             return join(['\n', heading, '\n', item_help, '\n'])
-        
+
     def _escape_markdown(self, text):
         return self._escape_pattern.sub(lambda m: self._escape_rep[re.escape(m.group(0))], text)
 
@@ -415,16 +415,16 @@ class MarkdownHelpFormatter(HelpFormatter):
         if choices:
             helpstr += self._escape_markdown('\n  - %s: %s' % (action.metavar, ', '.join(choices)))
         return helpstr
-    
+
     def _format_usage(self, usage, actions, groups, prefix):
         usage = super(MarkdownHelpFormatter, self)._format_usage(usage, actions, groups, "")
         return "`%s`" % usage.strip() + '\n\n'
-    
+
     def _format_action_invocation(self, action):
         invocation = super(MarkdownHelpFormatter, self)._format_action_invocation(action)
         return '{}{:>{}}'.format(' '*self._indent_increment, self._escape_markdown(invocation),
                                  MarkdownHelpFormatter.first_col_width - self._indent_increment)
-    
+
     def _format_action(self, action):
         # determine the required width and the entry label
         help_position = min(self._action_max_length + 2, self._max_help_position)
@@ -450,7 +450,7 @@ class MarkdownHelpFormatter(HelpFormatter):
 
 class ParsePackagePathAction(argparse.Action):
     """Argument parser action for software package paths.
-    
+
     This action checks that an argument's value is one of these cases:
     1) The path to an existing software package installation.
     2) The path to an archive file containing the software package.
@@ -462,11 +462,11 @@ class ParsePackagePathAction(argparse.Action):
 
     def __call__(self, parser, namespace, value, unused_option_string=None):
         """Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.
-        
+
         If `value` parses to a boolean True value then the attribute value is 'download'.
         If `value` parses to a boolean False value then the attribute value is ``None``.
         Otherwise the attribute value is the value of `value`.
-            
+
         Args:
             parser (str): Argument parser object this group belongs to.
             namespace (object): Namespace to receive parsed value via setattr.
@@ -486,17 +486,17 @@ class ParsePackagePathAction(argparse.Action):
 
 class ParseBooleanAction(argparse.Action):
     """Argument parser action for boolean values.
-    
+
     Essentially a wrapper around :any:`taucmdr.util.parse_bool`.
     """
     # pylint: disable=too-few-public-methods
 
     def __call__(self, parser, namespace, value, unused_option_string=None):
         """Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.
-        
-        If `value` parses to a boolean via :any:`taucmdr.util.parse_bool` then the 
+
+        If `value` parses to a boolean via :any:`taucmdr.util.parse_bool` then the
         attribute value is that boolean value.
-            
+
         Args:
             parser (str): Argument parser object this group belongs to.
             namespace (object): Namespace to receive parsed value via setattr.
@@ -510,10 +510,10 @@ class ParseBooleanAction(argparse.Action):
 
 def get_parser(prog=None, usage=None, description=None, epilog=None):
     """Builds an argument parser.
-    
+
     The returned argument parser accepts no arguments.
     Use :any:`argparse.ArgumentParser.add_argument` to add arguments.
-    
+
     Args:
         prog (str): Name of the program.
         usage (str): Description of the program's usage.
@@ -536,19 +536,19 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
 
 def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None):
     """Builds an argument parser from a model's attributes.
-    
-    The returned argument parser will accept arguments as defined by the model's `argparse` 
-    attribute properties, where the arguments to :any:`argparse.ArgumentParser.add_argument` 
+
+    The returned argument parser will accept arguments as defined by the model's `argparse`
+    attribute properties, where the arguments to :any:`argparse.ArgumentParser.add_argument`
     are specified as keyword arguments.
-    
+
     Examples:
         Given this model attribute:
         ::
-        
+
             'openmp': {
-                'type': 'boolean', 
+                'type': 'boolean',
                 'description': 'application uses OpenMP',
-                'default': False, 
+                'default': False,
                 'argparse': {'flags': ('--openmp',),
                              'metavar': 'T/F',
                              'nargs': '?',
@@ -556,24 +556,24 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
                              'action': ParseBooleanAction},
             }
 
-        The returned parser will accept the ``--openmp`` flag accepting zero or one arguments 
+        The returned parser will accept the ``--openmp`` flag accepting zero or one arguments
         with 'T/F' as the metavar.  If ``--openmp`` is omitted the default value of False will
         be used.  If ``--openmp`` is provided with zero arguments, the const value of True will
         be used.  If ``--openmp`` is provided with one argument then the provided argument will
         be passed to a ParseBooleanAction instance to generate a boolean value.  The argument's
         help description will appear as "application uses OpenMP" if the ``--help`` argument is given.
-    
+
     Args:
         model (Model): Model to construct arguments from.
-        use_defaults (bool): If True, use the model attribute's default value 
-                             as the argument's value if argument is not specified. 
+        use_defaults (bool): If True, use the model attribute's default value
+                             as the argument's value if argument is not specified.
         prog (str): Name of the program.
         usage (str): Description of the program's usage.
         description (str): Text to display before the argument help.
         epilog (str): Text to display after the argument help.
 
     Returns:
-        MutableArgumentGroupParser: The customized argument parser object.        
+        MutableArgumentGroupParser: The customized argument parser object.
     """
     parser = get_parser(prog, usage, description, epilog)
     groups = {}
@@ -586,7 +586,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
             else:
                 continue
         if use_defaults:
-            options['default'] = props.get('default', argparse.SUPPRESS) 
+            options['default'] = props.get('default', argparse.SUPPRESS)
         else:
             options['default'] = argparse.SUPPRESS
         try:
@@ -631,7 +631,7 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
 
 def add_storage_flag(parser, action, object_name, plural=False, exclusive=True):
     """Add flag to indicate target storage container.
-    
+
     Args:
         parser (MutableArgumentGroupParser): The parser to modify.
         action (str): The action that will be taken by the command, e.g. "delete" or "list"
@@ -647,8 +647,8 @@ def add_storage_flag(parser, action, object_name, plural=False, exclusive=True):
     choices = [container.name for container in ORDERED_LEVELS]
     parser.add_argument('-'+STORAGE_LEVEL_FLAG,
                         help=help_str,
-                        metavar="<level>", 
-                        nargs=nargs, 
+                        metavar="<level>",
+                        nargs=nargs,
                         choices=choices,
                         default=[_DEFAULT_STORAGE_LEVEL])
 

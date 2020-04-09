@@ -24,4 +24,3 @@ matmult: $(OBJ)
 
 clean:
 	rm -f $(OBJ) matmult
-

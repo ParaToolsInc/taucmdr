@@ -17,4 +17,3 @@
                CALL SHMEM_BARRIER_ALL
                PRINT*,'PE ',MYPE,' COMPUTED       SUM=',SUM
        END
-

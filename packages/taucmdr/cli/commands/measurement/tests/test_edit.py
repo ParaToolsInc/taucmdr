@@ -55,7 +55,7 @@ class EditTest(tests.TestCase):
         self.assertCommandReturnValue(0, CREATE_COMMAND, [old_name])
         stdout, stderr = self.assertCommandReturnValue(0, EDIT_COMMAND, [old_name, '--new-name', new_name])
         self.assertIn("Updated measurement '%s'" % old_name, stdout)
-        self.assertFalse(stderr)       
+        self.assertFalse(stderr)
 
     def test_wrongname(self):
         self.reset_project_storage()
@@ -63,7 +63,7 @@ class EditTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, EDIT_COMMAND, argv)
         self.assertIn('measurement edit <measurement_name> [arguments]', stderr)
         self.assertIn('measurement edit: error: No project-level measurement with name', stderr)
-        
+
     def test_wrongarg(self):
         self.reset_project_storage()
         name = 'meas01'
@@ -80,7 +80,7 @@ class EditTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertIn("Added measurement '%s' to project" % name, stdout)
         self.assertNotIn("WARNING", stdout)
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
         self.assertIsInstance(meas, Measurement)
         self.assertEqual(meas['callpath'], 10)
         self.assertEqual(meas['profile'], 'tau')
@@ -88,7 +88,7 @@ class EditTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, EDIT_COMMAND, [name, '--trace', 'slog2'])
         self.assertFalse(stderr)
         self.assertIn("WARNING", stdout)
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
         self.assertIsInstance(meas, Measurement)
         self.assertEqual(meas['callpath'], 10)
         self.assertEqual(meas['profile'], 'tau')
@@ -112,7 +112,7 @@ class EditTest(tests.TestCase):
         tau_options = "-optVerbose -optNoCompInst"
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
         # Check that 'force-tau-options' is now a list containing the expected options in the project record
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'})
         self.assertIsNotNone(meas)
         self.assertListEqual(meas['force_tau_options'], [tau_options])
 
@@ -123,7 +123,7 @@ class EditTest(tests.TestCase):
         tau_options = "none"
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
         # Check that 'force-tau-options' is now a list containing the expected options in the project record
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'})
         self.assertIsNotNone(meas)
         self.assertNotIn('force_tau_options', meas)
 
@@ -134,7 +134,7 @@ class EditTest(tests.TestCase):
         tau_options = "-optKeepFiles"
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
         # Check that 'extra-tau-options' is now a list containing the expected options in the project record
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'})
         self.assertIsNotNone(meas)
         self.assertListEqual(meas['extra_tau_options'], [tau_options])
 
@@ -145,7 +145,7 @@ class EditTest(tests.TestCase):
         tau_options = "none"
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
         # Check that 'extra-tau-options' is now a list containing the expected options in the project record
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'})
         self.assertIsNotNone(meas)
         self.assertNotIn('extra_tau_options', meas)
 
@@ -158,7 +158,7 @@ class EditTest(tests.TestCase):
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
         with self.assertRaises(IncompatibleRecordError):
             self.assertNotCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'})
         self.assertIsNotNone(meas)
         #self.assertListEqual(meas['extra_tau_options'], [tau_options])
 
@@ -170,9 +170,7 @@ class EditTest(tests.TestCase):
         tau_options = "none"
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--extra-tau-options=%s' % tau_options])
         self.assertCommandReturnValue(0, EDIT_COMMAND, ['profile', '--force-tau-options=%s' % tau_options])
-        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'}) 
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': 'profile'})
         self.assertIsNotNone(meas)
         self.assertNotIn('extra_tau_options', meas)
         self.assertNotIn('force_tau_options', meas)
-
-

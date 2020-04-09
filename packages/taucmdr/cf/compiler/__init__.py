@@ -28,25 +28,25 @@
 """TAU compiler knowledgebase.
 
 TAU Commander uses this knowledgebase to try to work out what kind of compiler
-the user is using to build their code.  We can get away with this because TAU 
-will take care of most of the version-specific details if only we get the 
+the user is using to build their code.  We can get away with this because TAU
+will take care of most of the version-specific details if only we get the
 configuration line correct.
 
 TAU depends very strongly on compiler characteristics. Each TAU configuration
 is only valid for a single compiler, TAU's feature set changes depending on compiler
 family and version, TAU's configure script is easily confused by compilers with
-strange names or unusual installation paths, etc.  In most cases, TAU doesn't even 
-try to detect the compiler and trusts the user to specify the right "magic words" 
+strange names or unusual installation paths, etc.  In most cases, TAU doesn't even
+try to detect the compiler and trusts the user to specify the right "magic words"
 at configuration. Worse, TAU sometimes does probe the compiler to discover things
 like MPI headers, except it does such a poor job that many time we get the wrong
 answer or simply cause the configure script to fail entirely. This has been a major
 painpoint for TAU users.
 
-The reason for this mess is that compiler detection is very hard.  Projects like 
+The reason for this mess is that compiler detection is very hard.  Projects like
 `SciPy`_ that depend on a compiler's stdout stream for compiler detection have more
 or less failed in this since compiler messages are exceptionally difficult to parse.
 `CMake`_ does a good job by invoking the compiler command and parsing strings out of
-a compiled object to detect compiler characteristcs, but that approach is complex 
+a compiled object to detect compiler characteristcs, but that approach is complex
 and still breaks easily.
 
 The TAU Commander compiler knowledgebase associates a compiler command (`icc`)
@@ -55,8 +55,8 @@ intercepted by TAU Commander are matched against the database to discover their
 characteristics.
 
 The knowledgebase lists all compilers known to TAU Commander but only some of those
-will actually be available on any given system.  Use :any:`InstalledCompiler` and  
-related classes to discover installed compilers and to determine features that 
+will actually be available on any given system.  Use :any:`InstalledCompiler` and
+related classes to discover installed compilers and to determine features that
 change from system to system.
 
 .. _SciPy: http://www.scipy.org/
@@ -85,13 +85,13 @@ _COMPILER_WRAPPER_TEMPLATE = """#!/bin/sh
 # Created: %(date)s
 # Author: %(user)s
 #
-%(taucmdr_script)s build %(command)s "$@" 
+%(taucmdr_script)s build %(command)s "$@"
 """
 
 
 class Knowledgebase(object):
     """TAU compiler knowledgebase front-end."""
-    
+
     def __init__(self, keyword, description, **kwargs):
         self.keyword = keyword
         self.description = description
@@ -100,26 +100,26 @@ class Knowledgebase(object):
         for key, val in kwargs.iteritems():
             language, envars = val
             if isinstance(envars, basestring):
-                envars = (envars,) 
+                envars = (envars,)
             self._roles[key] = _CompilerRole(keyword+'_'+key, language, envars, self)
 
     def __repr__(self):
         return 'Knowledgebase(%s)' % self.keyword
-    
+
     @classmethod
     def all_roles(cls):
         """Return all known compiler roles."""
-        return _CompilerRole.all() 
-    
+        return _CompilerRole.all()
+
     @classmethod
     def find_role(cls, keyword):
         """Find a compiler role with the given keyword."""
         return _CompilerRole.find(keyword)
-    
+
     @classmethod
     def all_compilers(cls):
         return _CompilerInfo.all()
-    
+
     @classmethod
     def find_compiler(cls, command=None, family=None, role=None):
         return _CompilerInfo.find(command, family, role)
@@ -134,7 +134,7 @@ class Knowledgebase(object):
 
     def iterfamilies(self):
         """Iterate over compiler families in the knowledgebase.
-        
+
         The first family yielded is the host's preferred compiler family.
         All other families may be yielded in any order.
         """
@@ -148,18 +148,18 @@ class Knowledgebase(object):
 
     def add(self, name, *args, **kwargs):
         """Add a new compiler family to the knowledgebase.
-        
+
         Compilers in the family are specified via keyword arguments.  The key is the same that was
         used to define the role in the knowledgebase **not** :any:`_CompilerRole.keyword`, which is
-        calculated from the knowledgebase name and the role keyword. The value is a string or 
+        calculated from the knowledgebase name and the role keyword. The value is a string or
         collection of strings specifying compiler commands, e.g. 'gcc' or ('xlf', 'xlf_r').
-        
+
         Args:
             name (str): The compiler family name.
             *args: Positional arguments passed to the :any:`_CompilerFamily` constructor.
             **kwargs: Keyword arguments passed to the :any:`_CompilerFamily` constructor, after
                       any keyword arguments specifying compiler commands are removed.
-        
+
         Returns:
             _CompilerFamily: The new compiler family object.
         """
@@ -174,7 +174,7 @@ class Knowledgebase(object):
         family = _CompilerFamily(self, name, *args, **kwargs)
         self._families[name] = family
         return family
-    
+
     def family_names(self):
         """Return an alphabetical list of all compiler family names."""
         return sorted(self._families.keys())
@@ -182,21 +182,21 @@ class Knowledgebase(object):
 
 class _CompilerRole(KeyedRecord):
     """Information about a compiler's role.
-    
+
     A compiler role identifies how the compiler is used in the build process. All compilers
-    play at least one *role* in their compiler family.  Many compilers can play multiple 
-    roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role, 
+    play at least one *role* in their compiler family.  Many compilers can play multiple
+    roles, e.g. icpc can be a C++ compiler in the CXX role, a C compiler in the CC role,
     or even a linker.  TAU Commander must identify a compiler's role so it can configure TAU.
-    
+
     Attributes:
         keyword (str): Name of the compiler's role, e.g. 'CXX'.
         language (str): Name of the programming language corresponding to the compiler role, e.g. 'C++'.
         envars (tuple): Environment variables commonly used to identify the compiler in  this role, e.g. "CXX" or "CC".
         kbase (Knowledgebase): The knowledgebase instance that created this object.
     """
-    
+
     __key__ = "keyword"
-    
+
     def __init__(self, keyword, language, envars, kbase):
         self.keyword = keyword
         self.language = language
@@ -211,7 +211,7 @@ class _CompilerRole(KeyedRecord):
 
 class _CompilerFamily(TrackedInstance):
     """Information about a compiler family.
-    
+
     A compiler's family creates associations between different compiler commands
     and assigns compilers to roles.  All compiler commands within a family accept
     similar arguments, and produce compatible object files.
@@ -221,19 +221,19 @@ class _CompilerFamily(TrackedInstance):
         name (str): Family name, e.g. "Intel".
         family_regex (str): Regular expression identifying compiler family in compiler version string.
         version_flags (list): Command line flags that show the compiler version, e.g. '--version'.
-        include_path_flags (list): Command line flags that add a directory to the compiler's include path, e.g. '-I'. 
+        include_path_flags (list): Command line flags that add a directory to the compiler's include path, e.g. '-I'.
         library_path_flags (list): Command line flags that add a directory to the compiler's library path, e.g. '-L'.
         link_library_flags (list): Command line flags that link a library, e.g. '-l'.
         show_wrapper_flags (list): Command line flags that show the wrapped compiler's command line, e.g. '-show'.
         members (dict): Compilers in this family indexed by role.
     """
-    
+
     _probe_cache = {}
-    
+
     def __init__(self, kbase, name, members,
                  version_flags=None,
-                 include_path_flags=None, 
-                 library_path_flags=None, 
+                 include_path_flags=None,
+                 library_path_flags=None,
                  link_library_flags=None,
                  show_wrapper_flags=None,
                  family_regex=None):
@@ -250,13 +250,13 @@ class _CompilerFamily(TrackedInstance):
         for role, commands in members.iteritems():
             self.members[role] = [_CompilerInfo(self, cmd, role) for cmd in commands]
             self.commands.update(commands)
-            
+
     def installation(self):
         return InstalledCompilerFamily(self)
 
     def __str__(self):
         return self.name
-    
+
     def __repr__(self):
         return "_CompilerFamily(%s)" % self.name
 
@@ -288,7 +288,7 @@ class _CompilerFamily(TrackedInstance):
         # pylint: disable=no-member
         if candidates:
             candidate_kbases = {candidate.kbase for candidate in candidates}
-            families = candidates + [inst for inst in cls.__instances__ 
+            families = candidates + [inst for inst in cls.__instances__
                                      if inst not in candidates and inst.kbase in candidate_kbases]
         else:
             families = cls.__instances__
@@ -327,11 +327,11 @@ class _CompilerFamily(TrackedInstance):
                         return family
                 else:
                     LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
-        if len(without_regex) > 0:
+        if without_regex:
             guess = without_regex[0]
             if len(without_regex) > 1:
                 LOGGER.warning(("Assuming '%s' is a %s compiler but it could be to any of these: %s\n"
-                                "If this assumption is incorrect then you should manually specify your compilers"), 
+                                "If this assumption is incorrect then you should manually specify your compilers"),
                                absolute_path, guess.name, ', '.join([family.name for family in without_regex]))
             return guess
         raise ConfigurationError("Cannot determine compiler family: %s" % '\n'.join(messages))
@@ -339,10 +339,10 @@ class _CompilerFamily(TrackedInstance):
 
 class _CompilerInfo(TrackedInstance):
     """Information about a compiler.
-   
+
     A compiler's basic information includes it's family (e.g. `Intel`) and role (e.g. CXX).
-    The compiler might not be installed.  
-    
+    The compiler might not be installed.
+
     Attributes:
         family (_CompilerFamily): The family this compiler belongs to.
         command (str): Command without path or arguments, e.g. 'icpc'
@@ -364,7 +364,7 @@ class _CompilerInfo(TrackedInstance):
 
     def __repr__(self):
         return "_CompilerInfo(%s, %s, %s)" % (self.command, self.family, self.role)
-        
+
     @classmethod
     def _find(cls, command, family, role):
         if command and family and role:
@@ -381,13 +381,12 @@ class _CompilerInfo(TrackedInstance):
             return [info for info_list in family.members.itervalues() for info in info_list]
         elif role:
             return [info for info in cls.all() if info.role is role]
-        else:
-            return []
+        return []
 
     @classmethod
     def find(cls, command=None, family=None, role=None):
         """Find _CompilerInfo instances that matches the given command and/or family and/or role.
-        
+
         Args:
             command (str): A compiler command without path.
             family (_CompilerFamily): Compiler family to search for.
@@ -409,23 +408,23 @@ class _CompilerInfo(TrackedInstance):
                         break
                 else:
                     found = []
-        LOGGER.debug("_CompilerInfo.find(command='%s', family='%s', role='%s'): %s", 
+        LOGGER.debug("_CompilerInfo.find(command='%s', family='%s', role='%s'): %s",
                      command, family, role, [str(x) for x in found])
         return found
 
 
 class InstalledCompilerCreator(type):
     """Cache compiler probe results.
-     
-    InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.  
-    This can be very expensive, so this metaclass changes the instance creation procedure to only 
-    probe the compiler when the compiler command has never been seen before and avoid dupliate
-    invocations in a case like::
-     
-        a = InstalledCompiler('/path/to/icc')
-        b = InstalledCompiler('/path/to/icc')    
 
-    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler 
+    InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.
+    This can be very expensive, so this metaclass changes the instance creation procedure to only
+    probe the compiler when the compiler command has never been seen before and avoid duplicate
+    invocations in a case like::
+
+        a = InstalledCompiler('/path/to/icc')
+        b = InstalledCompiler('/path/to/icc')
+
+    Without this metaclass, `a` and `b` would be different instances assigned to the same compiler
     and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
     def __call__(cls, absolute_path, info, **kwargs):
@@ -436,7 +435,7 @@ class InstalledCompilerCreator(type):
             return super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
         try:
             instance = cls.__instances__[absolute_path, info]
-        except KeyError: 
+        except KeyError:
             LOGGER.debug('(%s, %s) not in compiler cache', absolute_path, info.role.keyword)
             instance = super(InstalledCompilerCreator, cls).__call__(absolute_path, info, **kwargs)
             cls.__instances__[absolute_path, info] = instance
@@ -448,12 +447,12 @@ class InstalledCompilerCreator(type):
 
 class InstalledCompiler(object):
     """Information about an installed compiler command.
-    
+
     There are relatively few well known compilers, but a potentially infinite
-    number of commands that can invoke those compilers.  Additionally, an installed 
+    number of commands that can invoke those compilers.  Additionally, an installed
     compiler command may be a wrapper around another command.  This class links a
     command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.
-    
+
     Attributes:
         absolute_path (str): Absolute path to the compiler command.
         info (_CompilerInfo): Information about the compiler invoked by the compiler command.
@@ -466,30 +465,30 @@ class InstalledCompiler(object):
         compiler_flags (list): Additional flags used when compiling with the wrapped compiler.
         libraries (list): Additional libraries to link when linking with the wrapped compiler.
     """
-    
+
     __metaclass__ = InstalledCompilerCreator
-    
+
     __instances__ = {}
 
-    def __init__(self, absolute_path, info, uid=None, 
+    def __init__(self, absolute_path, info, uid=None,
                  wrapped=None, include_path=None, library_path=None, compiler_flags=None, libraries=None):
         """Initializes the InstalledCompiler instance.
-        
+
         Any information not provided on the argument list may be probed from the system.
-        This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions, 
+        This can be **VERY** expensive and may involve invoking the compiler, checking PATH, file permissions,
         or other conditions in the system to determine if a compiler command is present and executable.
         If this compiler command wraps another command, that command is also probed.  The probes recurse
         to the "root" compiler that doesn't wrap any other command.
-        
+
         :any:`uid` uniquely identifies this compiler as installed in the system.  If the compiler's installation
         changes substantially (e.g. significant version upgrades or changes in the compiler wrapper) then the UID
         will change as well.
-               
-        These probes are necessary because TAU is highly dependent on the compiler used to install TAU.  
+
+        These probes are necessary because TAU is highly dependent on the compiler used to install TAU.
         If that compiler changes, or the user tries to "fake out" TAU Commander by renaming compiler
         commands, then the user should be warned that the compiler has changed.  If the change is severe
         then the operation should halt before an invalid operation.
-        
+
         Args:
             absolute_path (str): Absolute path to the compiler command.
             info (_CompilerInfo): Information about the compiler invoked by the compiler command.
@@ -552,10 +551,10 @@ class InstalledCompiler(object):
         except CalledProcessError:
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
-            raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." % 
+            raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
                                      (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
-        known_commands = set(info.command for info in _CompilerInfo.all())
+        known_commands = {info.command for info in _CompilerInfo.all()}
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
             if not line:
                 continue
@@ -581,7 +580,7 @@ class InstalledCompiler(object):
             wrapped_role = wrapped.info.role.keyword.split('_')[1:]
             if role != wrapped_role:
                 raise ConfigurationError("Cannot use '%s' as a %s: wrapped compiler '%s' is a %s" %
-                                         (self.command, self.info.short_descr, 
+                                         (self.command, self.info.short_descr,
                                           wrapped.command, wrapped.info.short_descr))
             LOGGER.info("%s '%s' wraps '%s'", self.info.short_descr, self.absolute_path, wrapped.absolute_path)
             try:
@@ -623,7 +622,7 @@ class InstalledCompiler(object):
     @classmethod
     def probe(cls, command, family=None, role=None):
         """Probe the system to discover information about an installed compiler.
-        
+
         Args:
             command (str): Absolute or relative path to an installed compiler command.
             family (_CompilerFamily): Installed compiler's family if known, None otherwise.
@@ -658,7 +657,7 @@ class InstalledCompiler(object):
                      (role.language + " " if role else ""),
                      "compiler '%s'" % absolute_path]
         raise ConfigurationError(''.join(msg_parts))
-    
+
     @classmethod
     def find_any(cls, role):
         for family in role.kbase.iterfamilies():
@@ -674,7 +673,7 @@ class InstalledCompiler(object):
 
     def unwrap(self):
         """Iterate through layers of compiler wrappers to find the true compiler.
-        
+
         Returns:
             InstalledCompiler: Compiler wrapped by this compiler, ``self`` if this compiler doesn't wrap another.
         """
@@ -682,13 +681,13 @@ class InstalledCompiler(object):
         while comp.wrapped:
             comp = comp.wrapped
         return comp
-    
+
     @property
     def version_string(self):
         """Get the compiler's self-reported version info.
-        
+
         Usually whatever the compiler prints when the --version flag is provided.
-        
+
         Returns:
             str: The compilers' version string.
         """
@@ -702,7 +701,7 @@ class InstalledCompiler(object):
                                          "Check loaded modules and environment variables.",
                                          "Verify that the compiler's license is valid.")
             except OSError:
-                raise ConfigurationError("Compiler '%s' no longer exists or is not executable" % 
+                raise ConfigurationError("Compiler '%s' no longer exists or is not executable" %
                                          self.absolute_path)
         return self._version_string
 
@@ -717,14 +716,14 @@ class InstalledCompiler(object):
         """
 
         if self.info.family.name == 'Intel' and self.info.role.keyword == 'Host_CC':
-            version_tuple = re.findall("(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
+            version_tuple = re.findall(r"(\d+)\.(\d+)\.(\d+)", self.version_string)[0]
         else:
             version_tuple = None
         return version_tuple
-    
+
     def generate_wrapper(self, prefix):
         """Generate a compiler wrapper script that uses :any:`taucmdr.TAUCMDR_SCRIPT` to invoke the compiler.
-        
+
         Args:
             prefix (str): Path to a directory in which the wrapper script will be created.
         """
@@ -736,21 +735,21 @@ class InstalledCompiler(object):
                                                     'taucmdr_script': TAUCMDR_SCRIPT,
                                                     'command': self.command}
             fout.write(wrapper)
-        os.chmod(script_file, os.stat(script_file).st_mode | 0111)
+        os.chmod(script_file, os.stat(script_file).st_mode | 0o111)
 
 
 class InstalledCompilerFamily(object):
     """Information about an installed compiler family.
-     
+
     Compiler families are usually installed at a common prefix but there is no
     guarantee that all members of the family will be installed.  For example,
     it is often the case that C and C++ compilers are installed but no Fortran
     compiler is installed.  This class tracks which members of a compiler family
     are actually installed on the system.
-     
+
     Attributes:
         family (_CompilerFamily): The installed family.
-        FIXME: members 
+        FIXME: members
     """
 
     def __init__(self, family):
@@ -781,22 +780,22 @@ class InstalledCompilerFamily(object):
         try:
             return self[role]
         except KeyError:
-            return default 
+            return default
 
     def __getitem__(self, role):
         """Return the preferred installed compiler for a given role.
-        
+
         Since compiler can perform multiple roles we often have many commands
         that could fit a given role, but only one *preferred* command for the
         role.  For example, `icpc` can fill the CC or CXX roles but `icc` is
         preferred over `icpc` for the CC role.
-        
+
         Args:
             role (_CompilerRole): The compiler role to fill.
-        
+
         Returns:
             InstalledCompiler: The installed compiler for the role.
-            
+
         Raises:
             KeyError: This family has no compiler in the given role.
             IndexError: No installed compiler fills the given role.
@@ -817,34 +816,34 @@ class InstalledCompilerFamily(object):
 
 class InstalledCompilerSet(KeyedRecord):
     """A collection of installed compilers, one per role if the role can be filled.
-    
+
     To actually build a software package (or user's application) we must have exactly
     one compiler in each required compiler role.
-    
+
     Attributes:
         uid: A unique identifier for this particular combination of compilers.
         members: (_CompilerRole, InstalledCompiler) dictionary containing members of this set
     """
-    
+
     __key__ = 'uid'
-    
+
     def __init__(self, uid, **kwargs):
         self.uid = uid
         self.members = {}
         self._add_members(**kwargs)
-            
+
     def __contains__(self, key):
         return key in self.members
 
     def __iter__(self):
         return self.members.__iter__()
-    
+
     def __getitem__(self, key):
         return self.members[key]
 
     def iterkeys(self):
         return self.members.iterkeys()
-    
+
     def itervalues(self):
         return self.members.itervalues()
 
@@ -859,7 +858,7 @@ class InstalledCompilerSet(KeyedRecord):
 
     def modify(self, **kwargs):
         """Build a modified copy of this object."""
-        # pylint: disable=protected-access 
+        # pylint: disable=protected-access
         uid_parts = [self.uid, str(sorted(kwargs))]
         compilers = {role.keyword: comp for role, comp in self.members.iteritems()}
         modified = InstalledCompilerSet(util.calculate_uid(uid_parts), **compilers)

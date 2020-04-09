@@ -25,7 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Software managment common objects."""
+"""Software management common objects."""
 
 from taucmdr import util
 from taucmdr.error import ConfigurationError
