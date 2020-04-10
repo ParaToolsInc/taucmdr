@@ -98,9 +98,9 @@ import fnmatch
 import tempfile
 import fileinput
 import subprocess
+from typing import List, Tuple, Optional
 import setuptools
 from setuptools import Command
-from typing import List, Dict, Tuple, Optional, Union, Sequence, IO, cast
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 from setuptools.command.install_lib import install_lib as InstallLibCommand
@@ -302,7 +302,6 @@ class Release(SDistCommand):
                      ('all', None, "Build all-in-one packages for all supported (arch, os) combinations")])
 
     def initialize_options(self):
-        from taucmdr.cf.platforms import Architecture, OperatingSystem
         SDistCommand.initialize_options(self)
         self.target_arch = None
         self.target_os = None
@@ -373,7 +372,9 @@ class Release(SDistCommand):
         util.download(cache_pkg, os.path.join('system', 'src', pkg))
 
     def _download_python(self):
-        from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64, DARWIN, LINUX, Architecture, OperatingSystem
+        from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64
+        from taucmdr.cf.platforms import DARWIN, LINUX
+        from taucmdr.cf.platforms import Architecture, OperatingSystem
         make_arch = self.target_arch
         make_os = self.target_os
         arch_map = {X86_64: 'x86_64',
