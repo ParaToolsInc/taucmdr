@@ -127,10 +127,13 @@ except ImportError:
         description = 'Sphinx not installed!'
         user_options = [] # type: List[Tuple[str, Optional[str], str]]
         def initialize_options(self):
+            # type: () -> None
             pass
         def finalize_options(self):
+            # type: () -> None
             pass
         def run(self):
+            # type: () -> None
             print "Sphinx must be installed to generate developer documentation."
             sys.exit(-1)
 
@@ -151,6 +154,7 @@ else:
         user_options = BuildDoc.user_options + _custom_user_options
 
         def initialize_options(self):
+            # type: () -> None
             BuildDoc.initialize_options(self)
             self.update_gh_pages = False
             self.gh_origin_url = "git@github.com:ParaToolsInc/taucmdr.git"
@@ -167,21 +171,24 @@ else:
                 sys.exit(err.returncode)
 
         def _clone_gh_pages(self):
+            # type: () -> None
             shutil.rmtree(self.builder_target_dir, ignore_errors=True)
             cmd = ['git', 'clone', self.gh_origin_url,
                    '-q', '-b', 'gh-pages', '--single-branch', self.builder_target_dir]
             self._shell(cmd, cwd=self.build_dir)
             if self.gh_user_name:
-                self._shell(['git', 'config', 'user.name', self.gh_user_name])
+                self._shell(['git', 'config', 'user.name', self.gh_user_name]) # type: ignore[unreachable]
             if self.gh_user_email:
-                self._shell(['git', 'config', 'user.email', self.gh_user_email])
+                self._shell(['git', 'config', 'user.email', self.gh_user_email]) # type: ignore[unreachable]
 
         def _push_gh_pages(self):
+            # type: () -> None
             self._shell(['git', 'add', '-A', '.'])
             self._shell(['git', 'commit', '-q', '-m', self.gh_commit_msg])
             self._shell(['git', 'push', '-q'])
 
         def _copy_docs_source(self):
+            # type: () -> None
             assert isinstance(self, BuildDoc)
             copy_source_dir = os.path.join(self.build_dir, os.path.basename(self.source_dir))
             shutil.rmtree(copy_source_dir, ignore_errors=True)
@@ -191,6 +198,7 @@ else:
             self.source_dir = copy_source_dir
 
         def _generate_api_docs(self):
+            # type: () -> None
             package_source_dir = os.path.join(PACKAGE_TOPDIR, self.distribution.package_dir[''], 'taucmdr')
             sphinx_apidoc.main(['-M', # Put module documentation before submodule documentation
                                 '-P', # Include "_private" modules
@@ -199,6 +207,7 @@ else:
                                 '-o', self.source_dir, package_source_dir])
 
         def run(self):
+            # type: () -> None
             if self.update_gh_pages:
                 self._clone_gh_pages()
             self._copy_docs_source()
@@ -216,6 +225,7 @@ class Test(TestCommand):
     user_options = TestCommand.user_options + _custom_user_options
 
     def initialize_options(self):
+        # type: () -> None
         # Distuilts defines attributes in the initialize_options() method
         # pylint: disable=attribute-defined-outside-init
         TestCommand.initialize_options(self)
