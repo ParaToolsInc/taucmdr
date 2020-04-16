@@ -38,6 +38,7 @@ a rotating debug file in the user's TAU Commander project prefix, typically "~/.
 """
 
 import os
+import re
 import sys
 import errno
 import textwrap
@@ -50,6 +51,21 @@ from datetime import datetime
 from termcolor import termcolor
 from taucmdr import USER_PREFIX, TAUCMDR_VERSION
 
+
+def _prune_ansi(line):
+    """Remove all occurences of the ANSI escape sequence
+
+    Returns:
+        str: Line where all '\x1b[*m' sequences were removed
+    """
+
+    pattern = re.compile('\x1b[^m]+m')
+    match = pattern.search(line)
+    while match:
+        index = line.find(match.group(0))
+        line = line[:index] + line[index+len(match.group(0)):]
+        match = pattern.search(line)
+    return line
 
 def get_terminal_size():
     """Discover the size of the user's terminal.
@@ -293,7 +309,10 @@ class LogFormatter(logging.Formatter, object):
 
     def _textwrap_message(self, record):
         for line in record.getMessage().split('\n'):
-            if line and (not self.printable_only or set(line).issubset(self._printable_chars)):
+            if self.printable_only and not set(line).issubset(self._printable_chars):
+                line = _prune_ansi(line)
+                line = "".join([c for c in line if c in self._printable_chars])
+            if line:
                 yield self._text_wrapper.fill(line)
             else:
                 yield self.line_marker
