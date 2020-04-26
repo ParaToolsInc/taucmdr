@@ -1,0 +1,64 @@
+
+body {
+    background: white;
+}
+
+#main-wrapper {
+    margin: 0;
+    padding: 10px 15px;
+}
+
+#instructions {
+    margin: 10px 0;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+.tbl-title {
+    text-transform: uppercase;
+    background: #fff;
+    color: #333;
+    font-weight: bold;
+    border: none;
+}
+
+#projects-tbl,
+#targets-tbl,
+#applications-tbl,
+#measurements-tbl,
+#experiments-tbl {
+    margin: 15px 0;
+}
+
+#projects-tbl tr:hover {
+    cursor: pointer;
+    background-color: #eee;
+}
+#projects-tbl thead tr:hover {
+    cursor: default;
+}
+
+table {
+    width: 100%;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9pt;
+}
+
+table th {
+    font-size: 10pt;
+    background: blue;
+    color: white;
+}
+
+table th, table td {
+    text-align: left;
+    padding: 0.25em;
+}
+
+table tr {
+    border: 1px solid rgba(3,3,3,0.2);
+}
+
+button {
+    padding: 5px 10px;
+}
