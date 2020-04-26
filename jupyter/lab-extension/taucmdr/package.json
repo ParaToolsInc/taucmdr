@@ -1,17 +1,16 @@
 {
   "name": "taucmdr",
   "version": "0.1.0",
-  "description": "A JupyterLab extension.",
+  "description": "TauCmdr JupyterLab Extension",
   "keywords": [
     "jupyter",
     "jupyterlab",
     "jupyterlab-extension"
   ],
-  "homepage": "https://github.com/my_name/myextension",
+  "homepage": "https://github.com/ParaToolsInc/taucmdr",
   "bugs": {
-    "url": "https://github.com/my_name/myextension/issues"
-  },
-  "license": "BSD-3-Clause",
+    "url": "https://github.com/ParaToolsInc/taucmdr/issues"
+  }, 
   "author": "",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -22,13 +21,11 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/my_name/myextension.git"
+    "url": "https://github.com/ParaToolsInc/taucmdr.git"
   },
   "scripts": {
-
     "build": "tsc",
     "clean": "rimraf lib tsconfig.tsbuildinfo",
-
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
     "prepare": "jlpm run clean && jlpm run build",
@@ -43,7 +40,6 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
-
     "prettier": "1.16.4",
     "rimraf": "^2.6.1",
     "typescript": "~3.7.0"
@@ -52,7 +48,6 @@
     "style/*.css"
   ],
   "jupyterlab": {
-
     "extension": true
   }
 }
