@@ -424,7 +424,7 @@ class ListCommand(AbstractCliView):
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
-        return self._list_records(storage_levels, keys, style)
+        return self._list_records([l.name for l in storage_levels], keys, style)
 
     def _retrieve_records(self, ctrl, keys):
         """Retrieve modeled data from the controller.
