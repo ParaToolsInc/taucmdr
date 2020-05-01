@@ -381,13 +381,14 @@ class ListCommand(AbstractCliView):
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False)
         return parser
 
-    def _list_records(self, storage_levels, keys, style):
+    def _list_records(self, storage_levels, keys, style, select=(lambda x: x)):
         """Shows record data via `print`.
 
         Args:
             storage_levels (list): Storage levels to query, e.g. ['user', 'project']
             keys (list): Keys to match to :any:`self.key_attr`.
             style (str): Style in which to format records.
+            select (list -> list): filter function
 
         Returns:
             int: :any:`EXIT_SUCCESS` if successful.
@@ -403,11 +404,11 @@ class ListCommand(AbstractCliView):
 
         parts = []
         if system:
-            parts.extend(self._format_records(system_ctl, style, keys))
+            parts.extend(self._format_records(system_ctl, style, keys, select))
         if user:
-            parts.extend(self._format_records(user_ctl, style, keys))
+            parts.extend(self._format_records(user_ctl, style, keys, select))
         if project:
-            parts.extend(self._format_records(project_ctl, style, keys))
+            parts.extend(self._format_records(project_ctl, style, keys, select))
         if style == 'dashboard':
             # Show record counts (not the records themselves) for other storage levels
             if not system:
@@ -419,12 +420,12 @@ class ListCommand(AbstractCliView):
         print '\n'.join(parts)
         return EXIT_SUCCESS
 
-    def main(self, argv):
+    def main(self, argv, select=(lambda x: x)):
         args = self._parse_args(argv)
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
-        return self._list_records([l.name for l in storage_levels], keys, style)
+        return self._list_records([l.name for l in storage_levels], keys, style, select=select)
 
     def _retrieve_records(self, ctrl, keys):
         """Retrieve modeled data from the controller.
@@ -451,7 +452,7 @@ class ListCommand(AbstractCliView):
                         self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[i]))
         return records
 
-    def _format_records(self, ctrl, style, keys=None):
+    def _format_records(self, ctrl, style, keys=None, select=(lambda x: x)):
         """Format records in a given style.
 
         Retrieves records for controller `ctrl` and formats them.
@@ -465,7 +466,7 @@ class ListCommand(AbstractCliView):
             list: Record data as formatted strings.
         """
         try:
-            records = self._retrieve_records(ctrl, keys)
+            records = select(self._retrieve_records(ctrl, keys))
         except StorageError:
             records = []
         if not records:

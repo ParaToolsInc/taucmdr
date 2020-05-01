@@ -28,7 +28,7 @@
 """``experiment list`` subcommand."""
 
 from taucmdr import util, EXIT_SUCCESS
-from taucmdr.error import ExperimentSelectionError
+from taucmdr.error import ExperimentSelectionError, ProjectSelectionError
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.project import Project
 from taucmdr.model.experiment import Experiment
@@ -69,6 +69,13 @@ class ExperimentListCommand(ListCommand):
         """
         args = self._parse_args(argv)
 
+        try:
+            proj_id = Project.controller().selected().eid
+            _filter = lambda x: [e for e in x if e['project'] == proj_id]
+            print("Listing experiments of selected project")
+        except ProjectSelectionError:
+            _filter = lambda x: x
+
         if args.current:
             proj = Project.controller().selected()
             try:
@@ -80,7 +87,7 @@ class ExperimentListCommand(ListCommand):
                 print expr['name']
             retval = EXIT_SUCCESS
         else:
-            retval = super(ExperimentListCommand, self).main(argv)
+            retval = super(ExperimentListCommand, self).main(argv, select=_filter)
         return retval
 
 COMMAND = ExperimentListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)

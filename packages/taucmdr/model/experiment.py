@@ -116,23 +116,11 @@ class ExperimentController(Controller):
             self._selected_project = Project.controller(self.storage).selected()
             return self._selected_project.eid
 
-    def _restrict_project(self, keys):
-        """Ensures that we only operate on experiment records in the selected project."""
-        try:
-            return dict(keys, project=self._project_eid)
-        except (TypeError, ValueError):
-            try:
-                return [dict(key, project=self._project_eid) for key in keys]
-            except (TypeError, ValueError):
-                pass
-        return keys
-
     def one(self, keys):
-        return super(ExperimentController, self).one(self._restrict_project(keys))
+        return super(ExperimentController, self).one(keys)
 
     def all(self):
-        keys = {'project': self._project_eid}
-        return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
+        return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
 
     def count(self):
         try:
@@ -141,10 +129,10 @@ class ExperimentController(Controller):
             return 0
 
     def search(self, keys=None):
-        return super(ExperimentController, self).search(self._restrict_project(keys))
+        return super(ExperimentController, self).search(keys)
 
     def exists(self, keys):
-        return super(ExperimentController, self).exists(self._restrict_project(keys))
+        return super(ExperimentController, self).exists(keys)
 
     def _check_unique(self, data, match_any=False):
         """Default match_any to False to prevent matches outside the selected project."""
@@ -155,13 +143,13 @@ class ExperimentController(Controller):
         return super(ExperimentController, self).create(data)
 
     def update(self, data, keys):
-        return super(ExperimentController, self).update(data, self._restrict_project(keys))
+        return super(ExperimentController, self).update(data, keys)
 
     def unset(self, fields, keys):
-        return super(ExperimentController, self).unset(fields, self._restrict_project(keys))
+        return super(ExperimentController, self).unset(fields, keys)
 
     def delete(self, keys):
-        return super(ExperimentController, self).delete(self._restrict_project(keys))
+        return super(ExperimentController, self).delete(keys)
 
 
 class Experiment(Model):
