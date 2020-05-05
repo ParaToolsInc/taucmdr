@@ -40,6 +40,33 @@ else:
         # pylint: disable=unused-argument
         pass
 
+def valid(context, record):
+    field = record.get(context[0])
+    if isinstance(field, int):
+        return field == context[1]
+    elif isinstance(field, list):
+        return context[1] in field
+    return False
+
+def contextualize(function):
+    def wrapper(*args, **kwargs):
+        self = args[0]
+
+        context = kwargs.pop("context", self.context)
+        if context == True:
+            context = self.context
+
+        records = function(*args, **kwargs)
+        if context and isinstance(context, tuple):
+            if not records:
+                return records
+            elif isinstance(records, dict):
+                records = records if valid(context, records) else None
+            elif isinstance(records, list):
+                records = [e for e in records if valid(context, e)]
+
+        return records
+    return wrapper
 
 class Controller(object):
     """The "C" in `MVC`_.
@@ -47,7 +74,6 @@ class Controller(object):
     Attributes:
         model (AbstractModel): Data model.
         storage (AbstractDatabase): Record storage.
-        context (Dict<string, lambda>): Optionnal, filter on content
 
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
@@ -59,9 +85,6 @@ class Controller(object):
         self.storage = storage
         self.context = context
 
-    def valid(self, record):
-        return not self.context or record.get(self.context[0]) == self.context[1]
-
     @classmethod
     def push_to_topic(cls, topic, message):
         cls.messages.setdefault(topic, []).append(message)
@@ -70,7 +93,8 @@ class Controller(object):
     def pop_topic(cls, topic):
         return cls.messages.pop(topic, [])
 
-    def one(self, key, context=True):
+    @contextualize
+    def one(self, key):
         """Get a record.
 
         Args:
@@ -80,19 +104,16 @@ class Controller(object):
             Model: The model for the matching record or None if no such record exists.
         """
         record = self.storage.get(key, table_name=self.model.name)
-        if record and self.valid(record) or not context:
-            return self.model(record)
-        return None
+        return self.model(record) if record else None
 
-    def all(self, context=True):
+    @contextualize
+    def all(self):
         """Get all records.
 
         Returns:
             list: Models for all records or an empty lists if no records exist.
         """
-        return [self.model(record) 
-                for record in self.storage.search(table_name=self.model.name) 
-                if self.valid(record) or not context]
+        return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
 
     def count(self):
         """Return the number of records.
@@ -102,7 +123,8 @@ class Controller(object):
         """
         return len(self.all())
 
-    def search(self, keys=None, context=True):
+    @contextualize
+    def search(self, keys=None):
         """Return records that have all given keys.
 
         Args:
@@ -111,11 +133,10 @@ class Controller(object):
         Returns:
             list: Models for records with the given keys or an empty lists if no records have all keys.
         """
-        return [self.model(record)
-                for record in self.storage.search(keys=keys, table_name=self.model.name)
-                if self.valid(record) or not context]
+        return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
 
-    def match(self, field, regex=None, test=None, context=True):
+    @contextualize
+    def match(self, field, regex=None, test=None):
         """Return records that have a field matching a regular expression or test function.
 
         Args:
@@ -130,8 +151,7 @@ class Controller(object):
                 for record in self.storage.match(field,
                                     table_name=self.model.name,
                                     regex=regex,
-                                    test=test)
-                if self.valid(record) or not context]
+                                    test=test)]
 
     def exists(self, keys):
         """Check if a record exists.
