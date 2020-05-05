@@ -69,6 +69,9 @@ class ExperimentListCommand(ListCommand):
         """
         args = self._parse_args(argv)
 
+        if not Project.selected():
+            self.parser.error("No project is selected.")
+
         if args.current:
             proj = Project.controller().selected()
             try:

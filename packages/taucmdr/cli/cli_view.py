@@ -273,7 +273,7 @@ class ListCommand(AbstractCliView):
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
         for record in records:
-            populated = record.populate()
+            populated = record.populate(context=False)
             row = []
             for col in self.dashboard_columns:
                 if 'value' in col:

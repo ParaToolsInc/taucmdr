@@ -47,15 +47,20 @@ class Controller(object):
     Attributes:
         model (AbstractModel): Data model.
         storage (AbstractDatabase): Record storage.
+        context (Dict<string, lambda>): Optionnal, filter on content
 
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
 
     messages = {}
 
-    def __init__(self, model_cls, storage):
+    def __init__(self, model_cls, storage, context=None):
         self.model = model_cls
         self.storage = storage
+        self.context = context
+
+    def valid(self, record):
+        return not self.context or record.get(self.context[0]) == self.context[1]
 
     @classmethod
     def push_to_topic(cls, topic, message):
@@ -65,7 +70,7 @@ class Controller(object):
     def pop_topic(cls, topic):
         return cls.messages.pop(topic, [])
 
-    def one(self, key):
+    def one(self, key, context=True):
         """Get a record.
 
         Args:
@@ -75,15 +80,19 @@ class Controller(object):
             Model: The model for the matching record or None if no such record exists.
         """
         record = self.storage.get(key, table_name=self.model.name)
-        return self.model(record) if record else None
+        if record and self.valid(record) or not context:
+            return self.model(record)
+        return None
 
-    def all(self):
+    def all(self, context=True):
         """Get all records.
 
         Returns:
             list: Models for all records or an empty lists if no records exist.
         """
-        return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
+        return [self.model(record) 
+                for record in self.storage.search(table_name=self.model.name) 
+                if self.valid(record) or not context]
 
     def count(self):
         """Return the number of records.
@@ -91,9 +100,9 @@ class Controller(object):
         Returns:
             int: Effectively ``len(self.all())``
         """
-        return self.storage.count(table_name=self.model.name)
+        return len(self.all())
 
-    def search(self, keys=None):
+    def search(self, keys=None, context=True):
         """Return records that have all given keys.
 
         Args:
@@ -102,9 +111,11 @@ class Controller(object):
         Returns:
             list: Models for records with the given keys or an empty lists if no records have all keys.
         """
-        return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
+        return [self.model(record)
+                for record in self.storage.search(keys=keys, table_name=self.model.name)
+                if self.valid(record) or not context]
 
-    def match(self, field, regex=None, test=None):
+    def match(self, field, regex=None, test=None, context=True):
         """Return records that have a field matching a regular expression or test function.
 
         Args:
@@ -116,7 +127,11 @@ class Controller(object):
             list: Models for records that have a matching field.
         """
         return [self.model(record)
-                for record in self.storage.match(field, table_name=self.model.name, regex=regex, test=test)]
+                for record in self.storage.match(field,
+                                    table_name=self.model.name,
+                                    regex=regex,
+                                    test=test)
+                if self.valid(record) or not context]
 
     def exists(self, keys):
         """Check if a record exists.
@@ -129,7 +144,7 @@ class Controller(object):
         """
         return self.storage.contains(keys, table_name=self.model.name)
 
-    def populate(self, model, attribute=None, defaults=False):
+    def populate(self, model, attribute=None, defaults=False, context=True):
         """Merges associated data into the model record.
 
         Example:
@@ -158,12 +173,12 @@ class Controller(object):
         """
         if attribute:
             _heavy_debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
-            return self._populate_attribute(model, attribute, defaults)
+            return self._populate_attribute(model, attribute, defaults, context=context)
         else:
             _heavy_debug("Populating %s(%s)", model.name, model.eid)
-        return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
+        return {attr: self._populate_attribute(model, attr, defaults, context=context) for attr in model}
 
-    def _populate_attribute(self, model, attr, defaults):
+    def _populate_attribute(self, model, attr, defaults, context=True):
         try:
             props = model.attributes[attr]
         except KeyError:
@@ -180,9 +195,9 @@ class Controller(object):
             except KeyError:
                 return value
             else:
-                return foreign.controller(self.storage).search(value)
+                return foreign.controller(self.storage).search(value, context=context)
         else:
-            return foreign.controller(self.storage).one(value)
+            return foreign.controller(self.storage).one(value, context=context)
 
     def _check_unique(self, data, match_any=True):
         unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
