@@ -53,7 +53,9 @@ def contextualize(function):
         self = args[0]
 
         context = kwargs.pop("context", self.context)
-        if context == True:
+        # Context can be True, False, or (key, value)
+        if context and isinstance(context, bool):
+            # If True, use the init context
             context = self.context
 
         records = function(*args, **kwargs)
@@ -74,6 +76,14 @@ class Controller(object):
     Attributes:
         model (AbstractModel): Data model.
         storage (AbstractDatabase): Record storage.
+
+        context (Tuple): A field filter, with syntax (key, value).
+        A controller will filters results according to:
+        - By default, nothing;
+        - If a context was given at the object's initialization,
+            the controller only allows objects matching the context;
+        - If a context is given during a command, it overrides the internal
+            context and the results are matched against it.
 
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
@@ -149,9 +159,9 @@ class Controller(object):
         """
         return [self.model(record)
                 for record in self.storage.match(field,
-                                    table_name=self.model.name,
-                                    regex=regex,
-                                    test=test)]
+                                                 table_name=self.model.name,
+                                                 regex=regex,
+                                                 test=test)]
 
     def exists(self, keys):
         """Check if a record exists.

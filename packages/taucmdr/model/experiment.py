@@ -107,9 +107,11 @@ class ExperimentController(Controller):
     """Experiment data controller."""
 
     def one(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
         return super(ExperimentController, self).one(keys, context=context)
 
     def all(self, context=True):
+        # pylint: disable=unexpected-keyword-arg
         return super(ExperimentController, self).all(context=context)
 
     def count(self):
@@ -119,6 +121,7 @@ class ExperimentController(Controller):
             return 0
 
     def search(self, keys=None, context=True):
+        # pylint: disable=unexpected-keyword-arg
         return super(ExperimentController, self).search(keys, context=context)
 
     def exists(self, keys):
