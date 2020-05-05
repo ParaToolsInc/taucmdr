@@ -69,11 +69,9 @@ class ExperimentListCommand(ListCommand):
         """
         args = self._parse_args(argv)
 
-        if not Project.selected():
-            self.parser.error("No project is selected.")
+        proj = Project.controller().selected()
 
         if args.current:
-            proj = Project.controller().selected()
             try:
                 expr = proj.experiment()
             except ExperimentSelectionError:
