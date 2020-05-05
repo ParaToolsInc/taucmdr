@@ -223,7 +223,7 @@ class Experiment(Model):
         app = populated['application']
         meas = populated['measurement']
         for model in targ, app, meas:
-            if proj.eid not in model['projects']:
+            if proj.eid not in model['project']:
                 raise IncompatibleRecordError("%s '%s' is not a member of project configuration '%s'." %
                                               (model.name, model['name'], proj['name']))
         for lhs in [targ, app, meas]:
