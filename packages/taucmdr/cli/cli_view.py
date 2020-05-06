@@ -429,14 +429,16 @@ class ListCommand(AbstractCliView):
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
+
         context = True
         if args.project:
             matching = Project.controller().one({'name': args.project})
             if matching:
                 LOGGER.debug("Using project %s", matching.eid)
-                context = ('project', matching.eid)
+                context = [('project', matching.eid)]
             else:
                 LOGGER.debug("Project %s not found", args.project)
+
         return self._list_records([l.name for l in storage_levels], keys, style, context=context)
 
     def _retrieve_records(self, ctrl, keys, context=True):

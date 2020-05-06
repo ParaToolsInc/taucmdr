@@ -69,7 +69,7 @@ class ExperimentListCommand(ListCommand):
         """
         args = self._parse_args(argv)
 
-        proj = Project.controller().selected()
+        proj = Project.selected()
 
         if args.current:
             try:

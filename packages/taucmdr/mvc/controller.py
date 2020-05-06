@@ -41,31 +41,36 @@ else:
         pass
 
 def valid(context, record):
-    field = record.get(context[0])
-    if isinstance(field, int):
-        return field == context[1]
-    elif isinstance(field, list):
-        return context[1] in field
-    return False
+    def _has(requirement, record):
+        field = record.get(requirement[0])
+        if isinstance(field, int):
+            return field == requirement[1]
+        elif isinstance(field, list):
+            return requirement[1] in field
+        return False
+
+    return True in [_has(req, record) for req in context]
 
 def contextualize(function):
     def wrapper(*args, **kwargs):
         self = args[0]
-
         context = kwargs.pop("context", self.context)
-        # Context can be True, False, or (key, value)
+
+        # Context can be True, False, or list(key, value)
         if context and isinstance(context, bool):
-            # If True, use the init context
+            # If True, use the default context
             context = self.context
 
         records = function(*args, **kwargs)
-        if context and isinstance(context, tuple):
+        if context and isinstance(context, list):
             if not records:
                 return records
             elif isinstance(records, dict):
                 records = records if valid(context, records) else None
             elif isinstance(records, list):
                 records = [e for e in records if valid(context, e)]
+        else:
+            LOGGER.debug("Invalid context %s; ignoring.", context)
 
         return records
     return wrapper
@@ -77,7 +82,10 @@ class Controller(object):
         model (AbstractModel): Data model.
         storage (AbstractDatabase): Record storage.
 
-        context (Tuple): A field filter, with syntax (key, value).
+        context (List(Tuple)): A field filter, with syntax (key, value).
+        Filtering according to a context means that only elements with
+        at least an element matching the rules set in the context will
+        be considered. Think of it as a whitelist.
         A controller will filters results according to:
         - By default, nothing;
         - If a context was given at the object's initialization,
