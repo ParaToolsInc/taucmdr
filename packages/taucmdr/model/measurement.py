@@ -84,7 +84,7 @@ def attributes():
                     (lhs_attr, lhs_value, lhs_name, rhs_name))
 
     return {
-        'project': {
+        'projects': {
             'collection': Project,
             'via': 'measurements',
             'description': "projects using this measurement"

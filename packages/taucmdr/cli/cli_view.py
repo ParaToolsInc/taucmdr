@@ -435,7 +435,7 @@ class ListCommand(AbstractCliView):
             matching = Project.controller().one({'name': args.project})
             if matching:
                 LOGGER.debug("Using project %s", matching.eid)
-                context = [('project', matching.eid)]
+                context = [('project', matching.eid), ('projects', matching.eid)]
             else:
                 LOGGER.debug("Project %s not found", args.project)
 

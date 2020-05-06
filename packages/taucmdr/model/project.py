@@ -58,17 +58,17 @@ def attributes():
         },
         'targets': {
             'collection': Target,
-            'via': 'project',
+            'via': 'projects',
             'description': 'targets used by this project'
         },
         'applications': {
             'collection': Application,
-            'via': 'project',
+            'via': 'projects',
             'description': 'applications used by this project'
         },
         'measurements': {
             'collection': Measurement,
-            'via': 'project',
+            'via': 'projects',
             'description': 'measurements used by this project'
         },
         'experiments': {

@@ -154,7 +154,8 @@ class Experiment(Model):
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         if Project.selected():
-            context = [('project', Project.selected().eid)]
+            context = [('project', Project.selected().eid),
+                    ('projects', Project.selected().eid)]
         else:
             # use a value that will never exist to block all
             context = [('project', 'Undefined')]
@@ -226,7 +227,7 @@ class Experiment(Model):
         app = populated['application']
         meas = populated['measurement']
         for model in targ, app, meas:
-            if proj.eid not in model['project']:
+            if proj.eid not in model['projects']:
                 raise IncompatibleRecordError("%s '%s' is not a member of project configuration '%s'." %
                                               (model.name, model['name'], proj['name']))
         for lhs in [targ, app, meas]:

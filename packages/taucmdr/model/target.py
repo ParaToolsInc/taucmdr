@@ -178,7 +178,7 @@ def attributes():
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
 
     return {
-        'project': {
+        'projects': {
             'collection': Project,
             'via': 'targets',
             'description': 'projects using this target'
