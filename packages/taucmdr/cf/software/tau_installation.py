@@ -426,6 +426,7 @@ class TauInstallation(Installation):
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
+        self.uses_ompt_tr4 = self.uses_ompt and sources['ompt'] == 'download-tr4'
         self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
@@ -861,10 +862,12 @@ print(find_version())
                                 comp_version is not None and
                                 self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
                         ):
-                            flags.append('-ompt')
+                            flags.append('-ompt-v5')
                         else:
                             flags.append('-ompt=%s' % ompt.install_prefix)
-                    if self.uses_ompt_tr6:
+                    if self.uses_ompt_tr4:
+                        flags.append('-ompt-tr4')
+                    elif self.uses_ompt_tr6:
                         flags.append('-ompt-tr6')
                 elif self.measure_openmp == 'opari':
                     flags.append('-opari')
@@ -1028,6 +1031,10 @@ print(find_version())
                     tags.add('ompt')
                     if self.uses_ompt_tr6:
                         tags.add('tr6')
+                    elif self.uses_ompt_tr4:
+                        tags.add('tr4')
+                    else:
+                        tags.add('v5')
                 elif self.measure_openmp == 'opari':
                     tags.add('opari')
                 else:

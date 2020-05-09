@@ -38,7 +38,7 @@ from taucmdr.cf.compiler.host import CC, CXX
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz'}
+REPOS = {None: 'http://tau.uoregon.edu/LLVM-openmp-8.0.tar.gz'}
 
 LIBRARIES = {None: ['libomp.so']}
 
@@ -51,6 +51,8 @@ class OmptInstallation(CMakeInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         if sources['ompt'] == 'download-tr6':
             sources['ompt'] = 'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz'
+        elif sources['ompt'] == 'download-tr4':
+            sources['ompt'] = 'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz'
         super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 
