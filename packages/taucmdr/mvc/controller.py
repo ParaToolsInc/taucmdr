@@ -133,13 +133,14 @@ class Controller(object):
         """
         return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
 
-    def count(self):
+    def count(self, context=True):
         """Return the number of records.
 
         Returns:
             int: Effectively ``len(self.all())``
         """
-        return len(self.all())
+        # pylint: disable=unexpected-keyword-arg
+        return len(self.all(context=context))
 
     @contextualize
     def search(self, keys=None):
@@ -171,7 +172,7 @@ class Controller(object):
                                                  regex=regex,
                                                  test=test)]
 
-    def exists(self, keys):
+    def exists(self, keys, context=True):
         """Check if a record exists.
 
         Args:
@@ -180,6 +181,16 @@ class Controller(object):
         Returns:
             bool: True if a record matching `keys` exists, False otherwise.
         """
+        relevant_context = self.context if isinstance(context, bool) else context
+        if relevant_context:
+            # As the context is not exclusive, try with every filter
+            for key, value in relevant_context:
+                modded_keys = keys.copy()
+                modded_keys[key] = value
+                if self.storage.contains(modded_keys, table_name=self.model.name):
+                    return True
+            return False
+
         return self.storage.contains(keys, table_name=self.model.name)
 
     def populate(self, model, attribute=None, defaults=False, context=True):
@@ -362,7 +373,7 @@ class Controller(object):
                 model.check_compatibility(model)
                 model.on_update(changes[model.eid])
 
-    def delete(self, keys):
+    def delete(self, keys, context=True):
         """Delete recorded data and update associations.
 
         The behavior depends on the type of `keys`:
@@ -380,7 +391,9 @@ class Controller(object):
         """
         with self.storage as database:
             removed_data = []
-            changing = self.search(keys)
+            # pylint: disable=unexpected-keyword-arg
+            changing = self.search(keys, context=context)
+
             for model in changing:
                 for attr, foreign in model.associations.iteritems():
                     foreign_model, via = foreign
@@ -402,7 +415,11 @@ class Controller(object):
                                      self.model.name, model.eid, via, foreign_model.name, affected_keys)
                         self._disassociate(model, foreign_model, affected_keys, via)
                 removed_data.append(dict(model))
-            database.remove(keys, table_name=self.model.name)
+
+            for record in changing:
+                key = {self.model.key_attribute: record.get(self.model.key_attribute)}
+                database.remove(key, table_name=self.model.name)
+
             for model in changing:
                 model.on_delete()
 
