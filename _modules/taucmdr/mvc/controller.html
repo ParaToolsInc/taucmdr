@@ -87,6 +87,40 @@
         <span class="c1"># pylint: disable=unused-argument</span>
         <span class="k">pass</span>
 
+<div class="viewcode-block" id="valid"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.valid">[docs]</a><span class="k">def</span> <span class="nf">valid</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_has</span><span class="p">(</span><span class="n">requirement</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">requirement</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">field</span> <span class="o">==</span> <span class="n">requirement</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">requirement</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">field</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span> <span class="ow">in</span> <span class="p">[</span><span class="n">_has</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">context</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="contextualize"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.contextualize">[docs]</a><span class="k">def</span> <span class="nf">contextualize</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;context&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="c1"># Context can be True, False, or list(key, value)</span>
+        <span class="k">if</span> <span class="n">context</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="c1"># If True, use the default context</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">context</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">records</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">records</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">records</span> <span class="o">=</span> <span class="n">records</span> <span class="k">if</span> <span class="n">valid</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">records</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">records</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">records</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">records</span> <span class="k">if</span> <span class="n">valid</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">e</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Invalid context </span><span class="si">%s</span><span class="s2">; ignoring.&quot;</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">records</span>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
 
 <div class="viewcode-block" id="Controller"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller">[docs]</a><span class="k">class</span> <span class="nc">Controller</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The &quot;C&quot; in `MVC`_.</span>
@@ -95,14 +129,26 @@
 <span class="sd">        model (AbstractModel): Data model.</span>
 <span class="sd">        storage (AbstractDatabase): Record storage.</span>
 
+<span class="sd">        context (List(Tuple)): A field filter, with syntax (key, value).</span>
+<span class="sd">        Filtering according to a context means that only elements with</span>
+<span class="sd">        at least an element matching the rules set in the context will</span>
+<span class="sd">        be considered. Think of it as a whitelist.</span>
+<span class="sd">        A controller will filters results according to:</span>
+<span class="sd">        - By default, nothing;</span>
+<span class="sd">        - If a context was given at the object&#39;s initialization,</span>
+<span class="sd">            the controller only allows objects matching the context;</span>
+<span class="sd">        - If a context is given during a command, it overrides the internal</span>
+<span class="sd">            context and the results are matched against it.</span>
+
 <span class="sd">    .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">messages</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Controller.push_to_topic"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.push_to_topic">[docs]</a>    <span class="k">def</span> <span class="nf">push_to_topic</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
@@ -112,6 +158,7 @@
 <div class="viewcode-block" id="Controller.pop_topic"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.pop_topic">[docs]</a>    <span class="k">def</span> <span class="nf">pop_topic</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="p">[])</span></div>
 
+    <span class="nd">@contextualize</span>
 <div class="viewcode-block" id="Controller.one"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.one">[docs]</a>    <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get a record.</span>
 
@@ -124,6 +171,7 @@
         <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">if</span> <span class="n">record</span> <span class="k">else</span> <span class="kc">None</span></div>
 
+    <span class="nd">@contextualize</span>
 <div class="viewcode-block" id="Controller.all"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get all records.</span>
 
@@ -132,14 +180,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
 
-<div class="viewcode-block" id="Controller.count"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.count"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the number of records.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Effectively ``len(self.all())``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="c1"># pylint: disable=unexpected-keyword-arg</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span></div>
 
+    <span class="nd">@contextualize</span>
 <div class="viewcode-block" id="Controller.search"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return records that have all given keys.</span>
 
@@ -151,6 +201,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span></div>
 
+    <span class="nd">@contextualize</span>
 <div class="viewcode-block" id="Controller.match"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return records that have a field matching a regular expression or test function.</span>
 
@@ -163,9 +214,12 @@
 <span class="sd">            list: Models for records that have a matching field.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">)]</span></div>
+                <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">field</span><span class="p">,</span>
+                                                 <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                 <span class="n">regex</span><span class="o">=</span><span class="n">regex</span><span class="p">,</span>
+                                                 <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">)]</span></div>
 
-<div class="viewcode-block" id="Controller.exists"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.exists"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if a record exists.</span>
 
 <span class="sd">        Args:</span>
@@ -174,9 +228,19 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if a record matching `keys` exists, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relevant_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="n">context</span>
+        <span class="k">if</span> <span class="n">relevant_context</span><span class="p">:</span>
+            <span class="c1"># As the context is not exclusive, try with every filter</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">relevant_context</span><span class="p">:</span>
+                <span class="n">modded_keys</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">modded_keys</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">modded_keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.populate"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.populate">[docs]</a>    <span class="k">def</span> <span class="nf">populate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merges associated data into the model record.</span>
 
 <span class="sd">        Example:</span>
@@ -205,12 +269,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">attribute</span><span class="p">:</span>
             <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Populating </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)[</span><span class="si">%s</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">defaults</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Populating </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">defaults</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">model</span><span class="p">}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_attribute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">defaults</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">model</span><span class="p">}</span></div>
 
-    <span class="k">def</span> <span class="nf">_populate_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">defaults</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_populate_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">defaults</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">props</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -227,9 +291,9 @@
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">value</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">foreign</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">foreign</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">foreign</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">foreign</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_check_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="n">unique</span> <span class="o">=</span> <span class="p">{</span><span class="n">attr</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;unique&#39;</span> <span class="ow">in</span> <span class="n">props</span><span class="p">}</span>
@@ -356,7 +420,7 @@
                 <span class="n">model</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="n">changes</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="Controller.delete"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+<div class="viewcode-block" id="Controller.delete"><a class="viewcode-back" href="../../../taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Delete recorded data and update associations.</span>
 
 <span class="sd">        The behavior depends on the type of `keys`:</span>
@@ -374,7 +438,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="k">as</span> <span class="n">database</span><span class="p">:</span>
             <span class="n">removed_data</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">changing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+            <span class="c1"># pylint: disable=unexpected-keyword-arg</span>
+            <span class="n">changing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
             <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">foreign</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">associations</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="n">foreign_model</span><span class="p">,</span> <span class="n">via</span> <span class="o">=</span> <span class="n">foreign</span>
@@ -396,7 +462,11 @@
                                      <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">foreign_model</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_disassociate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">foreign_model</span><span class="p">,</span> <span class="n">affected_keys</span><span class="p">,</span> <span class="n">via</span><span class="p">)</span>
                 <span class="n">removed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
-            <span class="n">database</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span><span class="p">)}</span>
+                <span class="n">database</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
             <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">changing</span><span class="p">:</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">on_delete</span><span class="p">()</span></div>
 
@@ -524,7 +594,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on May 01, 2020 at 16:32:16 UTC.
+      Last updated on May 13, 2020 at 17:35:34 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

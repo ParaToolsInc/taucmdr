@@ -94,7 +94,7 @@ This data tracks the system compilers so we can warn the user if they have chang
 
 <dl class="attribute">
 <dt id="taucmdr.model.compiler.Compiler.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'CAF_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_CC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_CC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'wrapped'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_UPC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'CUDA_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'CUDA_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'python_PY')])</em><a class="headerlink" href="#taucmdr.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'python_PY'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_UPC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_CC'), (&lt;class 'taucmdr.model.compiler.Compiler'&gt;, 'wrapped'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'Host_CC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'CUDA_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'CUDA_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'CAF_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_CXX'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'MPI_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_FC'), (&lt;class 'taucmdr.model.target.Target'&gt;, 'SHMEM_CC')])</em><a class="headerlink" href="#taucmdr.model.compiler.Compiler.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -122,7 +122,7 @@ This compiler record is no longer valid.</td>
 
 <dl class="class">
 <dt id="taucmdr.model.compiler.CompilerController">
-<em class="property">class </em><code class="descclassname">taucmdr.model.compiler.</code><code class="descname">CompilerController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#CompilerController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.CompilerController" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">taucmdr.model.compiler.</code><code class="descname">CompilerController</code><span class="sig-paren">(</span><em>model_cls</em>, <em>storage</em>, <em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/model/compiler.html#CompilerController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.model.compiler.CompilerController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="taucmdr.mvc.controller.html#taucmdr.mvc.controller.Controller" title="taucmdr.mvc.controller.Controller"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.mvc.controller.Controller</span></code></a></p>
 <p>Compiler data controller.</p>
 <dl class="method">
@@ -169,7 +169,7 @@ This compiler record is no longer valid.</td>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on May 01, 2020 at 16:32:16 UTC.
+      Last updated on May 13, 2020 at 17:35:34 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
