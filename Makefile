@@ -118,8 +118,8 @@ else
 	endif
 endif
 CONDA_VERSION = latest
-CONDA_REPO = https://repo.continuum.io/miniconda
-CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
+CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/$(CONDA_VERSION)/download
+CONDA_PKG = CommanderConda2-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = system/src/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
@@ -127,8 +127,7 @@ CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
 	PYTHON_EXE = $(CONDA)
-	PYTHON_FLAGS = -EOu
-#	PYTHON_FLAGS = -EOu3
+	PYTHON_FLAGS = -EOu3
 else
 	$(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
 	CONDA_SRC =
