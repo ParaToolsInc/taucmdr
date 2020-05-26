@@ -49,7 +49,7 @@ from collections import deque
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
-from termcolor import termcolor
+import termcolor
 from unidecode import unidecode
 from taucmdr import logger
 from taucmdr.error import InternalError

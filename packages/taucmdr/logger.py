@@ -49,12 +49,12 @@ import logging
 from logging import Logger, LogRecord, handlers # pylint: disable=unused-import
 from datetime import datetime
 from typing import Any, Optional, Tuple, Union, cast # pylint: disable=unused-import
-from termcolor import termcolor
+import termcolor
 from taucmdr import USER_PREFIX, TAUCMDR_VERSION
 
 
 def _prune_ansi(line):
-    """Remove all occurences of the ANSI escape sequence
+    """Remove all occurrences of the ANSI escape sequence
 
     Returns:
         str: Line where all '\x1b[*m' sequences were removed

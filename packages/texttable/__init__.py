@@ -95,7 +95,7 @@ Frank Sachsenheim:
 
 import sys
 import string
-from termcolor import termcolor
+import termcolor
 
 try:
     if sys.version >= '2.3':
