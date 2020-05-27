@@ -1,0 +1,56 @@
+[31m[TAU] [0m
+[31m[TAU] [0m== BEGIN ring-sample at 2020-05-25 18:34:21.800629 =====================================================================================================
+[31m[TAU] [0m
+[31m[TAU] [0mPROFILEDIR=/home/walker/jupyterlab-taucmdr/viz-prototypes/.tau/mpi-examples/ring-sample/2
+[31m[TAU] [0mSCOREP_ENABLE_TRACING=false
+[31m[TAU] [0mTAU_CALLPATH=1
+[31m[TAU] [0mTAU_CALLPATH_DEPTH=100
+[31m[TAU] [0mTAU_CALLSITE=0
+[31m[TAU] [0mTAU_COMM_MATRIX=0
+[31m[TAU] [0mTAU_EBS_PERIOD=5000
+[31m[TAU] [0mTAU_MERGE_METADATA=1
+[31m[TAU] [0mTAU_METRICS=TIME,
+[31m[TAU] [0mTAU_PROFILE=1
+[31m[TAU] [0mTAU_SAMPLING=1
+[31m[TAU] [0mTAU_THROTTLE=1
+[31m[TAU] [0mTAU_THROTTLE_NUMCALLS=100000
+[31m[TAU] [0mTAU_THROTTLE_PERCALL=10
+[31m[TAU] [0mTAU_TRACE=0
+[31m[TAU] [0mTAU_TRACK_HEAP=0
+[31m[TAU] [0mTAU_TRACK_LOAD=0
+[31m[TAU] [0mTAU_TRACK_MEMORY_FOOTPRINT=0
+[31m[TAU] [0mTAU_VERBOSE=0
+[31m[TAU] [0mTRACEDIR=/home/walker/jupyterlab-taucmdr/viz-prototypes/.tau/mpi-examples/ring-sample/2
+[31m[TAU] [0mmpirun -np 8 tau_exec -T 92df0863,mpi -ebs ./ring_mpi
+
+RING_MPI:
+  C/MPI version
+  Measure time required to transmit data around
+  a ring of processes
+
+  The number of processes is 8
+
+  Timings based on 10 experiments
+  N double precision values were sent
+  in a ring transmission starting and ending at process 0
+  and using a total of 8 processes.
+
+         N           T min           T ave           T max
+
+       100     7.15256e-06     5.47886e-05     0.000474453
+      1000     1.40667e-05     2.12908e-05     8.15392e-05
+     10000      6.4373e-05     0.000132227     0.000720024
+    100000     0.000357628     0.000560427      0.00232124
+   1000000      0.00530362      0.00696464       0.0203915
+
+RING_MPI:
+  Normal end of execution.
+[31m[TAU] [0mTrial 2 produced 8 profile files.
+[31m[TAU] [0m
+[31m[TAU] [0m== END ring-sample at 2020-05-25 18:34:22.015937 =======================================================================================================
+[31m[TAU] [0m
+[31m[TAU] [0mExperiment: ring-sample
+[31m[TAU] [0mCommand: mpirun -np 8 tau_exec -T 92df0863,mpi -ebs ./ring_mpi
+[31m[TAU] [0mCurrent working directory: /home/walker/jupyterlab-taucmdr/viz-prototypes/mpi-examples/ring
+[31m[TAU] [0mData size: 30.2KiB bytes
+[31m[TAU] [0mElapsed seconds: 0.211595773697
