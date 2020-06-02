@@ -515,7 +515,7 @@ def create_subprocess(
                 if log:
                     LOGGER.debug(line[:-1])
                 if stdout:
-                    print(line, end=' ')
+                    print(line, end='')
                 if error_buf:
                     buf.append(line)
                 if record_output:
@@ -525,7 +525,7 @@ def create_subprocess(
     LOGGER.debug("%s returned %d", cmd, retval)
     if retval and error_buf and not stdout:
         for line in buf:
-            print(line, end=' ')
+            print(line, end='')
     if record_output:
         return retval, output
     return retval
