@@ -182,7 +182,10 @@ class Project(Model):
 
     @classmethod
     def selected(cls, storage=PROJECT_STORAGE):
-        return cls.__controller__(cls, storage).selected()
+        try:
+            return cls.__controller__(cls, storage).selected()
+        except ProjectSelectionError:
+            return None
 
     @property
     def prefix(self):
