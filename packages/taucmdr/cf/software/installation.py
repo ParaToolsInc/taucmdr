@@ -27,6 +27,7 @@
 #
 """Software installation management."""
 
+from __future__ import absolute_import
 import os
 import multiprocessing
 from subprocess import CalledProcessError
@@ -41,6 +42,7 @@ from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
 from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_OS, DARWIN
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -185,8 +187,8 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(name, basestring)
-        assert isinstance(title, basestring)
+        assert isinstance(name, six.string_types)
+        assert isinstance(title, six.string_types)
         assert isinstance(sources, dict)
         assert isinstance(target_arch, Architecture)
         assert isinstance(target_os, OperatingSystem)
@@ -387,7 +389,7 @@ class Installation(object):
                 return archive
         if self.src is None:
             raise ConfigurationError(
-                "Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail))
+                "Unable to acquire {} source package '{}'".format(self.name, ', '.join(self.srcs_avail))
             )
         else:
             return archive
@@ -415,7 +417,7 @@ class Installation(object):
             if reuse_archive:
                 LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
                 return self._prepare_src(reuse_archive=False)
-            raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
+            raise ConfigurationError("Cannot extract source archive '{}': {}".format(archive, err),
                                      "Check that the file or directory is accessible")
 
     def verify(self):
@@ -474,7 +476,7 @@ class Installation(object):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in self.dependencies.itervalues():
+        for pkg in six.itervalues(self.dependencies):
             pkg.install(force_reinstall)
         if self.unmanaged or not force_reinstall:
             try:

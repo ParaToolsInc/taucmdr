@@ -30,6 +30,7 @@
 Score-P is a tool suite for profiling, event tracing, and online analysis of HPC applications.
 """
 
+from __future__ import absolute_import
 import os
 from subprocess import CalledProcessError
 from taucmdr import logger, util
@@ -37,6 +38,7 @@ from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler import host, mpi, shmem
 from taucmdr.cf.platforms import X86_64, IBM64, PPC64, PPC64LE
+import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -126,7 +128,7 @@ class ScorepInstallation(AutotoolsInstallation):
     def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # Score-P changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        uid_parts.extend(sorted(comp.uid for comp in six.itervalues(self.compilers)))
         # Score-P installations have different symbols depending on what flags were used.
         uid_parts.append(str(self._get_flags()))
         return uid_parts

@@ -30,6 +30,7 @@
 TAU uses PDT for source instrumentation.
 """
 
+from __future__ import absolute_import
 import os
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError

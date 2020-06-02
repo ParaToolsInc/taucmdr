@@ -30,6 +30,7 @@
 These are the principal compilers used by the system and **must** be identified
 to successfully configure and install TAU.
 """
+from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 HOST_COMPILERS = Knowledgebase('Host', 'Compilers targeting the host CPU',

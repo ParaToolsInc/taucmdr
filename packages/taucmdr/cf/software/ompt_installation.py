@@ -30,6 +30,7 @@
 OMPT is used for performance analysis of OpenMP codes.
 """
 
+from __future__ import absolute_import
 from taucmdr import logger
 from taucmdr.cf.software.installation import CMakeInstallation
 from taucmdr.cf.compiler.host import CC, CXX

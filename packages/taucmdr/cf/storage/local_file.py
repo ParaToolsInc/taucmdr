@@ -32,6 +32,7 @@ A persistent, transactional record storage system using :py:class:`TinyDB` for
 both the database and the key/value store.
 """
 
+from __future__ import absolute_import
 import os
 import json
 import tempfile
@@ -41,6 +42,7 @@ from tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -166,7 +168,7 @@ class LocalFileStorage(AbstractStorage):
             try:
                 util.mkdirp(self._prefix)
             except Exception as err:
-                raise StorageError("Failed to access %s filesystem prefix '%s': %s" % (self.name, self._prefix, err))
+                raise StorageError("Failed to access {} filesystem prefix '{}': {}".format(self.name, self._prefix, err))
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, self._prefix)
 
     def disconnect_filesystem(self, *args, **kwargs):
@@ -183,7 +185,7 @@ class LocalFileStorage(AbstractStorage):
                 storage.WRITE_CACHE_SIZE = 0
                 self._database = tinydb.TinyDB(dbfile, storage=storage)
             except IOError as err:
-                raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err),
+                raise StorageError("Failed to access {} database '{}': {}".format(self.name, dbfile, err),
                                    "Check that you have `write` access")
             if not util.path_accessible(dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % dbfile,
@@ -239,8 +241,8 @@ class LocalFileStorage(AbstractStorage):
         def _or(lhs, rhs):
             return lhs | rhs
         join = _or if match_any else _and
-        itr = keys.iteritems()
-        key, val = itr.next()
+        itr = six.iteritems(keys)
+        key, val = next(itr)
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))

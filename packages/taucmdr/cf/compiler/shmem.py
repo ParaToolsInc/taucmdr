@@ -30,6 +30,7 @@
 Keep a separate knowledge base for SHMEM compilers to simplify compiler
 identification and because TAU doesn't require SHMEM for all configurations.
 """
+from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 

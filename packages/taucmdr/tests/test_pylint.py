@@ -30,6 +30,7 @@
 Asserts that pylint score doesn't drop below minimum.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import string
@@ -117,4 +118,4 @@ class PylintTest(tests.TestCase):
         self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
-        self.assertGreaterEqual(score, 9.0, "%s\nPylint score %s/10 is too low!" % (stdout, score))
+        self.assertGreaterEqual(score, 9.0, "{}\nPylint score {}/10 is too low!".format(stdout, score))

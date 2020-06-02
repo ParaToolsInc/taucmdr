@@ -27,6 +27,7 @@
 #
 """CUDA compiler knowledgebase."""
 
+from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 
