@@ -32,6 +32,7 @@ record completely describes the hardware and software environment that produced
 the performance data.
 """
 
+from __future__ import absolute_import
 import os
 import glob
 import errno
@@ -50,6 +51,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation, PROGRAM_LAUNCHERS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
+import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -135,7 +137,7 @@ class TrialController(Controller):
     @staticmethod
     def _mark_time(mark, expr):
         timestamp = str(datetime.utcnow())
-        headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, expr['name'], timestamp), logger.LINE_WIDTH)
+        headline = '\n{:=<{}}\n'.format('== {} {} at {} =='.format(mark, expr['name'], timestamp), logger.LINE_WIDTH)
         LOGGER.info(headline)
         return timestamp
 
@@ -144,10 +146,10 @@ class TrialController(Controller):
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
         # Move TAU environment parameters to the command line
         env_parts = {}
-        for key, val in env.iteritems():
+        for key, val in six.iteritems(env):
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        env_str = ':'.join(['%s=%s' % item for item in six.iteritems(env_parts)])
         cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
@@ -320,7 +322,7 @@ class Trial(Model):
         else:
             return cmd[:idx], cmd[idx+1:]
         cmd0 = cmd[0]
-        for launcher, appfile_flags in PROGRAM_LAUNCHERS.iteritems():
+        for launcher, appfile_flags in six.iteritems(PROGRAM_LAUNCHERS):
             if launcher not in cmd0:
                 continue
             # No '--' to indicate start of application, so look for first executable
@@ -410,7 +412,7 @@ class Trial(Model):
         try:
             util.mkdirp(self.prefix)
         except Exception as err:
-            raise ConfigurationError('Cannot create directory %r: %s' % (self.prefix, err),
+            raise ConfigurationError('Cannot create directory {!r}: {}'.format(self.prefix, err),
                                      'Check that you have write access')
 
     def on_delete(self):
@@ -468,7 +470,7 @@ class Trial(Model):
         """
         expr = self.populate('experiment')
         if self.get('data_size', 0) <= 0:
-            raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+            raise ConfigurationError("Trial {} of experiment '{}' has no data".format(self['number'], expr['name']))
         meas = self.populate('experiment').populate('measurement')
         profile_fmt = meas.get('profile', 'none')
         trace_fmt = meas.get('trace', 'none')
@@ -508,7 +510,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+        tau_env_opts = sorted('{}={}'.format(key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -521,7 +523,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+            raise TrialError("Couldn't execute {}: {}".format(cmd_str, err), errno_hint.get(err.errno, None))
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
@@ -542,7 +544,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+        tau_env_opts = sorted('{}={}'.format(key, val) for key, val in six.iteritems(env)
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -562,7 +564,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+            raise TrialError("Couldn't execute {}: {}".format(cmd_str, err), errno_hint.get(err.errno, None))
 
         measurement = expr.populate('measurement')
 
@@ -616,10 +618,10 @@ class Trial(Model):
         """
         expr = self.populate('experiment')
         if self.get('data_size', 0) <= 0:
-            raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+            raise ConfigurationError("Trial {} of experiment '{}' has no data".format(self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in data.iteritems():
+        for fmt, path in six.iteritems(data):
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.get_minimal()
@@ -638,7 +640,7 @@ class Trial(Model):
             elif fmt == 'otf2':
                 export_file = os.path.join(dest, stem+'.tgz')
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
-                items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
+                items = [os.path.join(trial_dir, item) for item in ('traces', 'traces.def', 'traces.otf2')]
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)

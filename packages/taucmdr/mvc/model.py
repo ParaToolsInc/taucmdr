@@ -87,7 +87,7 @@ class ModelMeta(type):
 
 
 
-class Model(StorageRecord):
+class Model(six.with_metaclass(ModelMeta, StorageRecord)):
     """The "M" in `MVC`_.
 
     Attributes:
@@ -99,8 +99,6 @@ class Model(StorageRecord):
 
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
-
-    __metaclass__ = ModelMeta
     __controller__ = Controller
     __attributes__ = NotImplemented
 
@@ -114,12 +112,12 @@ class Model(StorageRecord):
         deprecated = [attr for attr in record if attr not in self.attributes]
         if deprecated:
             try:
-                title = "%s '%s'" % (self.name, record[self.key_attribute])
+                title = "{} '{}'".format(self.name, record[self.key_attribute])
             except (KeyError, ModelError):
                 title = "%s" % self.name
             LOGGER.debug("Ignoring deprecated attributes %s in %s", deprecated, title)
         super(Model, self).__init__(record.storage, record.eid,
-                                    (item for item in record.iteritems() if item[0] not in deprecated))
+                                    (item for item in six.iteritems(record) if item[0] not in deprecated))
         self._populated = None
 
     def __setitem__(self, key, value):
@@ -188,7 +186,7 @@ class Model(StorageRecord):
     @classmethod
     def _construct_relationships(cls):
         primary_key = None
-        for attr, props in cls.attributes.iteritems():
+        for attr, props in six.iteritems(cls.attributes):
             model_attr_name = cls.name + "." + attr
             if 'collection' in props and 'via' not in props:
                 raise ModelError(cls, "%s: collection does not define 'via'" % model_attr_name)
@@ -196,11 +194,11 @@ class Model(StorageRecord):
                 raise ModelError(cls, "%s: defines 'via' property but not 'model' or 'collection'" % model_attr_name)
             if not isinstance(props.get('unique', False), bool):
                 raise ModelError(cls, "%s: invalid value for 'unique'" % model_attr_name)
-            if not isinstance(props.get('description', ''), basestring):
+            if not isinstance(props.get('description', ''), six.string_types):
                 raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
             if props.get('primary_key', False):
                 if primary_key is not None:
-                    raise ModelError(cls, "%s: primary key previously specified as %s" % (model_attr_name, primary_key))
+                    raise ModelError(cls, "{}: primary key previously specified as {}".format(model_attr_name, primary_key))
                 primary_key = attr
 
             via = props.get('via', None)
@@ -211,7 +209,7 @@ class Model(StorageRecord):
                 if not issubclass(foreign_cls, Model):
                     raise TypeError
             except TypeError:
-                raise ModelError(cls, "%s: Invalid foreign model controller: %r" % (model_attr_name, foreign_cls))
+                raise ModelError(cls, "{}: Invalid foreign model controller: {!r}".format(model_attr_name, foreign_cls))
 
             forward = (foreign_cls, via)
             reverse = (cls, attr)
@@ -261,7 +259,7 @@ class Model(StorageRecord):
             if key not in cls.attributes:
                 raise ModelError(cls, "no attribute named '%s'" % key)
         validated = {}
-        for attr, props in cls.attributes.iteritems():
+        for attr, props in six.iteritems(cls.attributes):
             # Check required fields and defaults
             try:
                 validated[attr] = data[attr]
@@ -277,13 +275,13 @@ class Model(StorageRecord):
                 if not value:
                     value = []
                 elif not isinstance(value, list):
-                    raise ModelError(cls, "Value supplied for '%s' is not a list: %r" % (attr, value))
+                    raise ModelError(cls, "Value supplied for '{}' is not a list: {!r}".format(attr, value))
                 else:
                     for eid in value:
                         try:
                             int(eid)
                         except ValueError:
-                            raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (eid, attr))
+                            raise ModelError(cls, "Invalid non-integer ID '{}' in '{}'".format(eid, attr))
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
@@ -293,7 +291,7 @@ class Model(StorageRecord):
                         if int(value) != value:
                             raise ValueError
                     except ValueError:
-                        raise ModelError(cls, "Invalid non-integer ID '%s' in '%s'" % (value, attr))
+                        raise ModelError(cls, "Invalid non-integer ID '{}' in '{}'".format(value, attr))
                     validated[attr] = value
         return validated
 
@@ -583,7 +581,7 @@ class Model(StorageRecord):
             the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
-        for attr, props in self.attributes.iteritems():
+        for attr, props in six.iteritems(self.attributes):
             try:
                 compat = props['compat']
             except KeyError:
@@ -592,7 +590,7 @@ class Model(StorageRecord):
                 attr_value = self[attr]
             except KeyError:
                 continue
-            for value, conditions in compat.iteritems():
+            for value, conditions in six.iteritems(compat):
                 if (callable(value) and value(attr_value)) or attr_value == value:
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
@@ -600,5 +598,5 @@ class Model(StorageRecord):
     @classmethod
     def filter_arguments(cls, args):
         from taucmdr.cli.arguments import ArgumentsNamespace
-        filtered = dict(item for item in vars(args).iteritems() if item[0] in cls.attributes)
+        filtered = dict(item for item in six.iteritems(vars(args)) if item[0] in cls.attributes)
         return ArgumentsNamespace(**filtered)

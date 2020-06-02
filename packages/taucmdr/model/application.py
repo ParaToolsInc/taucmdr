@@ -35,6 +35,7 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
+from __future__ import absolute_import
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -44,6 +45,7 @@ from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.compiler.caf import CAF_COMPILERS
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -212,7 +214,7 @@ class Application(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 if self.attributes[attr].get('rebuild_required'):
                     self.controller(self.storage).push_to_topic('rebuild_required', {attr: change})
 

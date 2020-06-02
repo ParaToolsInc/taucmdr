@@ -32,6 +32,7 @@ source code and TAU itself.  If the system compiler changes TAU can break entire
 This data tracks the system compilers so we can warn the user if they have changed.
 """
 
+from __future__ import absolute_import
 import os
 from taucmdr import logger
 from taucmdr.error import InternalError, ConfigurationError
@@ -149,7 +150,7 @@ class Compiler(Model):
     def _verify_core_attrs(self, comp, msg_parts):
         fatal = False
         if comp.absolute_path != self['path']:
-            msg_parts.append("Compiler moved from '%s' to '%s'." % (self['path'], comp.absolute_path))
+            msg_parts.append("Compiler moved from '{}' to '{}'.".format(self['path'], comp.absolute_path))
         if comp.info.family.name != self['family']:
             fatal = True
             msg_parts.append("It was a %s compiler but now it's a %s compiler." %
@@ -174,7 +175,7 @@ class Compiler(Model):
         comp = InstalledCompiler(self['path'], self._compiler_info())
         if comp.uid == self['uid']:
             return comp
-        msg_parts = ["%s '%s' has changed:" % (comp.info.short_descr, comp.absolute_path)]
+        msg_parts = ["{} '{}' has changed:".format(comp.info.short_descr, comp.absolute_path)]
         fatal = self._verify_core_attrs(comp, msg_parts)
         if not fatal:
             self_wrapped = self.get('wrapped', False)

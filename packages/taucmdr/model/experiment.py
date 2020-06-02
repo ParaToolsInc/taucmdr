@@ -32,6 +32,7 @@ and will have zero or more :any:`Trial`. There is one selected experiment per pr
 The selected experiment will be used for application compilation and trial visualization.
 """
 
+from __future__ import absolute_import
 import os
 import fasteners
 from taucmdr import logger, util
@@ -42,6 +43,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
+import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -177,7 +179,7 @@ class Experiment(Model):
         data = {"name": name, "project": proj.eid}
         matching = expr_ctrl.search(data)
         if not matching:
-            raise ExperimentSelectionError("There is no experiment named '%s' in project '%s'." % (name, proj['name']))
+            raise ExperimentSelectionError("There is no experiment named '{}' in project '{}'.".format(name, proj['name']))
         elif len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:
@@ -196,7 +198,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, basestring):
+            elif isinstance(val, six.string_types):
                 return "'%s'" % val
             return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
@@ -204,14 +206,14 @@ class Experiment(Model):
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
-            for attr, change in changed.iteritems():
+            for attr, change in six.iteritems(changed):
                 old, new = (_fmt(x) for x in change)
                 if old is None:
-                    parts.append("  - %s is now set to %s" % (attr, new))
+                    parts.append("  - {} is now set to {}".format(attr, new))
                 elif new is None:
                     parts.append("  - %s is now unset" % attr)
                 else:
-                    parts.append("  - %s changed from %s to %s" % (attr, old, new))
+                    parts.append("  - {} changed from {} to {}".format(attr, old, new))
         return '\n'.join(parts)
 
     @property

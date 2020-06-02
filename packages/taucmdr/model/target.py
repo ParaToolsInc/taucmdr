@@ -35,6 +35,7 @@ describes a specific set of system features.  For example, if both GNU and Intel
 compilers are installed then there will target configurations for each compiler family.
 """
 
+from __future__ import absolute_import
 import os
 import glob
 import fasteners
@@ -49,6 +50,7 @@ from taucmdr.cf.platforms import Architecture, OperatingSystem
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
+import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -89,7 +91,7 @@ def _require_compiler_family(family, *hints):
             raise ConfigurationError("%s but it is undefined" % msg)
         given_family_name = compiler_record['family']
         if given_family_name != family.name:
-            raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family_name), *hints)
+            raise ConfigurationError("{} but it is a {} compiler".format(msg, given_family_name), *hints)
     return callback
 
 def knc_require_k1om(*_):
@@ -198,7 +200,7 @@ def attributes():
             'argparse': {'flags': ('--os',),
                          'group': 'host',
                          'metavar': '<os>',
-                         'choices': OperatingSystem.keys()},
+                         'choices': list(OperatingSystem.keys())},
             'rebuild_required': True
         },
         'host_arch': {
@@ -209,7 +211,7 @@ def attributes():
             'argparse': {'flags': ('--arch',),
                          'group': 'host',
                          'metavar': '<arch>',
-                         'choices': Architecture.keys()},
+                         'choices': list(Architecture.keys())},
             'compat': {str(INTEL_KNC):
                        (Target.require('host_arch', knc_require_k1om),
                         Target.require(CC.keyword, knc_intel_only),
@@ -499,7 +501,7 @@ class Target(Model):
         self._compilers = None
 
     def on_create(self):
-        for comp in self.compilers().itervalues():
+        for comp in six.itervalues(self.compilers()):
             comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
 
     def on_delete(self):
@@ -522,7 +524,7 @@ class Target(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in six.iteritems(changes):
                 props = self.attributes[attr]
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
@@ -555,7 +557,7 @@ class Target(Model):
             dict: Software package paths indexed by package name.
         """
         sources = {}
-        for attr, val in self.iteritems():
+        for attr, val in six.iteritems(self):
             if val and attr.endswith('_source'):
                 sources[attr.replace('_source', '')] = val
         return sources
@@ -566,7 +568,7 @@ class Target(Model):
 
     def acquire_sources(self):
         """Acquire all source code packages known to this target."""
-        for attr, val in self.iteritems():
+        for attr, val in six.iteritems(self):
             if val and attr.endswith('_source'):
                 inst = self.get_installation(attr.replace('_source', ''))
                 try:
@@ -627,7 +629,7 @@ class Target(Model):
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)
         found = []
-        known_compilers = [comp for comp in self.compilers().itervalues()]
+        known_compilers = [comp for comp in six.itervalues(self.compilers())]
         for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
                 compiler_record = self.populate(info.role.keyword)
@@ -649,9 +651,9 @@ class Target(Model):
                         found.append(compiler_record)
                         break
         if not found:
-            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path or compiler_cmd),
+            parts = ["No compiler in target '{}' matches '{}'.".format(self['name'], absolute_path or compiler_cmd),
                      "The known compiler commands are:"]
-            parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
+            parts.extend('  {} ({})'.format(comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
                      "Create and select a new target configuration that uses the '%s' compiler" % (
                          absolute_path or compiler_cmd),
