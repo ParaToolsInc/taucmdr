@@ -198,7 +198,9 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                 raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
             if props.get('primary_key', False):
                 if primary_key is not None:
-                    raise ModelError(cls, "{}: primary key previously specified as {}".format(model_attr_name, primary_key))
+                    raise ModelError(
+                        cls, "{}: primary key previously specified as {}".format(model_attr_name, primary_key)
+                    )
                 primary_key = attr
 
             via = props.get('via', None)

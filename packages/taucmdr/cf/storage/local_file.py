@@ -168,7 +168,9 @@ class LocalFileStorage(AbstractStorage):
             try:
                 util.mkdirp(self._prefix)
             except Exception as err:
-                raise StorageError("Failed to access {} filesystem prefix '{}': {}".format(self.name, self._prefix, err))
+                raise StorageError(
+                    "Failed to access {} filesystem prefix '{}': {}".format(self.name, self._prefix, err)
+                )
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, self._prefix)
 
     def disconnect_filesystem(self, *args, **kwargs):

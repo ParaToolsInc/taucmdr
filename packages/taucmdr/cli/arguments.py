@@ -392,7 +392,7 @@ class MarkdownHelpFormatter(HelpFormatter):
             if self.heading is not SUPPRESS and self.heading is not None:
                 title = '{:<{}}'.format(self.heading, MarkdownHelpFormatter.first_col_width)
                 heading = ' \n{} | {}\n{}:| {}'.format(title, 'Description',
-                                                   '-'*len(title), '-'*len('Description'))
+                                                       '-'*len(title), '-'*len('Description'))
             else:
                 heading = ''
             return join(['\n', heading, '\n', item_help, '\n'])

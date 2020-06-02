@@ -30,16 +30,14 @@
 from __future__ import print_function
 
 from __future__ import absolute_import
-import itertools
 
+from six.moves import range
+from six.moves import zip
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
-from six.moves import range
-from six.moves import zip
-
 
 class TrialRenumberCommand(AbstractCommand):
     """``trial renumber`` subcommand."""
