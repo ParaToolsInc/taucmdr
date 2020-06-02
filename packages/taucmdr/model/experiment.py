@@ -35,6 +35,7 @@ The selected experiment will be used for application compilation and trial visua
 from __future__ import absolute_import
 import os
 import fasteners
+import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ProjectSelectionError
 from taucmdr.error import ExperimentSelectionError
@@ -43,7 +44,6 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.trial import Trial
 from taucmdr.model.project import Project
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
-import six
 
 
 LOGGER = logger.get_logger(__name__)
@@ -179,7 +179,8 @@ class Experiment(Model):
         data = {"name": name, "project": proj.eid}
         matching = expr_ctrl.search(data)
         if not matching:
-            raise ExperimentSelectionError("There is no experiment named '{}' in project '{}'.".format(name, proj['name']))
+            raise ExperimentSelectionError(
+                "There is no experiment named '{}' in project '{}'.".format(name, proj['name']))
         elif len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:
