@@ -40,24 +40,25 @@ import atexit
 import subprocess
 import errno
 import shutil
-import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import pkgutil
 import tarfile
 import gzip
 import tempfile
-import six.moves.urllib.parse
 import hashlib
 from collections import deque
 from contextlib import contextmanager
 from zipimport import zipimporter
 from zipfile import ZipFile
+import six.moves.urllib.request # pylint: disable=import-error
+import six.moves.urllib.parse
+import six.moves.urllib.error
+from six.moves import range
+import six
 import termcolor
 from unidecode import unidecode
 from taucmdr import logger
 from taucmdr.error import InternalError
 from taucmdr.progress import ProgressIndicator
-import six
-from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)
@@ -465,6 +466,7 @@ def path_accessible(path, mode='r'):
                 handle.close()
         return False
 
+# pylint: disable=unused-argument
 @contextmanager
 def _null_context(label):
     yield

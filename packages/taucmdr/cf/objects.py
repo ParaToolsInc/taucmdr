@@ -146,6 +146,8 @@ class KeyedRecord(six.with_metaclass(KeyedRecordCreator, object)):
         carrot is steak
         >>> False
     """
+    # Some members of this class are set by the metaclass __new__ method.
+    # pylint: disable=no-member
 
     def __str__(self):
         return str(getattr(self, self.__key__))
