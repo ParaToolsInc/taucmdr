@@ -27,9 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """Build TAU configurations when TAU Commander is installed."""
+from __future__ import absolute_import
 import os
 import sys
 import glob
+import six
+from six.moves import range
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, '..', 'packages'))
@@ -69,7 +72,7 @@ def _translate_arg(flag, arg):
         elif arg is False:
             return [flag, 'ignore']
         return [flag, arg]
-    if isinstance(arg, basestring):
+    if isinstance(arg, six.string_types):
         return [flag, arg]
     if isinstance(arg, bool):
         return ['{}={}'.format(flag, arg)]
@@ -88,7 +91,7 @@ def _execute(cmd, argv):
 def _configure_project(args):
     PROJECT_STORAGE.destroy()
     argv = []
-    for key, val in vars(args).iteritems():
+    for key, val in six.iteritems(vars(args)):
         for action in initialize_cmd.parser.actions:
             if key == action.dest:
                 argv.extend(_translate_arg(action.option_strings[0], val))
@@ -160,11 +163,11 @@ def _configure_full(args):
     #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with
     #    no intervening modifications to the dictionary, the lists will directly correspond."
     mask = 0
-    for i, val in enumerate(features.itervalues()):
+    for i, val in enumerate(six.itervalues(features)):
         mask |= (not val) << i
-    for j in xrange(1 << len(features)):
+    for j in range(1 << len(features)):
         if not j & mask:
-            for i, key in enumerate(features.iterkeys()):
+            for i, key in enumerate(six.iterkeys(features)):
                 setattr(args, key, bool(j & (1 << i)))
             _configure_project(args)
     return _configure_minimal(args)

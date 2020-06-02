@@ -32,6 +32,7 @@ is invoked in any way. This module establishes global constants and checks the P
 It should be as short and simple.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 

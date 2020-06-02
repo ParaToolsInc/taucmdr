@@ -31,6 +31,7 @@ Only error base classes should be defined here.
 Error classes should be defined in their appropriate modules.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import traceback
@@ -137,7 +138,7 @@ class ModelError(InternalError):
             model (Model): Data model.
             value (str): A message describing the error.
         """
-        super(ModelError, self).__init__("%s: %s" % (model.name, value))
+        super(ModelError, self).__init__("{}: {}".format(model.name, value))
         self.model = model
 
 
@@ -184,7 +185,7 @@ class ExperimentSelectionError(ConfigurationError):
         from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
         from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
         if not hints:
-            hints = ("Use `%s` or `%s` to create a new experiment." % (select_cmd, experiment_create_cmd),
+            hints = ("Use `{}` or `{}` to create a new experiment.".format(select_cmd, experiment_create_cmd),
                      "Use `%s` to see current project configuration." % dashboard_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)
         super(ExperimentSelectionError, self).__init__(value, *hints)

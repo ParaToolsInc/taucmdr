@@ -31,6 +31,8 @@
 Just patches through to tau.cli.commands.__main__
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 if __name__ == '__main__':
     import os
     import sys
@@ -56,8 +58,8 @@ if __name__ == '__main__':
                     prof.print_stats(sort="tottime")
                 else:
                     prof.dump_stats(profile_taucmdr)
-                    print "Profile written to '%s'" % profile_taucmdr
-                    print "Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr
+                    print("Profile written to '%s'" % profile_taucmdr)
+                    print("Hint: Use `pyprof2calltree -k -i '%s'` to view it" % profile_taucmdr)
 
     HERE = os.path.realpath(os.path.dirname(__file__))
     os.environ['__TAUCMDR_HOME__'] = os.path.join(HERE, '..')
