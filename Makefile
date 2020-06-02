@@ -130,7 +130,7 @@ CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_COMMANDERCONDA),true)
 	PYTHON_EXE = $(CONDA)
-	PYTHON_FLAGS = -EOu3
+	PYTHON_FLAGS = -EOu
 else
 	$(warning WARNING: There are no CommanderConda packages for this system: $(HOST_OS), $(HOST_ARCH).)
 	CONDA_SRC =
@@ -141,6 +141,9 @@ else
 	else
 		$(warning WARNING: Trying to use '$(PYTHON_EXE)' instead.)
 	endif
+endif
+ifeq ($(PY_MAJ_VERSION),2)
+	PYTHON_FLAGS := $(PYTHON_FLAGS)3
 endif
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
