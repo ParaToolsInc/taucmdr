@@ -27,6 +27,8 @@
 #
 """Unit test initializations and utility functions."""
 
+from __future__ import print_function
+
 import os
 import sys
 import glob
@@ -41,10 +43,12 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
+import taucmdr
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
+from taucmdr.cf.storage import levels
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -176,6 +180,9 @@ class TestCase(unittest.TestCase):
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
         PROJECT_STORAGE.destroy(ignore_errors=True)
         argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
+        default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', None)
+        if default_backend:
+            argv.extend(['--backend', default_backend])
         if init_args is not None:
             argv.extend(init_args)
         if '--bare' in argv or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
@@ -299,7 +306,7 @@ class TestRunner(unittest.TextTestRunner):
     def run(self, test):
         result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
-            print "WARNING: %s" % item
+            print("WARNING: %s" % item)
         if result.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE
