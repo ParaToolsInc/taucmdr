@@ -27,6 +27,7 @@
 #
 """``experiment edit`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
 from taucmdr.model.project import Project
@@ -50,7 +51,7 @@ class ExperimentEditCommand(EditCommand):
             if attr in data:
                 record = model.controller(proj_ctrl.storage).one({'name': data[attr]})
                 if record is None:
-                    self.parser.error("Invalid %s: %s" % (attr, data[attr]))
+                    self.parser.error("Invalid {}: {}".format(attr, data[attr]))
                 data[attr] = record.eid
 
         key_attr = self.model.key_attribute

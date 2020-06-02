@@ -27,6 +27,7 @@
 #
 """``measurement edit`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand

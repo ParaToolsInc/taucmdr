@@ -27,6 +27,8 @@
 #
 """``dashboard`` subcommand."""
 
+from __future__ import absolute_import
+from __future__ import print_function
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import ProjectSelectionError
 from taucmdr.cli import arguments
@@ -57,7 +59,7 @@ class DashboardCommand(AbstractCommand):
         args = self._parse_args(argv)
         subargs = ['--' + args.style]
         proj_ctrl = Project.controller()
-        print
+        print()
         try:
             proj = proj_ctrl.selected()
         except ProjectSelectionError as err:
@@ -72,7 +74,7 @@ class DashboardCommand(AbstractCommand):
             raise err
         else:
             project_list_cmd.main(subargs + [proj['name']])
-        print
+        print()
         return EXIT_SUCCESS
 
 COMMAND = DashboardCommand(__name__, summary_fmt="Show all project components.")

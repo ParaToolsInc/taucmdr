@@ -30,6 +30,7 @@
 Extensions to :any:`argparse` to support the TAU Commander command line interface.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import re
@@ -41,6 +42,8 @@ from taucmdr import logger, util
 from taucmdr.cli import USAGE_FORMAT
 from taucmdr.error import InternalError
 from taucmdr.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
+import six
+from six.moves import range
 
 
 Action = argparse.Action
@@ -230,7 +233,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
         helpstr = helpstr[0].upper() + helpstr[1:] + "."
         choices = getattr(action, 'choices', None)
         if choices:
-            helpstr += '\n%s- %s: %s' % (indent, action.metavar, ', '.join(choices))
+            helpstr += '\n{}- {}: {}'.format(indent, action.metavar, ', '.join(choices))
         if '%(default)' not in action.help:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
@@ -289,7 +292,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
                 default = action.dest.upper()
                 args_string = self._format_args(action, default)
                 for option_string in action.option_strings:
-                    parts.append('%s %s' % (self._format_optional(option_string), args_string))
+                    parts.append('{} {}'.format(self._format_optional(option_string), args_string))
             return ', '.join(parts)
 
 
@@ -368,8 +371,8 @@ class MarkdownHelpFormatter(HelpFormatter):
         trans = {'<': '*',
                  '>': '*',
                  '|': r'\|'}
-        self._escape_rep = {re.escape(k): v for k, v in trans.iteritems()}
-        self._escape_pattern = re.compile("|".join(self._escape_rep.keys()))
+        self._escape_rep = {re.escape(k): v for k, v in six.iteritems(trans)}
+        self._escape_pattern = re.compile("|".join(list(self._escape_rep.keys())))
 
 
     class _Section(argparse.HelpFormatter._Section):
@@ -388,7 +391,7 @@ class MarkdownHelpFormatter(HelpFormatter):
                 return ''
             if self.heading is not SUPPRESS and self.heading is not None:
                 title = '{:<{}}'.format(self.heading, MarkdownHelpFormatter.first_col_width)
-                heading = ' \n%s | %s\n%s:| %s' % (title, 'Description',
+                heading = ' \n{} | {}\n{}:| {}'.format(title, 'Description',
                                                    '-'*len(title), '-'*len('Description'))
             else:
                 heading = ''
@@ -413,7 +416,7 @@ class MarkdownHelpFormatter(HelpFormatter):
         helpstr = helpstr[0].upper() + helpstr[1:] + "."
         choices = getattr(action, 'choices', None)
         if choices:
-            helpstr += self._escape_markdown('\n  - %s: %s' % (action.metavar, ', '.join(choices)))
+            helpstr += self._escape_markdown('\n  - {}: {}'.format(action.metavar, ', '.join(choices)))
         return helpstr
 
     def _format_usage(self, usage, actions, groups, prefix):
@@ -577,12 +580,12 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
     """
     parser = get_parser(prog, usage, description, epilog)
     groups = {}
-    for attr, props in model.attributes.iteritems():
+    for attr, props in six.iteritems(model.attributes):
         try:
             options = dict(props['argparse'])
         except KeyError:
             if 'primary_key' in props:
-                options = {'metavar': '<%s_%s>' % (model.name.lower(), attr)}
+                options = {'metavar': '<{}_{}>'.format(model.name.lower(), attr)}
             else:
                 continue
         if use_defaults:

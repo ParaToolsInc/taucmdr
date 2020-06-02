@@ -27,6 +27,8 @@
 #
 """``measurement list`` subcommand."""
 
+from __future__ import absolute_import
+from __future__ import print_function
 from types import NoneType
 from taucmdr import util, logger
 from taucmdr.error import ExperimentSelectionError
@@ -92,14 +94,14 @@ class ProjectListCommand(ListCommand):
                 if records:
                     cmd.main([record[primary_key] for record in records] + ['-p'] + [proj['name']] + style_args)
                 else:
-                    label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
-                    print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
+                    label = util.color_text('{}: No {}'.format(proj['name'], prop), color='red', attrs=['bold'])
+                    print("{}.  Use `{}` to view available {}.\n".format(label, cmd, prop))
             try:
                 expr = proj.experiment()
                 if not isinstance(expr, NoneType):
-                    print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
+                    print(util.color_text("Selected Experiment: ", 'cyan') + expr['name'])
             except ExperimentSelectionError:
-                print (util.color_text('No selected experiment: ', 'red') +
+                print(util.color_text('No selected experiment: ', 'red') +
                        'Use `%s` to create or select an experiment.' % select_cmd)
 
         return retval

@@ -30,6 +30,8 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
@@ -39,6 +41,7 @@ from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STOR
 from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
+import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -96,7 +99,7 @@ class CreateCommand(AbstractCliView):
         super(CreateCommand, self).__init__(*args, **kwargs)
 
     def _construct_parser(self):
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, self.model.key_attribute)
+        usage = "{} <{}_{}> [arguments]".format(self.command, self.model_name, self.model.key_attribute)
         parser = arguments.get_parser_from_model(self.model,
                                                  prog=self.command,
                                                  usage=usage,
@@ -124,7 +127,7 @@ class CreateCommand(AbstractCliView):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+            self.parser.error("A {} with {}='{}' already exists".format(self.model_name, key_attr, key))
         if ctrl.storage is PROJECT_STORAGE:
             from taucmdr.cli.commands.project.edit import COMMAND as project_edit_cmd
             try:
@@ -153,16 +156,16 @@ class DeleteCommand(AbstractCliView):
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)
+        usage = "{} <{}_{}> [arguments]".format(self.command, self.model_name, key_attr)
         epilog = util.color_text("WARNING: THIS OPERATION IS NOT REVERSIBLE!", 'yellow', attrs=['bold'])
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,
                                       epilog=epilog)
         parser.add_argument(key_attr,
-                            help="%s of %s configuration to delete" % (key_attr.capitalize(), self.model_name),
+                            help="{} of {} configuration to delete".format(key_attr.capitalize(), self.model_name),
                             nargs="+",
-                            metavar='<%s_%s>' % (self.model_name, key_attr))
+                            metavar='<{}_{}>'.format(self.model_name, key_attr))
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "delete", self.model_name)
         return parser
@@ -171,7 +174,7 @@ class DeleteCommand(AbstractCliView):
         key_attr = self.model.key_attribute
         ctrl = self.model.controller(store)
         if not ctrl.exists({key_attr: key}):
-            self.parser.error("No %s-level %s with %s='%s'." % (store.name, self.model_name, key_attr, key))
+            self.parser.error("No {}-level {} with {}='{}'.".format(store.name, self.model_name, key_attr, key))
         ctrl.delete({key_attr: key})
         self.logger.info("Deleted %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
@@ -195,7 +198,7 @@ class EditCommand(AbstractCliView):
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "%s <%s_%s> [arguments]" % (self.command, self.model_name, key_attr)
+        usage = "{} <{}_{}> [arguments]".format(self.command, self.model_name, key_attr)
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -216,7 +219,7 @@ class EditCommand(AbstractCliView):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         if not ctrl.exists({key_attr: key}):
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error("No {}-level {} with {}='{}'.".format(ctrl.storage.name, self.model_name, key_attr, key))
         ctrl.update(data, {key_attr: key})
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
@@ -320,7 +323,7 @@ class ListCommand(AbstractCliView):
             elif attrs['type'] != 'string':
                 val = str(val)
         else:
-            raise InternalError("Attribute has no type: %s, %s" % (attrs, val))
+            raise InternalError("Attribute has no type: {}, {}".format(attrs, val))
         description = attrs.get('description', 'No description')
         description = description[0].upper() + description[1:] + "."
         flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
@@ -341,7 +344,7 @@ class ListCommand(AbstractCliView):
         for record in records:
             rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
             populated = record.populate()
-            for key, val in sorted(populated.iteritems()):
+            for key, val in sorted(six.iteritems(populated)):
                 if key != self.model.key_attribute:
                     rows.append(self._format_long_item(key, val))
             table = Texttable(logger.LINE_WIDTH)
@@ -421,7 +424,7 @@ class ListCommand(AbstractCliView):
                 parts.extend(self._count_records(user_ctl))
             if not project:
                 parts.extend(self._count_records(project_ctl))
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
 
     def main(self, argv):
@@ -458,12 +461,12 @@ class ListCommand(AbstractCliView):
             if len(keys) == 1:
                 records = ctrl.search({key_attr: keys[0]}, context=context)
                 if not records:
-                    self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[0]))
+                    self.parser.error("No {} with {}='{}'".format(self.model_name, key_attr, keys[0]))
             else:
                 records = ctrl.search([{key_attr: key} for key in keys], context=context)
                 for i, record in enumerate(records):
                     if not record:
-                        self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[i]))
+                        self.parser.error("No {} with {}='{}'".format(self.model_name, key_attr, keys[i]))
         return records
 
     def _format_records(self, ctrl, style, keys=None, context=True):
@@ -521,7 +524,7 @@ class CopyCommand(CreateCommand):
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = ("%s <%s_%s> <copy_%s> [arguments]" % (self.command, self.model_name, key_attr, key_attr))
+        usage = ("{} <{}_{}> <copy_{}> [arguments]".format(self.command, self.model_name, key_attr, key_attr))
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -529,7 +532,7 @@ class CopyCommand(CreateCommand):
                                                  description=self.summary)
         group = parser.add_argument_group('%s arguments' % self.model_name)
         group.add_argument('copy_%s' % key_attr,
-                           help="new %s configuration's %s" % (self.model_name, key_attr),
+                           help="new {} configuration's {}".format(self.model_name, key_attr),
                            metavar='<copy_%s>' % key_attr,
                            default=arguments.SUPPRESS)
         if self.include_storage_flag:
@@ -541,7 +544,7 @@ class CopyCommand(CreateCommand):
         key_attr = self.model.key_attribute
         matching = ctrl.search({key_attr: key})
         if not matching:
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error("No {}-level {} with {}='{}'.".format(ctrl.storage.name, self.model_name, key_attr, key))
         elif len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))

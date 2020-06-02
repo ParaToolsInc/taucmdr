@@ -27,6 +27,7 @@
 #
 """``experiment create`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import UniqueAttributeError
 from taucmdr.model.experiment import Experiment
@@ -56,7 +57,7 @@ class ExperimentCreateCommand(CreateCommand):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+            self.parser.error("A {} with {}='{}' already exists".format(self.model_name, key_attr, key))
         self.logger.info("Created a new experiment '%s'", key)
         return EXIT_SUCCESS
 

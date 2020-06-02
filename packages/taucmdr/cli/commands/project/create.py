@@ -27,6 +27,7 @@
 #
 """``project create`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import UniqueAttributeError
 from taucmdr.cli import arguments
@@ -74,7 +75,7 @@ class ProjectCreateCommand(CreateCommand):
             for name in names:
                 found = ctrl.one({"name": name})
                 if not found:
-                    self.parser.error('There is no %s named %s.' % (model_name, name))
+                    self.parser.error('There is no {} named {}.'.format(model_name, name))
                 else:
                     acc.add(found)
 

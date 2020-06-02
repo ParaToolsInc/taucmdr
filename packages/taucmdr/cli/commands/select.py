@@ -27,6 +27,7 @@
 #
 """``select`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
@@ -122,13 +123,13 @@ class SelectCommand(AbstractCommand):
             ctrl = model.controller(PROJECT_STORAGE)
             found = ctrl.one({"name": name})
             if not found:
-                self.parser.error('There is no %s named %s.' % (model_name, name))
+                self.parser.error('There is no {} named {}.'.format(model_name, name))
             else:
                 acc.add(found)
         if not acc:
             acc = set(proj.populate(attr))
         if not acc:
-            self.parser.error("Project '%s' has no %ss." % (proj['name'], model_name))
+            self.parser.error("Project '{}' has no {}s.".format(proj['name'], model_name))
         if len(acc) > 1:
             self.parser.error("Project '%s' has multiple %ss. Please specify which to use." %
                               (proj['name'], model_name))
@@ -142,7 +143,7 @@ class SelectCommand(AbstractCommand):
             ctrl = Experiment.controller(PROJECT_STORAGE)
             found = ctrl.one({"name": name})
             if not found:
-                self.parser.error('There is no %s named %s.' % (model_name, name))
+                self.parser.error('There is no {} named {}.'.format(model_name, name))
             else:
                 acc.add(found)
         if len(acc) == 1:
@@ -163,7 +164,7 @@ class SelectCommand(AbstractCommand):
             targ = self._parse_explicit(args, Target, targ, proj, 'targets')
             app = self._parse_explicit(args, Application, app, proj, 'applications')
             meas = self._parse_explicit(args, Measurement, meas, proj, 'measurements')
-            name = getattr(args, 'name', "%s-%s-%s" % (targ['name'], app['name'], meas['name']))
+            name = getattr(args, 'name', "{}-{}-{}".format(targ['name'], app['name'], meas['name']))
         try:
             Experiment.select(name)
         except ExperimentSelectionError:

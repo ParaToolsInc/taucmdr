@@ -27,6 +27,7 @@
 #
 """``measurement delete`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.cli.cli_view import DeleteCommand
 from taucmdr.model.project import Project
 

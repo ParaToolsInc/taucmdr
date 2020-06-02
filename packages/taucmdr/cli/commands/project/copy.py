@@ -27,6 +27,7 @@
 #
 """``project copy`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CopyCommand
@@ -53,7 +54,7 @@ class ProjectCopyCommand(CopyCommand):
             for name in names:
                 found = ctrl.one({"name": name})
                 if not found:
-                    self.parser.error('There is no %s named %s.' % (model_name, name))
+                    self.parser.error('There is no {} named {}.'.format(model_name, name))
                 else:
                     acc.add(found)
         return acc
@@ -82,7 +83,7 @@ class ProjectCopyCommand(CopyCommand):
         key_attr = self.model.key_attribute
         matching = ctrl.search({key_attr: key})
         if not matching:
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error("No {}-level {} with {}='{}'.".format(ctrl.storage.name, self.model_name, key_attr, key))
         elif len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
@@ -97,7 +98,7 @@ class ProjectCopyCommand(CopyCommand):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+            self.parser.error("A {} with {}='{}' already exists".format(self.model_name, key_attr, key))
         self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 

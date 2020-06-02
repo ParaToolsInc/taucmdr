@@ -31,6 +31,7 @@ Functions used for unit tests of create.py.
 """
 #pylint: disable=missing-docstring
 
+from __future__ import absolute_import
 import os
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
@@ -87,7 +88,7 @@ class CreateTest(tests.TestCase):
         for role, expected in (CC, 'icc'), (CXX, 'icpc'), (FC, 'ifort'):
             path = test_targ.populate(role.keyword)['path']
             self.assertEqual(os.path.basename(path), expected,
-                             "Target[%s] is '%s', not '%s'" % (role, path, expected))
+                             "Target[{}] is '{}', not '{}'".format(role, path, expected))
 
     @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_host_family_pgi(self):
@@ -117,12 +118,12 @@ class CreateTest(tests.TestCase):
 
     @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
     def test_python_init(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
 
     @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
     def test_python2_init(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python2'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
 
     @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
     def test_python3_init(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python3'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])

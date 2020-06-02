@@ -27,6 +27,7 @@
 #
 """``application edit`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli.cli_view import EditCommand
 from taucmdr.cli.commands.application.copy import COMMAND as application_copy_cmd

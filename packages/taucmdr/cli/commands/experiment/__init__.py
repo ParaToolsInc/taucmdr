@@ -27,6 +27,7 @@
 #
 """``experiment`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.experiment import Experiment
 

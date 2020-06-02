@@ -40,12 +40,15 @@ a subclass of :any:`AbstractCommand`.
 .. _git: https://git-scm.com/
 """
 
+from __future__ import absolute_import
 import os
 import sys
 from types import ModuleType
 from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
+import six
+from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)
@@ -76,7 +79,7 @@ class AmbiguousCommandError(ConfigurationError):
                    "\n"
                    "%(hints)s")
     def __init__(self, value, matches, *hints):
-        parts = ["Did you mean `%s %s`?" % (SCRIPT_COMMAND, match) for match in matches]
+        parts = ["Did you mean `{} {}`?".format(SCRIPT_COMMAND, match) for match in matches]
         parts.append("Try `%s --help`" % SCRIPT_COMMAND)
         super(AmbiguousCommandError, self).__init__(value, *hints + tuple(parts))
 
@@ -178,7 +181,7 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
     """
     usage_fmt = USAGE_FORMAT.lower()
     groups = {}
-    commands = sorted([i for i in _get_commands(package_name).iteritems() if i[0] != '__module__'])
+    commands = sorted([i for i in six.iteritems(_get_commands(package_name)) if i[0] != '__module__'])
     for cmd, topcmd in commands:
         module = topcmd['__module__']
         try:
@@ -188,18 +191,18 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
         if usage_fmt == 'console':
-            line = '  %s%s' % (util.color_text('{:<14}'.format(cmd), 'green'), descr)
+            line = '  {}{}'.format(util.color_text('{:<14}'.format(cmd), 'green'), descr)
         elif usage_fmt == 'markdown':
-            line = '  %s | %s' % ('{:<28}'.format(cmd), descr)
+            line = '  {} | {}'.format('{:<28}'.format(cmd), descr)
         groups.setdefault(group, []).append(line)
     parts = []
-    for group, members in groups.iteritems():
+    for group, members in six.iteritems(groups):
         title = group.title() + ' Subcommands' if group else 'Subcommands'
         if usage_fmt == 'console':
             parts.append(util.color_text(title+':', attrs=['bold']))
         elif usage_fmt == 'markdown':
             parts.extend(['', ' ', '{:<30}'.format(title) + ' | Description',
-                          '%s:| %s' % ('-'*30, '-'*len('Description'))])
+                          '{}:| {}'.format('-'*30, '-'*len('Description'))])
         parts.extend(members)
         parts.append('')
     return '\n'.join(parts)
@@ -215,9 +218,9 @@ def get_all_commands(package_name=COMMANDS_PACKAGE_NAME):
         list: List of modules corresponding to all commands and subcommands.
     """
     all_commands = []
-    commands = sorted(i for i in _get_commands(package_name).iteritems() if i[0] != '__module__')
+    commands = sorted(i for i in six.iteritems(_get_commands(package_name)) if i[0] != '__module__')
     for _, topcmd in commands:
-        for _, mod in topcmd.iteritems():
+        for _, mod in six.iteritems(topcmd):
             if isinstance(mod, dict):
                 all_commands.append(mod['__module__'].__name__)
             elif isinstance(mod, ModuleType):
@@ -235,7 +238,7 @@ def _resolve(cmd, c, d):
     try:
         matches = [(car, d[car])]
     except KeyError:
-        matches = [i for i in d.iteritems() if i[0].startswith(car)]
+        matches = [i for i in six.iteritems(d) if i[0].startswith(car)]
     if len(matches) == 1:
         return [matches[0][0]] + _resolve(cmd, cdr, matches[0][1])
     elif not matches:
@@ -276,10 +279,10 @@ def _permute(cmd, cmd_args):
     full_len = len(cmd) + len(cmd_args)
     skip = [x[0] == '-' or os.path.isfile(x) for x in cmd+cmd_args]
     yield cmd, cmd_args
-    for i in xrange(full_len):
+    for i in range(full_len):
         if skip[i]:
             continue
-        for j in xrange(i+1, full_len):
+        for j in range(i+1, full_len):
             if skip[j]:
                 continue
             perm = cmd + cmd_args

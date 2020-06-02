@@ -27,6 +27,7 @@
 #
 """``initialize`` subcommand."""
 
+from __future__ import absolute_import
 import os
 import platform
 from taucmdr import util, PROJECT_DIR
@@ -91,7 +92,7 @@ class InitializeCommand(AbstractCommand):
                                    default=(os.path.basename(os.getcwd()) or 'default_project'))
         project_group.add_argument('--storage-level',
                                    help='location of installation directory',
-                                   choices=STORAGE_LEVELS.keys(),
+                                   choices=list(STORAGE_LEVELS.keys()),
                                    metavar='<levels>', default=arguments.SUPPRESS)
         project_group.add_argument('--force',
                                    help="Force project to be created in current directory",
@@ -159,7 +160,7 @@ class InitializeCommand(AbstractCommand):
     def _safe_execute(self, cmd, argv):
         retval = cmd.main(argv)
         if retval != EXIT_SUCCESS:
-            raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
+            raise InternalError("return code {}: {} {}".format(retval, cmd, ' '.join(argv)))
 
     def _populate_project(self, args):
         # Create default application

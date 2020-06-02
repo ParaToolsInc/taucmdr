@@ -27,6 +27,7 @@
 #
 """``project select`` subcommand."""
 
+from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.model.project import Project

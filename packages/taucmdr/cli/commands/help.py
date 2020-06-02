@@ -27,19 +27,21 @@
 #
 """``help`` subcommand."""
 
+from __future__ import absolute_import
 import os
 import mimetypes
 from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
 from taucmdr.cli.command import AbstractCommand
+from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)
 
 _SCRIPT_CMD = os.path.basename(TAUCMDR_SCRIPT)
 
-_GENERIC_HELP = "See '%s --help' or contact %s for assistance" % (_SCRIPT_CMD, HELP_CONTACT)
+_GENERIC_HELP = "See '{} --help' or contact {} for assistance".format(_SCRIPT_CMD, HELP_CONTACT)
 
 _KNOWN_FILES = {'makefile': ("makefile script",
                              "See 'taucmdr make --help' for help building with make"),
@@ -82,7 +84,7 @@ def _guess_filetype(filename):
     mimetypes.init()
     filetype = mimetypes.guess_type(filename)
     if not filetype[0]:
-        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(range(0x20, 0x100))
+        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(list(range(0x20, 0x100)))
         with open(filename) as fd:
             if fd.read(1024).translate(None, textchars):
                 filetype = ('application/unknown', None)
@@ -155,7 +157,7 @@ class HelpCommand(AbstractCommand):
                 pass
             else:
                 article = 'an' if desc[0] in 'aeiou' else 'a'
-                hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
+                hint = "'{}' is {} {}.\n{}.".format(cmd, article, desc, hint)
                 raise UnknownCommandError(cmd, hint)
 
             # Get the filetype and try to be helpful.
@@ -170,7 +172,7 @@ class HelpCommand(AbstractCommand):
                 else:
                     desc, hint = _fuzzy_index(type_hints, subtype)
                     article = 'an' if desc[0] in 'aeiou' else 'a'
-                    hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
+                    hint = "'{}' is {} {}.\n{}.".format(cmd, article, desc, hint)
                 raise UnknownCommandError(cmd, hint)
             else:
                 raise UnknownCommandError(cmd)
