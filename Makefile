@@ -44,6 +44,9 @@ MKDIR = mkdir -p
 
 VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
 
+# Override this with 3 to test with Python 3
+PY_MAJ_VERSION ?= 2
+
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
 	BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
@@ -88,11 +91,11 @@ else
 	endif
 endif
 
-# Miniconda configuration
-USE_MINICONDA = true
+# CommanderConda configuration
+USE_COMMANDERCONDA = true
 ifeq ($(HOST_OS),Darwin)
 ifeq ($(HOST_ARCH),i386)
-	USE_MINICONDA = false
+	USE_COMMANDERCONDA = false
 endif
 endif
 ifeq ($(HOST_OS),Darwin)
@@ -101,7 +104,7 @@ else
 	ifeq ($(HOST_OS),Linux)
 		CONDA_OS = Linux
 	else
-		USE_MINICONDA = false
+		USE_COMMANDERCONDA = false
 	endif
 endif
 ifeq ($(HOST_ARCH),x86_64)
@@ -113,23 +116,23 @@ else
 		ifeq ($(HOST_ARCH),ppc64le)
 			CONDA_ARCH = ppc64le
 		else
-			USE_MINICONDA = false
+			USE_COMMANDERCONDA = false
 		endif
 	endif
 endif
 CONDA_VERSION = latest
 CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/$(CONDA_VERSION)/download
-CONDA_PKG = CommanderConda2-$(CONDA_OS)-$(CONDA_ARCH).sh
+CONDA_PKG = CommanderConda$(PY_MAJ_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = system/src/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
 CONDA = $(CONDA_DEST)/bin/python
 
-ifeq ($(USE_MINICONDA),true)
+ifeq ($(USE_COMMANDERCONDA),true)
 	PYTHON_EXE = $(CONDA)
 	PYTHON_FLAGS = -EOu3
 else
-	$(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
+	$(warning WARNING: There are no CommanderConda packages for this system: $(HOST_OS), $(HOST_ARCH).)
 	CONDA_SRC =
 	PYTHON_EXE = $(shell command -pv python || type -P python || which python)
 	PYTHON_FLAGS = -O
