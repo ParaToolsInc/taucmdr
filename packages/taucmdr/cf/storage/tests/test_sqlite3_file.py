@@ -33,7 +33,6 @@ Functions used for unit tests of sqlite3_file.py.
 import os
 import unittest
 import uuid
-import requests
 from taucmdr import tests
 from taucmdr.cf.storage.sqlite3_file import SQLiteDatabase, SQLiteLocalFileStorage
 from taucmdr.tests import get_test_workdir
@@ -43,18 +42,28 @@ class SQLite3FileStorageTests(tests.TestCase):
     """Unit tests for SQLiteLocalFileStorage."""
 
     def setUp(self):
-        try:
-            # Generate a random database name so that concurrently running tests don't clobber each other.
-            # Plain database object for testing table interface
-            self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
-            self.database = SQLiteDatabase(self.table_db_name)
-            self.database.purge()
+        # Plain database object for testing table interface
+        self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
+        self.database = SQLiteDatabase(self.table_db_name)
+        self.database.open()
 
-            self.storage = SQLiteLocalFileStorage(uuid.uuid4().hex[-8:], get_test_workdir())
-            self.storage.connect_database()
-        except (requests.ConnectionError, requests.HTTPError):
-            # Don't bother running any of the tests if we can't connect to the database
-            raise unittest.SkipTest
+        # Generate a random database name so that concurrently running tests don't interfere.
+        self.storage = SQLiteLocalFileStorage(uuid.uuid4().hex[-8:], get_test_workdir())
+        self.storage.connect_database()
+
+    def tearDown(self):
+        self.database.close()
+        try:
+            os.remove(self.table_db_name)
+        except OSError:
+            pass
+
+        storage_path = self.storage.dbfile
+        self.storage.disconnect_database()
+        try:
+            os.remove(storage_path)
+        except OSError:
+            pass
 
     def test_table_insert(self):
         self.database.purge()
