@@ -393,7 +393,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         Returns:
             int: Number of records in the table.
         """
-        return self.table(table_name).count()
+        return self.table(table_name).count({})
 
     def get(self, keys, table_name=None, match_any=False):
         """Find a single record.

@@ -31,7 +31,6 @@
 Functions used for unit tests of sqlite3_file.py.
 """
 import os
-import unittest
 import uuid
 from taucmdr import tests
 from taucmdr.cf.storage.sqlite3_file import SQLiteDatabase, SQLiteLocalFileStorage
