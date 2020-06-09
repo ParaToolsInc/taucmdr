@@ -38,29 +38,9 @@ from taucmdr import logger, util
 from taucmdr import PROJECT_DIR
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
+from taucmdr.cf.storage.project import ProjectStorageError
 
 LOGGER = logger.get_logger(__name__)
-
-
-class ProjectStorageError(StorageError):
-    """Indicates that the project storage has not been initialized."""
-
-    message_fmt = ("%(value)s\n"
-                   "\n"
-                   "%(hints)s\n"
-                   "Please contact %(contact)s for assistance.")
-
-    def __init__(self, search_root):
-        """Initialize the error object.
-
-        Args:
-            search_root (str): Directory in which the search for a project directory was initiated.
-        """
-        value = "Project directory not found in '%s' or any of its parent directories." % search_root
-        hints = ("Make sure that you have already run the `tau initialize` command "
-                 "in this directory or any of its parent directories.")
-        super(ProjectStorageError, self).__init__(value, hints)
-        self.search_root = search_root
 
 
 class SQLiteProjectStorage(SQLiteLocalFileStorage):
