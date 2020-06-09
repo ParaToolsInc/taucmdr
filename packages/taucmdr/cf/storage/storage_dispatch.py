@@ -49,7 +49,7 @@ AVAILABLE_BACKENDS = {'tinydb': DB_TINYDB, 'sqlite': DB_SQLITE, 'auto': DB_AUTO}
 
 class StorageDispatch(AbstractStorage):
     def __init__(self, name=None, prefix=None, kind=None):
-        super(StorageDispatch).__init__(name)
+        super(StorageDispatch, self).__init__(name)
         LOGGER.debug("Initialized StorageDispatch name = {} kind = ".format(name, kind))
         if kind == 'project':
             self._local_storage = ProjectStorage()
