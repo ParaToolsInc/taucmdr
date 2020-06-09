@@ -277,6 +277,19 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
         self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
 
+    def test_update_by_key(self):
+        self.storage.purge(table_name='update_test')
+        record_1 = self.storage.insert({'a': ['one', 'two']}, table_name='updateTest')
+        record_2 = self.storage.insert({'a': ['three', 'four']}, table_name='updateTest')
+        record_3 = self.storage.insert({'b': ['five', 'six']}, table_name='updateTest')
+        self.storage.update({'a': ['new', 'values']}, {'a': ['one', 'two']}, table_name='update_test')
+        after_update_record_1 = self.storage.get(keys=record_1.eid, table_name='updateTest')
+        after_update_record_2 = self.storage.get(keys=record_2.eid, table_name='updateTest')
+        after_update_record_3 = self.storage.get(keys=record_3.eid, table_name='updateTest')
+        self.assertNotEqual(record_1, after_update_record_1, "After update first record should have changed")
+        self.assertDictEqual(record_2, after_update_record_2, "After update non-matching record 2 should be same")
+        self.assertDictEqual(record_3, after_update_record_3, "After update non-matching record 3 should be same")
+
     def test_transaction(self):
         self.storage.purge(table_name='application')
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
