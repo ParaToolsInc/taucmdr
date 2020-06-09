@@ -231,13 +231,8 @@ class Test(TestCommand):
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
-            print("Running tests with SQLite backend")
-            os.environ['__TAUCMDR_DB_BACKEND__'] = 'sqlite'
-            results_sqlite = TestCommand.run_tests(self)
-            print("Running tests with TinyDB backend")
-            os.environ['__TAUCMDR_DB_BACKEND__'] = 'tinydb'
-            results_tinydb = TestCommand.run_tests(self)
-            return results_tinydb and results_sqlite
+            results = TestCommand.run_tests(self)
+            return results
         finally:
             if self.system_sandbox:
                 shutil.rmtree(tmp_system_prefix, ignore_errors=True)

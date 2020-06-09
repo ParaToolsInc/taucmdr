@@ -160,7 +160,6 @@ class TestCase(unittest.TestCase):
         logger.TERM_SIZE=(150,150)
         logger.LINE_WIDTH=logger.TERM_SIZE[0]
         logger._STDOUT_HANDLER.setFormatter(logger.LogFormatter(line_width=logger.LINE_WIDTH, printable_only=True))
-        levels.set_backend(os.environ['__TAUCMDR_DB_BACKEND__'])
         # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
