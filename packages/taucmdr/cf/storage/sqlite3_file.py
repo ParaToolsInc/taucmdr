@@ -32,6 +32,8 @@ A persistent, transactional record storage system using :py:class:`sqlite3` for
 both the database and the key/value store.
 """
 
+from __future__ import print_function
+
 import os
 import json
 import re
@@ -98,6 +100,7 @@ class SQLiteDatabase(object):
 
         def execute(self, sql, parameters=()):
             LOGGER.debug("Executing `{}` with parameters {}".format(sql, parameters))
+            print("Executing `{}` with parameters {}".format(sql, parameters))
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
@@ -121,6 +124,7 @@ class SQLiteDatabase(object):
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
             self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
+            LOGGER.debug("Connected to SQLite database at {}".format(self.dbfile))
 
     def close(self):
         """Close the database connection"""
@@ -224,7 +228,9 @@ class _SQLiteJsonTable(object):
     def _json_query(keys=None, match_any=False):
         join_string = " OR " if match_any else " AND "
         where_clause = join_string.join(
-            ['json_extract(data, "$.{}") == {}'.format(key, json.dumps(val)) for (key, val) in six.iteritems(keys)])
+            ["json_extract(data, '$.{}') == {}".format(key, (
+                int(val) if isinstance(val, int) else json.dumps(val) if isinstance(val, six.string_types) else
+                "json('{}')".format(json.dumps(val)))) for (key, val) in six.iteritems(keys)])
         if where_clause:
             where_clause = "WHERE {}".format(where_clause)
         return where_clause

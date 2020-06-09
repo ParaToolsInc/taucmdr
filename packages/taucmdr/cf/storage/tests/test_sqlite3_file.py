@@ -238,6 +238,45 @@ class SQLite3FileStorageTests(tests.TestCase):
         result= self.storage.search(keys={'foo': 'bar'}, table_name='application')
         self.assertTrue(not result, "Search for nonexistent field should return empty")
 
+    def test_int_value(self):
+        self.storage.purge(table_name='test')
+        eid_1 = self.storage.insert({'a': 10}, table_name='test').eid
+        eid_2 = self.storage.insert({'a': 50}, table_name='test').eid
+        eid_3 = self.storage.insert({'b': 440}, table_name='test').eid
+        result = self.storage.search({'a': 10}, table_name='test')
+        self.assertEqual(len(result), 1, "Result should have 1 entry")
+        record = result[0]
+        self.assertEqual(record['a'], 10, "Retrieved value should be same as stored")
+        self.assertEqual(record.eid, eid_1, "Retrieved EID should be same as stored")
+        self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
+        self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
+
+    def test_str_value(self):
+        self.storage.purge(table_name='test')
+        eid_1 = self.storage.insert({'a': 'foo'}, table_name='test').eid
+        eid_2 = self.storage.insert({'a': 'bar'}, table_name='test').eid
+        eid_3 = self.storage.insert({'b': 'baz'}, table_name='test').eid
+        result = self.storage.search({'a': 'foo'}, table_name='test')
+        self.assertEqual(len(result), 1, "Result should have 1 entry")
+        record = result[0]
+        self.assertEqual(record['a'], 'foo', "Retrieved value should be same as stored")
+        self.assertEqual(record.eid, eid_1, "Retrieved EID should be same as stored")
+        self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
+        self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
+
+    def test_list_value(self):
+        self.storage.purge(table_name='test')
+        eid_1 = self.storage.insert({'a': ['a', 'b']}, table_name='test').eid
+        eid_2 = self.storage.insert({'a': ['b', 'c']}, table_name='test').eid
+        eid_3 = self.storage.insert({'b': ['x', 'y']}, table_name='test').eid
+        result = self.storage.search({'a': ['a', 'b']}, table_name='test')
+        self.assertEqual(len(result), 1, "Result should have 1 entry")
+        record = result[0]
+        self.assertEqual(record['a'], ['a', 'b'], "Retrieved value should be same as stored")
+        self.assertEqual(record.eid, eid_1, "Retrieved EID should be same as stored")
+        self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
+        self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
+
     def test_transaction(self):
         self.storage.purge(table_name='application')
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
