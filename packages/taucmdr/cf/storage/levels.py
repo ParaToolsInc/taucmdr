@@ -40,19 +40,25 @@ want to install software packages at the project level to avoid quotas or in sit
 where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
+import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.local_file import LocalFileStorage
+from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
 from taucmdr.cf.storage.project import ProjectStorage
+from taucmdr.cf.storage.sqlite3_project import SQLiteProjectStorage
 
+USING_SQLITE_BACKEND = bool(os.environ.get('TAUCMDR_USE_SQLITE', False))
+STORAGE_CLASS = SQLiteLocalFileStorage if USING_SQLITE_BACKEND else LocalFileStorage
+PROJECT_STORAGE_CLASS = SQLiteProjectStorage if USING_SQLITE_BACKEND else ProjectStorage
 
-SYSTEM_STORAGE = LocalFileStorage('system', SYSTEM_PREFIX)
+SYSTEM_STORAGE = STORAGE_CLASS('system', SYSTEM_PREFIX)
 """System-level data storage."""
 
-USER_STORAGE = LocalFileStorage('user', USER_PREFIX)
+USER_STORAGE = STORAGE_CLASS('user', USER_PREFIX)
 """User-level data storage."""
 
-PROJECT_STORAGE = ProjectStorage()
+PROJECT_STORAGE = PROJECT_STORAGE_CLASS()
 """Project-level data storage."""
 
 ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
