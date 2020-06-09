@@ -168,10 +168,10 @@ class SQLiteDatabase(object):
         Raises:
             SQLiteStorageError: Attempt to perform and operation on a database which is not open
         """
-        c = self.cursor()
-        c.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
+        cursor = self.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
         result = [name for (name,) in c.fetchall() if not name.startswith('_')]
-        c.close()
+        cursor.close()
         return result
 
     def table(self, table_name):
@@ -207,7 +207,7 @@ class _SQLiteJsonTable(object):
 
     def __init__(self, database, name):
         self.database = database
-        self.name = name
+        self._name = name
         self._ensure_exists()
 
     @property
@@ -215,23 +215,23 @@ class _SQLiteJsonTable(object):
         return self._name
 
     @name.setter
-    def name(self, v):
-        if v.isalpha() or (v[0] == '_' and v[1:].isalpha()):
-            self._name = v
+    def name(self, value):
+        if value.isalpha() or (value[0] == '_' and value[1:].isalpha()):
+            self._name = value
         else:
-            raise StorageError('Invalid table name {}'.format(v))
+            raise StorageError('Invalid table name {}'.format(value))
 
     def _ensure_exists(self):
-        c = self.database.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name),
+        cursor = self.database.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name),
                   log=False)
-        c.close()
+        cursor.close()
 
     def insert(self, element):
-        c = self.database.cursor()
-        c.execute("INSERT INTO {} (data) VALUES(?)".format(self.name), [json.dumps(element)])
+        cursor = self.database.cursor()
+        cursor.execute("INSERT INTO {} (data) VALUES(?)".format(self.name), [json.dumps(element)])
         result = _SQLiteJsonRecord(self.database.storage, element, eid=c.lastrowid)
-        c.close()
+        cursor.close()
         return result
 
     @staticmethod
@@ -248,23 +248,23 @@ class _SQLiteJsonTable(object):
     def _get(self, keys=None, eid=None, match_any=False, remove=False):
         db_row = None
         result = None
-        c = self.database.cursor()
+        cursor = self.database.cursor()
         command = 'DELETE' if remove else 'SELECT id, data'
 
         if eid is not None:
-            c.execute('{} FROM {} WHERE id == ?'.format(command, self.name), [eid])
-            db_row = c.fetchone()
+            cursor.execute('{} FROM {} WHERE id == ?'.format(command, self.name), [eid])
+            db_row = cursor.fetchone()
         elif isinstance(keys, dict):
             query_string = '{} FROM {} {};'.format(
                 command, self.name, self._json_query(keys, match_any=match_any))
-            c.execute(query_string)
-            db_row = c.fetchone()
+            cursor.execute(query_string)
+            db_row = cursor.fetchone()
 
         if db_row is not None:
             (row_eid, row_data) = db_row
             result = _SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
 
-        c.close()
+        cursor.close()
         return result
 
     def get(self, keys=None, eid=None, match_any=False):
@@ -276,14 +276,14 @@ class _SQLiteJsonTable(object):
     def search(self, cond, match_any=False):
         if cond is None:
             cond = {}
-        c = self.database.cursor()
+        cursor = self.database.cursor()
         query_string = 'SELECT id, data FROM {} {};'.format(
             self.name, self._json_query(cond, match_any=match_any))
-        c.execute(query_string)
-        db_rows = c.fetchall()
+        cursor.execute(query_string)
+        db_rows = cursor.fetchall()
         result = [_SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
                   for (row_eid, row_data) in db_rows]
-        c.close()
+        cursor.close()
         return result
 
     def count(self, cond, match_any=False):
@@ -294,7 +294,7 @@ class _SQLiteJsonTable(object):
 
     def update(self, fields, keys=None, eids=None, match_any=False, unset=False):
         # Construct the json_set expression
-        if len(fields) == 0:
+        if not fields:
             # We were asked to update no fields, which is a no-op
             return
         if unset:
@@ -330,23 +330,23 @@ class _SQLiteJsonTable(object):
         update_statement = "UPDATE {} SET data = {} {};".format(self.name, json_set_expr, where_clause)
 
         # Run it
-        c = self.database.cursor()
-        c.execute(update_statement)
-        c.close()
+        cursor = self.database.cursor()
+        cursor.execute(update_statement)
+        cursor.close()
 
     def exists(self, field):
-        c = self.database.cursor()
-        c.execute("SELECT * FROM {} WHERE json_extract(data, '$.{}') IS NOT NULL;".format(self.name, field))
-        db_rows = c.fetchall()
+        cursor = self.database.cursor()
+        cursor.execute("SELECT * FROM {} WHERE json_extract(data, '$.{}') IS NOT NULL;".format(self.name, field))
+        db_rows = cursor.fetchall()
         result = [_SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
                   for (row_eid, row_data) in db_rows]
-        c.close()
+        cursor.close()
         return result
 
     def purge(self):
-        c = self.database.cursor()
-        c.execute('DROP TABLE IF EXISTS {};'.format(self.name))
-        c.close()
+        cursor = self.database.cursor()
+        cursor.execute('DROP TABLE IF EXISTS {};'.format(self.name))
+        cursor.close()
         self._ensure_exists()
 
 
@@ -673,7 +673,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """
         table = self.table(table_name)
         if keys is None:
-            return None
+            return
         elif isinstance(keys, self.Record.eid_type):
             table.remove(eid=keys)
         elif isinstance(keys, dict):

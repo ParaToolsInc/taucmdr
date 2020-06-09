@@ -176,6 +176,7 @@ class TestCase(unittest.TestCase):
             init_args (list): Command line arguments to `tau initialize`.
         """
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
+        PROJECT_STORAGE.set_backend(os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto'))
         PROJECT_STORAGE.destroy(ignore_errors=True)
         argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
         if init_args is not None:

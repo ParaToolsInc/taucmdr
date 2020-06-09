@@ -48,9 +48,11 @@ AVAILABLE_BACKENDS = {'tinydb': DB_TINYDB, 'sqlite': DB_SQLITE, 'auto': DB_AUTO}
 
 
 class StorageDispatch(AbstractStorage):
+    """Dispatches storage method calls to backend storage based on runtime selection of the type."""
+
     def __init__(self, name=None, prefix=None, kind=None):
         super(StorageDispatch, self).__init__(name)
-        LOGGER.debug("Initialized StorageDispatch name = {} kind = ".format(name, kind))
+        LOGGER.debug("Initialized StorageDispatch name = %s kind = %s", name, kind)
         if kind == 'project':
             self._local_storage = ProjectStorage()
             self._sqlite_storage = SQLiteProjectStorage()
@@ -61,6 +63,13 @@ class StorageDispatch(AbstractStorage):
         self.set_backend(TAUCMDR_DB_BACKEND)
 
     def set_backend(self, backend):
+        """Set the backend that is to be used for subsequent storage method calls.
+
+        Args:
+            backend (str): The backend to use. One of 'tinydb', 'sqlite', or 'auto'.
+                           If 'auto', the backend is SQLite if a SQLite database is already present,
+                           and is TinyDB otherwise.
+        """
         if backend not in AVAILABLE_BACKENDS:
             raise StorageError('Unrecognized backend {}; use one of {}'.format(backend, AVAILABLE_BACKENDS))
         if backend == 'tinydb':

@@ -40,7 +40,6 @@ want to install software packages at the project level to avoid quotas or in sit
 where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
-import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.storage_dispatch import StorageDispatch, ProjectStorageDispatch
