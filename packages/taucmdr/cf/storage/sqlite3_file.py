@@ -383,7 +383,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
     def __str__(self):
         """Human-readable identifier for this database."""
         # pylint: disable=protected-access
-        return "<SQLiteLocalFileStorage dbfile={}>".format(self.dbfile)
+        return self.dbfile
 
     def __enter__(self):
         """Initiates the database transaction."""
