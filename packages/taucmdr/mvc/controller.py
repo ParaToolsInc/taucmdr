@@ -40,6 +40,40 @@ else:
         # pylint: disable=unused-argument
         pass
 
+def valid(context, record):
+    def _has(requirement, record):
+        field = record.get(requirement[0])
+        if isinstance(field, int):
+            return field == requirement[1]
+        elif isinstance(field, list):
+            return requirement[1] in field
+        return False
+
+    return True in [_has(req, record) for req in context]
+
+def contextualize(function):
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        context = kwargs.pop("context", self.context)
+
+        # Context can be True, False, or list(key, value)
+        if context and isinstance(context, bool):
+            # If True, use the default context
+            context = self.context
+
+        records = function(*args, **kwargs)
+        if context and isinstance(context, list):
+            if not records:
+                return records
+            elif isinstance(records, dict):
+                records = records if valid(context, records) else None
+            elif isinstance(records, list):
+                records = [e for e in records if valid(context, e)]
+        else:
+            LOGGER.debug("Invalid context %s; ignoring.", context)
+
+        return records
+    return wrapper
 
 class Controller(object):
     """The "C" in `MVC`_.
@@ -48,14 +82,26 @@ class Controller(object):
         model (AbstractModel): Data model.
         storage (AbstractDatabase): Record storage.
 
+        context (List(Tuple)): A field filter, with syntax (key, value).
+        Filtering according to a context means that only elements with
+        at least an element matching the rules set in the context will
+        be considered. Think of it as a whitelist.
+        A controller will filters results according to:
+        - By default, nothing;
+        - If a context was given at the object's initialization,
+            the controller only allows objects matching the context;
+        - If a context is given during a command, it overrides the internal
+            context and the results are matched against it.
+
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
 
     messages = {}
 
-    def __init__(self, model_cls, storage):
+    def __init__(self, model_cls, storage, context=None):
         self.model = model_cls
         self.storage = storage
+        self.context = context
 
     @classmethod
     def push_to_topic(cls, topic, message):
@@ -65,6 +111,7 @@ class Controller(object):
     def pop_topic(cls, topic):
         return cls.messages.pop(topic, [])
 
+    @contextualize
     def one(self, key):
         """Get a record.
 
@@ -77,6 +124,7 @@ class Controller(object):
         record = self.storage.get(key, table_name=self.model.name)
         return self.model(record) if record else None
 
+    @contextualize
     def all(self):
         """Get all records.
 
@@ -85,14 +133,16 @@ class Controller(object):
         """
         return [self.model(record) for record in self.storage.search(table_name=self.model.name)]
 
-    def count(self):
+    def count(self, context=True):
         """Return the number of records.
 
         Returns:
             int: Effectively ``len(self.all())``
         """
-        return self.storage.count(table_name=self.model.name)
+        # pylint: disable=unexpected-keyword-arg
+        return len(self.all(context=context))
 
+    @contextualize
     def search(self, keys=None):
         """Return records that have all given keys.
 
@@ -104,6 +154,7 @@ class Controller(object):
         """
         return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
 
+    @contextualize
     def match(self, field, regex=None, test=None):
         """Return records that have a field matching a regular expression or test function.
 
@@ -116,9 +167,12 @@ class Controller(object):
             list: Models for records that have a matching field.
         """
         return [self.model(record)
-                for record in self.storage.match(field, table_name=self.model.name, regex=regex, test=test)]
+                for record in self.storage.match(field,
+                                                 table_name=self.model.name,
+                                                 regex=regex,
+                                                 test=test)]
 
-    def exists(self, keys):
+    def exists(self, keys, context=True):
         """Check if a record exists.
 
         Args:
@@ -127,9 +181,19 @@ class Controller(object):
         Returns:
             bool: True if a record matching `keys` exists, False otherwise.
         """
+        relevant_context = self.context if isinstance(context, bool) else context
+        if relevant_context:
+            # As the context is not exclusive, try with every filter
+            for key, value in relevant_context:
+                modded_keys = keys.copy()
+                modded_keys[key] = value
+                if self.storage.contains(modded_keys, table_name=self.model.name):
+                    return True
+            return False
+
         return self.storage.contains(keys, table_name=self.model.name)
 
-    def populate(self, model, attribute=None, defaults=False):
+    def populate(self, model, attribute=None, defaults=False, context=True):
         """Merges associated data into the model record.
 
         Example:
@@ -158,12 +222,12 @@ class Controller(object):
         """
         if attribute:
             _heavy_debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
-            return self._populate_attribute(model, attribute, defaults)
+            return self._populate_attribute(model, attribute, defaults, context=context)
         else:
             _heavy_debug("Populating %s(%s)", model.name, model.eid)
-        return {attr: self._populate_attribute(model, attr, defaults) for attr in model}
+        return {attr: self._populate_attribute(model, attr, defaults, context=context) for attr in model}
 
-    def _populate_attribute(self, model, attr, defaults):
+    def _populate_attribute(self, model, attr, defaults, context=True):
         try:
             props = model.attributes[attr]
         except KeyError:
@@ -180,9 +244,9 @@ class Controller(object):
             except KeyError:
                 return value
             else:
-                return foreign.controller(self.storage).search(value)
+                return foreign.controller(self.storage).search(value, context=context)
         else:
-            return foreign.controller(self.storage).one(value)
+            return foreign.controller(self.storage).one(value, context=context)
 
     def _check_unique(self, data, match_any=True):
         unique = {attr: data[attr] for attr, props in self.model.attributes.iteritems() if 'unique' in props}
@@ -309,7 +373,7 @@ class Controller(object):
                 model.check_compatibility(model)
                 model.on_update(changes[model.eid])
 
-    def delete(self, keys):
+    def delete(self, keys, context=True):
         """Delete recorded data and update associations.
 
         The behavior depends on the type of `keys`:
@@ -327,7 +391,9 @@ class Controller(object):
         """
         with self.storage as database:
             removed_data = []
-            changing = self.search(keys)
+            # pylint: disable=unexpected-keyword-arg
+            changing = self.search(keys, context=context)
+
             for model in changing:
                 for attr, foreign in model.associations.iteritems():
                     foreign_model, via = foreign
@@ -349,7 +415,11 @@ class Controller(object):
                                      self.model.name, model.eid, via, foreign_model.name, affected_keys)
                         self._disassociate(model, foreign_model, affected_keys, via)
                 removed_data.append(dict(model))
-            database.remove(keys, table_name=self.model.name)
+
+            for record in changing:
+                key = {self.model.key_attribute: record.get(self.model.key_attribute)}
+                database.remove(key, table_name=self.model.name)
+
             for model in changing:
                 model.on_delete()
 

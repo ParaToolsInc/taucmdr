@@ -45,14 +45,18 @@ DASHBOARD_COLUMNS = [{'header': 'Number', 'value': 'number'},
 class TrialListCommand(ListCommand):
     """``trial list`` subcommand."""
 
-    def _retrieve_records(self, ctrl, keys):
+    def _retrieve_records(self, ctrl, keys, context=True):
         if keys:
             try:
                 keys = [int(key) for key in keys]
             except ValueError:
                 self.parser.error("Invalid trial number '%s'.  Trial numbers are positive integers starting from 0.")
-        expr = Project.selected().experiment()
-        records = super(TrialListCommand, self)._retrieve_records(ctrl, keys)
+        proj = Project.selected()
+        if proj is None:
+            self.parser.error("No project is selected")
+        expr = proj.experiment()
+
+        records = super(TrialListCommand, self)._retrieve_records(ctrl, keys, context=context)
         recs = [rec for rec in records if rec['experiment'] == expr.eid]
         return sorted(recs, key=lambda recs: recs['number'])
 
@@ -74,7 +78,10 @@ class TrialListCommand(ListCommand):
         self.logger.debug("Dashboard format")
         title = util.hline(self.title_fmt % {'model_name': records[0].name.capitalize(),
                                              'storage_path': records[0].storage}, 'cyan')
-        expr = Project.selected().experiment()
+        proj = Project.selected()
+        if proj is None:
+            self.parser.error("No project is selected")
+        expr = proj.experiment()
         subtitle = util.color_text("Selected experiment: ", 'cyan') + expr['name']
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
