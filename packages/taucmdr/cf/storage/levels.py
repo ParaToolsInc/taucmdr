@@ -43,22 +43,15 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
-from taucmdr.cf.storage.local_file import LocalFileStorage
-from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
-from taucmdr.cf.storage.project import ProjectStorage
-from taucmdr.cf.storage.sqlite3_project import SQLiteProjectStorage
+from taucmdr.cf.storage.storage_dispatch import StorageDispatch, ProjectStorageDispatch
 
-USING_SQLITE_BACKEND = bool(os.environ.get('TAUCMDR_USE_SQLITE', False))
-STORAGE_CLASS = SQLiteLocalFileStorage if USING_SQLITE_BACKEND else LocalFileStorage
-PROJECT_STORAGE_CLASS = SQLiteProjectStorage if USING_SQLITE_BACKEND else ProjectStorage
-
-SYSTEM_STORAGE = STORAGE_CLASS('system', SYSTEM_PREFIX)
+SYSTEM_STORAGE = StorageDispatch('system', SYSTEM_PREFIX)
 """System-level data storage."""
 
-USER_STORAGE = STORAGE_CLASS('user', USER_PREFIX)
+USER_STORAGE = StorageDispatch('user', USER_PREFIX)
 """User-level data storage."""
 
-PROJECT_STORAGE = PROJECT_STORAGE_CLASS()
+PROJECT_STORAGE = ProjectStorageDispatch()
 """Project-level data storage."""
 
 ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)

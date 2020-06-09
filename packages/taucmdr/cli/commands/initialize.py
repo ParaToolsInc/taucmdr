@@ -47,6 +47,7 @@ from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
+from taucmdr.cf.storage.storage_dispatch import AVAILABLE_BACKENDS
 
 
 HELP_PAGE = """
@@ -84,6 +85,11 @@ class InitializeCommand(AbstractCommand):
                             default=False,
                             metavar='T/F',
                             action=ParseBooleanAction)
+        parser.add_argument('--backend',
+                            help="Database backend in which to store this project's data",
+                            choices=AVAILABLE_BACKENDS.keys(),
+                            metavar="<backend>",
+                            default="auto")
         project_group = parser.add_argument_group('project arguments')
         project_group.add_argument('--project-name',
                                    help="Name of the new project",
@@ -234,6 +240,8 @@ class InitializeCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         if args.force:
             proj_ctrl.storage.force_cwd(True)
+        if args.backend:
+            PROJECT_STORAGE.set_backend(args.backend)
         try:
             proj = proj_ctrl.selected()
         except ProjectStorageError:
@@ -262,5 +270,6 @@ class InitializeCommand(AbstractCommand):
                                 " '%s' to reset to a fresh environment. %s",
                                 proj['name'], proj_ctrl.storage.prefix, force_str)
             return EXIT_WARNING
+
 
 COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.")

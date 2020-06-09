@@ -153,6 +153,14 @@ class AbstractStorage(object):
         """
 
     @abstractmethod
+    def database_exists(self):
+        """Determine if the database file backing this Storage object exists.
+
+        Returns:
+            bool: True if database exists; false otherwise.
+        """
+
+    @abstractmethod
     def __enter__(self):
         """Initiates the database transaction."""
 

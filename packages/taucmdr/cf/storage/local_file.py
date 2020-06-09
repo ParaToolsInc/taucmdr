@@ -200,6 +200,13 @@ class LocalFileStorage(AbstractStorage):
     def prefix(self):
         return self._prefix
 
+    def database_exists(self):
+        try:
+            dbfile = os.path.join(self.prefix, self.name + '.json')
+        except StorageError:
+            return False
+        return os.path.isfile(dbfile)
+
     def __str__(self):
         """Human-readable identifier for this database."""
         # pylint: disable=protected-access
