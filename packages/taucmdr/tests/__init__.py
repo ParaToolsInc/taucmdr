@@ -299,16 +299,9 @@ class TestRunner(unittest.TextTestRunner):
         self.buffer = True
 
     def run(self, test):
-        print("Running tests with TinyDB backend")
-        PROJECT_STORAGE.set_backend('tinydb')
-        result_tinydb = super(TestRunner, self).run(test)
-
-        print("Running tests with SQLite backend")
-        PROJECT_STORAGE.set_backend('sqlite')
-        result_sqlite = super(TestRunner, self).run(test)
-
+        result = super(TestRunner, self).run(test)
         for item in _NOT_IMPLEMENTED:
             print("WARNING: %s" % item)
-        if result_tinydb.wasSuccessful() and result_sqlite.wasSuccessful():
+        if result.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE
