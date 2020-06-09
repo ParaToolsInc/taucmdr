@@ -106,6 +106,9 @@ class SQLiteDatabase(object):
         def fetchall(self):
             return self._cursor.fetchall()
 
+        def close(self):
+            return self._cursor.close()
+
     def open(self):
         """Open the database connection specified in this object's dbfile attribute"""
         if self._connection is None:
