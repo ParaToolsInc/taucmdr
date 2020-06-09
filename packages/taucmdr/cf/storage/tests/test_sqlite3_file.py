@@ -282,7 +282,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         record_1 = self.storage.insert({'a': ['one', 'two']}, table_name='updateTest')
         record_2 = self.storage.insert({'a': ['three', 'four']}, table_name='updateTest')
         record_3 = self.storage.insert({'b': ['five', 'six']}, table_name='updateTest')
-        self.storage.update({'a': ['new', 'values']}, {'a': ['one', 'two']}, table_name='update_test')
+        self.storage.update({'a': ['new', 'values']}, {'a': ['one', 'two']}, table_name='updateTest')
         after_update_record_1 = self.storage.get(keys=record_1.eid, table_name='updateTest')
         after_update_record_2 = self.storage.get(keys=record_2.eid, table_name='updateTest')
         after_update_record_3 = self.storage.get(keys=record_3.eid, table_name='updateTest')
