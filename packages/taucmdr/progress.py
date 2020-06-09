@@ -31,16 +31,17 @@ Show bars or spinners, possibly with instantaneous CPU load average.
 """
 
 from __future__ import absolute_import
+from __future__ import division
 import os
 import sys
 import threading
 import itertools
 from datetime import datetime, timedelta
-from taucmdr import logger
-from taucmdr.error import ConfigurationError
 import six
 from six.moves import range
 from six.moves import zip
+from taucmdr import logger
+from taucmdr.error import ConfigurationError
 
 
 LOGGER = logger.get_logger(__name__)
@@ -263,7 +264,7 @@ class ProgressIndicator(object):
         if self.show_cpu and self._line_remaining > 40:
             cpu_load = min(load_average(), 1.0)
             self._line_append("[CPU: %0.1f " % (100*cpu_load))
-            width = (self._line_remaining/4) if show_bar else (self._line_remaining-2)
+            width = (self._line_remaining//4) if show_bar else (self._line_remaining-2)
             self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
             self._line_append("]")
         if show_bar and self._line_remaining > 20:
