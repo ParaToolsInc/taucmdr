@@ -188,7 +188,7 @@ class LocalFileStorage(AbstractStorage):
             if not util.path_accessible(dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % dbfile,
                                    "Check that you have `read` access")
-            LOGGER.debug("Initialized %s database '%s'", self.name, dbfile)
+            LOGGER.debug("Initialized TinyDB %s database '%s'", self.name, dbfile)
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
