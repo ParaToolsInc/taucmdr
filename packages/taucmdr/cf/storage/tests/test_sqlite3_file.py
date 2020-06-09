@@ -278,7 +278,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
 
     def test_update_by_key(self):
-        self.storage.purge(table_name='update_test')
+        self.storage.purge(table_name='updateTest')
         record_1 = self.storage.insert({'a': ['one', 'two']}, table_name='updateTest')
         record_2 = self.storage.insert({'a': ['three', 'four']}, table_name='updateTest')
         record_3 = self.storage.insert({'b': ['five', 'six']}, table_name='updateTest')
