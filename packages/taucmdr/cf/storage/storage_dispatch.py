@@ -185,3 +185,7 @@ class StorageDispatch(AbstractStorage):
 class ProjectStorageDispatch(StorageDispatch):
     def __init__(self):
         super(ProjectStorageDispatch, self).__init__(name='project', prefix=None, kind='project')
+
+    def destroy(self, ignore_errors=False):
+        self._local_storage.destroy(ignore_errors=ignore_errors)
+        self._sqlite_storage.destroy(ignore_errors=ignore_errors)
