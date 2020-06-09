@@ -170,7 +170,7 @@ class SQLiteDatabase(object):
         """
         cursor = self.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
-        result = [name for (name,) in c.fetchall() if not name.startswith('_')]
+        result = [name for (name,) in cursor.fetchall() if not name.startswith('_')]
         cursor.close()
         return result
 
@@ -230,7 +230,7 @@ class _SQLiteJsonTable(object):
     def insert(self, element):
         cursor = self.database.cursor()
         cursor.execute("INSERT INTO {} (data) VALUES(?)".format(self.name), [json.dumps(element)])
-        result = _SQLiteJsonRecord(self.database.storage, element, eid=c.lastrowid)
+        result = _SQLiteJsonRecord(self.database.storage, element, eid=cursor.lastrowid)
         cursor.close()
         return result
 
