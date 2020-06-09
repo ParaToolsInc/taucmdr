@@ -100,7 +100,6 @@ class SQLiteDatabase(object):
 
         def execute(self, sql, parameters=()):
             LOGGER.debug("Executing `{}` with parameters {}".format(sql, parameters))
-            print("Executing `{}` with parameters {}".format(sql, parameters))
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
