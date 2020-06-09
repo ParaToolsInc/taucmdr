@@ -29,8 +29,9 @@
 
 This Storage class dispatches calls to either TinyDB or SQLite, depending on which is selected.
 """
+import os
 
-from taucmdr import TAUCMDR_DB_BACKEND, logger
+from taucmdr import logger
 from taucmdr.cf.storage import AbstractStorage, StorageError
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
@@ -50,6 +51,8 @@ AVAILABLE_BACKENDS = {'tinydb': DB_TINYDB, 'sqlite': DB_SQLITE, 'auto': DB_AUTO}
 class StorageDispatch(AbstractStorage):
     """Dispatches storage method calls to backend storage based on runtime selection of the type."""
 
+    default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
+
     def __init__(self, name=None, prefix=None, kind=None):
         super(StorageDispatch, self).__init__(name)
         LOGGER.debug("Initialized StorageDispatch name = %s kind = %s", name, kind)
@@ -60,7 +63,11 @@ class StorageDispatch(AbstractStorage):
             self._local_storage = LocalFileStorage(name, prefix)
             self._sqlite_storage = SQLiteLocalFileStorage(name, prefix)
         self._backend = None
-        self.set_backend(TAUCMDR_DB_BACKEND)
+        self.set_backend(self.default_backend)
+
+    @classmethod
+    def set_default_backend(cls, default_backend):
+        cls.default_backend = default_backend
 
     def set_backend(self, backend):
         """Set the backend that is to be used for subsequent storage method calls.

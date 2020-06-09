@@ -48,6 +48,7 @@ from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
+from taucmdr.cf.storage import levels
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -156,10 +157,10 @@ class TestCase(unittest.TestCase):
 
     def run(self, result=None):
         # Whenever running a test, set the terminal size large enough to avoid any regex failures due to line wrap
-        taucmdr.TAUCMDR_DB_BACKEND = os.environ['__TAUCMDR_DB_BACKEND__']
         logger.TERM_SIZE=(150,150)
         logger.LINE_WIDTH=logger.TERM_SIZE[0]
         logger._STDOUT_HANDLER.setFormatter(logger.LogFormatter(line_width=logger.LINE_WIDTH, printable_only=True))
+        levels.set_backend(os.environ['__TAUCMDR_DB_BACKEND__'])
         # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
         # pylint: disable=attribute-defined-outside-init
         assert result is not None

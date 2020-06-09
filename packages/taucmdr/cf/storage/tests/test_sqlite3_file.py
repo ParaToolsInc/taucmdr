@@ -44,8 +44,6 @@ class SQLite3FileStorageTests(tests.TestCase):
 
     def setUp(self):
         # Plain database object for testing table interface
-        if os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto') != 'sqlite':
-            raise SkipTest('Not using SQLite backend')
         self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
         self.database = SQLiteDatabase(self.table_db_name)
         self.database.open()

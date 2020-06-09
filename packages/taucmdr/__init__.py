@@ -105,9 +105,6 @@ USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PR
 PROJECT_DIR = '.tau'
 """str: Name of the project-level directory containing TAU Commander project files."""
 
-TAUCMDR_DB_BACKEND = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
-"""str: Name of the database backend to use by default ('auto' (default), 'tinydb', or 'sqlite')"""
-
 
 def version_banner():
     """Return a human readable text banner describing the TAU Commander installation."""
