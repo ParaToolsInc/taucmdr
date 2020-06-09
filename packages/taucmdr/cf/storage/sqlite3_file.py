@@ -98,8 +98,9 @@ class SQLiteDatabase(object):
         def __init__(self, cursor):
             self._cursor = cursor
 
-        def execute(self, sql, parameters=()):
-            LOGGER.debug("Executing `{}` with parameters {}".format(sql, parameters))
+        def execute(self, sql, parameters=(), log=True):
+            if log:
+                LOGGER.debug("Executing `{}` with parameters {}".format(sql, parameters))
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
@@ -213,7 +214,8 @@ class _SQLiteJsonTable(object):
 
     def _ensure_exists(self):
         c = self.database.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name))
+        c.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name),
+                  log=False)
         c.close()
 
     def insert(self, element):
@@ -372,13 +374,14 @@ class SQLiteLocalFileStorage(LocalFileStorage):
             if not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
-            LOGGER.debug("Initialized %s database '%s'", self.name, self.dbfile)
+            LOGGER.debug("Initialized connection to SQLite database `%s` at '%s'", self.name, self.dbfile)
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
         if self._database:
             self._database.close()
             self._database = None
+            LOGGER.debug("Closed database connection to `%s` at '%s'", self.name, self.dbfile)
 
     def __str__(self):
         """Human-readable identifier for this database."""
