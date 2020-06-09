@@ -45,6 +45,14 @@ from taucmdr.cf.storage import StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
 
+# Suppress debugging messages in optimized code
+if __debug__:
+    _heavy_debug = LOGGER.debug   # pylint: disable=invalid-name
+else:
+    def _heavy_debug(*args, **kwargs):
+        # pylint: disable=unused-argument
+        pass
+
 
 class _SQLiteJsonRecord(StorageRecord):
     eid_type = int
@@ -100,7 +108,7 @@ class SQLiteDatabase(object):
 
         def execute(self, sql, parameters=(), log=True):
             if log:
-                LOGGER.debug("Executing `{}` with parameters {}".format(sql, parameters))
+                _heavy_debug("Executing `{}` with parameters {}".format(sql, parameters))
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
