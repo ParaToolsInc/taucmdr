@@ -32,6 +32,8 @@ Functions used for unit tests of sqlite3_file.py.
 """
 import os
 import uuid
+from unittest import SkipTest
+
 from taucmdr import tests
 from taucmdr.cf.storage.sqlite3_file import SQLiteDatabase, SQLiteLocalFileStorage
 from taucmdr.tests import get_test_workdir
@@ -42,6 +44,8 @@ class SQLite3FileStorageTests(tests.TestCase):
 
     def setUp(self):
         # Plain database object for testing table interface
+        if os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto') != 'sqlite':
+            raise SkipTest('Not using SQLite backend')
         self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
         self.database = SQLiteDatabase(self.table_db_name)
         self.database.open()

@@ -231,12 +231,12 @@ class Test(TestCommand):
         args = ['--buffer']
         self.test_args = args + self.test_args
         try:
-            print("Running tests with TinyDB backend")
-            os.environ['__TAUCMDR_DB_BACKEND__'] = 'tinydb'
-            results_tinydb = TestCommand.run_tests(self)
             print("Running tests with SQLite backend")
             os.environ['__TAUCMDR_DB_BACKEND__'] = 'sqlite'
             results_sqlite = TestCommand.run_tests(self)
+            print("Running tests with TinyDB backend")
+            os.environ['__TAUCMDR_DB_BACKEND__'] = 'tinydb'
+            results_tinydb = TestCommand.run_tests(self)
             return results_tinydb and results_sqlite
         finally:
             if self.system_sandbox:
