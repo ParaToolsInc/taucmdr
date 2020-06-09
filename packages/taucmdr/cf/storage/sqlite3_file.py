@@ -361,7 +361,10 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         return os.path.join(self.prefix, self.name + '.sqlite3')
 
     def database_exists(self):
-        return os.path.isfile(self.dbfile)
+        try:
+            return os.path.isfile(self.dbfile)
+        except StorageError:
+            return False
 
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing."""
