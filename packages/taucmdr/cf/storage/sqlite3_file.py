@@ -97,7 +97,7 @@ class SQLiteDatabase(object):
             self._cursor = cursor
 
         def execute(self, sql, parameters=()):
-            LOGGER.debug("Executing {} with parameters {}".format(sql, parameters))
+            LOGGER.debug("Executing `{}` with parameters {}".format(sql, parameters))
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
@@ -108,6 +108,10 @@ class SQLiteDatabase(object):
 
         def close(self):
             return self._cursor.close()
+
+        @property
+        def lastrowid(self):
+            return self._cursor.lastrowid
 
     def open(self):
         """Open the database connection specified in this object's dbfile attribute"""
