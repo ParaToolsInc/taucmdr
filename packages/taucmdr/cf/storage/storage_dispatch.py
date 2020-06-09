@@ -175,4 +175,4 @@ class StorageDispatch(AbstractStorage):
 
 class ProjectStorageDispatch(StorageDispatch):
     def __init__(self):
-        super(ProjectStorageDispatch).__init__(name='project', prefix=None, kind='project')
+        super(ProjectStorageDispatch, self).__init__(name='project', prefix=None, kind='project')
