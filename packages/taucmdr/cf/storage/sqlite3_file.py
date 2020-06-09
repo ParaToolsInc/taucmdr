@@ -103,12 +103,13 @@ class SQLiteDatabase(object):
         self._transaction_level = 0
 
     class _LoggingCursor(object):
-        def __init__(self, cursor):
+        def __init__(self, dbfile, cursor):
+            self._dbfile = dbfile
             self._cursor = cursor
 
         def execute(self, sql, parameters=(), log=True):
             if log:
-                _heavy_debug("Executing `{}` with parameters {}".format(sql, parameters))
+                _heavy_debug("{}: Executing `{}` with parameters {}".format(self._dbfile, sql, parameters))
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
@@ -144,7 +145,7 @@ class SQLiteDatabase(object):
         """Returns a cursor which can be used to query the SQLite database"""
         if self._connection is None:
             raise SQLiteStorageError('Database connection is not open')
-        return self._LoggingCursor(self._connection.cursor())
+        return self._LoggingCursor(self.dbfile, self._connection.cursor())
 
     def start_transaction(self):
         """Begin a transaction, which can be reverted with :any:`_SQLiteDatabase.revert_transaction`
