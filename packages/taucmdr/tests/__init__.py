@@ -156,7 +156,7 @@ class TestCase(unittest.TestCase):
 
     def run(self, result=None):
         # Whenever running a test, set the terminal size large enough to avoid any regex failures due to line wrap
-        taucmdr.TAUCMDR_DB_BACKEND = os.environ.get('__TAUCMDR_DB_BACKEND', 'auto')
+        taucmdr.TAUCMDR_DB_BACKEND = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
         logger.TERM_SIZE=(150,150)
         logger.LINE_WIDTH=logger.TERM_SIZE[0]
         logger._STDOUT_HANDLER.setFormatter(logger.LogFormatter(line_width=logger.LINE_WIDTH, printable_only=True))
