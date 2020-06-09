@@ -27,6 +27,8 @@
 #
 """Unit test initializations and utility functions."""
 
+from __future__ import print_function
+
 import os
 import sys
 import glob
@@ -297,9 +299,16 @@ class TestRunner(unittest.TextTestRunner):
         self.buffer = True
 
     def run(self, test):
-        result = super(TestRunner, self).run(test)
+        print("Running tests with TinyDB backend")
+        PROJECT_STORAGE.set_backend('tinydb')
+        result_tinydb = super(TestRunner, self).run(test)
+
+        print("Running tests with SQLite backend")
+        PROJECT_STORAGE.set_backend('sqlite')
+        result_sqlite = super(TestRunner, self).run(test)
+
         for item in _NOT_IMPLEMENTED:
-            print "WARNING: %s" % item
-        if result.wasSuccessful():
+            print("WARNING: %s" % item)
+        if result_tinydb.wasSuccessful() and result_sqlite.wasSuccessful():
             return EXIT_SUCCESS
         return EXIT_FAILURE
