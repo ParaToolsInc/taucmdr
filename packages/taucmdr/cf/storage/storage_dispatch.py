@@ -73,17 +73,17 @@ class StorageDispatch(AbstractStorage):
         if backend not in AVAILABLE_BACKENDS:
             raise StorageError('Unrecognized backend {}; use one of {}'.format(backend, AVAILABLE_BACKENDS))
         if backend == 'tinydb':
-            LOGGER.debug("Using TinyDB database as requested")
+            LOGGER.debug("Using TinyDB database as requested for %s", self.name)
             self._backend = DB_TINYDB
         elif backend == 'sqlite':
-            LOGGER.debug("Using SQLite database as requested")
+            LOGGER.debug("Using SQLite database as requested for %s", self.name)
             self._backend = DB_SQLITE
         elif backend == 'auto':
             if self._sqlite_storage.database_exists():
-                LOGGER.debug("Using SQLite database in AUTO mode because one already exists")
+                LOGGER.debug("Using SQLite database in AUTO mode because one already exists for %s", self.name)
                 self._backend = DB_SQLITE
             else:
-                LOGGER.debug("Using TinyDB (default) in AUTO because no database already exists")
+                LOGGER.debug("Using TinyDB (default) in AUTO because no database already exists for %s", self.name)
                 self._backend = DB_TINYDB
 
     def _get_storage(self):
