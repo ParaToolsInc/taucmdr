@@ -267,8 +267,15 @@ jobs:
         run: |
           cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
 
-      - name: Test TAU Commander
-        run: coverage run setup.py test
+      - name: Test TAU Commander with TinyDB backend
+        run: |
+          export __TAUCMDR_DB_BACKEND__=tinydb
+          coverage run setup.py test
+
+      - name: Test TAU Commander with SQLite backend
+        run: |
+          export __TAUCMDR_DB_BACKEND__=sqlite
+          coverage run setup.py test
 
       - name: Build sphinx docs
         run: |
