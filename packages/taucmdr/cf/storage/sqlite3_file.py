@@ -99,7 +99,6 @@ class SQLiteDatabase(object):
             # check_same_thread = False allows connection to be used from a different thread than the one that
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
-            # TODO: Special handling for read-only filesystems
             self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
 
     def close(self):
