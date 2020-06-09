@@ -77,6 +77,8 @@ class StorageDispatch(AbstractStorage):
                            If 'auto', the backend is SQLite if a SQLite database is already present,
                            and is TinyDB otherwise.
         """
+        import traceback
+        traceback.print_stack()
         if backend not in AVAILABLE_BACKENDS:
             raise StorageError('Unrecognized backend {}; use one of {}'.format(backend, AVAILABLE_BACKENDS))
         if backend == 'tinydb':
