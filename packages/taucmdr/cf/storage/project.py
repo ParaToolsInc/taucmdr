@@ -41,6 +41,7 @@ from taucmdr.cf.storage.local_file import LocalFileStorage
 
 LOGGER = logger.get_logger(__name__)
 
+
 class ProjectStorageError(StorageError):
     """Indicates that the project storage has not been initialized."""
 
@@ -60,7 +61,6 @@ class ProjectStorageError(StorageError):
                  "in this directory or any of its parent directories.")
         super(ProjectStorageError, self).__init__(value, hints)
         self.search_root = search_root
-
 
 
 class ProjectStorage(LocalFileStorage):

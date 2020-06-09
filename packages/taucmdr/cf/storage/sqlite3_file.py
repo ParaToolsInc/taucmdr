@@ -326,8 +326,11 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
     def __init__(self, name, prefix):
         super(SQLiteLocalFileStorage, self).__init__(name, prefix)
-        self.dbfile = os.path.join(self.prefix, self.name + '.sqlite3')
         self._database = None
+
+    @property
+    def dbfile(self):
+        return os.path.join(self.prefix, self.name + '.sqlite3')
 
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing."""

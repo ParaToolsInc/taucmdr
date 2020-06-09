@@ -61,6 +61,7 @@ ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
 
+
 def highest_writable_storage():
     try:
         return highest_writable_storage.value
