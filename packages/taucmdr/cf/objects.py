@@ -67,7 +67,7 @@ class TrackedInstance(object):
 
     def __new__(cls, *args, **kwargs):
         """Ensure that __instances__ is set and track new instances."""
-        instance = object.__new__(cls, *args, **kwargs)
+        instance = object()
         if "__instances__" not in cls.__dict__:
             cls.__instances__ = set()
         cls.__instances__.add(instance)
@@ -154,6 +154,9 @@ class KeyedRecord(six.with_metaclass(KeyedRecordCreator, object)):
 
     def __eq__(self, other):
         return self is other
+
+    def __hash__(self):
+        return hash(self.__key__)
 
     def __len__(self):
         return len(getattr(self, self.__key__))
