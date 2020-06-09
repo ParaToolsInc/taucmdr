@@ -82,7 +82,7 @@ class SQLiteProjectStorage(SQLiteLocalFileStorage):
             project_prefix = self.prefix
         except ProjectStorageError:
             project_prefix = os.path.join(os.getcwd(), PROJECT_DIR)
-            if os.path.exists(os.path.join(project_prefix, USER_STORAGE.name + ".json")):
+            if os.path.exists(os.path.join(project_prefix, USER_STORAGE.name + ".sqlite3")):
                 raise StorageError("Cannot create project in home directory. "
                                    "Use '-@ user' option for user level storage.")
             try:
@@ -132,7 +132,7 @@ class SQLiteProjectStorage(SQLiteLocalFileStorage):
             prefix = os.path.realpath(os.path.join(cwd, PROJECT_DIR))
             if os.path.isdir(prefix):
                 for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".sqlite3")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)
@@ -149,7 +149,7 @@ class SQLiteProjectStorage(SQLiteLocalFileStorage):
             prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
             if os.path.isdir(prefix):
                 for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".sqlite3")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)
