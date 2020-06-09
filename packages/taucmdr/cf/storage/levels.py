@@ -61,13 +61,6 @@ STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
 
 
-def set_backend(backend):
-    StorageDispatch.set_default_backend(backend)
-    ProjectStorageDispatch.set_default_backend(backend)
-    for level in ORDERED_LEVELS:
-        level.set_backend(backend)
-
-
 def highest_writable_storage():
     try:
         return highest_writable_storage.value

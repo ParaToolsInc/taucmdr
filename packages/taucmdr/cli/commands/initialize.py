@@ -240,7 +240,7 @@ class InitializeCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         if args.force:
             proj_ctrl.storage.force_cwd(True)
-        if args.backend:
+        if args.backend and args.backend != 'auto':
             PROJECT_STORAGE.set_backend(args.backend)
         try:
             proj = proj_ctrl.selected()

@@ -65,10 +65,6 @@ class StorageDispatch(AbstractStorage):
         self._backend = None
         self.set_backend(self.default_backend)
 
-    @classmethod
-    def set_default_backend(cls, default_backend):
-        cls.default_backend = default_backend
-
     def set_backend(self, backend):
         """Set the backend that is to be used for subsequent storage method calls.
 
@@ -77,8 +73,6 @@ class StorageDispatch(AbstractStorage):
                            If 'auto', the backend is SQLite if a SQLite database is already present,
                            and is TinyDB otherwise.
         """
-        import traceback
-        traceback.print_stack()
         if backend not in AVAILABLE_BACKENDS:
             raise StorageError('Unrecognized backend {}; use one of {}'.format(backend, AVAILABLE_BACKENDS))
         if backend == 'tinydb':
