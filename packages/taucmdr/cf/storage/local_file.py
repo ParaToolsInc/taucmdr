@@ -101,6 +101,7 @@ class LocalFileStorage(AbstractStorage):
         self._db_copy = None
         self._database = None
         self._prefix = prefix
+        self.dbfile = None
 
     def __len__(self):
         return self.count()
@@ -177,18 +178,18 @@ class LocalFileStorage(AbstractStorage):
         """Open the database for reading and writing."""
         if self._database is None:
             util.mkdirp(self.prefix)
-            dbfile = os.path.join(self.prefix, self.name + '.json')
+            self.dbfile = os.path.join(self.prefix, self.name + '.json')
             try:
                 storage = CachingMiddleware(_JsonFileStorage)
                 storage.WRITE_CACHE_SIZE = 0
-                self._database = tinydb.TinyDB(dbfile, storage=storage)
+                self._database = tinydb.TinyDB(self.dbfile, storage=storage)
             except IOError as err:
-                raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err),
+                raise StorageError("Failed to access %s database '%s': %s" % (self.name, self.dbfile, err),
                                    "Check that you have `write` access")
-            if not util.path_accessible(dbfile):
-                raise StorageError("Database file '%s' exists but cannot be read." % dbfile,
+            if not util.path_accessible(self.dbfile):
+                raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
-            LOGGER.debug("Initialized TinyDB %s database '%s'", self.name, dbfile)
+            LOGGER.debug("Initialized TinyDB %s database '%s'", self.name, self.dbfile)
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""

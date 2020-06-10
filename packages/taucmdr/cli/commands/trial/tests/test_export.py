@@ -44,6 +44,7 @@ class ExportTest(tests.TestCase):
     @tests.skipUnless(util.which('java'), "A java interpreter is required for this test")
     def test_export_tau_profile(self):
         self.reset_project_storage(['--profile', 'tau', '--trace', 'none'])
+        util.mkdirp(os.getcwd())
         expr = Project.selected().experiment()
         meas = expr.populate('measurement')
         self.assertEqual(meas['profile'], 'tau')
