@@ -101,7 +101,6 @@ class LocalFileStorage(AbstractStorage):
         self._db_copy = None
         self._database = None
         self._prefix = prefix
-        self.dbfile = None
 
     def __len__(self):
         return self.count()
@@ -178,7 +177,6 @@ class LocalFileStorage(AbstractStorage):
         """Open the database for reading and writing."""
         if self._database is None:
             util.mkdirp(self.prefix)
-            self.dbfile = os.path.join(self.prefix, self.name + '.json')
             try:
                 storage = CachingMiddleware(_JsonFileStorage)
                 storage.WRITE_CACHE_SIZE = 0
