@@ -16,3 +16,7 @@ coverage:
           - '!gh-pages'
         target: auto
         threshold: 0.5
+# Codecov is incorrectly detecting low coverage for these files because
+# it is not considering both runs of the tests
+ignore:
+    - packages/taucmdr/cf/storage/sqlite3*
