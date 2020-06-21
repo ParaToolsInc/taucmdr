@@ -497,9 +497,9 @@ class MeasurementController(Controller):
     """Measurement data controller."""
 
     def delete(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
         from taucmdr.error import ImmutableRecordError
         from taucmdr.model.experiment import Experiment
-        from taucmdr.model.measurement import Measurement
         changing = self.search(keys, context=context)
         for model in changing:
             expr_ctrl = Experiment.controller()

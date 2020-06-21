@@ -155,7 +155,7 @@ class Experiment(Model):
     def controller(cls, storage=PROJECT_STORAGE):
         if Project.selected():
             context = [('project', Project.selected().eid),
-                    ('projects', Project.selected().eid)]
+                       ('projects', Project.selected().eid)]
         else:
             # use a value that will never exist to block all
             context = [('project', 'Undefined')]
