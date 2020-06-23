@@ -36,13 +36,13 @@ from __future__ import absolute_import
 import os
 import json
 import tempfile
+import six
 import tinydb
 from tinydb import operations
 from tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
-import six
 
 LOGGER = logger.get_logger(__name__)
 
@@ -156,7 +156,7 @@ class LocalFileStorage(AbstractStorage):
         if not os.access(self.prefix, os.W_OK):
             return False
         try:
-            with tempfile.NamedTemporaryFile(dir=self.prefix, delete=True) as tmp_file:
+            with tempfile.NamedTemporaryFile(mode="w", dir=self.prefix, delete=True) as tmp_file:
                 tmp_file.write("Write test. Delete this file.")
         except (OSError, IOError):
             return False

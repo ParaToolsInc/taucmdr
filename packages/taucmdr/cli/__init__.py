@@ -43,12 +43,12 @@ a subclass of :any:`AbstractCommand`.
 from __future__ import absolute_import
 import os
 import sys
-from types import ModuleType
+#from types import ModuleType
+import six
+from six.moves import range
 from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError
-import six
-from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)

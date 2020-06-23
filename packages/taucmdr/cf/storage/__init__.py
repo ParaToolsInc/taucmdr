@@ -37,8 +37,8 @@ The key/value store is accessed via the `[]` operator, i.e. treat the storage ob
 
 from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
-from taucmdr.error import Error
 import six
+from taucmdr.error import Error
 
 
 class StorageError(Error):
@@ -56,7 +56,7 @@ class StorageRecord(dict):
         storage: Storage container whose database contains this record.
         eid: Element identifier value.
     """
-    eid_type = str
+    eid_type = None
 
     def __init__(self, storage, eid, element):
         super(StorageRecord, self).__init__(element)

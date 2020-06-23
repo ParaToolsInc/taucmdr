@@ -103,7 +103,8 @@ def tmpfs_prefix():
             # Check execute privileges some distros mount tmpfs with the noexec option.
             check_exe_script = None
             try:
-                with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:
+                with tempfile.NamedTemporaryFile(
+                        mode="w", dir=tmp_prefix, delete=False) as tmp_file:
                     check_exe_script = tmp_file.name
                     tmp_file.write("#!/bin/sh\nexit 0")
                 os.chmod(check_exe_script, S_IRUSR | S_IWUSR | S_IEXEC)
@@ -417,7 +418,7 @@ class Installation(object):
         except IOError as err:
             if reuse_archive:
                 LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
-                return self._prepare_src(reuse_archive=False)
+                return str(self._prepare_src(reuse_archive=False))
             raise ConfigurationError("Cannot extract source archive '{}': {}".format(archive, err),
                                      "Check that the file or directory is accessible")
 

@@ -168,7 +168,7 @@ def _get_term_size_posix():
             import fcntl
             import termios
             import struct
-            dims = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+            dims = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, b'1234'))
         except:     # pylint: disable=bare-except
             return None
         # pylint: disable=invalid-sequence-index

@@ -85,7 +85,7 @@ def _guess_filetype(filename):
     filetype = mimetypes.guess_type(filename)
     if not filetype[0]:
         textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(list(range(0x20, 0x100)))
-        with open(filename) as fd:
+        with open(filename,mode='rb') as fd:
             if fd.read(1024).translate(None, textchars):
                 filetype = ('application/unknown', None)
             else:

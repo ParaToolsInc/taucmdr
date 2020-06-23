@@ -815,8 +815,10 @@ print(find_version())
             pattern = re.compile(r'.*=> (.*libpython[23a-z]\.\d.so[0-9\.]+)')
             pythonlib = pattern.search(out, re.MULTILINE)
             if pythonlib is not None:
-                pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
-                pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
+                # group 1 is the path plus the file file where python is stored
+                pythonlib = str(pythonlib.group(1))
+                # pythonlib should just be the directory, not the file
+                pythonlib = os.fsencode(os.path.dirname(pythonlib))
             else:
                 print('output of ldd', out)
                 raise InternalError('output of ldd %s failed to match regex' % path)
@@ -1398,17 +1400,18 @@ print(find_version())
         return retval
 
     def _rewrite_launcher_appfile_cmd(self, cmd, tau_exec):
-        launcher = cmd[0]
+        launcher = os.fsencode(cmd[0])
+        appfile_flags = []
         appfile_flags = PROGRAM_LAUNCHERS.get(launcher)
         if not appfile_flags:
             raise InternalError("Application configuration file flags for '%s' are unknown" % launcher)
         for i, flag in enumerate(cmd[1:], 1):
             try:
-                flag, appfile = flag.split('=')
+                flag, appfile = str(flag.split('='))
                 with_equals = True
             except ValueError:
                 try:
-                    appfile = cmd[i+1]
+                    appfile = str(cmd[i+1])
                     with_equals = False
                 except IndexError:
                     raise InternalError("Unable to parse application configuration file in '%s'" % cmd)

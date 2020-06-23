@@ -121,6 +121,7 @@ class ConfigurationError(Error):
             *hints: Hint messages to help the user resolve this error.
         """
         if not hints:
+            hints = list()
             hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
         super(ConfigurationError, self).__init__(value, *hints)
 

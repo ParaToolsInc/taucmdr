@@ -83,7 +83,7 @@ class PapiInstallation(AutotoolsInstallation):
 
     def make(self, flags):
         # PAPI's tests often fail to compile, so disable them.
-        for line in fileinput.input(os.path.join(self._src_prefix, 'Makefile'), inplace=1):
+        for line in fileinput.input(os.path.join(os.fsencode(self._src_prefix), 'Makefile'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
         super(PapiInstallation, self).make(flags)

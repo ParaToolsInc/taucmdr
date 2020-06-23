@@ -29,7 +29,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-from types import NoneType
+# from types import NoneType
 from taucmdr import util, logger
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
@@ -98,7 +98,7 @@ class ProjectListCommand(ListCommand):
                     print("{}.  Use `{}` to view available {}.\n".format(label, cmd, prop))
             try:
                 expr = proj.experiment()
-                if not isinstance(expr, NoneType):
+                if expr:
                     print(util.color_text("Selected Experiment: ", 'cyan') + expr['name'])
             except ExperimentSelectionError:
                 print(util.color_text('No selected experiment: ', 'red') +

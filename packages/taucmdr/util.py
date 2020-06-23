@@ -104,7 +104,7 @@ def calculate_uid(parts):
     """
     uid = hashlib.sha1()
     for part in parts:
-        uid.update(part)
+        uid.update(part.encode("utf-8"))
     digest = uid.hexdigest()
     LOGGER.debug("UID: (%s): %s", digest, parts)
     return digest[:8]
@@ -334,7 +334,6 @@ def archive_toplevel(archive):
             if dirs:
                 topdir = min(dirs, key=len)
             else:
-                dirs = set()
                 names = [d.name for d in fin.getmembers() if d.isfile()]
                 for name in names:
                     dirname, basename = os.path.split(name)
@@ -343,7 +342,7 @@ def archive_toplevel(archive):
                     dirs.add(basename)
                 topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-        return topdir
+        return topdir.encode("utf-8")
 
 
 def _show_extract_progress(members):
@@ -407,7 +406,7 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
         try:
             if fmt == 'zip':
                 with ZipFile(dest, 'w') as archive:
-                    archive.comment = "Created by TAU Commander"
+                    archive.comment = b"Created by TAU Commander"
                     for item in items:
                         archive.write(item)
             elif fmt in ('tar', 'tgz', 'tar.bz2'):
@@ -464,7 +463,6 @@ def path_accessible(path, mode='r'):
         finally:
             if handle:
                 handle.close()
-        return False
 
 # pylint: disable=unused-argument
 @contextmanager
@@ -562,7 +560,7 @@ def get_command_output(cmd):
     get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
-    return stdout
+    return stdout.decode("utf-8")
 
 
 def page_output(output_string):

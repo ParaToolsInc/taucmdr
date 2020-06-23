@@ -276,8 +276,9 @@ class ProgressIndicator(object):
                 eta = '(unknown)'
             else:
                 time_remaining = (tdelta / completed) * (self.total_size - completed)
-                eta = datetime.now() + timedelta(seconds=time_remaining)
-                eta = '%s-%s-%s %02d:%02d' % (eta.year, eta.month, eta.day, eta.hour, eta.minute)
+                etadate = datetime.now() + timedelta(seconds=time_remaining)
+                eta = '%s-%s-%s %02d:%02d' % (
+                    etadate.year, etadate.month, etadate.day, etadate.hour, etadate.minute)
             width = self._line_remaining - 4 - len(eta)
             self._draw_bar(percent, width, '>', 'green', 'on_green')
             self._line_append("] %s" % eta)

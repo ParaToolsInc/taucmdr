@@ -433,7 +433,6 @@ class ListCommand(AbstractCliView):
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
 
-        context = True
         if args.project:
             matching = Project.controller().one({'name': args.project})
             if matching:
@@ -441,6 +440,8 @@ class ListCommand(AbstractCliView):
                 context = [('project', matching.eid), ('projects', matching.eid)]
             else:
                 LOGGER.debug("Project %s not found", args.project)
+        else:
+            context = True
 
         return self._list_records([l.name for l in storage_levels], keys, style, context=context)
 

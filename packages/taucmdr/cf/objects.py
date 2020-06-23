@@ -67,7 +67,7 @@ class TrackedInstance(object):
 
     def __new__(cls, *args, **kwargs):
         """Ensure that __instances__ is set and track new instances."""
-        instance = object()
+        instance = object.__new__(cls)
         if "__instances__" not in cls.__dict__:
             cls.__instances__ = set()
         cls.__instances__.add(instance)

@@ -100,19 +100,19 @@ class BinutilsInstallation(AutotoolsInstallation):
     def make_install(self, flags):
         super(BinutilsInstallation, self).make_install(flags)
         LOGGER.debug("Copying missing BFD headers")
-        for hdr in glob.glob(os.path.join(self._src_prefix, 'bfd', '*.h')):
+        for hdr in glob.glob(os.path.join(os.fsencode(self._src_prefix), 'bfd', '*.h')):
             shutil.copy(hdr, self.include_path)
-        for hdr in glob.glob(os.path.join(self._src_prefix, 'include', '*')):
+        for hdr in glob.glob(os.path.join(os.fsencode(self._src_prefix), 'include', '*')):
             try:
                 shutil.copy(hdr, self.include_path)
             except IOError:
                 dst = os.path.join(self.include_path, os.path.basename(hdr))
                 shutil.copytree(hdr, dst)
         LOGGER.debug("Copying missing libiberty libraries")
-        shutil.copy(os.path.join(self._src_prefix, 'libiberty', 'libiberty.a'), self.lib_path)
-        shutil.copy(os.path.join(self._src_prefix, 'opcodes', 'libopcodes.a'), self.lib_path)
+        shutil.copy(os.path.join(os.fsencode(self._src_prefix), 'libiberty', 'libiberty.a'), self.lib_path)
+        shutil.copy(os.path.join(os.fsencode(self._src_prefix), 'opcodes', 'libopcodes.a'), self.lib_path)
         LOGGER.debug("Fixing BFD header")
-        for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=1):
+        for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0'))
 
