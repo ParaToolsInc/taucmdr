@@ -39,10 +39,7 @@ import unittest
 from unittest import skipIf, skipUnless
 from taucmdr.util import get_command_output
 import warnings
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from io import StringIO
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler

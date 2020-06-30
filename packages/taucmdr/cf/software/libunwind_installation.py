@@ -75,7 +75,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
         if self.target_arch is IBM_BGQ:
             flags.append('--disable-shared')
-            for line in fileinput.input(os.path.join(os.fsencode(self._src_prefix),
+            for line in fileinput.input(os.path.join(str(self._src_prefix),
                                                      'src', 'unwind', 'Resume.c'), inplace=True):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
@@ -85,7 +85,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             flags.append('--disable-shared')
             flags.append('--disable-minidebuginfo')
         # If needed, fix test so `make install` succeeds more frequently.
-        crasher_c = os.path.join(os.fsencode(self._src_prefix), 'tests', 'crasher.c')
+        crasher_c = os.path.join(str(self._src_prefix), 'tests', 'crasher.c')
         if os.path.exists(crasher_c):
             for line in fileinput.input(crasher_c, inplace=True):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
@@ -114,6 +114,6 @@ class LibunwindInstallation(AutotoolsInstallation):
     def installation_sequence(self):
         if self.target_arch is ARM64:
             LOGGER.info("Using pre-built libunwind package from U. Oregon Performance Research Laboratory")
-            shutil.move(os.fsencode(self._src_prefix), self.install_prefix)
+            shutil.move(str( self._src_prefix), self.install_prefix)
         else:
             super(LibunwindInstallation, self).installation_sequence()

@@ -142,7 +142,7 @@ class AbstractStorage(six.with_metaclass(ABCMeta, object)):
         """Close the database for reading and writing."""
 
     @abstractmethod
-    def prefix(self):
+    def prefix(self) -> str:
         """Get the filesystem prefix for file storage.
 
         The filesystem must be persistent and provide the usual POSIX filesystem calls.

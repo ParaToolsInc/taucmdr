@@ -246,11 +246,11 @@ class Installation(object):
     @property
     def uid(self):
         if self._uid is None:
-            self._uid = util.calculate_uid(self.uid_items())
+            self._uid = str(util.calculate_uid(self.uid_items()))
         return self._uid
 
     def _get_install_tag(self):
-        return self.uid
+        return str(self.uid)
 
     def _get_install_prefix(self):
         if not self._install_prefix:
@@ -261,7 +261,7 @@ class Installation(object):
                 # Search the storage hierarchy for an existing installation
                 for storage in reversed(ORDERED_LEVELS):
                     try:
-                        self._set_install_prefix(os.path.join(storage.prefix, self.name, tag))
+                        self._set_install_prefix(str(os.path.join(storage.prefix, self.name, tag)))
                         self.verify()
                     except (StorageError, SoftwarePackageError) as err:
                         LOGGER.debug(err)
@@ -276,7 +276,7 @@ class Installation(object):
 
     def _set_install_prefix(self, value):
         assert value is not None
-        self._install_prefix = value
+        self._install_prefix = str(value)
 
     @property
     def install_prefix(self):
@@ -337,7 +337,7 @@ class Installation(object):
                 except StorageError:
                     continue
                 if os.path.exists(archive):
-                    return archive
+                    return str(archive)
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
         try:
@@ -347,7 +347,7 @@ class Installation(object):
                      "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
                      "Check that the file or directory is accessible")
             raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
-        return archive
+        return str(archive)
 
     def acquire_source(self, reuse_archive=True):
         """Acquires package source code archive file via download or file copy.
@@ -367,7 +367,7 @@ class Installation(object):
         if not self.src:
             raise ConfigurationError("No source code provided for %s" % self.title)
         if self.unmanaged:
-            return self.src
+            return str(self.src)
         # Check that archive is valid by getting archive top-level directory
         while self.src:
             archive = self._acquire_source(reuse_archive)
@@ -378,7 +378,7 @@ class Installation(object):
                     archive = self.acquire_source(reuse_archive=False)
                     try:
                         util.archive_toplevel(archive)
-                        return archive
+                        return str(archive)
                     except IOError:
                         pass
                 try:
@@ -388,7 +388,7 @@ class Installation(object):
                 except IndexError:
                     self.src = None
             else:
-                return archive
+                return str(archive)
         if self.src is None:
             raise ConfigurationError(
                 "Unable to acquire {} source package '{}'".format(self.name, ', '.join(self.srcs_avail))

@@ -104,14 +104,14 @@ def calculate_uid(parts):
     """
     uid = hashlib.sha1()
     for part in parts:
-        uid.update(part.encode("utf-8"))
-    digest = uid.hexdigest()
+        uid.update(bytes(str(part), encoding='utf-8'))
+    digest = str(uid.hexdigest())
     LOGGER.debug("UID: (%s): %s", digest, parts)
     return digest[:8]
 
 def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
-    path = tempfile.mkdtemp(*args, **kwargs)
+    path = str(tempfile.mkdtemp(*args, **kwargs))
     _DTEMP_STACK.append(path)
     return path
 
@@ -120,7 +120,7 @@ def copy_file(src, dest, show_progress=True):
     """Works just like :any:`shutil.copy` except with progress bars."""
     context = ProgressIndicator if show_progress else _null_context
     with context(""):
-        shutil.copy(src, dest)
+        shutil.copy(str(src), str(dest))
 
 
 def mkdirp(*args):
@@ -143,7 +143,7 @@ def mkdirp(*args):
                     raise
 
 def add_error_stack(path):
-    _DTEMP_ERROR_STACK.append(path)
+    _DTEMP_ERROR_STACK.append(str(path))
 
 def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
@@ -198,30 +198,31 @@ def which(program, use_cached=True):
     """
     if not program:
         return None
-    assert isinstance(program, six.string_types)
+    prog_enc = str(str(program))
+    assert isinstance(prog_enc, six.string_types)
     if use_cached:
         try:
-            return _WHICH_CACHE[program]
+            return str(_WHICH_CACHE[prog_enc])
         except KeyError:
             pass
     _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-    fpath, _ = os.path.split(program)
+    fpath, _ = os.path.split(prog_enc)
     if fpath:
-        abs_program = os.path.abspath(program)
+        abs_program = os.path.abspath(prog_enc)
         if _is_exec(abs_program):
-            LOGGER.debug("which(%s) = '%s'", program, abs_program)
-            _WHICH_CACHE[program] = abs_program
-            return abs_program
+            LOGGER.debug("which(%s) = '%s'", prog_enc, abs_program)
+            _WHICH_CACHE[prog_enc] = abs_program
+            return str(abs_program)
     else:
         for path in os.environ['PATH'].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
+            path = str(path.strip('"'))
+            exe_file = os.path.join(path, prog_enc)
             if _is_exec(exe_file):
-                LOGGER.debug("which(%s) = '%s'", program, exe_file)
-                _WHICH_CACHE[program] = exe_file
-                return exe_file
-    _heavy_debug("which(%s): command not found", program)
-    _WHICH_CACHE[program] = None
+                LOGGER.debug("which(%s) = '%s'", prog_enc, exe_file)
+                _WHICH_CACHE[prog_enc] = exe_file
+                return str(exe_file)
+    _heavy_debug("which(%s): command not found", prog_enc)
+    _WHICH_CACHE[prog_enc] = None
     return None
 
 
@@ -239,9 +240,11 @@ def download(src, dest, timeout=8):
     Raises:
         IOError: File copy or download failed.
     """
+    src = str(str(src))
+    dest = str(dest)
     assert isinstance(timeout, int) and timeout >= 0
     if src.startswith('file://'):
-        src = src[6:]
+        src = str(src[6:])
     if os.path.isfile(src):
         LOGGER.debug("Copying '%s' to '%s'", src, dest)
         mkdirp(os.path.dirname(dest))
@@ -251,7 +254,7 @@ def download(src, dest, timeout=8):
         LOGGER.info("Downloading '%s'", src)
         mkdirp(os.path.dirname(dest))
         for cmd in "curl", "wget":
-            abs_cmd = which(cmd)
+            abs_cmd = str(which(cmd))
             if abs_cmd and _create_dl_subprocess(abs_cmd, src, dest, timeout) == 0:
                 return
             LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)
@@ -267,10 +270,10 @@ def download(src, dest, timeout=8):
 
 
 def _create_dl_subprocess(abs_cmd, src, dest, timeout):
-    if "curl" in os.path.basename(abs_cmd):
+    if "curl" in str(os.path.basename(abs_cmd)):
         size_cmd = [abs_cmd, '-sI', src, '--location', '--max-time', str(timeout)]
         get_cmd = [abs_cmd, '-s', '-L', src, '-o', dest, '--connect-timeout', str(timeout)]
-    elif "wget" in os.path.basename(abs_cmd):
+    elif "wget" in str(os.path.basename(abs_cmd)):
         size_cmd = [abs_cmd, src, '--spider', '--server-response', '--timeout=%d' % timeout, '--tries=1']
         get_cmd = [abs_cmd, '-q', src, '-O', dest, '--timeout=%d' % timeout]
     else:
@@ -328,21 +331,21 @@ def archive_toplevel(archive):
         raise IOError
     else:
         if fin.firstmember.isdir():
-            topdir = fin.firstmember.name
+            topdir = str(fin.firstmember.name)
         else:
-            dirs = [d.name for d in fin.getmembers() if d.isdir()]
+            dirs = [str(d.name) for d in fin.getmembers() if d.isdir()]
             if dirs:
                 topdir = min(dirs, key=len)
             else:
-                names = [d.name for d in fin.getmembers() if d.isfile()]
+                names = [str(d.name) for d in fin.getmembers() if d.isfile()]
                 for name in names:
                     dirname, basename = os.path.split(name)
                     while dirname:
                         dirname, basename = os.path.split(dirname)
-                    dirs.add(basename)
+                    dirs.add(str(basename))
                 topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-        return topdir.encode("utf-8")
+        return str(topdir)
 
 
 def _show_extract_progress(members):
@@ -556,11 +559,11 @@ def get_command_output(cmd):
     else:
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
-    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    stdout = str(subprocess.check_output(cmd, stderr=subprocess.STDOUT), encoding='utf-8')
     get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
-    return stdout.decode("utf-8")
+    return stdout
 
 
 def page_output(output_string):
@@ -716,7 +719,11 @@ def walk_packages(path, prefix):
     they are in a zip file.  This implementation works around this.
     """
     def seen(path, dct={}):     # pylint: disable=dangerous-default-value
-        if path in dct:
+        path = str(path, encoding='utf-8')
+        print(path)
+        print(str(path))
+        print(repr(path))
+        if str(path) in dct:
             return True
         dct[path] = True
     for importer, name, ispkg in _iter_modules(path, prefix):
@@ -755,6 +762,10 @@ def _zipimporter_iter_modules(archive, path):
 def _iter_modules(paths, prefix):
     # pylint: disable=no-member
     yielded = {}
+    print(paths)
+    print(prefix)
+    print(str(paths))
+    print(str(prefix))
     for path in paths:
         importer = pkgutil.get_importer(path)
         if isinstance(importer, zipimporter):

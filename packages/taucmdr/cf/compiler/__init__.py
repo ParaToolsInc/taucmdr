@@ -66,14 +66,13 @@ change from system to system.
 from __future__ import absolute_import
 import os
 import re
-import stat
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
+import six
 from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord
-import six
 
 
 LOGGER = logger.get_logger(__name__)

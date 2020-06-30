@@ -500,7 +500,7 @@ class TauInstallation(Installation):
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in six.itervalues(self.compilers)))
+        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
             if getattr(self, 'uses_'+pkg):
@@ -818,7 +818,7 @@ print(find_version())
                 # group 1 is the path plus the file file where python is stored
                 pythonlib = str(pythonlib.group(1))
                 # pythonlib should just be the directory, not the file
-                pythonlib = os.fsencode(os.path.dirname(pythonlib))
+                pythonlib = str(os.path.dirname(pythonlib))
             else:
                 print('output of ldd', out)
                 raise InternalError('output of ldd %s failed to match regex' % path)
@@ -1400,7 +1400,7 @@ print(find_version())
         return retval
 
     def _rewrite_launcher_appfile_cmd(self, cmd, tau_exec):
-        launcher = os.fsencode(cmd[0])
+        launcher = str(cmd[0])
         appfile_flags = []
         appfile_flags = PROGRAM_LAUNCHERS.get(launcher)
         if not appfile_flags:

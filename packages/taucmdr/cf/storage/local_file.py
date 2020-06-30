@@ -71,7 +71,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
         try:
             super(_JsonFileStorage, self).__init__(path)
         except IOError:
-            self.path = path
+            self.path = str(path)
             self._handle = open(path, 'r')
             self.readonly = True
             LOGGER.debug("'%s' opened read-only", path)
@@ -102,7 +102,7 @@ class LocalFileStorage(AbstractStorage):
         self._transaction_count = 0
         self._db_copy = None
         self._database = None
-        self._prefix = prefix
+        self._prefix = str(prefix)
 
     def __len__(self):
         return self.count()
@@ -202,12 +202,12 @@ class LocalFileStorage(AbstractStorage):
 
     @property
     def prefix(self):
-        return self._prefix
+        return str(self._prefix)
 
     def __str__(self):
         """Human-readable identifier for this database."""
         # pylint: disable=protected-access
-        return self._database._storage.path
+        return str(self._database._storage.path)
 
     def __enter__(self):
         """Initiates the database transaction."""
