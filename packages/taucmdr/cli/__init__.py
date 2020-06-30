@@ -42,6 +42,7 @@ a subclass of :any:`AbstractCommand`.
 
 from __future__ import absolute_import
 import os
+import pkgutil
 import sys
 #from types import ModuleType
 import six
@@ -144,7 +145,7 @@ def _get_commands(package_name):
 
     __import__(COMMANDS_PACKAGE_NAME)
     command_module = sys.modules[COMMANDS_PACKAGE_NAME]
-    for _, module, _ in util.walk_packages(command_module.__path__, prefix=command_module.__name__+'.'):
+    for _, module, _ in pkgutil.walk_packages(command_module.__path__, prefix=command_module.__name__+'.'):
         if not (module.endswith('__main__') or '.tests' in module):
             try:
                 lookup(_command_as_list(module), _COMMANDS)

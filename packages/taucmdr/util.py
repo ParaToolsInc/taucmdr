@@ -711,54 +711,6 @@ def uncolor_text(text):
     return re.sub(_COLOR_CONTROL_RE, '', text)
 
 
-def walk_packages(path, prefix):
-    """Fix :any:`pkgutil.walk_packages` to work with Python zip files.
-
-    Python's default :any:`zipimporter` doesn't provide an `iter_modules` method so
-    :any:`pkgutil.walk_packages` silently fails to list modules and packages when
-    they are in a zip file.  This implementation works around this.
-    """
-    def seen(path, dct={}):     # pylint: disable=dangerous-default-value
-        path = str(path, encoding='utf-8')
-        print(path)
-        print(str(path))
-        print(repr(path))
-        if str(path) in dct:
-            return True
-        dct[path] = True
-    for importer, name, ispkg in _iter_modules(path, prefix):
-        yield importer, name, ispkg
-        if ispkg:
-            __import__(name)
-            path = getattr(sys.modules[name], '__path__', None) or []
-            path = [p for p in path if not seen(p)]
-            for item in walk_packages(path, name+'.'):
-                yield item
-
-
-def _zipimporter_iter_modules(archive, path):
-    """The missing zipimporter.iter_modules method."""
-    libdir, _, pkgpath = path.partition(archive + os.sep)
-    with ZipFile(os.path.join(libdir, archive)) as zipfile:
-        namelist = zipfile.namelist()
-
-    def iter_modules(prefix):
-        for fname in namelist:
-            fname, ext = os.path.splitext(fname)
-            if ext in _PY_SUFFEXES:
-                extrapath, _, modname = fname.partition(pkgpath + os.sep)
-                if extrapath or modname == '__init__':
-                    continue
-                pkgname, modname = os.path.split(modname)
-                if pkgname:
-                    if os.sep in pkgname:
-                        continue
-                    yield prefix + pkgname, True
-                else:
-                    yield prefix + modname, False
-    return iter_modules
-
-
 def _iter_modules(paths, prefix):
     # pylint: disable=no-member
     yielded = {}
