@@ -44,8 +44,13 @@ MKDIR = mkdir -p
 
 VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
 
-# Override this with 3 to test with Python 3
-PY_MAJ_VERSION ?= 2
+# Override this with 2 to test with Python 2.7
+PY_MAJ_VERSION ?= 3
+
+# Allow INSTALL_DIR too
+ifneq ($(INSTALL_DIR),)
+        INSTALLDIR ?= $(INSTALL_DIR)
+endif
 
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
