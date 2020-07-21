@@ -1,4 +1,3 @@
-# The last two jobs, unit testing and runnng TAU=full installation wait until the first finishes and re-uses the TAU=minimal install
 # Unfortunately, there is a lot of duplicated code that could be simplified/eliminated with YAML anchors and aliases,
 # but GitHub Actions does not yet support YAML anchors and aliases.
 # Clever use of global environment variables could help eliminate some of it, but the best options would be to just use aliases and anchors
@@ -21,6 +20,7 @@ env:
 
 jobs:
   Install-taucmdr-minimal:
+    name: Install and Test TAU Commander
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -37,12 +37,6 @@ jobs:
         run: |
           sudo apt-get update -qq || true
           sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v1
-      #   with:
-      #     python-version: '3.6'
-      #     architecture: 'x64'
 
       - name: System info
         id: info
@@ -94,155 +88,6 @@ jobs:
           name: taucmdr-installation-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
 
-  Install-taucmdr-full:
-    needs: Install-taucmdr-minimal
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
-        python_version: ['2.7']
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 9999
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v1
-      #   with:
-      #     python-version: '3.6'
-      #     architecture: 'x64'
-
-      - name: System info
-        id: info
-        run: |
-          uname -a
-          mount
-          gcc --version
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref:        ${{ github.ref }}"
-          echo "matrix.os:         ${{ matrix.os }}"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "::set-output name=install_dir::${INSTALLDIR}"
-          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
-          echo "::set-output name=home_dir::${HOME}"
-          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::add-path::${INSTALLDIR}/conda/bin"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-
-      - name: Cache TAU sources
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.taucmdr_system}}/src
-          key: ${{ matrix.os }}-system-src-${{ github.sha }}
-          restore-keys: |
-            ${{ matrix.os }}-system-src-
-
-      - name: Download installed TAU Commander
-        uses: actions/download-artifact@v1
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}
-
-      - name: Extract TAU minimal install
-        run: |
-          cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
-
-      - name: Install Full TAU
-        run: ${{ steps.info.outputs.taucmdr_system }}/configure
-
-      - name: Upload TAU Commander full-TAU install log
-        if: always()
-        uses: actions/upload-artifact@v1
-        with:
-          name: taucmdr-full-tau-debug-log-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
-
-      - name: tau_validate
-        if: always()
-        run: |
-          cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
-          printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
-          export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
-          ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
-          mkdir "${HOME}/tau-full-validate"
-          cp table.html results.html "${HOME}/tau-full-validate"
-
-      - name: Upload full-TAU validate
-        if: always()
-        uses: actions/upload-artifact@v1
-        with:
-          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
-          path: ${{ steps.info.outputs.home_dir }}/tau-full-validate
-
-  Unit-test-taucmdr:
-    needs: Install-taucmdr-minimal
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
-        python_version: ['2.7']
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 9999
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v1
-      #   with:
-      #     python-version: '3.6'
-      #     architecture: 'x64'
-
-      - name: System info
-        id: info
-        run: |
-          uname -a
-          mount
-          gcc --version
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref:        ${{ github.ref }}"
-          echo "matrix.os:         ${{ matrix.os }}"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "::set-output name=install_dir::${INSTALLDIR}"
-          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
-          echo "::set-output name=home_dir::${HOME}"
-          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::add-path::${INSTALLDIR}/conda/bin"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-
-      - name: Cache TAU sources
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.taucmdr_system}}/src
-          key: ${{ matrix.os }}-system-src-${{ github.sha }}
-          restore-keys: |
-            ${{ matrix.os }}-system-src-
-
-      - name: Download installed TAU Commander
-        uses: actions/download-artifact@v1
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}
-
-      - name: Extract TAU minimal install
-        run: |
-          cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
-
       - name: Test TAU Commander
         run: coverage run setup.py test
 
@@ -285,3 +130,140 @@ jobs:
         with:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
+
+  # Install-taucmdr-full:
+  #   needs: Install-taucmdr-minimal
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: true
+  #     matrix:
+  #       os: [ubuntu-18.04, ubuntu-16.04]
+  #       python_version: ['2.7']
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 9999
+
+  #     - name: Install system packages
+  #       run: |
+  #         sudo apt-get update -qq || true
+  #         sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
+
+  #     - name: System info
+  #       id: info
+  #       run: |
+  #         uname -a
+  #         mount
+  #         gcc --version
+  #         echo "github.event_name: ${{ github.event_name }}"
+  #         echo "github.ref:        ${{ github.ref }}"
+  #         echo "matrix.os:         ${{ matrix.os }}"
+  #         export INSTALLDIR="${HOME}/${INSTALLDIR}"
+  #         echo "::set-output name=install_dir::${INSTALLDIR}"
+  #         echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
+  #         echo "::set-output name=home_dir::${HOME}"
+  #         echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+  #         echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+  #         echo "::add-path::${INSTALLDIR}/conda/bin"
+  #         export PATH="${INSTALLDIR}/conda/bin:${PATH}"
+
+  #     - name: Cache TAU sources
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: ${{ steps.info.outputs.taucmdr_system}}/src
+  #         key: ${{ matrix.os }}-system-src-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ matrix.os }}-system-src-
+
+  #     - name: Download installed TAU Commander
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: taucmdr-installation-${{ matrix.os }}
+  #         path: ${{ steps.info.outputs.home_dir }}
+
+  #     - name: Extract TAU minimal install
+  #       run: |
+  #         cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
+
+  #     - name: Install Full TAU
+  #       run: ${{ steps.info.outputs.taucmdr_system }}/configure
+
+  #     - name: Upload TAU Commander full-TAU install log
+  #       if: always()
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: taucmdr-full-tau-debug-log-${{ matrix.os }}
+  #         path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+
+  #     - name: tau_validate
+  #       if: always()
+  #       run: |
+  #         cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
+  #         printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
+  #         export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
+  #         ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
+  #         mkdir "${HOME}/tau-full-validate"
+  #         cp table.html results.html "${HOME}/tau-full-validate"
+
+  #     - name: Upload full-TAU validate
+  #       if: always()
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
+  #         path: ${{ steps.info.outputs.home_dir }}/tau-full-validate
+
+  # Unit-test-taucmdr:
+  #   needs: Install-taucmdr-minimal
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-18.04, ubuntu-16.04]
+  #       python_version: ['2.7']
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 9999
+
+  #     - name: Install system packages
+  #       run: |
+  #         sudo apt-get update -qq || true
+  #         sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
+
+  #     - name: System info
+  #       id: info
+  #       run: |
+  #         uname -a
+  #         mount
+  #         gcc --version
+  #         echo "github.event_name: ${{ github.event_name }}"
+  #         echo "github.ref:        ${{ github.ref }}"
+  #         echo "matrix.os:         ${{ matrix.os }}"
+  #         export INSTALLDIR="${HOME}/${INSTALLDIR}"
+  #         echo "::set-output name=install_dir::${INSTALLDIR}"
+  #         echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
+  #         echo "::set-output name=home_dir::${HOME}"
+  #         echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+  #         echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+  #         echo "::add-path::${INSTALLDIR}/conda/bin"
+  #         export PATH="${INSTALLDIR}/conda/bin:${PATH}"
+
+  #     - name: Cache TAU sources
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: ${{ steps.info.outputs.taucmdr_system}}/src
+  #         key: ${{ matrix.os }}-system-src-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ matrix.os }}-system-src-
+
+  #     - name: Download installed TAU Commander
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: taucmdr-installation-${{ matrix.os }}
+  #         path: ${{ steps.info.outputs.home_dir }}
+
+  #     - name: Extract TAU minimal install
+  #       run: |
+  #         cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
