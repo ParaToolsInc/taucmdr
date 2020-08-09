@@ -420,15 +420,15 @@ class TauInstallation(Installation):
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
         self.uses_python = False
-        self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
-        self.uses_binutils = not minimal and (self.target_os is not DARWIN)
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
-        self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
-        self.uses_scorep = not minimal and (self.profile == 'cubex')
-        self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
+        self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support) and ('pdt' in sources)
+        self.uses_binutils = not minimal and (self.target_os is not DARWIN) and ('binutils' in sources)
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and ( 'libunind' in sources)
+        self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met])) and ('papi' in sources)
+        self.uses_scorep = not minimal and (self.profile == 'cubex') and ('scorep' in sources)
+        self.uses_ompt = not minimal and (self.measure_openmp == 'ompt') and ('ompt' in sources)
         self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
-        self.uses_libotf2 = not minimal and (self.trace == 'otf2')
+        self.uses_libotf2 = not minimal and (self.trace == 'otf2') and ('libotf2' in sources)
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
         if 'TIME' not in self.metrics[0]:
             # TAU assumes the first metric is always some kind of wallclock timer
