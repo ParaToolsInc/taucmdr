@@ -221,7 +221,6 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
-		 sample_resolution=None,
                  sampling_period=0,
                  track_memory_footprint=False,
                  update_nightly=False,
@@ -413,7 +412,6 @@ class TauInstallation(Installation):
         self.ptts_report_flags = ptts_report_flags
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
-	self.sample_resolution = sample_resolution
         self.sampling_period = sampling_period
         self.track_memory_footprint = track_memory_footprint
         self.python_path = util.which('python')
@@ -1294,11 +1292,6 @@ print(find_version())
             else:
                 self.sampling_period = arch_period.get(self.target_arch, 10000)
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
-	    if self.sample_resolution:
-		env['TAU_EBS_RESOLUTION'] = self.sample_resolution
-	    else:
-		self.sample_resolution = 'line'
-		env['TAU_EBS_RESOLUTION'] = self.sample_resolution
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
         env['TAU_COMM_MATRIX'] = str(int(self.measure_comm_matrix))
