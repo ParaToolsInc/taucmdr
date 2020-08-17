@@ -155,7 +155,7 @@ class Experiment(Model):
     def controller(cls, storage=PROJECT_STORAGE):
         if Project.selected():
             context = [('project', Project.selected().eid),
-                    ('projects', Project.selected().eid)]
+                       ('projects', Project.selected().eid)]
         else:
             # use a value that will never exist to block all
             context = [('project', 'Undefined')]
@@ -329,6 +329,7 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+		    sample_resolution=measurement.get_or_default('sample_resolution'),
                     sampling_period=measurement.get_or_default('sampling_period'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
                     update_nightly=measurement.get_or_default('update_nightly'),
