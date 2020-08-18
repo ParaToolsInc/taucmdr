@@ -351,6 +351,16 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'sample_resolution': {
+            'type': 'string',
+            'default': 'line',
+            'description': 'sample resolution',
+            'argparse': {'flags': ('--sample-resolution',),
+                         'choices': ('file', 'function', 'line',),
+                         'metavar': 'file/function/line',
+                         'nargs': '?',},
+            'compat': {True: (Measurement.require('sample', True))}
+        },
         'sampling_period': {
             'type': 'integer',
             'default': 5000,
