@@ -79,14 +79,14 @@ jobs:
 
       - name: Upload TAU Commander install log
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload TAU Commander minimal install
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-installation-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
@@ -102,10 +102,17 @@ jobs:
 
       - name: Upload TAU Commander unit test log
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-unit-test-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+
+      - name: Upload Pylint report
+        if: always() && matrix.os == 'ubuntu-18.04'
+        uses: actions/upload-artifact@v2
+        with:
+          name: taucmdr-pylint-logs-${{ matrix.os }}
+          path: pylint.*
 
       - name: Upload Coverage info
         uses: codecov/codecov-action@v1.0.3
@@ -140,7 +147,7 @@ jobs:
 
       - name: Upload unit tests TAU validate
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
