@@ -90,7 +90,7 @@ jobs:
       - name: Install Full TAU
         run: |
           rm ~/.local/taucmdr/debug_log || true
-          ${{ steps.info.outputs.taucmdr_system }}/configure
+          TAU=full ${{ steps.info.outputs.taucmdr_system }}/configure
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
