@@ -33,6 +33,7 @@ Asserts that pylint score doesn't drop below minimum.
 import os
 import sys
 import subprocess
+import textwrap
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
@@ -60,12 +61,22 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
-        lint_log = open(os.path.join(TAUCMDR_HOME, "pylint.out"), "w")
-        lint_err = open(os.path.join(TAUCMDR_HOME, "pylint.err"), "w")
-        lint_log.write(str(stdout))
-        lint_err.write(str(stderr))
-        lint_log.close()
-        lint_err.close()
+        lint_msg_file = open(os.path.join(TAUCMDR_HOME, "pylint.md"), "w")
+        lint_msg = """## Pylint output
+
+### Errors
+
+```
+{error}
+```
+
+### Lint Results
+
+```
+{output}
+```""".format(error=stderr, output=stdout)
+        lint_msg_file.write(str(lint_msg))
+        lint_msg_file.close()
         self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])

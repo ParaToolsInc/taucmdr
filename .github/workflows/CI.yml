@@ -95,11 +95,6 @@ jobs:
         run: |
           rm -f ./coverage.xml || true
           coverage run setup.py test
-          printf '## Pylint output\n\n### Errors\n\n```\n' > pylint.md
-          cat pylint.err >> pylint.md
-          printf '```\n\n### Lint results\n\n```\n' >> pylint.md
-          cat pylint.out >> pylint.md
-          printf '```\n' >> pylint.md
 
       - name: Build sphinx docs
         run: python setup.py build_sphinx
@@ -132,7 +127,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           file: ./coverage.xml
-          flags: unittests
+          flags: unittests,CI
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: true # optional (default = false)
           path_to_write_report: codecov-upload.txt
