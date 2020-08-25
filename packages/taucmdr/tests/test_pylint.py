@@ -60,8 +60,8 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
-        lint_log = open("pylint.out", "w")
-        lint_err = open("pylint.err", "w")
+        lint_log = open(os.path.join(TAUCMDR_HOME, "pylint.out"), "w")
+        lint_err = open(os.path.join(TAUCMDR_HOME, "pylint.err"), "w")
         lint_log.write(str(stdout))
         lint_err.write(str(stderr))
         lint_log.close()
