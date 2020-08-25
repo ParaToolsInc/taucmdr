@@ -33,7 +33,7 @@ Asserts that pylint score doesn't drop below minimum.
 import os
 import sys
 import subprocess
-import textwrap
+import re
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
@@ -66,15 +66,24 @@ class PylintTest(tests.TestCase):
 
 ### Errors
 
+<details>
+  <summary> Click to expand </summary>
+
 ```
 {error}
 ```
 
+</details>
+
 ### Lint Results
+
+<details>
+  <summary> Click to expand </summary>
 
 ```
 {output}
-```""".format(error=stderr, output=stdout)
+
+</details>""".format(error=stderr, output=re.sub('^ *Report *$', '```\nReport', stdout, 1))
         lint_msg_file.write(str(lint_msg))
         lint_msg_file.close()
         self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
