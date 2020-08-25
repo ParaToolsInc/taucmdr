@@ -80,10 +80,11 @@ class PylintTest(tests.TestCase):
 <details>
   <summary> Click to expand </summary>
 
-```
+<pre>
+
 {output}
 
-</details>""".format(error=stderr, output=re.sub('^ *Report *$', '```\nReport', stdout, 1))
+</details>""".format(error=stderr, output=re.sub('Report', '</pre>\nReport\n', stdout, 1))
         lint_msg_file.write(str(lint_msg))
         lint_msg_file.close()
         self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
