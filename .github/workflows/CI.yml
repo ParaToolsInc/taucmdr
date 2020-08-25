@@ -95,6 +95,7 @@ jobs:
         run: |
           rm -f ./coverage.xml || true
           coverage run setup.py test
+          find . -name 'coverage.xml'
 
       - name: Build sphinx docs
         run: python setup.py build_sphinx
@@ -126,7 +127,7 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          file: ./coverage.xml
+          file: ${{ github.workspace }}/coverage.xml
           flags: unittests,CI
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: true # optional (default = false)
