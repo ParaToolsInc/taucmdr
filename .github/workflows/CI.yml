@@ -28,7 +28,9 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-16.04]
         python_version: ['2.7']
-
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -95,7 +97,7 @@ jobs:
         run: |
           rm -f ./coverage.xml || true
           coverage run setup.py test
-          find . -name 'coverage.xml'
+          coverage xml
 
       - name: Build sphinx docs
         run: python setup.py build_sphinx
@@ -126,13 +128,13 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          file: ${{ github.workspace }}/coverage.xml
+#          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+#          file: ${{ github.workspace }}/coverage.xml
           flags: unittests,CI
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: true # optional (default = false)
           path_to_write_report: codecov-upload.txt
-          env_vars: __TAUCMDR_PROGRESS_BARS__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
+          env_vars: OS,PYTHON,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
