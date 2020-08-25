@@ -95,10 +95,14 @@ jobs:
         run: |
           rm -f ./coverage.xml || true
           coverage run setup.py test
+          printf '## Pylint output\n\n### Errors\n\n```\n' > pylint.md
+          cat pylint.err >> pylint.md
+          printf '```\n\n### Lint results\n\n```\n' >> pylint.md
+          cat pylint.out >> pylint.md
+          printf '```\n' >> pylint.md
 
       - name: Build sphinx docs
-        run: |
-          python setup.py build_sphinx
+        run: python setup.py build_sphinx
 
       - name: Upload TAU Commander unit test log
         if: always()
@@ -112,16 +116,27 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: taucmdr-pylint-logs-${{ matrix.os }}
-          path: pylint.*
+          path: pylint.md
+
+      - name: Pylint PR Comment
+        if: github.event_name == 'pull_request'
+        uses: machine-learning-apps/pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: ./pylint.md
 
       - name: Upload Coverage info
-        uses: codecov/codecov-action@v1.0.3
         if: always()
+        uses: codecov/codecov-action@v1
         with:
-          token: ${{secrets.CODECOV_TOKEN}}
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           file: ./coverage.xml
           flags: unittests
           name: codecov-${{ matrix.os }}
+          fail_ci_if_error: true # optional (default = false)
+          path_to_write_report: codecov-upload.txt
+          env_vars: __TAUCMDR_PROGRESS_BARS__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
