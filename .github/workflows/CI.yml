@@ -120,7 +120,7 @@ jobs:
 
       - name: Pylint PR Comment
         if: github.event_name == 'pull_request'
-        uses: machine-learning-apps/pr-comment@v1
+        uses: machine-learning-apps/pr-comment@1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
