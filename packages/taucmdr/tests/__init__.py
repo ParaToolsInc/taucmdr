@@ -173,10 +173,7 @@ class TestCase(unittest.TestCase):
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
         self._result_stream = result.stream
-        push_test_workdir()
-        run_result = super(TestCase, self).run(result)
-        pop_test_workdir()
-        return run_result
+        return super(TestCase, self).run(result)
 
     def reset_project_storage(self, init_args=None):
         """Delete and recreate project storage.
