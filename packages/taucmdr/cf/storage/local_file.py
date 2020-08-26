@@ -32,6 +32,7 @@ A persistent, transactional record storage system using :py:class:`TinyDB` for
 both the database and the key/value store.
 """
 
+import copy
 import os
 import json
 import tempfile
@@ -43,7 +44,6 @@ from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
-
 
 
 class _JsonRecord(StorageRecord):
@@ -220,7 +220,7 @@ class LocalFileStorage(AbstractStorage):
         # pylint: disable=protected-access
         if self._transaction_count == 0:
             self.connect_database()
-            self._db_copy = self._database._read()
+            self._db_copy = copy.deepcopy(self._database._read())
         self._transaction_count += 1
         return self
 
@@ -232,8 +232,6 @@ class LocalFileStorage(AbstractStorage):
         if ex_type and self._transaction_count == 0:
             self._database._write(self._db_copy)
             self._db_copy = None
-            self.disconnect_database()
-            self.connect_database()
             return False
 
     def table(self, table_name):

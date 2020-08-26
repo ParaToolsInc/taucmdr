@@ -333,7 +333,7 @@ class StorageDispatchTests(tests.TestCase):
         self.assertEqual(eid_2, get_eid_2, "After successful transaction, element 2 should be in table")
         try:
             with self.tinydb_storage as database:
-                eid_3 = self.tinydb_storage.insert(element_3, table_name='application').eid
+                eid_3 = database.insert(element_3, table_name='application').eid
                 raise RuntimeError
         except RuntimeError:
             pass
