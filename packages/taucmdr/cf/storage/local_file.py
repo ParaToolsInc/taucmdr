@@ -232,6 +232,8 @@ class LocalFileStorage(AbstractStorage):
         if ex_type and self._transaction_count == 0:
             self._database._write(self._db_copy)
             self._db_copy = None
+            self.disconnect_database()
+            self.connect_database()
             return False
 
     def table(self, table_name):
