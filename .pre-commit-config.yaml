@@ -83,5 +83,5 @@ repos:
   rev: v2.1.0
   hooks:
     - id: pyupgrade
-      language_version: python3.7
+      language_version: python3
       args: [--keep-percent-format]

@@ -43,7 +43,6 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-import taucmdr
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
@@ -164,7 +163,10 @@ class TestCase(unittest.TestCase):
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
         self._result_stream = result.stream
-        return super(TestCase, self).run(result)
+        push_test_workdir()
+        run_result = super(TestCase, self).run(result)
+        pop_test_workdir()
+        return run_result
 
     def reset_project_storage(self, init_args=None):
         """Delete and recreate project storage.

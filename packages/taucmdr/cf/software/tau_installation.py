@@ -221,6 +221,7 @@ class TauInstallation(Installation):
                  metadata_merge=True,
                  throttle_per_call=10,
                  throttle_num_calls=100000,
+                 sample_resolution="line",
                  sampling_period=0,
                  track_memory_footprint=False,
                  update_nightly=False,
@@ -265,7 +266,7 @@ class TauInstallation(Installation):
             reuse_inst_files (bool): If True then reuse instrumented source files for compilation when available.
             select_file (str): Path to selective instrumentation file.
             baseline (bool): If True, only measure wallclock time via `tau_baseline`.
-            profile (str): Format for profile files, one of "tau", "merged", "cubex", or "none".
+            profile (str): Format for profile files, one of "tau", "merged", "cubex", "sqlite", or "none".
             trace (str): Format for trace files, one of "slog2", "otf2", or "none".
             sample (bool): Enable or disable event-based sampling.
             metrics (list): Metrics to measure, e.g. ['TIME', 'PAPI_FP_INS']
@@ -319,7 +320,7 @@ class TauInstallation(Installation):
         assert reuse_inst_files in (True, False)
         assert isinstance(select_file, basestring) or select_file is None
         assert baseline in (True, False)
-        assert profile in ("tau", "merged", "cubex", "none")
+        assert profile in ("tau", "merged", "cubex", "sqlite", "none")
         assert trace in ("slog2", "otf2", "none")
         assert sample in (True, False)
         assert isinstance(metrics, list) or metrics is None
@@ -412,6 +413,7 @@ class TauInstallation(Installation):
         self.ptts_report_flags = ptts_report_flags
         self.throttle_per_call = throttle_per_call
         self.throttle_num_calls = throttle_num_calls
+        self.sample_resolution = sample_resolution
         self.sampling_period = sampling_period
         self.track_memory_footprint = track_memory_footprint
         self.python_path = util.which('python')
@@ -429,6 +431,7 @@ class TauInstallation(Installation):
         self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
+        self.uses_sqlite3 = not minimal and (self.profile == 'sqlite')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
         if 'TIME' not in self.metrics[0]:
             # TAU assumes the first metric is always some kind of wallclock timer
@@ -445,7 +448,7 @@ class TauInstallation(Installation):
             mets.extend(met.split(','))
         self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -497,7 +500,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
+        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
@@ -615,10 +618,33 @@ class TauInstallation(Installation):
                             LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
                             raise SoftwarePackageError("OTFINC in '%s' is not '%s'" %
                                                        (tau_makefile, libotf2.include_path))
+                elif 'SQLITE3DIR=' in line:
+                    if self.uses_sqlite3:
+                        sqlite3 = self.dependencies['sqlite3']
+                        sqlite3_dir = line.split('=')[1].strip()
+                        if not os.path.isdir(sqlite3_dir):
+                            raise SoftwarePackageError("SQLITE3DIR in '%s' is not a directory" % tau_makefile)
+                        if sqlite3.install_prefix != sqlite3_dir:
+                            LOGGER.debug("SQLITE3DIR='%s' != '%s'", sqlite3_dir, sqlite3.install_prefix)
+                            raise SoftwarePackageError("SQLITE3DIR in '%s' is not '%s'" %
+                                                       (tau_makefile, sqlite3.install_prefix))
+
+    @staticmethod
+    def get_shared_dir(tau_makefile):
+        """Get the shared library directory that corresponds to a given TAU Makefile
+
+        Args:
+            tau_makefile (str): path to a TAU Makefile
+
+        Returns:
+            str: the path to a TAU shared library directory containing the shared libraries that
+            would be used by the TAU configuration represented by the Makefile.
+        """
+        return 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
 
     def _verify_iowrapper(self, tau_makefile):
         # Replace right-most occurrence of 'Makefile.tau' with 'shared'
-        tagged_shared_dir = 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
+        tagged_shared_dir = self.get_shared_dir(tau_makefile)
         for shared_dir in tagged_shared_dir, 'shared':
             iowrap_libs = glob.glob(os.path.join(shared_dir, 'libTAU-iowrap*'))
             if iowrap_libs:
@@ -710,6 +736,7 @@ class TauInstallation(Installation):
         scorep = self.dependencies.get('scorep')
         ompt = self.dependencies.get('ompt')
         libotf2 = self.dependencies.get('libotf2')
+        sqlite3 = self.dependencies.get('sqlite3')
 
         if self.minimal:
             LOGGER.info("Configuring minimal TAU...")
@@ -842,7 +869,8 @@ print(find_version())
                   '-pythoninc=%s' % pythoninc if self.python_support else None,
                   '-pythonlib=%s' % pythonlib if self.python_support else None,
                   '-otf=%s' % libotf2.install_prefix if libotf2 else None,
-                 ] if flag]
+                  '-sqlite3=%s' % sqlite3.install_prefix if sqlite3 else None,
+                  ] if flag]
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
             flags.append('-pdt_c++=%s' % pdt.compilers[CXX].unwrap().info.command)
@@ -1244,7 +1272,6 @@ print(find_version())
         env['TAU_MAKEFILE'] = makefile
         return list(set(opts)), env
 
-
     def runtime_config(self, opts=None, env=None):
         """Configures environment for execution with TAU.
 
@@ -1261,6 +1288,8 @@ print(find_version())
         opts, env = super(TauInstallation, self).runtime_config(opts, env)
         env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
+        env['TAU_PLUGINS_PATH'] = self.get_shared_dir(self.get_makefile())
+        tau_plugins = []
         if self.profile == 'tau':
             env['TAU_PROFILE'] = '1'
         elif self.profile == 'merged':
@@ -1268,6 +1297,11 @@ print(find_version())
             env['TAU_PROFILE_FORMAT'] = 'merged'
         elif self.profile == 'cubex':
             env['SCOREP_ENABLE_PROFILING'] = '1'
+        elif self.profile == 'sqlite':
+            # Disable regular TAU Profile output when using SQLite plugin
+            env['TAU_PROFILE'] = 0
+            # This may need to be changed for macOS which uses .dylib
+            tau_plugins.append('libTAU-sqlite3-plugin.so')
         else:
             env['TAU_PROFILE'] = '0'
             env['SCOREP_ENABLE_PROFILING'] = 'false'
@@ -1282,6 +1316,7 @@ print(find_version())
         env['TAU_SAMPLING'] = str(int(self.sample))
         if self.sample:
             # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
+            env['TAU_EBS_RESOLUTION'] = self.sample_resolution
             arch_period = {INTEL_KNC: 100000,
                            INTEL_KNL: 100000,
                            IBM_BGL: 20000,
@@ -1338,6 +1373,8 @@ print(find_version())
             opts.append('-ptts-sample-flags=%s' %self.ptts_sample_flags)
         if self.ptts_report_flags:
             opts.append('-ptts-report-flags=%s' %self.ptts_report_flags)
+        if tau_plugins:
+            env['TAU_PLUGINS'] = ':'.join(tau_plugins)  # TAU plugins as colon-separated list
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):
@@ -1550,7 +1587,8 @@ print(find_version())
         if host and not host.startswith('/'):
             LOGGER.warning("X11 appears to be forwarded to a remote display. Visual performance may be poor.")
 
-    def get_data_format(self, path):
+    @staticmethod
+    def get_data_format(path):
         """Guess the data format of a file path.
 
         Look at a file's extension and guess what kind of performance data it might be.
@@ -1581,13 +1619,17 @@ print(find_version())
             root, ext = os.path.splitext(root)
             if ext == '.xml':
                 return 'merged'
+        elif ext == '.db':
+            return 'sqlite'
         raise ConfigurationError("Cannot determine data format of '%s'" % path)
 
-    def is_profile_format(self, fmt):
+    @staticmethod
+    def is_profile_format(fmt):
         """Return True if ``fmt`` is a string indicating a profile data format."""
-        return fmt in ('tau', 'ppk', 'merged', 'cubex')
+        return fmt in ('tau', 'ppk', 'merged', 'cubex', 'sqlite')
 
-    def is_trace_format(self, fmt):
+    @staticmethod
+    def is_trace_format(fmt):
         """Return True if ``fmt`` is a string indicating a trace data format."""
         return fmt in ('slog2', 'otf2')
 

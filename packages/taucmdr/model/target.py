@@ -42,6 +42,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, IncompatibleRecordError
 from taucmdr.error import ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
+from taucmdr.mvc.controller import Controller
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem
@@ -462,6 +463,16 @@ def attributes():
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
+        'sqlite3_source': {
+            'type': 'string',
+            'description': 'path or URL to SQLite3 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--sqlite3',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
@@ -471,11 +482,27 @@ def attributes():
         }
     }
 
+class TargetController(Controller):
+    """Target data controller."""
+    def delete(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        from taucmdr.error import ImmutableRecordError
+        from taucmdr.model.experiment import Experiment
+        changing = self.search(keys, context=context)
+        for model in changing:
+            expr_ctrl = Experiment.controller()
+            found = expr_ctrl.search({'target': model.eid})
+            used_by = [expr['name'] for expr in found if expr.data_size() > 0]
+            if used_by:
+                raise ImmutableRecordError("Target '%s' cannot be modified because "
+                                           "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
+        return super(TargetController, self).delete(keys)
 
 class Target(Model):
     """Target data model."""
 
     __attributes__ = attributes
+    __controller__ = TargetController
 
     def __init__(self, *args, **kwargs):
         super(Target, self).__init__(*args, **kwargs)

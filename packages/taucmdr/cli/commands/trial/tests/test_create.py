@@ -137,6 +137,30 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("compute")
         self.assertInLastTrialData("malloc")
 
+    def sample_resolution_helper(self, option):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
+                                            ['sample', '--sample-resolution', option])
+        self.assertIn("Updated measurement 'sample'", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
+        self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
+        self.assertFalse(stderr)
+        self.assertManagedBuild(0, CC, [], 'matmult.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn("Trial 0 produced 1 profile files", stdout)
+        self.assertIn("TAU_EBS_RESOLUTION="+option, stdout)
+        self.assertFalse(stderr)
+
+    def test_sample_resolution_file(self):
+        self.sample_resolution_helper('file')
+
+    def test_sample_resolution_function(self):
+        self.sample_resolution_helper('function')
+
+    def test_sample_resolution_line(self):
+        self.sample_resolution_helper('line')
+
     @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
     def test_system_load_sample(self):
         """Test TAU_TRACK_LOAD w/ sampling"""

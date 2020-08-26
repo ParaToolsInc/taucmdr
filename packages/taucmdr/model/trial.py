@@ -481,6 +481,8 @@ class Trial(Model):
             data[profile_fmt] = os.path.join(self.prefix, 'tauprofile.xml')
         elif profile_fmt == 'cubex':
             data[profile_fmt] = os.path.join(self.prefix, 'profile.cubex')
+        elif profile_fmt == 'sqlite':
+            data[profile_fmt] = os.path.join(self.prefix, 'tauprofile.db')
         elif profile_fmt != 'none':
             raise InternalError("Unhandled profile format '%s'" % profile_fmt)
         trace_fmt = meas.get('trace', 'none')
@@ -640,5 +642,9 @@ class Trial(Model):
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
                 items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
                 util.create_archive('tgz', export_file, items, expr_dir)
+            elif fmt == 'sqlite':
+                export_file = os.path.join(dest, stem+'.db')
+                LOGGER.info("Writing '%s'...", export_file)
+                util.copy_file(path, export_file)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)
