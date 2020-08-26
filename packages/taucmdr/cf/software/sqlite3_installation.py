@@ -43,9 +43,9 @@ HEADERS = {None: ['sqlite3.h', 'sqlite3ext.h']}
 COMMANDS = {None: ['sqlite3']}
 
 
-class SQLite3Installation(AutotoolsInstallation):
+class Sqlite3Installation(AutotoolsInstallation):
     """Encapsulates a SQLite3 installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(SQLite3Installation, self).__init__('sqlite3', 'SQLite3', sources,
+        super(Sqlite3Installation, self).__init__('sqlite3', 'SQLite3', sources,
                                                   target_arch, target_os, compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
