@@ -1288,7 +1288,11 @@ print(find_version())
         opts, env = super(TauInstallation, self).runtime_config(opts, env)
         env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
-        env['TAU_PLUGINS_PATH'] = self.get_shared_dir(self.get_makefile())
+        try:
+            env['TAU_PLUGINS_PATH'] = self.get_shared_dir(self.get_makefile())
+        except SoftwarePackageError:
+            # This function may be called for cases where there isn't a TAU Makefile
+            pass
         tau_plugins = []
         if self.profile == 'tau':
             env['TAU_PROFILE'] = '1'
