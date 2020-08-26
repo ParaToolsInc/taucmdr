@@ -1664,6 +1664,8 @@ print(find_version())
         if fmt != 'tau':
             raise ConfigurationError("pprof cannot open profiles in '%s' format" % fmt)
         retval = 0
+        # pprof will use PROFILEDIR instead of the CWD if set, so unset PROFILEDIR in env
+        env['PROFILEDIR'] = None
         for path in paths:
             if not os.path.exists(path):
                 raise ConfigurationError("Profile directory '%s' does not exist" % path)
