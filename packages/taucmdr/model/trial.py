@@ -569,7 +569,7 @@ class Trial(Model):
         measurement = expr.populate('measurement')
 
         profiles = []
-        for pat in 'profile.*.*.*', 'MULTI__*/profile.*.*.*', 'tauprofile.xml', '*.cubex':
+        for pat in 'profile.*.*.*', 'MULTI__*/profile.*.*.*', 'tauprofile.xml', '*.cubex', '*.db':
             profiles.extend(glob.glob(os.path.join(self.prefix, pat)))
         if profiles:
             LOGGER.info("Trial %s produced %s profile files.", self['number'], len(profiles))
