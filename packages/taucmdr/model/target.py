@@ -463,6 +463,16 @@ def attributes():
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
+        'sqlite3_source': {
+            'type': 'string',
+            'description': 'path or URL to SQLite3 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--sqlite3',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
