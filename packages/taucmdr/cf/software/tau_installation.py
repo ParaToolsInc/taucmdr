@@ -1299,7 +1299,7 @@ print(find_version())
             env['SCOREP_ENABLE_PROFILING'] = '1'
         elif self.profile == 'sqlite':
             # Disable regular TAU Profile output when using SQLite plugin
-            env['TAU_PROFILE'] = 0
+            env['TAU_PROFILE'] = '0'
             # This may need to be changed for macOS which uses .dylib
             tau_plugins.append('libTAU-sqlite3-plugin.so')
         else:
