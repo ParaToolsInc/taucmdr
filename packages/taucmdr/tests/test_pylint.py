@@ -88,7 +88,7 @@ class PylintTest(tests.TestCase):
                 _report_lines.append(line.translate(trans_table))
             else:
                 _report_lines.append(line)
-        return PYLINT_REPORT_TEMPLATE.format(report="\n".join(_report_lines), details=_details, stderr=stderr)
+        return PYLINT_REPORT_TEMPLATE.format(report="\n".join(_report_lines), details=_details.strip(), stderr=stderr.strip())
 
     def run_pylint(self, *args):
         cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
