@@ -122,11 +122,11 @@ jobs:
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: github.event_name == 'pull_request' && matrix.os == 'ununtu-18.04'
-        uses: machine-learning-apps/pr-comment@1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: matrix.os == 'ubuntu-18.04'
+        uses: marocchino/sticky-pull-request-comment@v1
         with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: pylint-comment
           path: ./pylint.md
 
       - name: Upload Coverage info
