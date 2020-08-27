@@ -57,6 +57,9 @@ installed
 system
 .tau
 
+# TAU Commander pylint report
+pylint.md
+
 # TAU intermediate compilation files
 *.inst.*
 *.pdb
