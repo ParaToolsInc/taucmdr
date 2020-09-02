@@ -106,33 +106,13 @@ def attributes():
 class ExperimentController(Controller):
     """Experiment data controller."""
 
-    @property
-    def _project_eid(self):
-        """Avoid multiple lookup of the selected project since project selection will not change mid-process."""
-        try:
-            return self._selected_project.eid
-        except AttributeError:
-            # pylint: disable=attribute-defined-outside-init
-            self._selected_project = Project.controller(self.storage).selected()
-            return self._selected_project.eid
+    def one(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        return super(ExperimentController, self).one(keys, context=context)
 
-    def _restrict_project(self, keys):
-        """Ensures that we only operate on experiment records in the selected project."""
-        try:
-            return dict(keys, project=self._project_eid)
-        except (TypeError, ValueError):
-            try:
-                return [dict(key, project=self._project_eid) for key in keys]
-            except (TypeError, ValueError):
-                pass
-        return keys
-
-    def one(self, keys):
-        return super(ExperimentController, self).one(self._restrict_project(keys))
-
-    def all(self):
-        keys = {'project': self._project_eid}
-        return [self.model(record) for record in self.storage.search(keys=keys, table_name=self.model.name)]
+    def all(self, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        return super(ExperimentController, self).all(context=context)
 
     def count(self):
         try:
@@ -140,28 +120,28 @@ class ExperimentController(Controller):
         except ProjectSelectionError:
             return 0
 
-    def search(self, keys=None):
-        return super(ExperimentController, self).search(self._restrict_project(keys))
+    def search(self, keys=None, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        return super(ExperimentController, self).search(keys, context=context)
 
     def exists(self, keys):
-        return super(ExperimentController, self).exists(self._restrict_project(keys))
+        return super(ExperimentController, self).exists(keys)
 
     def _check_unique(self, data, match_any=False):
         """Default match_any to False to prevent matches outside the selected project."""
         return super(ExperimentController, self)._check_unique(data, match_any)
 
     def create(self, data):
-        data['project'] = self._project_eid
         return super(ExperimentController, self).create(data)
 
     def update(self, data, keys):
-        return super(ExperimentController, self).update(data, self._restrict_project(keys))
+        return super(ExperimentController, self).update(data, keys)
 
     def unset(self, fields, keys):
-        return super(ExperimentController, self).unset(fields, self._restrict_project(keys))
+        return super(ExperimentController, self).unset(fields, keys)
 
     def delete(self, keys):
-        return super(ExperimentController, self).delete(self._restrict_project(keys))
+        return super(ExperimentController, self).delete(keys)
 
 
 class Experiment(Model):
@@ -173,7 +153,13 @@ class Experiment(Model):
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
-        return cls.__controller__(cls, storage)
+        if Project.selected():
+            context = [('project', Project.selected().eid),
+                       ('projects', Project.selected().eid)]
+        else:
+            # use a value that will never exist to block all
+            context = [('project', 'Undefined')]
+        return cls.__controller__(cls, storage, context)
 
     @classmethod
     def select(cls, name):
@@ -343,6 +329,7 @@ class Experiment(Model):
                     metadata_merge=measurement.get_or_default('metadata_merge'),
                     throttle_per_call=measurement.get_or_default('throttle_per_call'),
                     throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+                    sample_resolution=measurement.get_or_default('sample_resolution'),
                     sampling_period=measurement.get_or_default('sampling_period'),
                     track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
                     update_nightly=measurement.get_or_default('update_nightly'),

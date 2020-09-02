@@ -38,6 +38,7 @@ specifying OpenMP is used and the other specifying OpenMP is not used.
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
+from taucmdr.mvc.controller import Controller
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
@@ -171,10 +172,28 @@ def attributes():
     }
 
 
+class ApplicationController(Controller):
+    """Application data controller."""
+
+    def delete(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        from taucmdr.error import ImmutableRecordError
+        from taucmdr.model.experiment import Experiment
+        changing = self.search(keys, context=context)
+        for model in changing:
+            expr_ctrl = Experiment.controller()
+            found = expr_ctrl.search({'application': model.eid})
+            used_by = [expr['name'] for expr in found if expr.data_size() > 0]
+            if used_by:
+                raise ImmutableRecordError("Application '%s' cannot be modified because "
+                                           "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
+        return super(ApplicationController, self).delete(keys)
+
 class Application(Model):
     """Application data model."""
 
     __attributes__ = attributes
+    __controller__ = ApplicationController
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError

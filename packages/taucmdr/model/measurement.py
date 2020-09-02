@@ -37,6 +37,7 @@ import os
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
+from taucmdr.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
 
@@ -350,6 +351,16 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'sample_resolution': {
+            'type': 'string',
+            'default': 'line',
+            'description': 'sample resolution',
+            'argparse': {'flags': ('--sample-resolution',),
+                         'choices': ('file', 'function', 'line',),
+                         'metavar': 'file/function/line',
+                         'nargs': '?',},
+            'compat': {True: (Measurement.require('sample', True))}
+        },
         'sampling_period': {
             'type': 'integer',
             'default': 5000,
@@ -492,10 +503,28 @@ def attributes():
     }
 
 
+class MeasurementController(Controller):
+    """Measurement data controller."""
+
+    def delete(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        from taucmdr.error import ImmutableRecordError
+        from taucmdr.model.experiment import Experiment
+        changing = self.search(keys, context=context)
+        for model in changing:
+            expr_ctrl = Experiment.controller()
+            found = expr_ctrl.search({'measurement': model.eid})
+            used_by = [expr['name'] for expr in found if expr.data_size() > 0]
+            if used_by:
+                raise ImmutableRecordError("Measurement '%s' cannot be modified because "
+                                           "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
+        return super(MeasurementController, self).delete(keys)
+
 class Measurement(Model):
     """Measurement data model."""
 
     __attributes__ = attributes
+    __controller__ = MeasurementController
 
     def _check_select_file(self):
         try:

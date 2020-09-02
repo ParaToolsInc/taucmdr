@@ -155,7 +155,7 @@ class Model(StorageRecord):
     def on_delete(self):
         """Callback to be invoked before a data record is deleted."""
 
-    def populate(self, attribute=None, defaults=False):
+    def populate(self, attribute=None, defaults=False, context=True):
         """Shorthand for ``self.controller(self.storage).populate(self, attribute, defaults)``.
 
         Result is cached in the object instance when possible so this should be faster
@@ -175,10 +175,10 @@ class Model(StorageRecord):
         if attribute:
             if self._populated is not None and not defaults:
                 return self._populated[attribute]
-            return self.controller(self.storage).populate(self, attribute, defaults)
+            return self.controller(self.storage).populate(self, attribute, defaults, context=context)
         else:
             if self._populated is None:
-                self._populated = self.controller(self.storage).populate(self, attribute, defaults)
+                self._populated = self.controller(self.storage).populate(self, attribute, defaults, context=context)
             return self._populated
 
     @classmethod
