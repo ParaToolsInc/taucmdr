@@ -113,10 +113,11 @@ def attributes():
                          'group': 'output format',
                          'metavar': '<format>',
                          'nargs': '?',
-                         'choices': ('tau', 'merged', 'cubex', 'none'),
+                         'choices': ('tau', 'merged', 'cubex', 'sqlite', 'none'),
                          'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None),
-                       'merged': _merged_profile_compat},
+                       'merged': _merged_profile_compat,
+                       'sqlite': Target.exclude('sqlite3_source', None)},
             'rebuild_required': True
         },
         'trace': {
