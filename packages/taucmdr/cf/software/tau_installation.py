@@ -1333,6 +1333,9 @@ print(find_version())
             opts.append('-ompt')
         if self.uses_ompt_tr6:
             env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'
+        if self.uses_ompt:
+            env['TAU_OMPT_SUPPORT_LEVEL'] = 'full'
+            env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'
         if self.measure_io:
             opts.append('-io')
         if self.measure_memory_alloc:
