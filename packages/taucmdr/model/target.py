@@ -418,6 +418,17 @@ def attributes():
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
+        'libdwarf_source': {
+            'type': 'string',
+            'description': 'path or URL to a libdwarf installation or archive file',
+            'default': 'download' if HOST_OS is not DARWIN else None,
+            'argparse': {'flags': ('--libdwarf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
+            'rebuild_required': True
+        },
         'papi_source': {
             'type': 'string',
             'description': 'path or URL to a PAPI installation or archive file',

@@ -423,8 +423,9 @@ class TauInstallation(Installation):
         self.unwind_depth = unwind_depth
         self.uses_python = False
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
-        self.uses_binutils = not minimal and (self.target_os is not DARWIN)
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
+        self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'libunwind_source' in sources
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'binutils_source' in sources
+        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf_souce' in sources 
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
@@ -447,7 +448,7 @@ class TauInstallation(Installation):
             mets.extend(met.split(','))
         self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+        for pkg in 'binutils', 'libunwind', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -499,7 +500,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
+        for pkg in 'binutils', 'libunwind', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
@@ -587,6 +588,7 @@ class TauInstallation(Installation):
                             LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
                             raise SoftwarePackageError("UNWIND_INC in '%s' is not '%s'" %
                                                        (tau_makefile, libunwind.include_path))
+
                 elif 'PAPIDIR=' in line:
                     if self.uses_papi:
                         papi = self.dependencies['papi']
@@ -707,6 +709,7 @@ class TauInstallation(Installation):
         """
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
+        libdwarf = self.dependencies.get('libdwarf')
         papi = self.dependencies.get('papi')
         pdt = self.dependencies.get('pdt')
         scorep = self.dependencies.get('scorep')

@@ -137,6 +137,16 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("compute")
         self.assertInLastTrialData("malloc")
 
+    def test_libdwarf(self):
+        self.reset_project_storage(['--libdwarf', 'none'])
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn('BEGIN targ1-app1', stdout)
+        self.assertIn('END targ1-app1', stdout)
+        self.assertIn('Trial 0 produced', stdout)
+        self.assertIn('profile files', stdout)
+        self.assertFalse(stderr)
+
     def sample_resolution_helper(self, option):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
