@@ -423,9 +423,9 @@ class TauInstallation(Installation):
         self.unwind_depth = unwind_depth
         self.uses_python = False
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
-        self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'libunwind_source' in sources
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'binutils_source' in sources
-        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf_souce' in sources 
+        self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
+        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources 
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
@@ -619,6 +619,17 @@ class TauInstallation(Installation):
                             LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
                             raise SoftwarePackageError("OTFINC in '%s' is not '%s'" %
                                                        (tau_makefile, libotf2.include_path))
+
+                elif 'DWARFINC=' in line:
+                    if self.uses_libdwarf:
+                        libdwarf = self.dependencies['libdwarf']
+                        libdwarf_dir = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(libdwarf_dir):
+                            raise SoftwarePackageError("DWARFINC in '%s' is not a directory" % tau_makefile)
+                        if libdwarf.include_path != libdwarf_dir:
+                            LOGGER.debug("DWARFINC='%s' != '%s'", libdwarf_dir, libdwarf.include_path)
+                            raise SoftwarePackageError("DWARFINC in '%s' is not '%s'" %
+                                                        (tau_makefile, libdwarf.include_path))
 
     def _verify_iowrapper(self, tau_makefile):
         # Replace right-most occurrence of 'Makefile.tau' with 'shared'
@@ -832,6 +843,7 @@ print(find_version())
                   '-bfd=%s' % binutils.install_prefix if binutils else None,
                   '-papi=%s' % papi.install_prefix if papi else None,
                   '-unwind=%s' % libunwind.install_prefix if libunwind else None,
+                  '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
                   '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,

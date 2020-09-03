@@ -47,3 +47,7 @@ class LibdwarfInstallation(AutotoolsInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         super(LibdwarfInstallation, self).__init__('libdwarf', 'libdwarf', sources,
                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def configure(self, flags):
+        flags.extend(['--enable-static', '--enable-shared'])
+        return super(LibdwarfInstallation, self).configure(flags)

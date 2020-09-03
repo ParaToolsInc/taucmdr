@@ -137,7 +137,7 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("compute")
         self.assertInLastTrialData("malloc")
 
-    def test_libdwarf(self):
+    def test_without_libdwarf(self):
         self.reset_project_storage(['--libdwarf', 'none'])
         self.assertManagedBuild(0, CC, [], 'hello.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
