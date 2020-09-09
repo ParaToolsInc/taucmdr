@@ -102,7 +102,7 @@ class LocalFileStorage(AbstractStorage):
         self._transaction_count = 0
         self._db_copy = None
         self._database = None
-        self._prefix = str(prefix)
+        self._prefix = prefix
 
     def __len__(self):
         return self.count()
