@@ -30,6 +30,7 @@
 from __future__ import absolute_import
 import os
 import mimetypes
+import re
 from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
@@ -86,7 +87,7 @@ def _guess_filetype(filename):
     if not filetype[0]:
         textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(list(range(0x20, 0x100)))
         with open(filename,mode='rb') as fd:
-            if fd.read(1024).translate(None, textchars):
+            if re.sub(textchars, b'', fd.read(1024)):
                 filetype = ('application/unknown', None)
             else:
                 filetype = ('text/plain', None)

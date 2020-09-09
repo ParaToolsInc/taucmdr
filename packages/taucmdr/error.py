@@ -89,7 +89,7 @@ class Error(Exception):
         if self.show_backtrace:
             self.message_fields['backtrace'] = ''.join(traceback.format_exception(etype, value, tb)) + '\n'
         self.message_fields['typename'] = etype.__name__
-        LOGGER.critical(self.message)
+        LOGGER.critical(self.msg)
         return EXIT_FAILURE
 
 
