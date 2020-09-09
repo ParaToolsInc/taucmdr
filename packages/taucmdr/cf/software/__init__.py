@@ -43,5 +43,5 @@ class SoftwarePackageError(ConfigurationError):
 def get_installation(name):
     module_name = name + '_installation'
     cls_name = util.camelcase(module_name)
-    pkg = __import__(__name__+'.'+module_name, globals(), locals(), [cls_name], -1)
+    pkg = __import__(__name__+'.'+module_name, globals(), locals(), [cls_name], 0)
     return getattr(pkg, cls_name)
