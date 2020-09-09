@@ -74,7 +74,7 @@ class Error(Exception):
         self.message_fields = {'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
 
     @property
-    def message(self):
+    def message(self) -> str:
         fields = dict(self.message_fields, value=self.value)
         if not self.hints:
             hints_str = ''
@@ -89,7 +89,7 @@ class Error(Exception):
         if self.show_backtrace:
             self.message_fields['backtrace'] = ''.join(traceback.format_exception(etype, value, tb)) + '\n'
         self.message_fields['typename'] = etype.__name__
-        LOGGER.critical(self.msg)
+        LOGGER.critical(self.message)
         return EXIT_FAILURE
 
 
