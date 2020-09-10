@@ -28,7 +28,7 @@
 """libdwarf software installation management.
 
 The Dwarf library provides an interface to resolve samples by converting program 
-    counter addresses to function names for appliccations with a large number of symbols.
+    counter addresses to function names for applications with a large number of symbols.
 """
 
 import os
@@ -47,13 +47,13 @@ class LibdwarfInstallation(AutotoolsInstallation):
     def __init__(self, sources, target_arch, target_os, compilers):
         super(LibdwarfInstallation, self).__init__('libdwarf', 'libdwarf', sources,
                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
-        
+
         self.add_dependency('libelf', sources)
-    
 
     def configure(self, flags):
-        libelf_install_prefix = self.dependencies.get('libelf').install_prefix
-        os.environ['LDFLAGS'] = '-L%s' % libelf_install_prefix
-        os.environ['CPPFLAGS'] = '-I%s' % libelf_install_prefix
         flags.extend(['--enable-static', '--enable-shared'])
+        libelf = self.dependencies.get('libelf')
+        os.environ['LDFLAGS'] = '-L%s' % libelf.lib_path
+        os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path       
+
         return super(LibdwarfInstallation, self).configure(flags)
