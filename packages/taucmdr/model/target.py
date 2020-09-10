@@ -426,7 +426,15 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN), 
+                                                   Target.require('libelf_source'))},
+            'rebuild_required': True
+        },
+        'libelf_source': {
+            'type': 'string',
+            'description': 'libelf installation for libdwarf use',
+            'default': 'download' if HOST_OS is not DARWIN else None,
+            'compat':  {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
         'papi_source': {

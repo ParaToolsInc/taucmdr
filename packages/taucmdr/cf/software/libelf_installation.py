@@ -25,35 +25,30 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libdwarf software installation management.
+"""libelf software installation management.
 
-The Dwarf library provides an interface to resolve samples by converting program 
-    counter addresses to function names for appliccations with a large number of symbols.
+
+The Dwarf library provides an interface to read, modify or create ELF files in 
+            an architecture-independent way. 
 """
 
-import os
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20181024.tar.gz'}
 
-LIBRARIES = {None: ['libdwarf.la', 'libdwarf.a']}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/elfutils-0.180.tar.bz2'}
 
-HEADERS = {None: ['dwarf.h', 'libdwarf.h']}
+LIBRARIES = {None: ['libelf.a']}
+
+HEADERS = {None: ['libelf.h']}
 
 
-class LibdwarfInstallation(AutotoolsInstallation):
-    """Encapsulates a libdwarf installation."""
+class LibelfInstallation(AutotoolsInstallation):
+    """Encapsulates a libelf installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(LibdwarfInstallation, self).__init__('libdwarf', 'libdwarf', sources,
+        super(LibelfInstallation, self).__init__('libelf', 'libelf', sources,
                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
-        
-        self.add_dependency('libelf', sources)
-    
 
     def configure(self, flags):
-        libelf_install_prefix = self.dependencies.get('libelf').install_prefix
-        os.environ['LDFLAGS'] = '-L%s' % libelf_install_prefix
-        os.environ['CPPFLAGS'] = '-I%s' % libelf_install_prefix
-        flags.extend(['--enable-static', '--enable-shared'])
-        return super(LibdwarfInstallation, self).configure(flags)
+        flags.extend(['--disable-debuginfod'])
+        return super(LibelfInstallation, self).configure(flags)
