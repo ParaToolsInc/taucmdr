@@ -82,6 +82,7 @@ DATA_TOOLS = ['jumpshot',
               'pprof',
               'slog2print',
               'tau2slog2',
+              'tau_trace2json',
               'taudb_configure',
               'taudb_install_cert',
               'taudb_keygen',
@@ -147,7 +148,14 @@ TAU_MINIMAL_COMPILERS = [CC, CXX]
 
 PROFILE_ANALYSIS_TOOLS = 'paraprof', 'pprof'
 
-TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir'
+TRACE_ANALYSIS_TOOLS = 'jumpshot', 'vampir', 'google_chrome'
+
+TOOL_FOR_FORMAT = {
+                'json':['google_chrome'],
+                'slog2':['jumpshot'],
+                'otf2':['vampir'],
+                'tau':['pprof','paraprof'],
+            }
 
 PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'mpiexec': ['-app', '--app', '-configfile'],
@@ -321,7 +329,7 @@ class TauInstallation(Installation):
         assert isinstance(select_file, basestring) or select_file is None
         assert baseline in (True, False)
         assert profile in ("tau", "merged", "cubex", "none")
-        assert trace in ("slog2", "otf2", "none")
+        assert trace in ("slog2", "otf2", "json", "none")
         assert sample in (True, False)
         assert isinstance(metrics, list) or metrics is None
         assert measure_io in (True, False)
@@ -1273,7 +1281,7 @@ print(find_version())
         else:
             env['TAU_PROFILE'] = '0'
             env['SCOREP_ENABLE_PROFILING'] = 'false'
-        if self.trace == 'slog2':
+        if self.trace == 'slog2' or self.trace == 'json':
             env['TAU_TRACE'] = '1'
         elif self.trace == 'otf2':
             env['TAU_TRACE'] = '1'
@@ -1580,6 +1588,10 @@ print(find_version())
             return 'slog2'
         elif ext == '.otf2':
             return 'otf2'
+        elif ext == '.json':
+            return 'json'
+        elif ext == '.json':
+            return 'json'
         elif ext == '.gz':
             root, ext = os.path.splitext(root)
             if ext == '.xml':
@@ -1592,7 +1604,7 @@ print(find_version())
 
     def is_trace_format(self, fmt):
         """Return True if ``fmt`` is a string indicating a trace data format."""
-        return fmt in ('slog2', 'otf2')
+        return fmt in ('slog2', 'otf2', 'json')
 
     def _show_unknown(self, tool):
         def launcher(_, paths, env):
@@ -1673,6 +1685,23 @@ print(find_version())
             retval += util.create_subprocess(['vampir', path], cwd=cwd, env=env)
         return retval
 
+    def _show_google_chrome(self, fmt, paths, env):
+        if fmt != 'json':
+            raise ConfigurationError("Chrome cannot open traces in '%s' format" % fmt)
+        self._check_X11()
+        retval = 0
+        for path in paths:
+            if not os.path.exists(path):
+                raise ConfigurationError("Trace file '%s' does not exist" % path)
+            path = os.path.abspath(path)
+            cwd = os.path.dirname(path)
+
+            LOGGER.info("\nTo see the profile, go to chrome://tracing in your browser and load the tau.json file at this path")
+            LOGGER.info(path)
+            retval += util.create_subprocess(['google-chrome', ''],
+                                             cwd=cwd, env=env, stdout=False)
+        return retval
+
     def _prep_data_analysis_tools(self):
         """Checks that data analysis tools are installed, or installs them if needed."""
         if not glob.glob(os.path.join(self.lib_path, 'Makefile.tau*')):
@@ -1704,7 +1733,11 @@ print(find_version())
                 tools = trace_tools if trace_tools is not None else TRACE_ANALYSIS_TOOLS
             else:
                 raise InternalError("Unhandled data format '%s'" % fmt)
-            for tool in tools:
+            try:
+                available_tools = TOOL_FOR_FORMAT[fmt]
+            except KeyError:
+                raise InternalError("'%s'is an unrecognized file type" % fmt)
+            for tool in available_tools:
                 try:
                     launcher = getattr(self, '_show_'+tool)
                 except AttributeError:
@@ -1784,6 +1817,23 @@ print(find_version())
             raise InternalError("Nonzero return code from tau2slog2")
         if not os.path.exists(slog2):
             raise InternalError("Failed to convert TAU trace data: no slog2 files exist after calling 'tau2slog2'")
+
+    def tau_trace_to_json(self, trc, edf, json):
+        """Convert a TAU trace file to JSON format.
+
+        Args:
+            trc (str): Path to the trc file.
+            edf (str): Path to the edf file.
+            json (str): Path to the json file to create.
+        """
+        self._prep_data_analysis_tools()
+        LOGGER.info("Converting TAU trace files to json format...")
+        cmd = [os.path.join(self.bin_path, 'tau_trace2json'), trc, edf, '-chrome', '-ignoreatomic', '-o', json]
+        if util.create_subprocess(cmd, stdout=False, log=True, show_progress=True):
+            os.remove(json)
+            raise InternalError("Nonzero return code from tau_trace2json")
+        if not os.path.exists(json):
+            raise InternalError("Failed to convert TAU trace data: no json files exist after calling 'tau_trace2json'")
 
     def tau_metrics(self):
         """List TAU metrics available on this target.

@@ -455,6 +455,27 @@ class Trial(Model):
                 count += 1
                 progress_bar.update(count)
 
+    def _postprocess_json(self):
+        json = os.path.join(self.prefix, 'tau.json')
+        if os.path.exists(json):
+            return
+        tau = TauInstallation.get_minimal()
+        merged_trc = os.path.join(self.prefix, 'tau.trc')
+        merged_edf = os.path.join(self.prefix, 'tau.edf')
+        if not os.path.exists(merged_trc) or not os.path.exists(merged_edf):
+            tau.merge_tau_trace_files(self.prefix)
+        tau.tau_trace_to_json(merged_trc, merged_edf, json)
+        trc_files = glob.glob(os.path.join(self.prefix, '*.trc'))
+        edf_files = glob.glob(os.path.join(self.prefix, '*.edf'))
+        count_trc_edf = len(trc_files) + len(edf_files)
+        LOGGER.info('Cleaning up TAU trace files...')
+        with ProgressIndicator("", total_size=count_trc_edf) as progress_bar:
+            count = 0
+            for path in trc_files + edf_files:
+                os.remove(path)
+                count += 1
+                progress_bar.update(count)
+
     def get_data_files(self):
         """Return paths to the trial's data files or directories mapped by data type.
 
@@ -474,6 +495,8 @@ class Trial(Model):
         trace_fmt = meas.get('trace', 'none')
         if trace_fmt == 'slog2':
             self._postprocess_slog2()
+        elif trace_fmt == 'json':
+            self._postprocess_json()
         data = {}
         if profile_fmt == 'tau':
             data[profile_fmt] = self.prefix
@@ -488,6 +511,8 @@ class Trial(Model):
             data[trace_fmt] = os.path.join(self.prefix, 'tau.slog2')
         elif trace_fmt == 'otf2':
             data[trace_fmt] = os.path.join(self.prefix, 'traces.otf2')
+        elif trace_fmt == 'json':
+            data[trace_fmt] = os.path.join(self.prefix, 'tau.json')
         elif trace_fmt != 'none':
             raise InternalError("Unhandled trace format '%s'" % trace_fmt)
         return data
@@ -640,5 +665,9 @@ class Trial(Model):
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
                 items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
                 util.create_archive('tgz', export_file, items, expr_dir)
+            elif fmt == 'json':
+                export_file = os.path.join(dest, stem+'.json')
+                LOGGER.info("Writing '%s'...", export_file)
+                util.copy_file(path, export_file)
             elif fmt != 'none':
                 raise InternalError("Unhandled data file format '%s'" % fmt)

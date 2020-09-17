@@ -74,6 +74,16 @@ class CreateTest(tests.TestCase):
         self.assertIsInstance(meas, Measurement)
         self.assertEqual(meas['callpath'], 0)
 
+    def test_trace_json(self):
+        self.reset_project_storage()
+        name = 'trace_json'
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name, '--trace','json'])
+        self.assertFalse(stderr)
+        self.assertIn("Added measurement '%s' to project" % name, stdout)
+        self.assertNotIn("WARNING", stdout)
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
+        self.assertEqual(meas['trace'],'json')
+
     def test_trace_callpath_0(self):
         self.reset_project_storage()
         name = 'test_trace_callpath_0'

@@ -127,7 +127,7 @@ def attributes():
                          'group': 'output format',
                          'metavar': '<format>',
                          'nargs': '?',
-                         'choices':('slog2', 'otf2', 'none'),
+                         'choices':('slog2', 'otf2', 'json', 'none'),
                          'const': 'otf2'},
             'compat': {'otf2': Target.exclude('libotf2_source', None),
                        lambda x: x != 'none': _discourage_callpath},

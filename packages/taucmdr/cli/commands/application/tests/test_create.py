@@ -33,6 +33,8 @@ Functions used for unit tests of create.py.
 
 from taucmdr import tests
 from taucmdr.cli.commands.application.create import COMMAND as create_cmd
+from taucmdr.model.application import Application
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`application.create`."""
@@ -41,6 +43,15 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
         self.assertIn('Added application \'test01\' to project configuration', stdout)
+        self.assertFalse(stderr)
+
+    def test_python(self):
+        self.reset_project_storage()
+        name = 'python_app'
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name,'--python'])
+        app = Application.controller(PROJECT_STORAGE).one({'name': name})
+        self.assertIsInstance(app, Application)
+        self.assertEqual(app['python'], True)
         self.assertFalse(stderr)
 
     def test_duplicatename(self):
