@@ -40,6 +40,7 @@ from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 
+LOGGER = logger.get_logger(__name__)
 
 class AbstractCliView(AbstractCommand):
     """A command that works as a `view` for a `controller`.
@@ -273,7 +274,7 @@ class ListCommand(AbstractCliView):
         header_row = [col['header'] for col in self.dashboard_columns]
         rows = [header_row]
         for record in records:
-            populated = record.populate()
+            populated = record.populate(context=False)
             row = []
             for col in self.dashboard_columns:
                 if 'value' in col:
@@ -377,11 +378,15 @@ class ListCommand(AbstractCliView):
                                  help="show all %(model_name)s data in a list" % self._format_fields,
                                  const='long', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
+        parser.add_argument('-p', '--project',
+                            help="Use PROJECT instead of the selected project",
+                            type=str,
+                            default=None)
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "show", self.model_name, plural=True, exclusive=False)
         return parser
 
-    def _list_records(self, storage_levels, keys, style):
+    def _list_records(self, storage_levels, keys, style, context=True):
         """Shows record data via `print`.
 
         Args:
@@ -403,11 +408,11 @@ class ListCommand(AbstractCliView):
 
         parts = []
         if system:
-            parts.extend(self._format_records(system_ctl, style, keys))
+            parts.extend(self._format_records(system_ctl, style, keys, context=context))
         if user:
-            parts.extend(self._format_records(user_ctl, style, keys))
+            parts.extend(self._format_records(user_ctl, style, keys, context=context))
         if project:
-            parts.extend(self._format_records(project_ctl, style, keys))
+            parts.extend(self._format_records(project_ctl, style, keys, context=context))
         if style == 'dashboard':
             # Show record counts (not the records themselves) for other storage levels
             if not system:
@@ -424,9 +429,19 @@ class ListCommand(AbstractCliView):
         keys = getattr(args, 'keys', None)
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
-        return self._list_records(storage_levels, keys, style)
 
-    def _retrieve_records(self, ctrl, keys):
+        context = True
+        if args.project:
+            matching = Project.controller().one({'name': args.project})
+            if matching:
+                LOGGER.debug("Using project %s", matching.eid)
+                context = [('project', matching.eid), ('projects', matching.eid)]
+            else:
+                LOGGER.debug("Project %s not found", args.project)
+
+        return self._list_records([l.name for l in storage_levels], keys, style, context=context)
+
+    def _retrieve_records(self, ctrl, keys, context=True):
         """Retrieve modeled data from the controller.
 
         Args:
@@ -437,21 +452,21 @@ class ListCommand(AbstractCliView):
             list: Model records.
         """
         if not keys:
-            records = ctrl.all()
+            records = ctrl.all(context=context)
         else:
             key_attr = self.model.key_attribute
             if len(keys) == 1:
-                records = ctrl.search({key_attr: keys[0]})
+                records = ctrl.search({key_attr: keys[0]}, context=context)
                 if not records:
                     self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[0]))
             else:
-                records = ctrl.search([{key_attr: key} for key in keys])
+                records = ctrl.search([{key_attr: key} for key in keys], context=context)
                 for i, record in enumerate(records):
                     if not record:
                         self.parser.error("No %s with %s='%s'" % (self.model_name, key_attr, keys[i]))
         return records
 
-    def _format_records(self, ctrl, style, keys=None):
+    def _format_records(self, ctrl, style, keys=None, context=True):
         """Format records in a given style.
 
         Retrieves records for controller `ctrl` and formats them.
@@ -465,7 +480,7 @@ class ListCommand(AbstractCliView):
             list: Record data as formatted strings.
         """
         try:
-            records = self._retrieve_records(ctrl, keys)
+            records = self._retrieve_records(ctrl, keys, context=context)
         except StorageError:
             records = []
         if not records:

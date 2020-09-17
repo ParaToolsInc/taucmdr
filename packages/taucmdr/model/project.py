@@ -96,14 +96,17 @@ class ProjectController(Controller):
         return super(ProjectController, self).create(data)
 
     def delete(self, keys):
-        super(ProjectController, self).delete(keys)
+        to_delete = self.one(keys)
+
         try:
             selected = self.selected()
         except ProjectSelectionError:
             pass
         else:
-            if selected is None:
+            if selected == to_delete:
                 self.unselect()
+
+        super(ProjectController, self).delete(keys)
 
     def select(self, project, experiment=None):
         self.storage['selected_project'] = project.eid
@@ -115,7 +118,8 @@ class ProjectController(Controller):
             experiment.configure()
 
     def unselect(self):
-        del self.storage['selected_project']
+        if self.storage.contains({'key': 'selected_profile'}):
+            del self.storage['selected_project']
 
     def selected(self):
         try:
@@ -178,7 +182,10 @@ class Project(Model):
 
     @classmethod
     def selected(cls, storage=PROJECT_STORAGE):
-        return cls.__controller__(cls, storage).selected()
+        try:
+            return cls.__controller__(cls, storage).selected()
+        except ProjectSelectionError:
+            return None
 
     @property
     def prefix(self):

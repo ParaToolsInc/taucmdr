@@ -36,6 +36,8 @@ TAU ?= minimal
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
+DOCKER_IMG_NAME = cmdr-dev-0.1.0
+DOCKER_TAG = latest
 
 # Shell utilities
 RM = rm -f
@@ -142,7 +144,7 @@ else
 endif
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
-.PHONY: help build install clean python_check python_download
+.PHONY: help build install clean python_check python_download dev-container run-container
 
 .DEFAULT: help
 
@@ -212,3 +214,9 @@ $(CONDA_SRC):
 
 clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
+
+dev-container:
+	$(ECHO)docker build --pull --rm -t $(DOCKER_IMG_NAME) .
+
+run-container:
+	$(ECHO)docker run -i -t -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)

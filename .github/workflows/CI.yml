@@ -1,7 +1,7 @@
-# The last two jobs, unit testing and runnng TAU=full installation wait until the first finishes and re-uses the TAU=minimal install
 # Unfortunately, there is a lot of duplicated code that could be simplified/eliminated with YAML anchors and aliases,
 # but GitHub Actions does not yet support YAML anchors and aliases.
-# Clever use of global environment variables could help eliminate some of it, but the best options would be to just use aliases and anchors
+# Clever use of global environment variables could help eliminate some of it, but the best options would be to just use
+# aliases and anchors
 
 name: CI
 
@@ -21,13 +21,16 @@ env:
 
 jobs:
   Install-taucmdr-minimal:
+    name: Install and Test TAU Commander
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-16.04]
         python_version: ['2.7']
-
+    env:
+      OS: ${{ matrix.os }}
+      PY_VER: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,24 +38,23 @@ jobs:
 
       - name: Install system packages
         run: |
+          # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
           sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v1
-      #   with:
-      #     python-version: '3.6'
-      #     architecture: 'x64'
 
       - name: System info
         id: info
         run: |
+          # Get info for debugging and set some environment variables to use later
           uname -a
           mount
           gcc --version
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref:        ${{ github.ref }}"
           echo "matrix.os:         ${{ matrix.os }}"
+          echo "Pythons found:"
+          type -a python
+          while read -r line ; do "${line##* is }" --version; done <<< $(type -a python)
           export INSTALLDIR="${HOME}/${INSTALLDIR}"
           echo "::set-output name=install_dir::${INSTALLDIR}"
           echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
@@ -60,21 +62,13 @@ jobs:
           echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
           echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
 
-      - name: Cache dependencies
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}
-
       - name: Cache TAU sources
         uses: actions/cache@v1
         with:
           path: ${{ steps.info.outputs.taucmdr_system}}/src
           key: ${{ matrix.os }}-system-src-${{ github.sha }}
           restore-keys: |
-            ${{ matrix.os }}-system-src-
+            ${{ matrix.os }}-system-src
 
       - name: Install TAU Commander
         run: |
@@ -87,199 +81,63 @@ jobs:
           python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
           cd "${HOME}"
           zip -vr taucmdr.zip ${INSTALLDIR##*/} -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
+          type -a python
+          while read -r line ; do "${line##* is }" --version; done <<< $(type -a python)
 
       - name: Upload TAU Commander install log
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload TAU Commander minimal install
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-installation-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
 
-  Install-taucmdr-full:
-    needs: Install-taucmdr-minimal
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
-        python_version: ['2.7']
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 9999
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v1
-      #   with:
-      #     python-version: '3.6'
-      #     architecture: 'x64'
-
-      - name: System info
-        id: info
-        run: |
-          uname -a
-          mount
-          gcc --version
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref:        ${{ github.ref }}"
-          echo "matrix.os:         ${{ matrix.os }}"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "::set-output name=install_dir::${INSTALLDIR}"
-          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
-          echo "::set-output name=home_dir::${HOME}"
-          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::add-path::${INSTALLDIR}/conda/bin"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-
-      - name: Cache dependencies
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}
-
-      - name: Cache TAU sources
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.taucmdr_system}}/src
-          key: ${{ matrix.os }}-system-src-${{ github.sha }}
-          restore-keys: |
-            ${{ matrix.os }}-system-src-
-
-      - name: Download installed TAU Commander
-        uses: actions/download-artifact@v1
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}
-
-      - name: Extract TAU minimal install
-        run: |
-          cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
-
-      - name: Install Full TAU
-        run: ${{ steps.info.outputs.taucmdr_system }}/configure
-
-      - name: Upload TAU Commander full-TAU install log
-        if: always()
-        uses: actions/upload-artifact@v1
-        with:
-          name: taucmdr-full-tau-debug-log-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
-
-      - name: tau_validate
-        if: always()
-        run: |
-          cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
-          printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
-          export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
-          ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
-          mkdir "${HOME}/tau-full-validate"
-          cp table.html results.html "${HOME}/tau-full-validate"
-
-      - name: Upload full-TAU validate
-        if: always()
-        uses: actions/upload-artifact@v1
-        with:
-          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
-          path: ${{ steps.info.outputs.home_dir }}/tau-full-validate
-
-  Unit-test-taucmdr:
-    needs: Install-taucmdr-minimal
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
-        python_version: ['2.7']
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 9999
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
-
-      # - name: Setup Python
-      #   uses: actions/setup-python@v1
-      #   with:
-      #     python-version: '3.6'
-      #     architecture: 'x64'
-
-      - name: System info
-        id: info
-        run: |
-          uname -a
-          mount
-          gcc --version
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref:        ${{ github.ref }}"
-          echo "matrix.os:         ${{ matrix.os }}"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "::set-output name=install_dir::${INSTALLDIR}"
-          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
-          echo "::set-output name=home_dir::${HOME}"
-          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::add-path::${INSTALLDIR}/conda/bin"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-
-      - name: Cache dependencies
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.install_dir}}/conda
-          key: ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-pip${{ matrix.python_version }}-${{ hashFiles('**/requirements-dev.txt') }}-${{ hashFiles('**/CI.yml') }}
-
-      - name: Cache TAU sources
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.info.outputs.taucmdr_system}}/src
-          key: ${{ matrix.os }}-system-src-${{ github.sha }}
-          restore-keys: |
-            ${{ matrix.os }}-system-src-
-
-      - name: Download installed TAU Commander
-        uses: actions/download-artifact@v1
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}
-
-      - name: Extract TAU minimal install
-        run: |
-          cd "${HOME}" && ls -la && ls -la taucmdr && unzip -o taucmdr.zip && ls -la && ls -la taucmdr
-
       - name: Test TAU Commander
-        run: coverage run setup.py test
+        run: |
+          rm -f ./coverage.xml || true
+          coverage run setup.py test
+          coverage xml
 
       - name: Build sphinx docs
-        run: |
-          python setup.py build_sphinx
+        run: python setup.py build_sphinx
 
       - name: Upload TAU Commander unit test log
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-unit-test-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+
+      - name: Upload Pylint report
+        if: always() && matrix.os == 'ubuntu-18.04'
+        uses: actions/upload-artifact@v2
+        with:
+          name: taucmdr-pylint-logs-${{ matrix.os }}
+          path: pylint.md
+
+      - name: Pylint PR Comment
+        if: matrix.os == 'ubuntu-18.04'
+        uses: marocchino/sticky-pull-request-comment@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: pylint-comment
+          path: ./pylint.md
+
+      - name: Upload Coverage info
+        if: always()
+        uses: codecov/codecov-action@v1
+        with:
+          flags: unittests,CI
+          name: codecov-${{ matrix.os }}
+          fail_ci_if_error: true # optional (default = false)
+          path_to_write_report: codecov-upload.txt
+          env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
@@ -305,7 +163,7 @@ jobs:
 
       - name: Upload unit tests TAU validate
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate

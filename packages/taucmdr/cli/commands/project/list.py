@@ -27,7 +27,8 @@
 #
 """``measurement list`` subcommand."""
 
-from taucmdr import util
+from types import NoneType
+from taucmdr import util, logger
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import ListCommand
@@ -38,6 +39,7 @@ from taucmdr.cli.commands.measurement.list import COMMAND as measurement_list_cm
 from taucmdr.cli.commands.experiment.list import COMMAND as experiment_list_cmd
 from taucmdr.model.project import Project
 
+LOGGER = logger.get_logger(__name__)
 
 class ProjectListCommand(ListCommand):
     """Base class for the `list` subcommand of command line views."""
@@ -80,25 +82,25 @@ class ProjectListCommand(ListCommand):
         if single:
             storage = levels[0]
             ctrl = Project.controller(storage)
-            proj = ctrl.one({'name': keys[0]})
+            proj = ctrl.one({'name': keys[0]}, context=False)
             for cmd, prop in ((target_list_cmd, 'targets'),
                               (application_list_cmd, 'applications'),
                               (measurement_list_cmd, 'measurements'),
                               (experiment_list_cmd, 'experiments')):
                 primary_key = proj.attributes[prop]['collection'].key_attribute
-                records = proj.populate(prop)
+                records = proj.populate(prop, context=False)
                 if records:
-                    cmd.main([record[primary_key] for record in records] + style_args)
+                    cmd.main([record[primary_key] for record in records] + ['-p'] + [proj['name']] + style_args)
                 else:
                     label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
                     print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
             try:
                 expr = proj.experiment()
+                if not isinstance(expr, NoneType):
+                    print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
             except ExperimentSelectionError:
                 print (util.color_text('No selected experiment: ', 'red') +
                        'Use `%s` to create or select an experiment.' % select_cmd)
-            else:
-                print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
 
         return retval
 
