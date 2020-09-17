@@ -37,19 +37,19 @@ from taucmdr.model.project import Project
 
 class DashboardCommand(AbstractCommand):
     """A command line dashboard for TAU Commander."""
-    
+
     def _construct_parser(self):
         usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         style_dest = 'style'
         style_group = parser.add_mutually_exclusive_group()
-        style_group.add_argument('-d', '--dashboard', 
+        style_group.add_argument('-d', '--dashboard',
                                  help="show data in a fancy dasboard",
-                                 const='dashboard', action='store_const', dest=style_dest, 
+                                 const='dashboard', action='store_const', dest=style_dest,
                                  default='dashboard')
-        style_group.add_argument('-l', '--long', 
+        style_group.add_argument('-l', '--long',
                                  help="show data in long format",
-                                 const='long', action='store_const', dest=style_dest, 
+                                 const='long', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         return parser
 

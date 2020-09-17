@@ -27,8 +27,8 @@
 #
 """libunwind software installation management.
 
-libunwind is used for symbol resolution during sampling, compiler-based 
-instrumentation, and other measurement approaches. 
+libunwind is used for symbol resolution during sampling, compiler-based
+instrumentation, and other measurement approaches.
 """
 
 import os
@@ -46,8 +46,8 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.1.tar.gz',
-         ARM64: {LINUX: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-arm64-1.1.tgz'}}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3.1.tar.gz',
+         ARM64: {LINUX: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3-rc1.tar.gz'}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -65,7 +65,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os, 
+        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os,
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
@@ -92,9 +92,9 @@ class LibunwindInstallation(AutotoolsInstallation):
 
     def make(self, flags):
         """Build libunwind.
-        
-        libunwind's test programs often fail to build but the library itself 
-        compiles just fine, so we just keep pressing on to 'make install' 
+
+        libunwind's test programs often fail to build but the library itself
+        compiles just fine, so we just keep pressing on to 'make install'
         even if 'make' appears to have died.
         """
         # pylint: disable=broad-except

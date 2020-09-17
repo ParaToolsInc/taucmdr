@@ -36,15 +36,15 @@ from taucmdr.model.project import Project
 
 class TrialExportCommand(AbstractCommand):
     """``trial export`` subcommand."""
-    
+
     def _construct_parser(self):
         usage = "%s [trial_number...] [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
-        parser.add_argument('--destination', 
+        parser.add_argument('--destination',
                             help="location to store exported trial data",
                             metavar='<path>',
                             default=os.getcwd())
-        parser.add_argument('trial_numbers', 
+        parser.add_argument('trial_numbers',
                             help="show details for specified trials",
                             metavar='trial_number',
                             nargs='*',

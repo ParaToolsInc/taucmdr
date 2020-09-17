@@ -51,29 +51,30 @@ class ProjectStorageError(StorageError):
 
     def __init__(self, search_root):
         """Initialize the error object.
-        
+
         Args:
             search_root (str): Directory in which the search for a project directory was initiated.
         """
         value = "Project directory not found in '%s' or any of its parent directories." % search_root
-        hints = "Make sure that you have already run the `tau initialize` command in this directory or any of its parent directories."
+        hints = ("Make sure that you have already run the `tau initialize` command "
+                 "in this directory or any of its parent directories.")
         super(ProjectStorageError, self).__init__(value, hints)
         self.search_root = search_root
-        
+
 
 
 class ProjectStorage(LocalFileStorage):
     """Handle the special case project storage.
-    
+
     Each TAU Commander project has its own project storage that holds project-specific files
     (i.e. performance data) and the project configuration.
     """
-    
+
     def __init__(self):
         super(ProjectStorage, self).__init__('project', None)
         self._force_cwd = False
         self._tau_directory = None
-    
+
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
         from taucmdr.cf.storage.levels import USER_STORAGE
@@ -87,7 +88,7 @@ class ProjectStorage(LocalFileStorage):
             try:
                 util.mkdirp(project_prefix)
             except Exception as err:
-                raise StorageError("Failed to access %s filesystem prefix '%s': %s" % 
+                raise StorageError("Failed to access %s filesystem prefix '%s': %s" %
                                    (self.name, project_prefix, err))
             # Exclude project storage directory from git
             with open(os.path.join(self.prefix, '.gitignore'), 'w+') as fout:
@@ -96,7 +97,7 @@ class ProjectStorage(LocalFileStorage):
 
     def destroy(self, *args, **kwargs):
         """Disconnects the database and filesystem and recursively deletes the filesystem.
-        
+
         Args:
             *args: Passed through to :any:`disconnect_filesystem`.
             **kwargs: Keyword arguments for :any:`disconnect_filesystem` or :any:`shutil.rmtree`.
@@ -111,13 +112,13 @@ class ProjectStorage(LocalFileStorage):
     @property
     def prefix(self):
         """Searches the current directory and its parents for a TAU Commander project directory.
-        
+
         This method **does not** create or modify files.  If the project directory cannot be found
         then an error is raised.  It's up to the caller to determine how the error should be handled.
-        
+
         Returns:
             str: The project directory, i.e. this storage container's filesystem prefix.
-        
+
         Raises:
             ProjectStorageError: Neither the current directory nor any of its parent directories contain
                                  a TAU Commander project directory.
@@ -157,7 +158,7 @@ class ProjectStorage(LocalFileStorage):
             lastroot = root
             root = os.path.dirname(root)
         raise ProjectStorageError(cwd)
-        
+
     def force_cwd(self, force):
         self._force_cwd = force
 

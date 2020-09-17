@@ -27,7 +27,7 @@
 #
 """TAU Commander error handling.
 
-Only error base classes should be defined here.  
+Only error base classes should be defined here.
 Error classes should be defined in their appropriate modules.
 """
 
@@ -43,7 +43,7 @@ LOGGER = logger.get_logger(__name__)
 
 class Error(Exception):
     """Base class for all errors in TAU Commander.
-    
+
     Attributes:
         value: Some value attached to the error, typically a string but could be anything with a __str__ method.
         hints (list): String hints for the user to help resolve the error.
@@ -59,10 +59,10 @@ class Error(Exception):
                    "%(backtrace)s\n"
                    "This is a bug in TAU Commander.\n"
                    "Please send '%(logfile)s' to %(contact)s for assistance.")
-    
+
     def __init__(self, value, *hints):
         """Initialize the Error instance.
-        
+
         Args:
             value (str): Message describing the error.
             *hints: Hint messages to help the user resolve this error.
@@ -71,7 +71,7 @@ class Error(Exception):
         self.value = value
         self.hints = list(hints)
         self.message_fields = {'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
-    
+
     @property
     def message(self):
         fields = dict(self.message_fields, value=self.value)
@@ -94,7 +94,7 @@ class Error(Exception):
 
 class InternalError(Error):
     """Indicates that an internal error has occurred, i.e. a bug in TAU.
-    
+
     These are bad and really shouldn't happen.
     """
     show_backtrace = True
@@ -102,19 +102,19 @@ class InternalError(Error):
 
 class ConfigurationError(Error):
     """Indicates that TAU Commander cannot succeed with the given parameters.
-    
+
     This is most commonly caused by user error, e.g the user specifies measurement
     settings that are incompatible with the application.
     """
     message_fmt = ("%(value)s\n"
                    "\n"
                    "%(hints)s\n"
-                   "TAU cannot proceed with the given inputs.\n" 
+                   "TAU cannot proceed with the given inputs.\n"
                    "Please check the configuration for errors or contact %(contact)s for assistance.")
 
     def __init__(self, value, *hints):
         """Initialize the Error instance.
-        
+
         Args:
             value (str): Message describing the error.
             *hints: Hint messages to help the user resolve this error.
@@ -122,7 +122,7 @@ class ConfigurationError(Error):
         if not hints:
             hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
         super(ConfigurationError, self).__init__(value, *hints)
-    
+
     def __str__(self):
         return self.value
 
@@ -132,38 +132,38 @@ class ModelError(InternalError):
 
     def __init__(self, model, value):
         """Initialize the error instance.
-        
+
         Args:
             model (Model): Data model.
-            value (str): A message describing the error.  
+            value (str): A message describing the error.
         """
         super(ModelError, self).__init__("%s: %s" % (model.name, value))
         self.model = model
 
 
 class UniqueAttributeError(ModelError):
-    """Indicates that duplicate values were given for a unique attribute.""" 
+    """Indicates that duplicate values were given for a unique attribute."""
 
     def __init__(self, model, unique):
         """Initialize the error instance.
-        
+
         Args:
             model (Model): Data model.
-            unique (dict): Dictionary of unique attributes in the data model.  
+            unique (dict): Dictionary of unique attributes in the data model.
         """
         super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
 
 
 class ImmutableRecordError(ConfigurationError):
-    """Indicates that a data record cannot be modified.""" 
+    """Indicates that a data record cannot be modified."""
 
 class IncompatibleRecordError(ConfigurationError):
-    """Indicates that a pair of data records are incompatible.""" 
+    """Indicates that a pair of data records are incompatible."""
 
 
 class ProjectSelectionError(ConfigurationError):
     """Indicates an error while selecting a project."""
-    
+
     def __init__(self, value, *hints):
         from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
         from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
@@ -171,13 +171,13 @@ class ProjectSelectionError(ConfigurationError):
         if not hints:
             hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
                      "Use `%s <project_name>` to select a project configuration." % project_select_cmd,
-                     "Use `%s` to see available project configurations." % project_list_cmd)    
+                     "Use `%s` to see available project configurations." % project_list_cmd)
         super(ProjectSelectionError, self).__init__(value, *hints)
 
 
 class ExperimentSelectionError(ConfigurationError):
     """Indicates an error while selecting an experiment."""
-    
+
     def __init__(self, value, *hints):
         from taucmdr.cli.commands.select import COMMAND as select_cmd
         from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -186,15 +186,15 @@ class ExperimentSelectionError(ConfigurationError):
         if not hints:
             hints = ("Use `%s` or `%s` to create a new experiment." % (select_cmd, experiment_create_cmd),
                      "Use `%s` to see current project configuration." % dashboard_cmd,
-                     "Use `%s` to see available project configurations." % project_list_cmd)    
+                     "Use `%s` to see available project configurations." % project_list_cmd)
         super(ExperimentSelectionError, self).__init__(value, *hints)
 
 
 def excepthook(etype, value, tb):
     """Exception handler for any uncaught exception (except SystemExit).
-    
+
     Replaces :any:`sys.excepthook`.
-    
+
     Args:
         etype: Exception class.
         value: Exception instance.

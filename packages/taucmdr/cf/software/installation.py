@@ -36,7 +36,7 @@ from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.levels import ORDERED_LEVELS
-from taucmdr.cf.storage.levels import highest_writable_storage 
+from taucmdr.cf.storage.levels import highest_writable_storage
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
@@ -47,11 +47,11 @@ LOGGER = logger.get_logger(__name__)
 
 def parallel_make_flags(nprocs=None):
     """Flags to enable parallel compilation with `make`.
-    
+
     Args:
-        ncores (int): Number of parallel processes to use.  
+        ncores (int): Number of parallel processes to use.
                       Default is one less than the number of CPU cores.
-                      
+
     Returns:
         list: Command line arguments to pass to `make`.
     """
@@ -71,16 +71,16 @@ def parallel_make_flags(nprocs=None):
 
 def tmpfs_prefix():
     """Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.
-    
+
     /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
     fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
     unavailable then use the filesystem prefix of the highest writable storage container.
-    
-    An attempt is made to ensure that there is at least 2GiB of free space in the 
+
+    An attempt is made to ensure that there is at least 2GiB of free space in the
     selected filesystem.  If
-    
+
     Returns:
-        str: Path to a uniquely-named directory in the temporary filesystem. The directory 
+        str: Path to a uniquely-named directory in the temporary filesystem. The directory
             and all its contents **will be deleted** when the program exits if it installs
             correctly.
     """
@@ -97,7 +97,7 @@ def tmpfs_prefix():
             except (OSError, IOError) as err:
                 LOGGER.debug(err)
                 continue
-            # Check execute privilages some distros mount tmpfs with the noexec option.
+            # Check execute privileges some distros mount tmpfs with the noexec option.
             check_exe_script = None
             try:
                 with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:
@@ -131,7 +131,7 @@ def tmpfs_prefix():
         tmpfs_prefix.value = tmp_prefix
         LOGGER.debug("Temporary prefix: '%s'", tmp_prefix)
         return tmp_prefix
-    
+
 
 @contextmanager
 def new_os_environ():
@@ -141,17 +141,17 @@ def new_os_environ():
         yield os.environ
     finally:
         os.environ = old_environ
-        
+
 
 class Installation(object):
     """Encapsulates a software package installation.
-    
+
     Attributes:
         name (str): The package name, lowercase, alphanumeric with underscores.  All packages have a
-                    corresponding ``taucmdr.cf.software.<name>_installation`` module. 
+                    corresponding ``taucmdr.cf.software.<name>_installation`` module.
         title (str): Human readable name of the software package, e.g. 'TAU Performance System' or 'Score-P'.
-        src (str): Path or URL to a source archive file, 
-                   or a path to a directory where the software is installed, 
+        src (str): Path or URL to a source archive file,
+                   or a path to a directory where the software is installed,
                    or the special keyword 'download'.
         target_arch (str): Target architecture name.
         target_os (str): Target operating system name.
@@ -160,25 +160,25 @@ class Installation(object):
         verify_libraries (list): List of libraries that are present in a valid installation.
         verify_headers (list): List of header files that are present in a valid installation.
     """
-    
-    def __init__(self, name, title, sources, target_arch, target_os, compilers, 
+
+    def __init__(self, name, title, sources, target_arch, target_os, compilers,
                  repos, commands, libraries, headers):
         """Initializes the installation object.
-        
-        To set up a new installation, pass a URL, file path, or the special keyword 'download' as the package source.       
-        To set up an interface to an existing installation, pass the path to that installation as the package source. 
-        
+
+        To set up a new installation, pass a URL, file path, or the special keyword 'download' as the package source.
+        To set up an interface to an existing installation, pass the path to that installation as the package source.
+
         Args:
             name (str): The package name, lowercase, alphanumeric with underscores.  All packages have a
-                        corresponding ``taucmdr.cf.software.<name>_installation`` module. 
+                        corresponding ``taucmdr.cf.software.<name>_installation`` module.
             title (str): Human readable name of the software package, e.g. 'TAU Performance System' or 'Score-P'.
-            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
+            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a
                             path to a directory where the software has already been installed, or a path to a source
                             archive file, or the special keyword 'download'.
             target_arch (Architecture): Target architecture.
             target_os (OperatingSystem): Target operating system.
             compilers (InstalledCompilerSet): Compilers to use if software must be compiled.
-            repos (dict): Dictionary of URLs for source code archives indexed by architecture and OS.  
+            repos (dict): Dictionary of URLs for source code archives indexed by architecture and OS.
                           The None key specifies the default (i.e. universal) source.
             commands (dict): Dictionary of commands, indexed by architecture and OS, that must be installed.
             libraries (dict): Dictionary of libraries, indexed by architecture and OS, that must be installed.
@@ -213,6 +213,13 @@ class Installation(object):
         src = sources[name]
         if src.lower() == 'download':
             self.src = self._lookup_target_os_list(repos)
+            if isinstance(self.src, list):
+                self.srcs = self.src
+                self.srcs_avail = self.srcs[:]
+                self.src = self.srcs.pop(0)
+            else:
+                self.srcs = []
+                self.srcs_avail = [self.src]
         elif src.lower() == 'download-tr6':
             raise ConfigurationError("download-tr6 is not a valid source for %s" % self.title)
         else:
@@ -221,17 +228,17 @@ class Installation(object):
 
     def uid_items(self):
         """List items affecting this installation's UID.
-        
+
         Most packages only care about changes in source archive, target, or C/C++ compilers.
         More sensitive packages (e.g. Score-P or TAU) can override this function.
-        
+
         Returns:
             list: An **ordered** list of items affecting this installation's UID.
                   Changing the order of this list will change the UID.
         """
         return [self.src, self.target_arch.name, self.target_os.name,
                 self.compilers[compiler.host.CC].uid, self.compilers[compiler.host.CXX].uid]
-    
+
     @property
     def uid(self):
         if self._uid is None:
@@ -240,7 +247,7 @@ class Installation(object):
 
     def _get_install_tag(self):
         return self.uid
-    
+
     def _get_install_prefix(self):
         if not self._install_prefix:
             if self.unmanaged:
@@ -262,7 +269,7 @@ class Installation(object):
                     self._set_install_prefix(os.path.join(highest_writable_storage().prefix, self.name, tag))
                 LOGGER.debug("%s installation prefix is %s", self.name, self._install_prefix)
         return self._install_prefix
-    
+
     def _set_install_prefix(self, value):
         assert value is not None
         self._install_prefix = value
@@ -270,19 +277,19 @@ class Installation(object):
     @property
     def install_prefix(self):
         return self._get_install_prefix()
-    
+
     @property
     def include_path(self):
         return os.path.join(self._get_install_prefix(), self._include_subdir)
-    
+
     @property
     def bin_path(self):
         return os.path.join(self._get_install_prefix(), self._bin_subdir)
-    
+
     @property
     def lib_path(self):
         return os.path.join(self._get_install_prefix(), self._lib_subdir)
-    
+
     def _lookup_target_os_list(self, dct):
         if not dct:
             return []
@@ -293,10 +300,10 @@ class Installation(object):
             return default
         else:
             return arch_dct.get(self.target_os, arch_dct.get(None, default))
-        
+
     def set_group(self, gid=None):
         """Sets the group for all files in the installation.
-        
+
         Args:
             gid (int): Group ID number.  If not given the use the group ID of the folder containing the installation.
         """
@@ -307,7 +314,7 @@ class Installation(object):
         LOGGER.info("Checking installed files...")
         with ProgressIndicator(""):
             for root, dirs, _ in os.walk(self.install_prefix):
-                paths.extend((os.path.join(root, x) for x in dirs))
+                paths.extend(os.path.join(root, x) for x in dirs)
         LOGGER.info("Setting file permissions...")
         with ProgressIndicator("", total_size=len(paths)) as progress_bar:
             for i, path in enumerate(paths):
@@ -316,7 +323,7 @@ class Installation(object):
                 except OSError as err:
                     LOGGER.debug("Cannot set group on '%s': %s", path, err)
                 progress_bar.update(i)
-                
+
     def _acquire_source(self, reuse_archive):
         archive_file = os.path.basename(self.src)
         if reuse_archive:
@@ -337,19 +344,19 @@ class Installation(object):
                      "Check that the file or directory is accessible")
             raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
         return archive
-    
+
     def acquire_source(self, reuse_archive=True):
         """Acquires package source code archive file via download or file copy.
 
         If the package is configured to use an existing installation as the source then
         this routine does nothing.
-        
+
         Args:
             reuse_archive (bool): If True don't download, just confirm that the archive exists.
-            
+
         Returns:
             str: Absolute path to the source archive.
-            
+
         Raises:
             ConfigurationError: Package source code not provided or couldn't be acquired.
         """
@@ -357,25 +364,43 @@ class Installation(object):
             raise ConfigurationError("No source code provided for %s" % self.title)
         if self.unmanaged:
             return self.src
-        archive = self._acquire_source(reuse_archive)
         # Check that archive is valid by getting archive top-level directory
-        try:
-            util.archive_toplevel(archive)
-        except IOError:
-            if not reuse_archive:
-                raise ConfigurationError("Unable to acquire %s source package '%s'" % (self.name, self.src))
-            return self.acquire_source(reuse_archive=False)
-        return archive
+        while self.src:
+            archive = self._acquire_source(reuse_archive)
+            try:
+                util.archive_toplevel(archive)
+            except IOError:
+                if reuse_archive:
+                    archive = self.acquire_source(reuse_archive=False)
+                    try:
+                        util.archive_toplevel(archive)
+                        return archive
+                    except IOError:
+                        pass
+                try:
+                    LOGGER.warning("Unable to acquire %s source package '%s'", self.name, self.src)
+                    self.src = self.srcs.pop(0)
+                    LOGGER.warning("falling back to '%s'", self.src)
+                except IndexError:
+                    self.src = None
+            else:
+                return archive
+        if self.src is None:
+            raise ConfigurationError(
+                "Unable to acquire %s source package '%s'" % (self.name, ', '.join(self.srcs_avail))
+            )
+        else:
+            return archive
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
-        
+
         Acquires package source code archive file via download or file copy,
         unpacks the archive, and verifies that required paths exist.
-        
+
         Args:
             reuse_archive (bool): If True, attempt to reuse archive files.
-            
+
         Returns:
             str: The path to the unpacked source code files.
 
@@ -395,10 +420,10 @@ class Installation(object):
 
     def verify(self):
         """Check if the installation at :any:`installation_prefix` is valid.
-        
+
         A valid installation provides all expected files and commands.
         Subclasses may wish to perform additional checks.
-        
+
         Raises:
           SoftwarePackageError: Describs why the installation is invalid.
         """
@@ -423,14 +448,14 @@ class Installation(object):
             if not util.path_accessible(path):
                 raise SoftwarePackageError("'%s' is not accessible" % path)
         LOGGER.debug("%s installation at '%s' is valid", self.name, self.install_prefix)
-        
+
     def add_dependency(self, name, sources, *args, **kwargs):
         """Adds a new package to the list of packages this package depends on.
-        
+
         Args:
-            name (str): The name of the package.  There must be a corresponding 
+            name (str): The name of the package.  There must be a corresponding
                         ``taucmdr.cf.software.<name>_installation`` module.
-            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a 
+            sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a
                             path to a directory where the software has already been installed, or a path to a source
                             archive file, or the special keyword 'download'.
         """
@@ -440,12 +465,12 @@ class Installation(object):
 
     def install(self, force_reinstall=False):
         """Execute the installation sequence in a sanitized environment.
-        
+
         Modifies the system by building and installing software.
-        
+
         Args:
             force_reinstall (bool): If True, reinstall even if the software package passes verification.
-            
+
         Raises:
             SoftwarePackageError: Installation failed.
         """
@@ -487,18 +512,18 @@ class Installation(object):
         raise NotImplementedError
 
     def compiletime_config(self, opts=None, env=None):
-        """Configure compilation environment to use this software package. 
+        """Configure compilation environment to use this software package.
 
         Returns command line options and environment variables required by this
         software package **when it is used to compile other software packages**.
-        The default behavior, to be overridden by subclasses as needed, is to 
+        The default behavior, to be overridden by subclasses as needed, is to
         prepend ``self.bin_path`` to the PATH environment variable.
-        
+
         Args:
             opts (list): Optional list of command line options.
             env (dict): Optional dictionary of environment variables.
-            
-        Returns: 
+
+        Returns:
             tuple: opts, env updated for the new environment.
         """
         opts = list(opts) if opts else []
@@ -512,18 +537,18 @@ class Installation(object):
 
     def runtime_config(self, opts=None, env=None):
         """Configure runtime environment to use this software package.
-        
-        Returns command line options and environment variables required by this 
+
+        Returns command line options and environment variables required by this
         software package **when other software packages depending on it execute**.
-        The default behavior, to be overridden by subclasses as needed, is to 
-        prepend ``self.bin_path`` to the PATH environment variable and 
+        The default behavior, to be overridden by subclasses as needed, is to
+        prepend ``self.bin_path`` to the PATH environment variable and
         ``self.lib_path`` to the system library path (e.g. LD_LIBRARY_PATH).
-        
+
         Args:
             opts (list): Optional list of command line options.
             env (dict): Optional dictionary of environment variables.
-            
-        Returns: 
+
+        Returns:
             tuple: opts, env updated for the new environment.
         """
         opts = list(opts) if opts else []
@@ -534,7 +559,7 @@ class Installation(object):
             except KeyError:
                 env['PATH'] = self.bin_path
         if os.path.isdir(self.lib_path):
-            library_path = 'DYLD_LIBRARY_PATH' if HOST_OS is DARWIN else 'LD_LIBRARY_PATH'   
+            library_path = 'DYLD_LIBRARY_PATH' if HOST_OS is DARWIN else 'LD_LIBRARY_PATH'
             try:
                 env[library_path] = os.pathsep.join([self.lib_path, env[library_path]])
             except KeyError:
@@ -550,10 +575,10 @@ class MakeInstallation(Installation):
 
     def make(self, flags):
         """Invoke `make`.
-        
+
         Args:
             flags (list): Command line flags to pass to `make`.
-            
+
         Raises:
             SoftwarePackageError: Compilation failed.
         """
@@ -569,10 +594,10 @@ class MakeInstallation(Installation):
 
     def make_install(self, flags):
         """Invoke `make install`.
-        
+
         Args:
             flags (list): Command line flags to pass to `make`.
-            
+
         Raises:
             SoftwarePackageError: Configuration failed.
         """
@@ -596,19 +621,19 @@ class MakeInstallation(Installation):
 
 class AutotoolsInstallation(MakeInstallation):
     """Base class for installations that follow the GNU Autotools installation process.
-    
+
     The GNU Autotools installation process is::
         ./configure [options]
-        make [flags] all [options] 
+        make [flags] all [options]
         make [flags] install [options]
     """
-    
+
     def configure(self, flags):
         """Invoke `configure`.
-        
+
         Args:
             flags (list): Command line flags to pass to `configure`.
-            
+
         Raises:
             SoftwarePackageError: Configuration failed.
         """
@@ -618,20 +643,20 @@ class AutotoolsInstallation(MakeInstallation):
         LOGGER.info("Configuring %s...", self.title)
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             util.add_error_stack(self._src_prefix)
-            raise SoftwarePackageError('%s configure failed' % self.title)   
-    
+            raise SoftwarePackageError('%s configure failed' % self.title)
+
     def installation_sequence(self):
         self.configure([])
         self.make([])
         self.make_install([])
-    
+
 
 class CMakeInstallation(MakeInstallation):
     """Base class for installations that follow the CMake installation process.
-    
+
     The CMake installation process is::
         cmake [options]
-        make [flags] all [options] 
+        make [flags] all [options]
         make [flags] install [options]
     """
 
@@ -656,10 +681,10 @@ class CMakeInstallation(MakeInstallation):
 
     def cmake(self, flags):
         """Invoke `cmake`.
-        
+
         Args:
             flags (list): Command line flags to pass to `cmake`.
-            
+
         Raises:
             SoftwarePackageError: Configuration failed.
 	"""
@@ -670,7 +695,7 @@ class CMakeInstallation(MakeInstallation):
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('CMake failed for %s' %self.title)
-    
+
     def installation_sequence(self):
         self.cmake([])
         self.make([])

@@ -48,10 +48,10 @@ class StorageError(Error):
 
 class StorageRecord(dict):
     """A record in the storage container's database.
-    
+
     Attributes:
         eid_type: Element identifier type.
-        storage: Storage container whos database contains this record.
+        storage: Storage container whose database contains this record.
         eid: Element identifier value.
     """
     eid_type = str
@@ -67,52 +67,52 @@ class StorageRecord(dict):
 
 class AbstractStorage(object):
     """Abstract base class for storage containers.
-    
+
     A storage container provides a record database, a persistent filesystem, and a key/value store.
     The database is accessed via member methods like :any:`insert`, :any:`search`, etc.
     The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :any:`prefix`.
     The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.
-    
+
     Attributes:
         name (str): The storage container's name, e.g. "system" or "user".
         prefix (str): Absolute path to the top-level directory of the container's filesystem.
-        database (str): Database object implementing :any:`AbstractDatabase`. 
+        database (str): Database object implementing :any:`AbstractDatabase`.
     """
 
     __metaclass__ = ABCMeta
-    
+
     Record = StorageRecord
 
     def __init__(self, name):
         self.name = name
-        
+
     def __str__(self):
         return self.name
 
     @abstractmethod
     def __len__(self):
         """Return the number of items in the key/value store."""
-    
-    @abstractmethod    
+
+    @abstractmethod
     def __getitem__(self, key):
         """Retrieve a value from the key/value store."""
-    
+
     @abstractmethod
     def __setitem__(self, key, value):
         """Store a value in the key/value store."""
-        
+
     @abstractmethod
     def __delitem__(self, key):
         """Remove a value from the key/value store."""
-        
+
     @abstractmethod
     def __contains__(self, key):
         """Returns True if ``key`` maps to a value is in the key/value store."""
-        
+
     @abstractmethod
     def __iter__(self):
         """Iterate over keys in the key/value store."""
-    
+
     @abstractmethod
     def iterkeys(self):
         """Iterate over keys in the key/value store."""
@@ -124,7 +124,7 @@ class AbstractStorage(object):
     @abstractmethod
     def iteritems(self):
         """Iterate over items in the key/value store."""
-    
+
     @abstractmethod
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
@@ -144,10 +144,10 @@ class AbstractStorage(object):
     @abstractmethod
     def prefix(self):
         """Get the filesystem prefix for file storage.
-        
+
         The filesystem must be persistent and provide the usual POSIX filesystem calls.
         In particular, GNU software packages should be installable in the filesystem.
-        
+
         Returns:
             str: Absolute path in the filesystem.
         """
@@ -159,16 +159,16 @@ class AbstractStorage(object):
     @abstractmethod
     def __exit__(self, ex_type, value, traceback):
         """Finalizes the database transaction."""
-        
+
     @abstractmethod
     def table(self, table_name):
         """Return a handle to a table.
-        
+
         Return a handle to the named table or, if `table_name` is None, return the default table.
-        
+
         Args:
             table_name (str): Name of the table or None.
-            
+
         Returns:
             object: A database table object.
         """
@@ -176,35 +176,35 @@ class AbstractStorage(object):
     @abstractmethod
     def count(self, table_name=None):
         """Count the records in the database.
-        
+
         Args:
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            
+
         Returns:
             int: Number of records in the table.
         """
 
-    @abstractmethod    
+    @abstractmethod
     def get(self, keys, table_name=None, match_any=False):
         """Find a single record.
-        
+
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: return the record with that element identifier.
             * dict: return the record with attributes matching `keys`.
             * list or tuple: return a list of records matching the elements of `keys`
             * None: return None.
-        
+
         Args:
             keys: Fields or element identifiers to match.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
+            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
             Record: The matching data record if `keys` was a self.Record.eid_type or dict.
             list: All matching data records if `keys` was a list or tuple.
             None: No record found or ``bool(keys) == False``.
-            
+
         Raises:
             ValueError: Invalid value for `keys`.
         """
@@ -212,22 +212,22 @@ class AbstractStorage(object):
     @abstractmethod
     def search(self, keys=None, table_name=None, match_any=False):
         """Find multiple records.
-        
+
         The behavior depends on the type of `keys`:
             * Record.eid_type: return the record with that element identifier.
             * dict: return all records with attributes matching `keys`.
             * list or tuple: return a list of records matching the elements of `keys`
             * None: return all records.
-        
+
         Args:
             keys: Fields or element identifiers to match.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
+            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
             list: Matching data records.
-            
+
         Raises:
             ValueError: Invalid value for `keys`.
         """
@@ -235,21 +235,21 @@ class AbstractStorage(object):
     @abstractmethod
     def match(self, field, table_name=None, regex=None, test=None):
         """Find records where `field` matches `regex` or `test`.
-        
-        Either `regex` or `test` may be specified, not both.  
+
+        Either `regex` or `test` may be specified, not both.
         If `regex` is given, then all records with `field` matching the regular expression are returned.
-        If test is given then all records with `field` set to a value that caues `test` to return True are returned. 
-        If neither is given, return all records where `field` is set to any value. 
-        
+        If test is given then all records with `field` set to a value that caues `test` to return True are returned.
+        If neither is given, return all records where `field` is set to any value.
+
         Args:
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             field (string): Name of the data field to match.
             regex (string): Regular expression string.
-            test: Callable returning a boolean value.  
+            test: Callable returning a boolean value.
 
         Returns:
             list: Matching data records.
-            
+
         Raises:
             ValueError: Invalid value for `keys`.
         """
@@ -257,21 +257,21 @@ class AbstractStorage(object):
     @abstractmethod
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.
-        
+
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: check for the record with that element identifier.
             * dict: check for the record with attributes matching `keys`.
-            * list or tuple: return the equivilent of ``map(contains, keys)``.
-        
+            * list or tuple: return the equivalent of ``map(contains, keys)``.
+
         Args:
             keys: Fields or element identifiers to match.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
+            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
             bool: True if the table contains at least one matching record, False otherwise.
-            
+
         Raises:
             ValueError: Invalid value for `keys`.
         """
@@ -279,13 +279,13 @@ class AbstractStorage(object):
     @abstractmethod
     def insert(self, data, table_name=None):
         """Create a new record.
-        
+
         If the table doesn't exist it will be created.
-        
+
         Args:
             data (dict): Data to insert in table.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            
+
         Returns:
             Record: The new record.
         """
@@ -293,63 +293,63 @@ class AbstractStorage(object):
     @abstractmethod
     def update(self, fields, keys, table_name=None, match_any=False):
         """Update records.
-        
+
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: update the record with that element identifier.
             * dict: update all records with attributes matching `keys`.
             * list or tuple: apply update to all records matching the elements of `keys`.
-        
+
         Args:
             fields (dict): Data to record.
             keys: Fields or element identifiers to match.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
+            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
-            
+
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
 
-    @abstractmethod      
+    @abstractmethod
     def unset(self, fields, keys, table_name=None, match_any=False):
         """Update records by unsetting fields.
-        
-        Update only allows you to update a record by adding new fields or overwriting existing fields. 
+
+        Update only allows you to update a record by adding new fields or overwriting existing fields.
         Use this method to remove a field from the record.
-        
+
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: update the record with that element identifier.
             * dict: update all records with attributes matching `keys`.
             * list or tuple: apply update to all records matching the elements of `keys`.
-        
+
         Args:
             fields (list): Names of fields to remove from matching records.
             keys: Fields or element identifiers to match.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
+            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
-            
+
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
 
-    @abstractmethod        
+    @abstractmethod
     def remove(self, keys, table_name=None, match_any=False):
         """Delete records.
-        
+
         The behavior depends on the type of `keys`:
             * self.Record.eid_type: delete the record with that element identifier.
             * dict: delete all records with attributes matching `keys`.
             * list or tuple: delete all records matching the elements of `keys`.
-        
+
         Args:
             keys: Fields or element identifiers to match.
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
-            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key 
+            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
-            
+
         Raises:
-            ValueError: ``bool(keys) == False`` or invaild value for `keys`.
+            ValueError: ``bool(keys) == False`` or invalid value for `keys`.
         """
 
     @abstractmethod
@@ -359,5 +359,3 @@ class AbstractStorage(object):
         Args:
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
         """
-
-

@@ -27,7 +27,6 @@
 #
 """``measurement edit`` subcommand."""
 
-import os
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
@@ -46,7 +45,7 @@ class MeasurementEditCommand(EditCommand):
             if args.select_file.lower() == 'none':
                 args.select_file = None
         return args
-    
+
     def _update_record(self, store, data, key):
         try:
             retval = super(MeasurementEditCommand, self)._update_record(store, data, key)
@@ -56,10 +55,10 @@ class MeasurementEditCommand(EditCommand):
             raise err
         if not retval:
             rebuild_required = Experiment.rebuild_required()
-            if rebuild_required: 
+            if rebuild_required:
                 self.logger.info(rebuild_required)
         return retval
-    
+
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
@@ -70,7 +69,7 @@ class MeasurementEditCommand(EditCommand):
         except AttributeError:
             pass
         else:
-            # Unset force_tau_options if it was already set and --force-tau-options=none 
+            # Unset force_tau_options if it was already set and --force-tau-options=none
             if data.pop('force_tau_options', False) and [i.lower().strip() for i in force_tau_options] == ['none']:
                 meas_ctrl = Measurement.controller(store)
                 if 'force_tau_options' in meas_ctrl.one({"name": meas_name}):
@@ -86,7 +85,7 @@ class MeasurementEditCommand(EditCommand):
         except AttributeError:
             pass
         else:
-            # Unset extra_tau_options if it was already set and --extra-tau-options=none 
+            # Unset extra_tau_options if it was already set and --extra-tau-options=none
             if data.pop('extra_tau_options', False) and [i.lower().strip() for i in extra_tau_options] == ['none']:
                 meas_ctrl = Measurement.controller(store)
                 if 'extra_tau_options' in meas_ctrl.one({"name": meas_name}):

@@ -53,18 +53,18 @@ HELP_PAGE = """
 TAU Commander Initialize:
 ============================================================================
 
-To begin Initialize TAU Commander, enter: `tau initialize` or simply 
-`tau init`.  
-This first initialization will take quite a bit of time.  Not only is this 
-command creating a project it is also downloading and building the 
-TAU Performance System® and associated libraries that it depends on.  
-Let this run and check for successful completion. When it completes it will 
-display the tau dashboard (which can be viewed at anytime by entering: 
+To begin Initialize TAU Commander, enter: `tau initialize` or simply
+`tau init`.
+This first initialization will take quite a bit of time.  Not only is this
+command creating a project it is also downloading and building the
+TAU Performance System® and associated libraries that it depends on.
+Let this run and check for successful completion. When it completes it will
+display the tau dashboard (which can be viewed at anytime by entering:
 'tau dashboard').
 
-Many parameters may be defined at initialization.  The full list of options is 
-displayed below this help section.   It is easier to define options at 
-initialization (eg. tau init --MPI T) than it is to edit application and 
+Many parameters may be defined at initialization.  The full list of options is
+displayed below this help section.   It is easier to define options at
+initialization (eg. tau init --MPI T) than it is to edit application and
 measurement later.
 ___________________________________________________________________________
 
@@ -73,7 +73,7 @@ ___________________________________________________________________________
 
 class InitializeCommand(AbstractCommand):
     """``tau initialize`` subcommand."""
-       
+
     def _construct_parser(self):
         usage = "%s [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
@@ -94,12 +94,12 @@ class InitializeCommand(AbstractCommand):
                                    choices=STORAGE_LEVELS.keys(),
                                    metavar='<levels>', default=arguments.SUPPRESS)
         project_group.add_argument('--force',
-                            help="Force project to be created in current directory",
-                            nargs='?',
-                            const=True,
-                            default=False,
-                            metavar='T/F',
-                            action=ParseBooleanAction)
+                                   help="Force project to be created in current directory",
+                                   nargs='?',
+                                   const=True,
+                                   default=False,
+                                   metavar='T/F',
+                                   action=ParseBooleanAction)
         target_group = parser.add_argument_group('target arguments')
         target_group.add_argument('--target-name',
                                   help="Name of the new target configuration",
@@ -110,17 +110,17 @@ class InitializeCommand(AbstractCommand):
                                        help="Name of the new application configuration",
                                        metavar='<name>',
                                        default=(os.path.basename(os.getcwd()) or 'default_application'))
-        
-        # If an argument appears in both application and measurement (e.g. --mpi, --openmp, --cuda, etc.) 
+
+        # If an argument appears in both application and measurement (e.g. --mpi, --openmp, --cuda, etc.)
         # then use the measurement form instead of the application form.
         excluded = []
         for action in measurement_create_cmd.parser.actions:
             excluded.extend(action.option_strings)
-        
+
         parser.merge(target_create_cmd.parser)
         parser.merge(application_create_cmd.parser, exclude_arguments=excluded)
         parser.merge(measurement_create_cmd.parser)
-        
+
         # OpenMP is a special case, see https://github.com/ParaToolsInc/taucmdr/issues/209
         for action in parser.actions:
             if action.dest == 'openmp':
@@ -149,7 +149,7 @@ class InitializeCommand(AbstractCommand):
             raise
         else:
             project_select_cmd.main([project_name])
-            
+
     def _create_measurement(self, name, args, **kwargs):
         args = ArgumentsNamespace(**dict(vars(args), **kwargs))
         args.name = name
@@ -170,7 +170,7 @@ class InitializeCommand(AbstractCommand):
         if args.openmp is None:
             args.openmp = 'ignore'
         self._safe_execute(application_create_cmd, cmd_args)
-        
+
         # Create default target
         target_name = args.target_name
         cmd_args = Target.filter_arguments(args)
@@ -188,7 +188,7 @@ class InitializeCommand(AbstractCommand):
         measurements = []
         if args.profile != 'none':
             self._create_measurement(
-                'baseline', args, baseline=True, profile='tau', trace='none', 
+                'baseline', args, baseline=True, profile='tau', trace='none',
                 sample=False, source_inst='never', compiler_inst='never',
                 mpi=False, cuda=False, opencl=False, openmp='ignore', shmem=False,
                 track_memory_footprint=False, callsite=False, comm_matrix=False,
@@ -218,10 +218,10 @@ class InitializeCommand(AbstractCommand):
             measurement_name = measurements[0]
         except IndexError:
             measurement_name = 'baseline'
-        
+
         # Create default experiment
-        select_cmd.main(['--target', target_name, 
-                         '--application', application_name, 
+        select_cmd.main(['--target', target_name,
+                         '--application', application_name,
                          '--measurement', measurement_name])
 
     def main(self, argv):
@@ -248,16 +248,19 @@ class InitializeCommand(AbstractCommand):
                 raise
             return dashboard_cmd.main([])
         except ProjectSelectionError as err:
-            err.value = "The project has been initialized in %s but no project configuration is selected." %proj_ctrl.storage.prefix
+            err.value = ("The project has been initialized in %s but no project configuration is selected."
+                         % proj_ctrl.storage.prefix)
             raise err
         else:
-            cwd_prefix=os.path.realpath(os.path.join(os.getcwd(), PROJECT_DIR))
+            cwd_prefix = os.path.realpath(os.path.join(os.getcwd(), PROJECT_DIR))
             force_str = ""
             if cwd_prefix != proj_ctrl.storage.prefix:
-                force_str = "Or use the `tau initialize --force` command to initialize a project in the current directory."
+                force_str = ("Or use the `tau initialize --force` command to initialize "
+                             "a project in the current directory.")
             self.logger.warning("Tau is already initialized and the selected project is '%s'. Use commands like"
                                 " `tau application edit` to edit the selected project or delete"
-                                " '%s' to reset to a fresh environment. %s", proj['name'], proj_ctrl.storage.prefix, force_str)
+                                " '%s' to reset to a fresh environment. %s",
+                                proj['name'], proj_ctrl.storage.prefix, force_str)
             return EXIT_WARNING
 
-COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.") 
+COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.")

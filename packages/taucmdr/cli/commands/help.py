@@ -48,23 +48,23 @@ _KNOWN_FILES = {'makefile': ("makefile script",
                 '.exe': ("binary executable",
                          "See 'taucmdr run --help' for help with profiling this program")}
 
-_MIME_HINTS = {None: 
-               {None: ("unknown file", _GENERIC_HELP), 
+_MIME_HINTS = {None:
+               {None: ("unknown file", _GENERIC_HELP),
                 'gzip': ("compressed file", "Please specify an executable file")},
                'application': {None: ("unknown binary file", _GENERIC_HELP),
-                               'sharedlib': ("shared library", 
+                               'sharedlib': ("shared library",
                                              "Please specify an executable file"),
-                               'archive': ("archive file", 
+                               'archive': ("archive file",
                                            "Please specify an executable file"),
-                               'tar': ("archive file", 
+                               'tar': ("archive file",
                                        "Please specify an executable file"),
                                'unknown': ("unknown binary file", _GENERIC_HELP)},
                'text': {None: ("unknown text file", _GENERIC_HELP),
-                        'src': ("source code file", 
+                        'src': ("source code file",
                                 "See 'taucmdr build --help' for help compiling this file"),
-                        'hdr': ("source header file", 
+                        'hdr': ("source header file",
                                 "See 'taucmdr build --help' for help instrumenting this file"),
-                        'fortran': ("fortran source code file", 
+                        'fortran': ("fortran source code file",
                                     "See 'taucmdr build --help' for help compiling this file"),
                         'plain': ("text file", _GENERIC_HELP)}}
 
@@ -100,10 +100,10 @@ class HelpCommand(AbstractCommand):
         cmd_obj = cli.find_command(name)
         command = cmd_obj.command
         parts = [
-                 "", util.hline("Help: " + command),
-                 cmd_obj.help_page,
-                 "", util.hline("Usage: " + command),
-                 cmd_obj.usage]
+            "", util.hline("Help: " + command),
+            cmd_obj.help_page,
+            "", util.hline("Usage: " + command),
+            cmd_obj.usage]
         util.page_output('\n'.join(parts))
         return EXIT_SUCCESS
 
@@ -126,7 +126,7 @@ class HelpCommand(AbstractCommand):
     def _construct_parser(self):
         usage_head = "%s <command>|<file>|all [arguments]" % self.command
         parser = arguments.get_parser(prog=self.command, usage=usage_head, description=self.summary)
-        parser.add_argument('command', 
+        parser.add_argument('command',
                             help="A TAU command, system command, or file.",
                             metavar='(<command>|<file>|all)',
                             nargs='+')
@@ -138,14 +138,14 @@ class HelpCommand(AbstractCommand):
             return self.exit_with_help([])
         if args.command[0] == 'all':
             return self.exit_with_fullhelp()
-    
+
         # Try to look up a Tau command's built-in help page
         cmd = args.command
         try:
             return self.exit_with_help(cmd)
         except ImportError:
             pass
-    
+
         # Is this a file?
         if os.path.exists(cmd):
             # Do we recognize the file name?
@@ -157,7 +157,7 @@ class HelpCommand(AbstractCommand):
                 article = 'an' if desc[0] in 'aeiou' else 'a'
                 hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
                 raise UnknownCommandError(cmd, hint)
-    
+
             # Get the filetype and try to be helpful.
             filetype, encoding = _guess_filetype(cmd)
             self.logger.debug("'%s' has filetype (%s, %s)", cmd, filetype, encoding)
@@ -174,9 +174,8 @@ class HelpCommand(AbstractCommand):
                 raise UnknownCommandError(cmd, hint)
             else:
                 raise UnknownCommandError(cmd)
-    
+
         LOGGER.error("Cannot identify '%s' as a command or filename.")
         return self.exit_with_help('__main__')
-    
-COMMAND = HelpCommand(__name__, summary_fmt="Show help for a command or suggest actions for a file.")
 
+COMMAND = HelpCommand(__name__, summary_fmt="Show help for a command or suggest actions for a file.")

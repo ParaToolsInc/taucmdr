@@ -32,7 +32,7 @@ from taucmdr.cf.platforms import Architecture, OperatingSystem, TauMagic
 
 class PlatformsTest(TestCase):
     """Unit tests for taucmdr.cf.platforms"""
-    
+
     def test_architecture_detect(self):
         self.assertTrue(Architecture.detect())
 

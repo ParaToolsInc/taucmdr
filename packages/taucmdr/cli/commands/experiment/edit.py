@@ -37,7 +37,7 @@ from taucmdr.model.experiment import Experiment
 
 
 class ExperimentEditCommand(EditCommand):
-    
+
     def main(self, argv):
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
@@ -52,7 +52,7 @@ class ExperimentEditCommand(EditCommand):
                 if record is None:
                     self.parser.error("Invalid %s: %s" % (attr, data[attr]))
                 data[attr] = record.eid
-             
+
         key_attr = self.model.key_attribute
         try:
             data[key_attr] = args.new_key
@@ -61,6 +61,6 @@ class ExperimentEditCommand(EditCommand):
         key = getattr(args, key_attr)
         return self._update_record(store, data, key)
 
-    
+
 
 COMMAND = ExperimentEditCommand(Experiment, __name__, include_storage_flag=False)

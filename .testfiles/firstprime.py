@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #Program written by Devin Shende on August 5th 2018
 
 def firstPrimeAfter(x):
 	import math
-	current = x + 1 
+	current = x + 1
 	sqrtno = math.sqrt(current)
 	while True:
 		#search for primes starting at x until it finds one
@@ -14,10 +15,9 @@ def firstPrimeAfter(x):
 			if current % potentialfactor == 0:
 				# Found factor. not prime
 				break # move on to next number
-			elif potentialfactor >= sqrtno: 
+			elif potentialfactor >= sqrtno:
 				print("The first prime number after {} is {}".format(x,current))
 				return current
 		current += 1
 
 firstPrimeAfter(10000000)
-

@@ -24,7 +24,7 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 """Measurement data model.
 
 :any:`Measurement` completely describes the performance data measurements
@@ -37,16 +37,17 @@ import os
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
+from taucmdr.mvc.controller import Controller
 
 LOGGER = logger.get_logger(__name__)
 
 
 def attributes():
     """Construct attributes dictionary for the measurement model.
-    
+
     We build the attributes in a function so that classes like ``taucmdr.module.project.Project`` are
     fully initialized and usable in the returned dictionary.
-    
+
     Returns:
         dict: Attributes dictionary.
     """
@@ -56,13 +57,13 @@ def attributes():
     from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
-    
+
     def _merged_profile_compat(lhs, lhs_attr, lhs_value, rhs):
         if isinstance(rhs, Application):
             if not (rhs['mpi'] or rhs['shmem']):
                 lhs_name = lhs.name.lower()
                 rhs_name = rhs.name.lower()
-                raise IncompatibleRecordError("%s = %s in %s requires either mpi = True or shmem = True in %s" % 
+                raise IncompatibleRecordError("%s = %s in %s requires either mpi = True or shmem = True in %s" %
                                               (lhs_attr, lhs_value, lhs_name, rhs_name))
 
 
@@ -79,8 +80,9 @@ def attributes():
             if rhs.get('source_inst') == 'never' and rhs.get('compiler_inst') == 'never':
                 lhs_name = lhs.name.lower()
                 rhs_name = rhs.name.lower()
-                raise IncompatibleRecordError("%s = %s in %s requires source_inst and compiler_inst are not both 'never' in %s" % 
-                                              (lhs_attr, lhs_value, lhs_name, rhs_name))
+                raise IncompatibleRecordError(
+                    "%s = %s in %s requires source_inst and compiler_inst are not both 'never' in %s" %
+                    (lhs_attr, lhs_value, lhs_name, rhs_name))
 
     return {
         'projects': {
@@ -154,7 +156,7 @@ def attributes():
                          'nargs': '?',
                          'choices': ('automatic', 'manual', 'never'),
                          'const': 'automatic'},
-            'compat': {lambda x: x in ('automatic', 'manual'): 
+            'compat': {lambda x: x in ('automatic', 'manual'):
                        (Target.exclude('pdt_source', None),
                         Measurement.exclude('baseline', True))},
             'rebuild_required': True
@@ -349,9 +351,19 @@ def attributes():
                          'nargs': '?',
                          'const': 100000},
         },
+        'sample_resolution': {
+            'type': 'string',
+            'default': 'line',
+            'description': 'sample resolution',
+            'argparse': {'flags': ('--sample-resolution',),
+                         'choices': ('file', 'function', 'line',),
+                         'metavar': 'file/function/line',
+                         'nargs': '?',},
+            'compat': {True: (Measurement.require('sample', True))}
+        },
         'sampling_period': {
             'type': 'integer',
-            'default': 0,
+            'default': 5000,
             'description': 'default sampling period in microseconds',
             'argparse': {'flags': ('--sampling-period',),
                          'metavar': 'us',
@@ -391,7 +403,8 @@ def attributes():
             'argparse': {'flags': ('--select-file',),
                          'metavar': 'path'},
             'compat': {bool: (_ensure_instrumented,
-                              Application.discourage('linkage', 'static'))},
+                              Application.discourage('linkage', 'static'),
+                              Measurement.discourage('throttle', True))},
             'rebuild_required': True
         },
         'update_nightly': {
@@ -416,7 +429,7 @@ def attributes():
         },
         'ptts_sample_flags': {
             'type': 'string',
-            'default': '',#None, 
+            'default': '',#None,
             'description': 'flags to pass to PTTS sample_ts command',
             'argparse': {'flags': ('--ptts-sample-flags',),
                          'metavar': 'sample_flags'},
@@ -425,7 +438,8 @@ def attributes():
         'ptts_restart': {
             'type': 'boolean',
             'default': False,
-            'description': 'enable restart support within PTTS, allowing application to continue running and be reinstrumented after stop',
+            'description': ('enable restart support within PTTS, allowing application to continue'
+                            'running and be reinstrumented after stop'),
             'argparse': {'flags': ('--ptts-restart',)},
             'compat': {bool: (Measurement.require('ptts', True))},
         },
@@ -451,13 +465,14 @@ def attributes():
             'compat': {bool: (Measurement.require('ptts', True))},
         },
         'extra_tau_options': {
-            'type': 'string',
-            'description': 'forcibly add to the TAU_OPTIONS environment variable (not recommended)',
+            'type': 'array',
+            'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
             'rebuild_on_change': True,
             'argparse': {'flags': ('--extra-tau-options',),
                          'nargs': '+',
                          'metavar': '<option>'},
             'compat': {bool: (Measurement.discourage('extra_tau_options'),
+                              Measurement.exclude('force_tau_options'),
                               Measurement.exclude('baseline', True))}
         },
         'mpit': {
@@ -477,24 +492,39 @@ def attributes():
                               Measurement.exclude('extra_tau_options'),
                               Measurement.exclude('baseline', True))}
         },
-        'extra_tau_options': {
-            'type': 'array',
-            'description': "append extra options to TAU_OPTIONS environment variable (not recommended)",
-            'rebuild_on_change': True,
-            'argparse': {'flags': ('--extra-tau-options',),
+        'tag': {
+            'type': 'string',
+            'description': "Narrow search for tags",
+            'default': '',#None,
+            'argparse': {'flags': ('--tag',),
                          'nargs': '+',
-                         'metavar': '<option>'},
-            'compat': {bool: (Measurement.discourage('extra_tau_options'),
-                              Measurement.exclude('force_tau_options'),
-                              Measurement.exclude('baseline', True))}
-        }
+                         'metavar': '<tags>'}
+        },
     }
 
 
+class MeasurementController(Controller):
+    """Measurement data controller."""
+
+    def delete(self, keys, context=True):
+        # pylint: disable=unexpected-keyword-arg
+        from taucmdr.error import ImmutableRecordError
+        from taucmdr.model.experiment import Experiment
+        changing = self.search(keys, context=context)
+        for model in changing:
+            expr_ctrl = Experiment.controller()
+            found = expr_ctrl.search({'measurement': model.eid})
+            used_by = [expr['name'] for expr in found if expr.data_size() > 0]
+            if used_by:
+                raise ImmutableRecordError("Measurement '%s' cannot be modified because "
+                                           "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
+        return super(MeasurementController, self).delete(keys)
+
 class Measurement(Model):
     """Measurement data model."""
-    
+
     __attributes__ = attributes
+    __controller__ = MeasurementController
 
     def _check_select_file(self):
         try:

@@ -36,6 +36,8 @@ TAU ?= minimal
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
+DOCKER_IMG_NAME = cmdr-dev-0.1.0
+DOCKER_TAG = latest
 
 # Shell utilities
 RM = rm -f
@@ -46,76 +48,76 @@ VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
 
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
-  BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
-  INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
+	BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
+	INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
 endif
 ifeq ($(BUILDDIR),)
-  BUILDDIR=build
+	BUILDDIR=build
 endif
 ifeq ($(INSTALLDIR),)
-  INSTALLDIR=$(HOME)/taucmdr-$(VERSION)
+	INSTALLDIR=$(HOME)/taucmdr-$(VERSION)
 endif
 
 # Get target OS and architecture
 ifeq ($(HOST_OS),)
-  HOST_OS = $(shell uname -s)
+	HOST_OS = $(shell uname -s)
 endif
 ifeq ($(HOST_ARCH),)
-  HOST_ARCH = $(shell uname -m)
+	HOST_ARCH = $(shell uname -m)
 endif
 
 ifeq ($(VERBOSE),false)
-  ECHO=@
-  CURL_FLAGS=-s
-  WGET_FLAGS=--quiet
+	ECHO=@
+	CURL_FLAGS=-s
+	WGET_FLAGS=--quiet
 else
-  ECHO=
-  CURL_FLAGS=
-  WGET_FLAGS=
+	ECHO=
+	CURL_FLAGS=
+	WGET_FLAGS=
 endif
 
 # Build download macro
 # Usage: $(call download,source,dest)
 WGET = $(shell command -pv wget || type -P wget || which wget)
 ifneq ($(WGET),)
-  download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
+	download = $(WGET) --no-check-certificate $(WGET_FLAGS) -O "$(2)" "$(1)"
 else
-  CURL = $(shell command -pv curl || type -P curl || which curl)
-  ifneq ($(CURL),)
-    download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
-  else
-    $(warning Either curl or wget must be in PATH to download packages)
-  endif
+	CURL = $(shell command -pv curl || type -P curl || which curl)
+	ifneq ($(CURL),)
+		download = $(CURL) --insecure $(CURL_FLAGS) -L "$(1)" > "$(2)"
+	else
+		$(warning Either curl or wget must be in PATH to download packages)
+	endif
 endif
 
 # Miniconda configuration
 USE_MINICONDA = true
 ifeq ($(HOST_OS),Darwin)
 ifeq ($(HOST_ARCH),i386)
-  USE_MINICONDA = false
+	USE_MINICONDA = false
 endif
 endif
 ifeq ($(HOST_OS),Darwin)
-  CONDA_OS = MacOSX
+	CONDA_OS = MacOSX
 else
-  ifeq ($(HOST_OS),Linux)
-    CONDA_OS = Linux
-  else
-    USE_MINICONDA = false
-  endif
+	ifeq ($(HOST_OS),Linux)
+		CONDA_OS = Linux
+	else
+		USE_MINICONDA = false
+	endif
 endif
 ifeq ($(HOST_ARCH),x86_64)
-  CONDA_ARCH = x86_64
+	CONDA_ARCH = x86_64
 else
-  ifeq ($(HOST_ARCH),i386)
-    CONDA_ARCH = x86
-  else
-    ifeq ($(HOST_ARCH),ppc64le)
-      CONDA_ARCH = ppc64le
-    else
-      USE_MINICONDA = false
-    endif
-  endif
+	ifeq ($(HOST_ARCH),i386)
+		CONDA_ARCH = x86
+	else
+		ifeq ($(HOST_ARCH),ppc64le)
+			CONDA_ARCH = ppc64le
+		else
+			USE_MINICONDA = false
+		endif
+	endif
 endif
 CONDA_VERSION = latest
 CONDA_REPO = https://repo.continuum.io/miniconda
@@ -126,22 +128,23 @@ CONDA_DEST = $(INSTALLDIR)/conda
 CONDA = $(CONDA_DEST)/bin/python
 
 ifeq ($(USE_MINICONDA),true)
-  PYTHON_EXE = $(CONDA)
-  PYTHON_FLAGS = -EOu
+	PYTHON_EXE = $(CONDA)
+	PYTHON_FLAGS = -EOu
+#	PYTHON_FLAGS = -EOu3
 else
-  $(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
-  CONDA_SRC =
-  PYTHON_EXE = $(shell command -pv python || type -P python || which python)
-  PYTHON_FLAGS = -O
-  ifeq ($(PYTHON_EXE),)
-    $(error python not found in PATH.)
-  else
-    $(warning WARNING: Trying to use '$(PYTHON_EXE)' instead.)
-  endif
+	$(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
+	CONDA_SRC =
+	PYTHON_EXE = $(shell command -pv python || type -P python || which python)
+	PYTHON_FLAGS = -O
+	ifeq ($(PYTHON_EXE),)
+		$(error python not found in PATH.)
+	else
+		$(warning WARNING: Trying to use '$(PYTHON_EXE)' instead.)
+	endif
 endif
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
-.PHONY: help build install clean python_check python_download
+.PHONY: help build install clean python_check python_download dev-container run-container
 
 .DEFAULT: help
 
@@ -153,6 +156,7 @@ help:
 	@echo "-------------------------------------------------------------------------------"
 
 build: python_check
+	$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 
@@ -197,16 +201,22 @@ $(CONDA): $(CONDA_SRC)
 $(CONDA_SRC):
 	@$(ECHO)$(MKDIR) `dirname "$(CONDA_SRC)"`
 	@$(call download,$(CONDA_URL),$(CONDA_SRC)) || \
-            (rm -f "$(CONDA_SRC)" ; \
-             echo "**************************************************************************" ; \
-             echo "*" ; \
-             echo "* ERROR" ; \
-             echo "*" ; \
-             echo "* Unable to download $(CONDA_URL)." ; \
-             echo "* Please use an all-in-one package from www.taucommander.com" ; \
-             echo "*" ; \
-             echo "**************************************************************************" ; \
-             false)
+						(rm -f "$(CONDA_SRC)" ; \
+						echo "**************************************************************************" ; \
+						echo "*" ; \
+						echo "* ERROR" ; \
+						echo "*" ; \
+						echo "* Unable to download $(CONDA_URL)." ; \
+						echo "* Please use an all-in-one package from www.taucommander.com" ; \
+						echo "*" ; \
+						echo "**************************************************************************" ; \
+						false)
 
 clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
+
+dev-container:
+	$(ECHO)docker build --pull --rm -t $(DOCKER_IMG_NAME) .
+
+run-container:
+	$(ECHO)docker run -i -t -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)

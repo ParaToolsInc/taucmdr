@@ -59,17 +59,17 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
-          
+
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['-h'])
         self.assertIn('Show this help message and exit', stdout)
-  
+
     def test_help_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
-  
+
     def test_no_time_metric(self):
         self.reset_project_storage()
         argv = ['meas_no_time', '--metrics', 'PAPI_FP_INS', '--source-inst', 'never']
@@ -81,12 +81,12 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         self.assertIn("TAU_METRICS=TIME,", stdout)
         self.assertFalse(stderr)
- 
+
     @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
     def test_heap_usage_memory_alloc_sample(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
-        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd, 
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
                                                        ['sample', '--heap-usage', '--memory-alloc'])
         self.assertIn("Updated measurement 'sample'", stdout)
         self.assertFalse(stderr)
@@ -108,11 +108,11 @@ class CreateTest(tests.TestCase):
         # TAU bug: the dynamic malloc wrapper (e.g. tau_exec -memory) doesn't always capture malloc().
         #self.assertInLastTrialData("Heap Allocate")
         #self.assertInLastTrialData("malloc")
- 
+
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
-        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd, 
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
                                                        ['profile', '--heap-usage', '--memory-alloc'])
         self.assertIn("Updated measurement 'profile'", stdout)
         self.assertFalse(stderr)
@@ -136,7 +136,31 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("compute_interchange")
         self.assertInLastTrialData("compute")
         self.assertInLastTrialData("malloc")
- 
+
+    def sample_resolution_helper(self, option):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
+                                            ['sample', '--sample-resolution', option])
+        self.assertIn("Updated measurement 'sample'", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
+        self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
+        self.assertFalse(stderr)
+        self.assertManagedBuild(0, CC, [], 'matmult.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn("Trial 0 produced 1 profile files", stdout)
+        self.assertIn("TAU_EBS_RESOLUTION="+option, stdout)
+        self.assertFalse(stderr)
+
+    def test_sample_resolution_file(self):
+        self.sample_resolution_helper('file')
+
+    def test_sample_resolution_function(self):
+        self.sample_resolution_helper('function')
+
+    def test_sample_resolution_line(self):
+        self.sample_resolution_helper('line')
+
     @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
     def test_system_load_sample(self):
         """Test TAU_TRACK_LOAD w/ sampling"""
@@ -148,7 +172,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
         self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
         self.assertFalse(stderr)
- 
+
     def test_system_load_profile(self):
         """Test TAU_TRACK_LOAD w/ profiling"""
         self.reset_project_storage()
@@ -184,7 +208,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_list_cmd, [])
         self.assertIn('test desc', stdout)
 
-    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")    
+    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
     def test_run_python(self):
         self.reset_project_storage(['--python','T','--python-interpreter','python'])
         self.copy_testfile('firstprime.py')
@@ -195,7 +219,7 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
 
-    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")    
+    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
     def test_run_python2(self):
         self.reset_project_storage(['--python','T','--python-interpreter','python2'])
         self.copy_testfile('firstprime.py')
@@ -206,7 +230,7 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
 
-    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")    
+    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
     def test_run_python3(self):
         self.reset_project_storage(['--python','T','--python-interpreter','python3'])
         self.copy_testfile('firstprime.py')
@@ -216,5 +240,3 @@ class CreateTest(tests.TestCase):
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
-
-

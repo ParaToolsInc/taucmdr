@@ -1,3 +1,7 @@
+# Emacs stuff
+.projectile
+.dir-locals.el
+
 # Compiled Object files
 *.slo
 *.lo
@@ -53,6 +57,9 @@ installed
 system
 .tau
 
+# TAU Commander pylint report
+pylint.md
+
 # TAU intermediate compilation files
 *.inst.*
 *.pdb
@@ -99,6 +106,7 @@ __pycache__/
 *~
 .tox
 .cache
+venv
 
 # Deployment private and public key, but DO store encrypted private key for Travis-CI
 id_rsa_Travis2GH
@@ -107,3 +115,6 @@ id_rsa_Travis2GH.pub
 # Jupyter stuff
 .ipynb*
 *.ipynb
+
+# mypy caches
+.mypy_cache

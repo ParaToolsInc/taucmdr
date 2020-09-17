@@ -41,14 +41,14 @@ class ExperimentSelectCommand(AbstractCommand):
         parser = arguments.get_parser(prog=self.command, usage=usage, description=self.summary)
         parser.add_argument('name', help="Experiment name", metavar='<experiment_name>')
         return parser
-        
+
     def main(self, argv):
         args = self._parse_args(argv)
         name = args.name
         Experiment.select(name)
         self.logger.info("Selected experiment '%s'.", name)
         rebuild_required = Experiment.rebuild_required()
-        if rebuild_required: 
+        if rebuild_required:
             self.logger.info(rebuild_required)
         return EXIT_SUCCESS
 

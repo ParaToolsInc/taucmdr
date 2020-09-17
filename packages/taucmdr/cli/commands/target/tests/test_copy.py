@@ -63,14 +63,14 @@ class CopyTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, copy.COMMAND, argv)
         self.assertIn('target copy <target_name> <copy_name> [arguments]', stderr)
         self.assertIn('target copy: error: unrecognized arguments: --arg', stderr)
- 
+
     def test_ambiguousarg(self):
         self.reset_project_storage()
         argv = ['targ1', 'targ2', '--mpi', 'T']
         _, stderr = self.assertNotCommandReturnValue(0, copy.COMMAND, argv)
         self.assertIn('target copy <target_name> <copy_name> [arguments]', stderr)
         self.assertIn('target copy: error: ambiguous option: --mpi could match --mpi-', stderr)
- 
+
     def test_compilerarg(self):
         self.reset_project_storage()
         argv = ['targ1', 'targ2', '--compiler', 'System']

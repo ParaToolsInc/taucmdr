@@ -63,7 +63,7 @@ class EditTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: unrecognized arguments: --arg', stderr)
-        
+
     def test_ambiguousarg(self):
         self.reset_project_storage()
         argv = ['targ1', '--mpi', 'T']

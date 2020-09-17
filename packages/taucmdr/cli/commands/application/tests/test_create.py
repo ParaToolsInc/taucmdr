@@ -44,7 +44,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test01'])
         self.assertIn('Added application \'test01\' to project configuration', stdout)
         self.assertFalse(stderr)
-        
+
     def test_python(self):
         self.reset_project_storage()
         name = 'python_app'
@@ -60,7 +60,7 @@ class CreateTest(tests.TestCase):
         self.assertIn('application create <application_name> [arguments]', stderr)
         self.assertIn('application create: error: A application with name', stderr)
         self.assertIn('already exists', stderr)
-        
+
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])

@@ -35,4 +35,4 @@ from taucmdr import tests
 
 @tests.not_implemented
 class ModelTest(tests.TestCase):
-    pass 
+    pass

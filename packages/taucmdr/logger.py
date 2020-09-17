@@ -38,6 +38,7 @@ a rotating debug file in the user's TAU Commander project prefix, typically "~/.
 """
 
 import os
+import re
 import sys
 import errno
 import textwrap
@@ -51,12 +52,27 @@ from termcolor import termcolor
 from taucmdr import USER_PREFIX, TAUCMDR_VERSION
 
 
+def _prune_ansi(line):
+    """Remove all occurences of the ANSI escape sequence
+
+    Returns:
+        str: Line where all '\x1b[*m' sequences were removed
+    """
+
+    pattern = re.compile('\x1b[^m]+m')
+    match = pattern.search(line)
+    while match:
+        index = line.find(match.group(0))
+        line = line[:index] + line[index+len(match.group(0)):]
+        match = pattern.search(line)
+    return line
+
 def get_terminal_size():
     """Discover the size of the user's terminal.
-    
+
     Several methods are attempted depending on the user's OS.
     If no method succeeds then default to (80, 25).
-    
+
     Returns:
         tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters.
     """
@@ -85,7 +101,7 @@ def get_terminal_size():
 
 def _get_term_size_windows():
     """Discover the size of the user's terminal on Microsoft Windows.
-    
+
     Returns:
         tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters,
                or None if the size could not be determined.
@@ -97,7 +113,7 @@ def _get_term_size_windows():
         handle = windll.kernel32.GetStdHandle(-12)
         csbi = create_string_buffer(22)
         res = windll.kernel32.GetConsoleScreenBufferInfo(handle, csbi)
-    except:     # pylint: disable=bare-except  
+    except:     # pylint: disable=bare-except
         return None
     if res:
         import struct
@@ -105,17 +121,16 @@ def _get_term_size_windows():
         sizex = right - left + 1
         sizey = bottom - top + 1
         return sizex, sizey
-    else:
-        return None
+    return None
 
 
 def _get_term_size_tput():
     """Discover the size of the user's terminal via `tput`_.
-    
+
     Returns:
         tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters,
                or None if the size could not be determined.
-               
+
     .. _tput: http://stackoverflow.com/questions/263890/how-do-i-find-the-width-height-of-a-terminal-window
     """
     try:
@@ -127,13 +142,13 @@ def _get_term_size_tput():
         output = proc.communicate(input=None)
         rows = int(output[0])
         return (cols, rows)
-    except:     # pylint: disable=bare-except 
+    except:     # pylint: disable=bare-except
         return None
 
 
 def _get_term_size_posix():
     """Discover the size of the user's terminal on a POSIX operating system (e.g. Linux).
-    
+
     Returns:
         tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters,
                or None if the size could not be determined.
@@ -148,7 +163,7 @@ def _get_term_size_posix():
             import termios
             import struct
             dims = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
-        except:     # pylint: disable=bare-except 
+        except:     # pylint: disable=bare-except
             return None
         return dims
     dims = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
@@ -157,7 +172,7 @@ def _get_term_size_posix():
             fd = os.open(os.ctermid(), os.O_RDONLY)
             dims = ioctl_GWINSZ(fd)
             os.close(fd)
-        except:     # pylint: disable=bare-except 
+        except:     # pylint: disable=bare-except
             pass
     if not dims:
         return None
@@ -166,10 +181,10 @@ def _get_term_size_posix():
 
 def _get_term_size_env():
     """Discover the size of the user's terminal via environment variables.
-    
+
     The user may set the LINES and COLUMNS environment variables to control TAU Commander's
     console dimension calculations.
-    
+
     Returns:
         tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters,
                or None if the size could not be determined.
@@ -182,18 +197,18 @@ def _get_term_size_env():
 
 class LogFormatter(logging.Formatter, object):
     """Custom log message formatter.
-    
+
     Controls message formatting for all levels.
-    
+
     Args:
         line_width (int): Maximum length of a message line before line is wrapped.
         printable_only (bool): If True, never send unprintable characters to :any:`sys.stdout`.
     """
     # Allow invalid function names to define member functions named after logging levels.
     # pylint: disable=invalid-name
-    
+
     _printable_chars = set(string.printable)
-    
+
     def __init__(self, line_width, printable_only=False, allow_colors=True):
         super(LogFormatter, self).__init__()
         self.printable_only = printable_only
@@ -208,16 +223,16 @@ class LogFormatter(logging.Formatter, object):
                                                   drop_whitespace=False)
     def CRITICAL(self, record):
         return self._msgbox(record, 'X')
-        
+
     def ERROR(self, record):
         return self._msgbox(record, '!')
-    
+
     def WARNING(self, record):
         return self._msgbox(record, '*')
-    
+
     def INFO(self, record):
         return '\n'.join(self._textwrap_message(record))
-    
+
     def DEBUG(self, record):
         message = record.getMessage()
         if self.printable_only and (not set(message).issubset(self._printable_chars)):
@@ -230,13 +245,13 @@ class LogFormatter(logging.Formatter, object):
 
     def format(self, record):
         """Formats a log record.
-        
+
         Args:
             record (LogRecord): LogRecord instance to format.
-        
+
         Returns:
             str: The formatted record message.
-            
+
         Raises:
             RuntimeError: No format specified for a the record's logging level.
         """
@@ -247,7 +262,7 @@ class LogFormatter(logging.Formatter, object):
 
     def _colored(self, text, *color_args):
         """Insert ANSII color formatting via `termcolor`_.
-        
+
         Text colors:
             * grey
             * red
@@ -257,7 +272,7 @@ class LogFormatter(logging.Formatter, object):
             * magenta
             * cyan
             * white
-        
+
         Text highlights:
             * on_grey
             * on_red
@@ -275,13 +290,12 @@ class LogFormatter(logging.Formatter, object):
             * blink
             * reverse
             * concealed
-        
+
         .. _termcolor: http://pypi.python.org/pypi/termcolor
         """
         if self.allow_colors and color_args:
             return termcolor.colored(text, *color_args)
-        else:
-            return text
+        return text
 
     def _msgbox(self, record, marker):
         width = self.line_width
@@ -295,7 +309,10 @@ class LogFormatter(logging.Formatter, object):
 
     def _textwrap_message(self, record):
         for line in record.getMessage().split('\n'):
-            if line and (not self.printable_only or set(line).issubset(self._printable_chars)):
+            if self.printable_only and not set(line).issubset(self._printable_chars):
+                line = _prune_ansi(line)
+                line = "".join([c for c in line if c in self._printable_chars])
+            if line:
                 yield self._text_wrapper.fill(line)
             else:
                 yield self.line_marker
@@ -310,12 +327,12 @@ class LogFormatter(logging.Formatter, object):
 
 def get_logger(name):
     """Returns a customized logging object.
-    
+
     Multiple calls to with the same name will always return a reference to the same Logger object.
-    
+
     Args:
         name (str): Dot-separated hierarchical name for the logger.
-        
+
     Returns:
         Logger: An instance of :any:`logging.Logger`.
     """
@@ -324,9 +341,9 @@ def get_logger(name):
 
 def set_log_level(level):
     """Sets :any:`LOG_LEVEL`, the output level for stdout logging objects.
-    
-    Changes to LOG_LEVEL may affect software package verbosity. 
-    
+
+    Changes to LOG_LEVEL may affect software package verbosity.
+
     Args:
         level (str): A string identifying the logging level, e.g. "INFO".
     """
@@ -335,11 +352,11 @@ def set_log_level(level):
     global LOG_LEVEL
     LOG_LEVEL = level.upper()
     _STDOUT_HANDLER.setLevel(LOG_LEVEL)
-    
+
 LOG_LEVEL = 'INFO'
 """str: The global logging level for stdout loggers and software packages.
 
-Don't change directly. May be changed via :any:`set_log_level`.  
+Don't change directly. May be changed via :any:`set_log_level`.
 """
 
 LOG_FILE = os.path.join(USER_PREFIX, 'debug_log')

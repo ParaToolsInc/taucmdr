@@ -12,5 +12,5 @@ matmult: matmult.o
 matmult.o: matmult.cpp
 	$(CXX) -I$(OPENCL_INC) -g -c $< -o $@
 
-clean: 
+clean:
 	rm -rf matmult matmult.o

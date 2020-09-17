@@ -36,4 +36,3 @@ from taucmdr import tests
 @tests.not_implemented
 class MpiTest(tests.TestCase):
     pass
-

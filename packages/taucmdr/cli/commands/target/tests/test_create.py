@@ -86,7 +86,7 @@ class CreateTest(tests.TestCase):
         test_targ = ctrl.one({'name': 'test_targ'})
         for role, expected in (CC, 'icc'), (CXX, 'icpc'), (FC, 'ifort'):
             path = test_targ.populate(role.keyword)['path']
-            self.assertEqual(os.path.basename(path), expected, 
+            self.assertEqual(os.path.basename(path), expected,
                              "Target[%s] is '%s', not '%s'" % (role, path, expected))
 
     @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
@@ -109,7 +109,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--cc', cc_cmd])
         self.assertIn("Added target 'test_targ' to project configuration", stdout)
         self.assertFalse(stderr)
-        
+
     def test_cxx_as_cc_flag(self):
         self.reset_project_storage()
         cxx_cmd = self.assertCompiler(CXX)

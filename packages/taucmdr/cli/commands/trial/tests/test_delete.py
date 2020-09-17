@@ -49,7 +49,7 @@ class DeleteTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, delete_command, ['0'])
         self.assertIn('Deleted trial 0', stdout)
         self.assertFalse(stderr)
-        
+
     def test_wrongnumber(self):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, delete_command, ['-1'])

@@ -35,6 +35,7 @@ import atexit
 import tempfile
 import unittest
 from unittest import skipIf, skipUnless
+from taucmdr.util import get_command_output
 import warnings
 try:
     from cStringIO import StringIO
@@ -54,19 +55,24 @@ _NOT_IMPLEMENTED = []
 def _destroy_test_workdir(path):
     onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
     shutil.rmtree(path, ignore_errors=False, onerror=onerror)
-    
+
 def push_test_workdir():
     """Create a new working directory for a unit test.
-    
+
     Sets the current working directory and :any:`tempfile.tempdir` to the newly created test directory.
-    
+
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
+    path = tempfile.mkdtemp()
     try:
-        path = tempfile.mkdtemp()
+        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
+        test_dst = os.path.join(path, 'foo_launcher')
+        shutil.copy(test_src, test_dst)
+        get_command_output('%s/foo_launcher' %path)
     except OSError:
-        path = tmepfile.mkdtemp(dir=os.getcwd())
+        shutil.rmtree(path)
+        path = tempfile.mkdtemp(dir=os.getcwd())
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
     _TEMPDIR_STACK.append(tempfile.tempdir)
@@ -75,14 +81,14 @@ def push_test_workdir():
 
 def pop_test_workdir():
     """Recursively deletes the most recently created unit test working directory.
-    
+
     Restores the current working directory and :any:`tempfile.tempdir` to their values before
     :any:`push_test_workdir` was called.
-    """ 
+    """
     tempfile.tempdir = _TEMPDIR_STACK.pop()
     os.chdir(_CWD_STACK.pop())
     _destroy_test_workdir(_DIR_STACK.pop())
-    
+
 def get_test_workdir():
     """Return the current unit test's working directory."""
     return _DIR_STACK[0]
@@ -107,9 +113,9 @@ def _null_decorator(_):
 
 def skipUnlessHaveCompiler(role):
     """Decorator to skip test functions when no compiler fills the given role.
-    
+
     If no installed compiler can fill this role then skip the test and report "<role> compiler not found".
-    
+
     Args:
         role (_CompilerRole): A compiler role.
     """
@@ -123,7 +129,7 @@ def skipUnlessHaveCompiler(role):
 
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
-    
+
     Performs tests in a temporary directory and reconfigures :any:`taucmdr.logger` to work with :any:`unittest`.
     """
     # Follow the :any:`unittest` code style.
@@ -158,12 +164,12 @@ class TestCase(unittest.TestCase):
 
     def reset_project_storage(self, init_args=None):
         """Delete and recreate project storage.
-        
+
         Effectively the same as::
-        
+
             > rm -rf .tau
             > tau initialize [init_args]
-        
+
         Args:
             init_args (list): Command line arguments to `tau initialize`.
         """
@@ -195,20 +201,20 @@ class TestCase(unittest.TestCase):
 
     def destroy_project_storage(self):
         """Delete project storage.
-        
+
         Effectively the same as::
-        
+
             > rm -rf .tau
         """
         PROJECT_STORAGE.destroy(ignore_errors=True)
 
     def exec_command(self, cmd, argv):
         """Execute a tau command's main() routine and return the exit code, stdout, and stderr data.
-        
+
         Args:
             cmd (type): A command instance that has a `main` callable attribute.
             argv (list): Arguments to pass to cmd.main()
-            
+
         Returns:
             tuple: (retval, stdout, stderr) results of running the command.
         """
@@ -234,7 +240,7 @@ class TestCase(unittest.TestCase):
             sys.stdout = orig_stdout
             sys.stderr = orig_stderr
             logger._STDOUT_HANDLER.stream = orig_stdout
-            
+
     def copy_testfile(self, src, dst=None):
         test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
         test_dst = os.path.join(get_test_workdir(), dst or src)
@@ -258,14 +264,14 @@ class TestCase(unittest.TestCase):
         retval, stdout, stderr = self.exec_command(cmd, argv)
         self.assertNotEqual(retval, return_value)
         return stdout, stderr
-    
+
     def assertManagedBuild(self, return_value, compiler_role, compiler_args, src):
         from taucmdr.cli.commands.build import COMMAND as build_command
         self.copy_testfile(src)
         cc_cmd = self.assertCompiler(compiler_role)
         args = [cc_cmd] + compiler_args + [src]
         self.assertCommandReturnValue(return_value, build_command, args)
-        
+
     def assertInLastTrialData(self, value, data_type='tau'):
         from taucmdr.model.project import Project
         trial = Project.selected().experiment().trials()
@@ -279,13 +285,13 @@ class TestCase(unittest.TestCase):
                         return
                     data.append(buff)
         else:
-            raise NotImplementedError 
+            raise NotImplementedError
         self.fail("'%s' not found in '%s'" % (value, '\n'.join(data)))
 
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
-    
+
     def __init__(self, *args, **kwargs):
         super(TestRunner, self).__init__(*args, **kwargs)
         self.buffer = True
