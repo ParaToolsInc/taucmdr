@@ -214,9 +214,12 @@ class Installation(object):
         if src.lower() == 'download':
             self.src = self._lookup_target_os_list(repos)
             if isinstance(self.src, list):
-                self.srcs = self.src
+                self.srcs = self.src[:]
                 self.srcs_avail = self.srcs[:]
-                self.src = self.srcs.pop(0)
+                try:
+                    self.src = self.srcs.pop(0)
+                except IndexError:
+                    raise ConfigurationError("No sources provided for %s." % self.title)
             else:
                 self.srcs = []
                 self.srcs_avail = [self.src]
