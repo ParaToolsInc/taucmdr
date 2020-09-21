@@ -42,26 +42,21 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: [
+PDT_REPOS = [
     'http://tau.uoregon.edu/pdt.tgz',
     'http://fs.paratools.com/tau-mirror/pdt.tgz'
-    ],
-         X86_64: {None: [
-             'http://tau.uoregon.edu/pdt.tgz',
-             'http://fs.paratools.com/tau-mirror/pdt.tgz'
-         ],
-                  LINUX:  [
-                      'http://tau.uoregon.edu/pdt_lite.tgz',
-                      'http://fs.paratools.com/tau-mirror/pdt_lite.tgz'
-                    ]},
-         INTEL_KNL: {None: [
-             'http://tau.uoregon.edu/pdt.tgz',
-             'http://fs.paratools.com/tau-mirror/pdt.tgz'
-         ],
-                     LINUX:  [
-                         'http://tau.uoregon.edu/pdt_lite.tgz',
-                         'http://fs.paratools.com/tau-mirror/pdt_lite.tgz'
-                     ]}}
+]
+
+PDT_LITE_REPOS = [
+    'http://tau.uoregon.edu/pdt_lite.tgz',
+    'http://fs.paratools.com/tau-mirror/pdt_lite.tgz'
+]
+
+REPOS = {None: PDT_REPOS,
+         X86_64: {None: PDT_REPOS,
+                  LINUX: PDT_LITE_REPOS},
+         INTEL_KNL: {None: PDT_REPOS,
+                     LINUX: PDT_LITE_REPOS}}
 
 COMMANDS = {None:
             ['cparse',
