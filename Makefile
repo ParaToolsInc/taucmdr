@@ -216,7 +216,10 @@ clean:
 	$(ECHO)$(RM) -r $(BUILDDIR) VERSION
 
 dev-container:
-	$(ECHO)docker build --pull --rm -t $(DOCKER_IMG_NAME) .
+	$(ECHO)docker build --pull -t $(DOCKER_IMG_NAME) .
 
 run-container:
-	$(ECHO)docker run -i -t -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
+	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
+
+test-container:
+	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
