@@ -34,7 +34,10 @@ from __future__ import absolute_import
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 
-REPOS = {None: 'http://tau.uoregon.edu/otf2.tgz'}
+REPOS = {None: [
+    'http://tau.uoregon.edu/otf2.tgz',
+    'http://fs.paratools.com/tau-mirror/otf2.tgz'
+]}
 
 LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
 

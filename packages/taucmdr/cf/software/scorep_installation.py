@@ -43,7 +43,8 @@ import six
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
+REPOS = {None: ['http://www.cs.uoregon.edu/research/tau/scorep.tgz',
+                'http://fs.paratools.com/tau-mirror/scorep.tgz']}
 
 COMMANDS = {None:
             [

@@ -218,9 +218,12 @@ class Installation(object):
         if src.lower() == 'download':
             self.src = self._lookup_target_os_list(repos)
             if isinstance(self.src, list):
-                self.srcs = self.src
+                self.srcs = self.src[:]
                 self.srcs_avail = self.srcs[:]
-                self.src = self.srcs.pop(0)
+                try:
+                    self.src = self.srcs.pop(0)
+                except IndexError:
+                    raise ConfigurationError("No sources provided for %s." % self.title)
             else:
                 self.srcs = []
                 self.srcs_avail = [self.src]
@@ -340,13 +343,7 @@ class Installation(object):
                     return str(archive)
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
-        try:
-            util.download(self.src, archive)
-        except IOError:
-            hints = ("If a firewall is blocking access to this server, use another method to download "
-                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
-                     "Check that the file or directory is accessible")
-            raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
+        util.download(self.src, archive)
         return str(archive)
 
     def acquire_source(self, reuse_archive=True):
@@ -370,8 +367,8 @@ class Installation(object):
             return str(self.src)
         # Check that archive is valid by getting archive top-level directory
         while self.src:
-            archive = self._acquire_source(reuse_archive)
             try:
+                archive = self._acquire_source(reuse_archive)
                 util.archive_toplevel(archive)
             except IOError:
                 if reuse_archive:
@@ -390,11 +387,13 @@ class Installation(object):
             else:
                 return str(archive)
         if self.src is None:
-            raise ConfigurationError(
-                "Unable to acquire {} source package '{}'".format(self.name, ', '.join(self.srcs_avail))
-            )
+            archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
+            hints = ("If a firewall is blocking access to this server, use another method to download "
+                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+                     "Check that the file or directory is accessible")
+            raise ConfigurationError("Cannot acquire source archive '%s'." % ', '.join(self.srcs_avail), *hints)
         else:
-            return archive
+            return str(archive)
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.

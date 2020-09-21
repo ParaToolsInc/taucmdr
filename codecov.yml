@@ -9,7 +9,6 @@ comment:
   layout: "reach, diff, flags, files"
   behavior: default
   branches: [master, unstable]
-  after_n_builds: 2
 
 
 coverage:
