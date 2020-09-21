@@ -66,10 +66,10 @@ jobs:
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
           BASEREF=${{ github.base_ref }}
           if [ "${BASEREF}" ]; then
-            echo "set-output name=baseref::${BASEREF#refs/*/}"
+            echo "::set-output name=baseref::${BASEREF#refs/*/}"
             echo "BASEREF: ${BASEREF#/refs/*/}"
           else
-            echo "set-output name=baseref::unstable"
+            echo "::set-output name=baseref::unstable"
             echo "BASEREF: unstable"
           fi
 
