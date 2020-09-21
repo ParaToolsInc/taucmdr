@@ -424,7 +424,7 @@ class Installation(object):
         Subclasses may wish to perform additional checks.
 
         Raises:
-          SoftwarePackageError: Describs why the installation is invalid.
+          SoftwarePackageError: Describes why the installation is invalid.
         """
         LOGGER.debug("Verifying %s installation at '%s'", self.title, self.install_prefix)
         if not os.path.exists(self.install_prefix):
