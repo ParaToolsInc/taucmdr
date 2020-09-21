@@ -339,13 +339,7 @@ class Installation(object):
                     return archive
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
-        #try:
         util.download(self.src, archive)
-        #except IOError:
-        #    hints = ("If a firewall is blocking access to this server, use another method to download "
-        #             "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
-        #             "Check that the file or directory is accessible")
-        #    raise ConfigurationError("Cannot acquire source archive '%s'." % self.src, *hints)
         return archive
 
     def acquire_source(self, reuse_archive=True):
