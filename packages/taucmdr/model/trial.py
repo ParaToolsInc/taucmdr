@@ -242,7 +242,7 @@ class TrialController(Controller):
         measurement = expr.populate('measurement')
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
-        b64env = base64.b64encode(repr(env).encode('utf-8'))
+        b64env = ascii(base64.standard_b64encode(repr(env).encode('utf-8')))
         is_bluegene = expr.populate('target').architecture().is_bluegene()
         is_cray_login = expr.populate('target').operating_system().is_cray_login()
         if is_cray_login:
@@ -556,7 +556,7 @@ class Trial(Model):
             elapsed = time.time() - begin_time
             if record_output:
                 retval = ret[0]
-                output = base64.b64encode(repr(ret[1]).encode('utf-8'))
+                output = ascii(base64.standard_b64encode(repr(ret[1]).encode('utf-8')))
             else:
                 retval = ret
         except OSError as err:
