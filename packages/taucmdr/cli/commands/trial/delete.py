@@ -61,7 +61,7 @@ class TrialDeleteCommand(DeleteCommand):
         for field in fields:
             if not trial_ctrl.exists(field):
                 self.parser.error("No trial number %s in the current experiment.  "
-                                "See `trial list` to see all trial numbers." % field.number)
+                                "See `trial list` to see all trial numbers." % field['number'])
                 break
         for i, _ in enumerate(fields):
             trial_ctrl.delete(fields[i])
