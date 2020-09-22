@@ -47,7 +47,6 @@ import tempfile
 import hashlib
 from collections import deque
 from contextlib import contextmanager
-from zipimport import zipimporter
 from zipfile import ZipFile
 import six.moves.urllib.request # pylint: disable=import-error
 import six.moves.urllib.parse
@@ -516,21 +515,21 @@ def create_subprocess(
             # http://bugs.python.org/issue3907
             for line in iter(proc.stdout.readline, b''):
                 if log:
-                    LOGGER.debug(line[:-1])
+                    LOGGER.debug(str(line[:-1]))
                 if stdout:
-                    print(line, end='')
+                    print(str(line), end='')
                 if error_buf:
-                    buf.append(line)
+                    buf.append(str(line))
                 if record_output:
-                    output.append(line)
+                    output.append(str(line))
         proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     if retval and error_buf and not stdout:
         for line in buf:
-            print(line, end='')
+            print(str(line), end='')
     if record_output:
-        return retval, output
+        return retval, str(output)
     return retval
 
 
@@ -720,11 +719,7 @@ def _iter_modules(paths, prefix):
     print(str(prefix))
     for path in paths:
         importer = pkgutil.get_importer(path)
-        if isinstance(importer, zipimporter):
-            archive = os.path.basename(importer.archive)
-            iter_importer_modules = _zipimporter_iter_modules(archive, path)
-        else:
-            iter_importer_modules = importer.iter_modules
+        iter_importer_modules = importer.iter_modules
         for name, ispkg in iter_importer_modules(prefix):
             if name not in yielded:
                 yielded[name] = True
