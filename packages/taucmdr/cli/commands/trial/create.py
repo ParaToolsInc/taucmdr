@@ -89,7 +89,7 @@ class TrialCreateCommand(CreateCommand):
             elif argv[2] in '--tau-dir':
                 del argv[2:4]
         if args.description:
-            description = args.description
+            description = str(args.description)
             if argv[0] in '--description':
                 del argv[0:2]
             elif argv[2] in '--description':

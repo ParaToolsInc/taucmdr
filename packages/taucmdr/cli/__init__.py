@@ -44,7 +44,7 @@ from __future__ import absolute_import
 import os
 import pkgutil
 import sys
-#from types import ModuleType
+from types import ModuleType
 import six
 from six.moves import range
 from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
