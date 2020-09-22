@@ -33,12 +33,12 @@ Asserts that pylint score doesn't drop below minimum.
 from __future__ import absolute_import
 import os
 import sys
-import string
 import subprocess
 import re
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
+REPORT_FILE = os.path.join(TAUCMDR_HOME, "pylint.md")
 PYLINT_REPORT_TEMPLATE = \
 """
 ## Pylint Output
@@ -85,7 +85,7 @@ class PylintTest(tests.TestCase):
             if ROW_SEPERATOR.search(line):
                 continue
             elif HEADER_SEPERATOR.search(line):
-                trans_table = string.maketrans("+=","|-")
+                trans_table = str.maketrans("+=","|-")
                 _report_lines.append(line.translate(trans_table))
             else:
                 _report_lines.append(line)
@@ -101,9 +101,12 @@ class PylintTest(tests.TestCase):
 
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
-        self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
+        self.assertRegex(stderr, '(^ *[Uu]sing config file .*pylintrc.*)|(^$)')
         try:
-            version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
+            if re.search(r'__main__.py', stdout):
+                version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
+            else:
+                version_parts = stdout.split('\n')[0].split('pylint')[1].split('.')
         except IndexError:
             self.fail("Unable to parse pylint version string:\n%s" % stdout)
         version = tuple(int(x) for x in version_parts)
@@ -111,11 +114,16 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
-        lint_msg_file = open(os.path.join(TAUCMDR_HOME, "pylint.md"), "w")
-        lint_msg = self._format_pylint_report(stdout, stderr)
-        lint_msg_file.write(str(lint_msg))
-        lint_msg_file.close()
-        self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
+        with open(REPORT_FILE, "w") as lint_msg_file:
+            try:
+                lint_msg = self._format_pylint_report(stdout, stderr)
+                lint_msg_file.write(str(lint_msg))
+            finally:
+                lint_msg_file.close()
+        self.assertRegex(stderr, '(^ *[Uu]sing config file .*pylintrc.*)|(^$)')
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
-        self.assertGreaterEqual(score, 9.0, "{}\nPylint score {}/10 is too low!".format(stdout, score))
+        self.assertGreaterEqual(
+            score,
+            9.0,
+            "Pylint score {}/10 is too low!\nPlease see report output for details:\n    {}".format(score, REPORT_FILE))
