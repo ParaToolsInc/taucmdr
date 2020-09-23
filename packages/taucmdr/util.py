@@ -197,11 +197,11 @@ def which(program, use_cached=True):
     """
     if not program:
         return None
-    prog_enc = str(str(program))
+    prog_enc = program
     assert isinstance(prog_enc, six.string_types)
     if use_cached:
         try:
-            return str(_WHICH_CACHE[prog_enc])
+            return _WHICH_CACHE[prog_enc]
         except KeyError:
             pass
     _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -211,15 +211,15 @@ def which(program, use_cached=True):
         if _is_exec(abs_program):
             LOGGER.debug("which(%s) = '%s'", prog_enc, abs_program)
             _WHICH_CACHE[prog_enc] = abs_program
-            return str(abs_program)
+            return abs_program
     else:
         for path in os.environ['PATH'].split(os.pathsep):
-            path = str(path.strip('"'))
+            path = path.strip('"')
             exe_file = os.path.join(path, prog_enc)
             if _is_exec(exe_file):
                 LOGGER.debug("which(%s) = '%s'", prog_enc, exe_file)
                 _WHICH_CACHE[prog_enc] = exe_file
-                return str(exe_file)
+                return exe_file
     _heavy_debug("which(%s): command not found", prog_enc)
     _WHICH_CACHE[prog_enc] = None
     return None
@@ -239,7 +239,7 @@ def download(src, dest, timeout=8):
     Raises:
         IOError: File copy or download failed.
     """
-    src = str(str(src))
+    src = str(src)
     dest = str(dest)
     assert isinstance(timeout, int) and timeout >= 0
     if src.startswith('file://'):
@@ -253,7 +253,7 @@ def download(src, dest, timeout=8):
         LOGGER.info("Downloading '%s'", src)
         mkdirp(os.path.dirname(dest))
         for cmd in "curl", "wget":
-            abs_cmd = str(which(cmd))
+            abs_cmd = which(cmd)
             if abs_cmd and _create_dl_subprocess(abs_cmd, src, dest, timeout) == 0:
                 return
             LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)
@@ -289,7 +289,7 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
         file_size = -1
     with ProgressIndicator("Downloading", total_size=file_size) as progress_bar:
         with open(os.devnull, 'wb') as devnull:
-            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT, universal_newlines=True)
             while proc.poll() is None:
                 try:
                     current_size = os.stat(dest).st_size
@@ -508,28 +508,28 @@ def create_subprocess(
         if error_buf:
             buf = deque(maxlen=error_buf)
         output = []
-        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
+        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, universal_newlines=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
             # Use iter to avoid hidden read-ahead buffer bug in named pipes:
             # http://bugs.python.org/issue3907
-            for line in iter(proc.stdout.readline, b''):
+            for line in iter(proc.stdout.readline, ''):
                 if log:
-                    LOGGER.debug(str(line[:-1]))
+                    LOGGER.debug(line[:-1])
                 if stdout:
-                    print(str(line), end='')
+                    print(line, end='')
                 if error_buf:
-                    buf.append(str(line))
+                    buf.append(line)
                 if record_output:
-                    output.append(str(line))
+                    output.append(line)
         proc.wait()
     retval = proc.returncode
     LOGGER.debug("%s returned %d", cmd, retval)
     if retval and error_buf and not stdout:
         for line in buf:
-            print(str(line), end='')
+            print(line, end='')
     if record_output:
-        return retval, str(output)
+        return retval, output
     return retval
 
 
@@ -558,14 +558,14 @@ def get_command_output(cmd):
     else:
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
-    stdout = str(subprocess.check_output(cmd, stderr=subprocess.STDOUT), encoding='utf-8')
+    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
     get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 
 
-def page_output(output_string):
+def page_output(output_string: str):
     """Pipe string to a pager.
 
     If PAGER is an environment then use that as pager, otherwise
@@ -575,7 +575,7 @@ def page_output(output_string):
         output_string (str): String to put output.
 
     """
-    output_string = unidecode(output_string.decode('utf-8'))
+    output_string = unidecode(output_string)
     if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
         print(output_string)
     else:
@@ -713,10 +713,6 @@ def uncolor_text(text):
 def _iter_modules(paths, prefix):
     # pylint: disable=no-member
     yielded = {}
-    print(paths)
-    print(prefix)
-    print(str(paths))
-    print(str(prefix))
     for path in paths:
         importer = pkgutil.get_importer(path)
         iter_importer_modules = importer.iter_modules
