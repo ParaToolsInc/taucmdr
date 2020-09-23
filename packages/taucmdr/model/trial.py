@@ -192,7 +192,7 @@ class TrialController(Controller):
                 data_size += os.path.getsize(os.path.join(dir_path, name))
         fields['data_size'] = data_size
         if record_output:
-            fields['output'] = output
+            fields['output'] = str(output)
         self.update(fields, trial.eid)
         if retval != 0:
             if data_size != 0:
@@ -210,7 +210,7 @@ class TrialController(Controller):
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
         LOGGER.info('Elapsed seconds: %s', elapsed)
         if record_output:
-            return retval, output
+            return retval, str(output)
         return retval
 
     def perform(self, proj, cmd, cwd, env, description, record_output=False):
@@ -604,7 +604,7 @@ class Trial(Model):
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         if record_output:
-            return retval, output, elapsed
+            return retval, str(output), elapsed
         return retval, elapsed
 
     def export(self, dest):
