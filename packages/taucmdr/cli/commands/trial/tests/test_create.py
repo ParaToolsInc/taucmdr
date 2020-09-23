@@ -140,6 +140,7 @@ class CreateTest(tests.TestCase):
 
     def sample_resolution_helper(self, option):
         self.reset_project_storage()
+        self.assertIn(option, ['file', 'line', 'function'])
         stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
                                             ['sample', '--sample-resolution', option])
         self.assertIn("Updated measurement 'sample'", stdout)

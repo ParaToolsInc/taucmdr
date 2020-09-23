@@ -52,7 +52,7 @@ class CreateTest(tests.TestCase):
     def test_no_args(self):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, [])
-        self.assertIn('error: too few arguments', stderr)
+        self.assertIn('error: the following arguments are required', stderr)
 
     def test_h_arg(self):
         self.reset_project_storage()

@@ -41,7 +41,7 @@ class CopyTest(tests.TestCase):
     def test_noargs(self):
         self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, copy.COMMAND, [])
-        self.assertIn('too few arguments', stderr)
+        self.assertIn('the following arguments are required', stderr)
         self.assertFalse(stdout)
 
     def test_copy(self):
