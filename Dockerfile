@@ -15,7 +15,7 @@ COPY examples /tmp/taucmdr/examples
 COPY .testfiles /tmp/taucmdr/.testfiles
 COPY .git /tmp/taucmdr/.testfiles
 WORKDIR /tmp/taucmdr
-RUN ls -la; make clean; make install
+RUN ls -la ; make clean ; make install ; chown -R tau:tau ${INSTALLDIR}
 USER tau
 WORKDIR /home/tau/src
 ENV PATH="/home/tau/taucmdr/conda/bin:$PATH:/home/tau/taucmdr/bin"
