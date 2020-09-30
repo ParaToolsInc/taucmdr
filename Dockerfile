@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 RUN DEBIAN_FRONTEND=noninteractive set -v && \
         apt-get update && \
-        apt-get install -y --no-install-recommends ca-certificates curl default-jre wget openssh-server libz-dev make locales git gcc g++ gfortran mpi-default-bin mpi-default-dev python3-dev && \
+        apt-get install -y --no-install-recommends ca-certificates curl default-jre wget openssh-server libz-dev make locales git gcc g++ gfortran mpi-default-bin mpi-default-dev python3-dev python-minimal && \
         rm -rf /var/lib/apt/lists/* && \
         localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
         useradd -ms /bin/bash tau
