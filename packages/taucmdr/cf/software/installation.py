@@ -225,6 +225,8 @@ class Installation(object):
                 self.srcs_avail = [self.src]
         elif src.lower() == 'download-tr6':
             raise ConfigurationError("download-tr6 is not a valid source for %s" % self.title)
+        elif src.lower() == 'download-tr4':
+            raise ConfigurationError("download-tr4 is not a valid source for %s" % self.title)
         else:
             self.src = src
         self.unmanaged = os.path.isdir(self.src)

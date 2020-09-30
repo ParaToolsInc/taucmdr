@@ -69,8 +69,6 @@ def contextualize(function):
                 records = records if valid(context, records) else None
             elif isinstance(records, list):
                 records = [e for e in records if valid(context, e)]
-        else:
-            LOGGER.debug("Invalid context %s; ignoring.", context)
 
         return records
     return wrapper

@@ -99,9 +99,15 @@ jobs:
           name: taucmdr-full-tau-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
-      - name: Test TAU Commander
+      - name: Test TAU Commander with TinyDB backend
         run: |
           rm ~/.local/taucmdr/debug_log || true
+          export __TAUCMDR_DB_BACKEND__=tinydb
+          coverage run setup.py test
+
+      - name: Test TAU Commander with SQLite backend
+        run: |
+          export __TAUCMDR_DB_BACKEND__=sqlite
           coverage run setup.py test
 
       - name: Build sphinx docs
