@@ -129,15 +129,15 @@ class LocalFileStorage(AbstractStorage):
         for item in self.search():
             yield item['key']
 
-    def iterkeys(self):
+    def keys(self):
         for item in self.search():
             yield item['key']
 
-    def itervalues(self):
+    def values(self):
         for item in self.search():
             yield item['value']
 
-    def iteritems(self):
+    def items(self):
         for item in self.search():
             yield item['key'], item['value']
 
@@ -251,7 +251,7 @@ class LocalFileStorage(AbstractStorage):
             return lhs | rhs
         join = _or if match_any else _and
         itr = keys.items()
-        key, val = next(itr)
+        key, val = next(iter(itr))
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))

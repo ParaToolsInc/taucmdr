@@ -509,7 +509,7 @@ class Target(Model):
         self._compilers = None
 
     def on_create(self):
-        for comp in self.compilers().itervalues():
+        for comp in self.compilers().values():
             comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
 
     def on_delete(self):

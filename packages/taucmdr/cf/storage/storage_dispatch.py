@@ -123,17 +123,17 @@ class StorageDispatch(AbstractStorage):
         """Iterate over keys in the key/value store."""
         return iter(self._get_storage())
 
-    def iterkeys(self):
+    def keys(self):
         """Iterate over keys in the key/value store."""
-        return self._get_storage().iterkeys()
+        return self._get_storage().keys()
 
-    def itervalues(self):
+    def values(self):
         """Iterate over values in the key/value store."""
-        return self._get_storage().iteritems()
+        return self._get_storage().items()
 
-    def iteritems(self):
+    def items(self):
         """Iterate over items in the key/value store."""
-        return self._get_storage().iteritems()
+        return self._get_storage().items()
 
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""

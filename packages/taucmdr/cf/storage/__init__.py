@@ -112,15 +112,15 @@ class AbstractStorage(metaclass=ABCMeta):
         """Iterate over keys in the key/value store."""
 
     @abstractmethod
-    def iterkeys(self):
+    def keys(self):
         """Iterate over keys in the key/value store."""
 
     @abstractmethod
-    def itervalues(self):
+    def values(self):
         """Iterate over values in the key/value store."""
 
     @abstractmethod
-    def iteritems(self):
+    def items(self):
         """Iterate over items in the key/value store."""
 
     @abstractmethod

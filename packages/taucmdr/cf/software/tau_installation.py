@@ -500,7 +500,7 @@ class TauInstallation(Installation):
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]
         # TAU changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        uid_parts.extend(sorted(comp.uid for comp in self.compilers.values()))
         # TAU changes if any dependencies change.
         for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
             if getattr(self, 'uses_'+pkg):

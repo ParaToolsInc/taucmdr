@@ -127,7 +127,7 @@ class ScorepInstallation(AutotoolsInstallation):
     def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # Score-P changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        uid_parts.extend(sorted(comp.uid for comp in self.compilers.values()))
         # Score-P installations have different symbols depending on what flags were used.
         uid_parts.append(str(self._get_flags()))
         return uid_parts

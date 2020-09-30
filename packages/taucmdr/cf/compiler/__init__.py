@@ -840,13 +840,13 @@ class InstalledCompilerSet(KeyedRecord):
     def __getitem__(self, key):
         return self.members[key]
 
-    def iterkeys(self):
+    def keys(self):
         return self.members.keys()
 
-    def itervalues(self):
+    def values(self):
         return self.members.values()
 
-    def iteritems(self):
+    def items(self):
         return self.members.items()
 
     def _add_members(self, **kwargs):

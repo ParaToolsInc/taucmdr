@@ -157,7 +157,7 @@ def _configure_full(args):
 
     # Build a bitmask to filter out TAU project configurations where ``features[key] == False``.
     # From Python documentation: https://docs.python.org/2/library/stdtypes.html#dict.items
-    #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with
+    #   "If items(), keys(), values(), items(), keys(), and values() are called with
     #    no intervening modifications to the dictionary, the lists will directly correspond."
     mask = 0
     for i, val in enumerate(features.values()):
