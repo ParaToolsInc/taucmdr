@@ -1291,8 +1291,8 @@ print(find_version())
             env['SCOREP_ENABLE_TRACING'] = 'false'
         env['TAU_SAMPLING'] = str(int(self.sample))
         if self.sample:
-            # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
             env['TAU_EBS_RESOLUTION'] = self.sample_resolution
+            # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
             arch_period = {INTEL_KNC: 100000,
                            INTEL_KNL: 100000,
                            IBM_BGL: 20000,
@@ -1401,8 +1401,7 @@ print(find_version())
         return retval
 
     def _rewrite_launcher_appfile_cmd(self, cmd, tau_exec):
-        launcher = str(cmd[0])
-        appfile_flags = []
+        launcher = cmd[0]
         appfile_flags = PROGRAM_LAUNCHERS.get(launcher)
         if not appfile_flags:
             raise InternalError("Application configuration file flags for '%s' are unknown" % launcher)
@@ -1412,7 +1411,7 @@ print(find_version())
                 with_equals = True
             except ValueError:
                 try:
-                    appfile = str(cmd[i+1])
+                    appfile = cmd[i+1]
                     with_equals = False
                 except IndexError:
                     raise InternalError("Unable to parse application configuration file in '%s'" % cmd)
