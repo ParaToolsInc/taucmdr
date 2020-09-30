@@ -66,7 +66,8 @@ from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://tau.uoregon.edu/tau.tgz'}
+REPOS = {None: ['http://tau.uoregon.edu/tau.tgz',
+                'http://fs.paratools.com/tau-mirror/tau.tgz']}
 
 NIGHTLY = 'http://fs.paratools.com/tau-nightly.tgz'
 
