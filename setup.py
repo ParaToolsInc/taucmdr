@@ -252,6 +252,8 @@ class Test(TestCommand):
         assert isinstance(self, TestCommand)
         self.test_args = args + self.test_args
         try:
+            db_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
+            print("Running tests with database backend {}".format(db_backend))
             return TestCommand.run_tests(self)
         finally:
             if self.system_sandbox:

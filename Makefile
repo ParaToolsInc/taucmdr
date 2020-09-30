@@ -232,4 +232,4 @@ run-container:
 	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
 
 test-container:
-	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
+	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG) python setup.py test

@@ -44,16 +44,20 @@ from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
+from taucmdr.cf.storage import levels
 
 _DIR_STACK = []
 _CWD_STACK = []
 _TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
 
+LOGGER = logger.get_logger(__name__)
+
 
 def _destroy_test_workdir(path):
     onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
     shutil.rmtree(path, ignore_errors=False, onerror=onerror)
+
 
 def push_test_workdir():
     """Create a new working directory for a unit test.
@@ -78,6 +82,7 @@ def push_test_workdir():
     os.chdir(path)
     tempfile.tempdir = path
 
+
 def pop_test_workdir():
     """Recursively deletes the most recently created unit test working directory.
 
@@ -88,9 +93,11 @@ def pop_test_workdir():
     os.chdir(_CWD_STACK.pop())
     _destroy_test_workdir(_DIR_STACK.pop())
 
+
 def get_test_workdir():
     """Return the current unit test's working directory."""
     return _DIR_STACK[0]
+
 
 def cleanup():
     """Checks that any files or directories created during testing have been removed."""
@@ -98,6 +105,8 @@ def cleanup():
         for path in _DIR_STACK:
             sys.stderr.write("\nWARNING: Test directory '%s' still exists, attempting to clean now...\n" % path)
             _destroy_test_workdir(path)
+
+
 atexit.register(cleanup)
 
 
@@ -107,8 +116,10 @@ def not_implemented(cls):
     _NOT_IMPLEMENTED.append(msg)
     return unittest.skip(msg)(cls)
 
+
 def _null_decorator(_):
     return _
+
 
 def skipUnlessHaveCompiler(role):
     """Decorator to skip test functions when no compiler fills the given role.
@@ -175,6 +186,9 @@ class TestCase(unittest.TestCase):
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
         PROJECT_STORAGE.destroy(ignore_errors=True)
         argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
+        default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', None)
+        if default_backend:
+            argv.extend(['--backend', default_backend])
         if init_args is not None:
             argv.extend(init_args)
         if '--bare' in argv or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
@@ -243,6 +257,7 @@ class TestCase(unittest.TestCase):
     def copy_testfile(self, src, dst=None):
         test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
         test_dst = os.path.join(get_test_workdir(), dst or src)
+        LOGGER.info("Copying test file {} to {}".format(test_src, test_dst))
         shutil.copy(test_src, test_dst)
 
     def assertCompiler(self, role, target_name='targ1'):

@@ -219,4 +219,10 @@ def excepthook(etype, value, tb):
             LOGGER.critical(message)
             sys.exit(EXIT_FAILURE)
 
-sys.excepthook = excepthook
+
+# Replace the exception handler, but only if we are not running Python interactively.
+# (Replacing the exception handler when running interactively is annoying because
+# the handler exits on an unhandled exception, which is fine if TAU Commander is being
+# used through the `tau` CLI.)
+if not bool(getattr(sys, 'ps1', sys.flags.interactive)):
+    sys.excepthook = excepthook

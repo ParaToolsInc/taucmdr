@@ -451,7 +451,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|download-tr6|None)',
+                         'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
@@ -460,6 +460,16 @@ def attributes():
             'description': 'path or URL to libotf2 installation or archive file',
             'default': 'download',
             'argparse': {'flags': ('--otf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
+        'sqlite3_source': {
+            'type': 'string',
+            'description': 'path or URL to SQLite3 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--sqlite3',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},

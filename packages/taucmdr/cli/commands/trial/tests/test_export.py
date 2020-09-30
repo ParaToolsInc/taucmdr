@@ -45,6 +45,7 @@ class ExportTest(tests.TestCase):
     @tests.skipUnless(util.which('java'), "A java interpreter is required for this test")
     def test_export_tau_profile(self):
         self.reset_project_storage(['--profile', 'tau', '--trace', 'none'])
+        util.mkdirp(os.getcwd())
         expr = Project.selected().experiment()
         meas = expr.populate('measurement')
         self.assertEqual(meas['profile'], 'tau')
@@ -53,6 +54,19 @@ class ExportTest(tests.TestCase):
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['./a.out'])
         self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
         export_file = expr['name'] + '.trial0.ppk'
+        self.assertTrue(os.path.exists(export_file))
+
+    def test_export_sqlite_profile(self):
+        self.reset_project_storage(['--profile', 'sqlite', '--trace', 'none'])
+        util.mkdirp(os.getcwd())
+        expr = Project.selected().experiment()
+        meas = expr.populate('measurement')
+        self.assertEqual(meas['profile'], 'sqlite')
+        self.assertEqual(meas['trace'], 'none')
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_create_cmd, ['./a.out'])
+        self.assertCommandReturnValue(EXIT_SUCCESS, trial_export_cmd, [])
+        export_file = expr['name'] + '.trial0.db'
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
