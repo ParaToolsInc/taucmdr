@@ -35,7 +35,6 @@ import copy
 import os
 import json
 import tempfile
-import six
 import tinydb
 from tinydb import operations
 from tinydb.middlewares import CachingMiddleware

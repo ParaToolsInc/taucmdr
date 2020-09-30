@@ -48,7 +48,6 @@ from taucmdr.cf.platforms import Architecture, OperatingSystem
 from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
-import six
 
 
 LOGGER = logger.get_logger(__name__)

@@ -34,7 +34,6 @@ import sys
 import threading
 import itertools
 from datetime import datetime, timedelta
-import six
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
 

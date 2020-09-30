@@ -38,7 +38,6 @@ from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.software.tau_installation import TauInstallation
-import six
 
 
 class TargetEditCommand(EditCommand):

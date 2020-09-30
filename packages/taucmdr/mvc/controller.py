@@ -28,7 +28,6 @@
 
 from taucmdr import logger
 from taucmdr.error import InternalError, UniqueAttributeError, ModelError
-import six
 
 LOGGER = logger.get_logger(__name__)
 

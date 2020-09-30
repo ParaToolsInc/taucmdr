@@ -33,7 +33,6 @@ The selected experiment will be used for application compilation and trial visua
 
 import os
 import fasteners
-import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError, IncompatibleRecordError, ProjectSelectionError
 from taucmdr.error import ExperimentSelectionError

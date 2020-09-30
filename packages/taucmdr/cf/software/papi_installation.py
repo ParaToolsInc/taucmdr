@@ -33,7 +33,7 @@ import os
 import re
 import sys
 import fileinput
-from six.moves.html_parser import HTMLParser
+import html
 from subprocess import CalledProcessError
 from xml.etree import ElementTree
 from taucmdr import logger, util
@@ -166,10 +166,9 @@ class PapiInstallation(AutotoolsInstallation):
         """
         assert event_type == "PRESET" or event_type == "NATIVE"
         metrics = []
-        html_parser = HTMLParser()
         def _format(item):
             name = item.attrib['name']
-            desc = html_parser.unescape(item.attrib['desc'])
+            desc = html.unescape(item.attrib['desc'])
             desc = desc[0].capitalize() + desc[1:] + "."
             return name, desc
         xml_event_info = self.xml_event_info()

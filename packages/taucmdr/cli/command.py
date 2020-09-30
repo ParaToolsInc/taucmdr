@@ -29,7 +29,6 @@
 from abc import ABCMeta, abstractmethod
 from taucmdr import logger, cli
 from taucmdr.cli.arguments import ArgumentsNamespace
-import six
 
 
 class AbstractCommand(metaclass=ABCMeta):

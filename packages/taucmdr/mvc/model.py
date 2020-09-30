@@ -26,7 +26,6 @@
 #
 """TODO: FIXME: Docs"""
 
-import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
 from taucmdr.cf.storage import StorageRecord

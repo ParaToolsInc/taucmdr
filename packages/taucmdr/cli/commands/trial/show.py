@@ -31,7 +31,6 @@ from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.project import Project
 from taucmdr.cf.software.tau_installation import TauInstallation, PROFILE_ANALYSIS_TOOLS, TRACE_ANALYSIS_TOOLS
-import six
 
 
 class TrialShowCommand(AbstractCommand):

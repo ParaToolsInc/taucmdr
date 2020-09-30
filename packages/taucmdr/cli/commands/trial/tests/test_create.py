@@ -221,13 +221,13 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
 
-    @tests.skipUnless(util.which('python2.7'), "Python 2.7 required for this test")
+    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
     def test_run_python2(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2.7'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
         self.copy_testfile('firstprime.py')
         test_dir = os.getcwd()
         stdout, stderr = self.assertCommandReturnValue(
-            0, trial_create_cmd, ['python2.7', os.path.join(test_dir, 'firstprime.py')]
+            0, trial_create_cmd, ['python2', os.path.join(test_dir, 'firstprime.py')]
         )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)

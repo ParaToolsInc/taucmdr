@@ -44,7 +44,6 @@ from taucmdr.cf.compiler.caf import CAF_COMPILERS
 from taucmdr.cf.compiler.python import PYTHON_INTERPRETERS
 from taucmdr.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
 from taucmdr.cf.software.tau_installation import TauInstallation, TAU_MINIMAL_COMPILERS
-import six
 
 
 

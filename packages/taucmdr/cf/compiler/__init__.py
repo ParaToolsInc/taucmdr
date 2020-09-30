@@ -67,7 +67,6 @@ import re
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
-import six
 from taucmdr import logger, util, TAUCMDR_SCRIPT
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import TrackedInstance, KeyedRecord

@@ -36,7 +36,6 @@ import os
 import json
 import re
 import sqlite3
-import six
 from taucmdr import logger, util
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage import StorageRecord, StorageError

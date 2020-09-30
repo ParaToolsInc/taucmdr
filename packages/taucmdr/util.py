@@ -42,13 +42,10 @@ import tarfile
 import gzip
 import tempfile
 import hashlib
+import urllib
 from collections import deque
 from contextlib import contextmanager
 from zipfile import ZipFile
-import six.moves.urllib.request # pylint: disable=import-error
-import six.moves.urllib.parse
-import six.moves.urllib.error
-import six
 import termcolor
 from unidecode import unidecode
 from taucmdr import logger
@@ -258,7 +255,8 @@ def download(src, dest, timeout=8):
             raise OSError("Failed to download '%s'" % src)
         with ProgressIndicator("Downloading") as progress_bar:
             try:
-                six.moves.urllib.request.urlretrieve(src, dest, reporthook=progress_bar.update)
+                with urllib.request.urlopen(src) as in_stream, open(dest, 'wb') as out_file:
+                    shutil.copyfileobj(in_stream, out_file)
             except Exception as err:
                 LOGGER.warning("urllib failed to download '%s': %s", src, err)
                 raise OSError("Failed to download '%s'" % src)
@@ -644,7 +642,7 @@ def is_url(url):
     Returns:
         bool: True if `url` is a URL, False otherwise.
     """
-    return bool(len(six.moves.urllib.parse.urlparse(url).scheme))
+    return bool(len(urllib.request.urlopen(url).scheme))
 
 
 def camelcase(name):

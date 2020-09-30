@@ -49,7 +49,6 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.mvc.model import Model
 from taucmdr.cf.software.tau_installation import TauInstallation, PROGRAM_LAUNCHERS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
-import six
 
 
 LOGGER = logger.get_logger(__name__)

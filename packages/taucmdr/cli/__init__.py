@@ -43,7 +43,6 @@ import os
 import pkgutil
 import sys
 from types import ModuleType
-import six
 from taucmdr import TAUCMDR_SCRIPT, EXIT_FAILURE
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError, InternalError

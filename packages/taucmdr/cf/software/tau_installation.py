@@ -61,7 +61,6 @@ from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.compiler.python import PY
 from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
 from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
-import six
 
 
 LOGGER = logger.get_logger(__name__)

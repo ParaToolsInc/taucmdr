@@ -30,7 +30,6 @@ import os
 import multiprocessing
 from subprocess import CalledProcessError
 from contextlib import contextmanager
-import six
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator

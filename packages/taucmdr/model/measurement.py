@@ -33,7 +33,6 @@ measurements allow us to take different views of the application's performance.
 """
 
 import os
-import six
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, IncompatibleRecordError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model

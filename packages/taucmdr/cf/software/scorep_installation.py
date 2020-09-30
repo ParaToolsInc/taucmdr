@@ -36,7 +36,6 @@ from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler import host, mpi, shmem
 from taucmdr.cf.platforms import X86_64, IBM64, PPC64, PPC64LE
-import six
 
 
 LOGGER = logger.get_logger(__name__)

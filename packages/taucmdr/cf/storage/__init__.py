@@ -35,7 +35,6 @@ The key/value store is accessed via the `[]` operator, i.e. treat the storage ob
 
 
 from abc import ABCMeta, abstractmethod
-import six
 from taucmdr.error import Error
 
 

@@ -25,7 +25,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """TAU Common Framework (CF) common objects."""
-import six
 
 
 class TrackedInstance:

@@ -40,7 +40,6 @@ from taucmdr import logger, util
 from taucmdr.cli import USAGE_FORMAT
 from taucmdr.error import InternalError
 from taucmdr.cf.storage.levels import ORDERED_LEVELS, STORAGE_LEVELS
-import six
 
 
 Action = argparse.Action

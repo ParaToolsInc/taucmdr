@@ -38,7 +38,6 @@ from taucmdr.cf.storage.levels import SYSTEM_STORAGE, USER_STORAGE, PROJECT_STOR
 from taucmdr.model.project import Project
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
-import six
 
 LOGGER = logger.get_logger(__name__)
 

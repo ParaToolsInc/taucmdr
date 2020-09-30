@@ -37,7 +37,7 @@ PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different ver
 PYTHON2 = PYTHON_INTERPRETERS.add('PY2_INTERPRETER',
                                   family_regex=r'^Python 2',
                                   version_flags=['--version'],
-                                  PY=('python2.7', 'python'))
+                                  PY=('python2', 'python'))
 
 PYTHON3 = PYTHON_INTERPRETERS.add('PY3_INTERPRETER',
                                   family_regex=r'^Python 3',

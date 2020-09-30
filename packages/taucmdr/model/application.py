@@ -43,7 +43,6 @@ from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.compiler.caf import CAF_COMPILERS
-import six
 
 LOGGER = logger.get_logger(__name__)
 
