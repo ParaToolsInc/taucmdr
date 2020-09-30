@@ -9,6 +9,9 @@ Submodules
    taucmdr.cf.storage.tests.test_levels
    taucmdr.cf.storage.tests.test_local_file
    taucmdr.cf.storage.tests.test_project
+   taucmdr.cf.storage.tests.test_sqlite3_file
+   taucmdr.cf.storage.tests.test_sqlite3_project
+   taucmdr.cf.storage.tests.test_storage_dispatch
 
 Module contents
 ---------------

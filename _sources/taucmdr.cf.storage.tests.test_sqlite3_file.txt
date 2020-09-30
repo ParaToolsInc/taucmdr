@@ -1,0 +1,7 @@
+taucmdr.cf.storage.tests.test_sqlite3_file module
+=================================================
+
+.. automodule:: taucmdr.cf.storage.tests.test_sqlite3_file
+    :members:
+    :undoc-members:
+    :show-inheritance:

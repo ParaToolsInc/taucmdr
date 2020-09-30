@@ -1,0 +1,583 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cf.storage.storage_dispatch module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.cf.storage package" href="taucmdr.cf.storage.html" />
+    <link rel="next" title="taucmdr.cf.tests package" href="taucmdr.cf.tests.html" />
+    <link rel="prev" title="taucmdr.cf.storage.sqlite3_project module" href="taucmdr.cf.storage.sqlite3_project.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cf.storage.storage_dispatch module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.storage.sqlite3_project.html">taucmdr.cf.storage.sqlite3_project module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.tests.html">taucmdr.cf.tests package</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.cf.storage.storage_dispatch">
+<span id="taucmdr-cf-storage-storage-dispatch-module"></span><h1>taucmdr.cf.storage.storage_dispatch module<a class="headerlink" href="#module-taucmdr.cf.storage.storage_dispatch" title="Permalink to this headline">¶</a></h1>
+<p>TAU Commander storage dispatch</p>
+<p>This Storage class dispatches calls to either TinyDB or SQLite, depending on which is selected.</p>
+<dl class="class">
+<dt id="taucmdr.cf.storage.storage_dispatch.ProjectStorageDispatch">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.storage.storage_dispatch.</code><code class="descname">ProjectStorageDispatch</code><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#ProjectStorageDispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.ProjectStorageDispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch" title="taucmdr.cf.storage.storage_dispatch.StorageDispatch"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.storage.storage_dispatch.StorageDispatch</span></code></a></p>
+<p>Dispatches Project storage method calls to the backing Project storage class</p>
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.ProjectStorageDispatch.destroy">
+<code class="descname">destroy</code><span class="sig-paren">(</span><em>ignore_errors=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#ProjectStorageDispatch.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.ProjectStorageDispatch.destroy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.storage.storage_dispatch.</code><code class="descname">StorageDispatch</code><span class="sig-paren">(</span><em>name=None</em>, <em>prefix=None</em>, <em>kind=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage" title="taucmdr.cf.storage.AbstractStorage"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.storage.AbstractStorage</span></code></a></p>
+<p>Dispatches storage method calls to backend storage based on runtime selection of the type.</p>
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__contains__">
+<code class="descname">__contains__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__contains__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if <code class="docutils literal"><span class="pre">key</span></code> maps to a value is in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__delitem__">
+<code class="descname">__delitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__delitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__delitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a value from the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__enter__">
+<code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__enter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiates the database transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__exit__">
+<code class="descname">__exit__</code><span class="sig-paren">(</span><em>ex_type</em>, <em>value</em>, <em>traceback</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__exit__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalizes the database transaction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__getattr__">
+<code class="descname">__getattr__</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__getattr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__getattr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches any messages not otherwise caught to the selected storage backend.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__getitem__">
+<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__getitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a value from the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__iter__">
+<code class="descname">__iter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__iter__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over keys in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__len__">
+<code class="descname">__len__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__len__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of items in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.__setitem__">
+<code class="descname">__setitem__</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.__setitem__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a value in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.connect_database">
+<code class="descname">connect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.connect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.connect_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the database for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.connect_filesystem">
+<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.connect_filesystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the store filesystem for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.contains">
+<code class="descname">contains</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the specified table contains at least one matching record.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: check for the record with that element identifier.</li>
+<li>dict: check for the record with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: return the equivalent of <code class="docutils literal"><span class="pre">map(contains,</span> <span class="pre">keys)</span></code>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if the table contains at least one matching record, False otherwise.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the records in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Number of records in the table.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.8)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.database_exists">
+<code class="descname">database_exists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.database_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.database_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the database file backing this Storage object exists.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if database exists; false otherwise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.default_backend">
+<code class="descname">default_backend</code><em class="property"> = 'auto'</em><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.default_backend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.disconnect_database">
+<code class="descname">disconnect_database</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.disconnect_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.disconnect_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the database for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.disconnect_filesystem">
+<code class="descname">disconnect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.disconnect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.disconnect_filesystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes the store filesystem unreadable and unwritable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a single record.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: return the record with that element identifier.</li>
+<li>dict: return the record with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: return a list of records matching the elements of <cite>keys</cite></li>
+<li>None: return None.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The matching data record if <cite>keys</cite> was a self.Record.eid_type or dict.
+list: All matching data records if <cite>keys</cite> was a list or tuple.
+None: No record found or <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record" title="taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record">Record</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>data</em>, <em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new record.</p>
+<p>If the table doesn&#8217;t exist it will be created.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) &#8211; Data to insert in table.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The new record.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record" title="taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record">Record</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.iteritems">
+<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over items in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.iterkeys">
+<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.iterkeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over keys in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.itervalues">
+<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.itervalues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over values in the key/value store.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.match">
+<code class="descname">match</code><span class="sig-paren">(</span><em>field</em>, <em>table_name=None</em>, <em>regex=None</em>, <em>test=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find records where <cite>field</cite> matches <cite>regex</cite> or <cite>test</cite>.</p>
+<p>Either <cite>regex</cite> or <cite>test</cite> may be specified, not both.
+If <cite>regex</cite> is given, then all records with <cite>field</cite> matching the regular expression are returned.
+If test is given then all records with <cite>field</cite> set to a value that caues <cite>test</cite> to return True are returned.
+If neither is given, return all records where <cite>field</cite> is set to any value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>field</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.8)"><em>string</em></a>) &#8211; Name of the data field to match.</li>
+<li><strong>regex</strong> (<a class="reference external" href="https://docs.python.org/library/string.html#module-string" title="(in Python v3.8)"><em>string</em></a>) &#8211; Regular expression string.</li>
+<li><strong>test</strong> &#8211; Callable returning a boolean value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.prefix">
+<code class="descname">prefix</code><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the filesystem prefix for file storage.</p>
+<p>The filesystem must be persistent and provide the usual POSIX filesystem calls.
+In particular, GNU software packages should be installable in the filesystem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Absolute path in the filesystem.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.purge">
+<code class="descname">purge</code><span class="sig-paren">(</span><em>table_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.purge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all records.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete records.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: delete the record with that element identifier.</li>
+<li>dict: delete all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: delete all records matching the elements of <cite>keys</cite>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.search">
+<code class="descname">search</code><span class="sig-paren">(</span><em>keys=None</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find multiple records.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>Record.eid_type: return the record with that element identifier.</li>
+<li>dict: return all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: return a list of records matching the elements of <cite>keys</cite></li>
+<li>None: return all records.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+Invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.set_backend">
+<code class="descname">set_backend</code><span class="sig-paren">(</span><em>backend</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.set_backend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.set_backend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the backend that is to be used for subsequent storage method calls.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>backend</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; The backend to use. One of &#8216;tinydb&#8217;, &#8216;sqlite&#8217;, or &#8216;auto&#8217;.
+If &#8216;auto&#8217;, the backend is SQLite if a SQLite database is already present,
+and is TinyDB otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.table">
+<code class="descname">table</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a handle to a table.</p>
+<p>Return a handle to the named table or, if <cite>table_name</cite> is None, return the default table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table or None.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A database table object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.8)">object</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.unset">
+<code class="descname">unset</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.unset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update records by unsetting fields.</p>
+<p>Update only allows you to update a record by adding new fields or overwriting existing fields.
+Use this method to remove a field from the record.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: update the record with that element identifier.</li>
+<li>dict: update all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: apply update to all records matching the elements of <cite>keys</cite>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fields</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.storage_dispatch.StorageDispatch.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>fields</em>, <em>keys</em>, <em>table_name=None</em>, <em>match_any=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/storage_dispatch.html#StorageDispatch.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.storage_dispatch.StorageDispatch.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update records.</p>
+<dl class="docutils">
+<dt>The behavior depends on the type of <cite>keys</cite>:</dt>
+<dd><ul class="first last simple">
+<li>self.Record.eid_type: update the record with that element identifier.</li>
+<li>dict: update all records with attributes matching <cite>keys</cite>.</li>
+<li>list or tuple: apply update to all records matching the elements of <cite>keys</cite>.</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fields</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) &#8211; Data to record.</li>
+<li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
+<li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
+<li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
+in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> must match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.8)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
+<code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code> or invalid value for <cite>keys</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.storage.sqlite3_project.html">taucmdr.cf.storage.sqlite3_project module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.tests.html">taucmdr.cf.tests package</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Last updated on Sep 30, 2020 at 21:13:01 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

@@ -16,6 +16,9 @@ Submodules
    taucmdr.cf.storage.levels
    taucmdr.cf.storage.local_file
    taucmdr.cf.storage.project
+   taucmdr.cf.storage.sqlite3_file
+   taucmdr.cf.storage.sqlite3_project
+   taucmdr.cf.storage.storage_dispatch
 
 Module contents
 ---------------

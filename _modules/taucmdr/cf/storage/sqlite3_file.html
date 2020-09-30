@@ -1,0 +1,759 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cf.storage.sqlite3_file &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.0.0
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="../../../../_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="../../../../index.html" />
+    <link rel="up" title="taucmdr.cf.storage" href="../storage.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="../../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../../index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cf.storage.sqlite3_file</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <h1>Source code for taucmdr.cf.storage.sqlite3_file</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020, ParaTools, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1"># (1) Redistributions of source code must retain the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer.</span>
+<span class="c1"># (2) Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1">#     this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1">#     and/or other materials provided with the distribution.</span>
+<span class="c1"># (3) Neither the name of ParaTools, Inc. nor the names of its contributors may</span>
+<span class="c1">#     be used to endorse or promote products derived from this software without</span>
+<span class="c1">#     specific prior written permission.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Local file backend for SQLite databases.</span>
+
+<span class="sd">A persistent, transactional record storage system using :py:class:`sqlite3` for</span>
+<span class="sd">both the database and the key/value store.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">util</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage.local_file</span> <span class="kn">import</span> <span class="n">LocalFileStorage</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage</span> <span class="kn">import</span> <span class="n">StorageRecord</span><span class="p">,</span> <span class="n">StorageError</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Suppress debugging messages in optimized code</span>
+<span class="k">if</span> <span class="n">__debug__</span><span class="p">:</span>
+    <span class="n">_heavy_debug</span> <span class="o">=</span> <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span>   <span class="c1"># pylint: disable=invalid-name</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_heavy_debug</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">_SQLiteJsonRecord</span><span class="p">(</span><span class="n">StorageRecord</span><span class="p">):</span>
+    <span class="n">eid_type</span> <span class="o">=</span> <span class="nb">int</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_SQLiteJsonRecord</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">eid</span> <span class="ow">or</span> <span class="n">element</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SQLiteStorageError"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteStorageError">[docs]</a><span class="k">class</span> <span class="nc">SQLiteStorageError</span><span class="p">(</span><span class="n">StorageError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Indicates that the database connection has not been initialized.&quot;&quot;&quot;</span>
+
+    <span class="n">message_fmt</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%(value)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="si">%(hints)s</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Please contact </span><span class="si">%(contact)s</span><span class="s2"> for assistance.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the error object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_name (str): Table on which access was attempted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_name</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Attempt to access table </span><span class="si">{}</span><span class="s2"> before database connection established&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;Attempt to access database before connection established&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SQLiteStorageError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span></div>
+
+
+<div class="viewcode-block" id="SQLiteDatabase"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase">[docs]</a><span class="k">class</span> <span class="nc">SQLiteDatabase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a connection to the database.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        dbfile (str): Path to database file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dbfile</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span> <span class="o">=</span> <span class="n">dbfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_level</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">class</span> <span class="nc">_LoggingCursor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dbfile</span><span class="p">,</span> <span class="n">cursor</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dbfile</span> <span class="o">=</span> <span class="n">dbfile</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="n">cursor</span>
+
+        <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">(),</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+                <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: Executing `</span><span class="si">{}</span><span class="s2">` with parameters </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dbfile</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">parameters</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">fetchone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">fetchall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">lastrowid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">lastrowid</span>
+
+<div class="viewcode-block" id="SQLiteDatabase.open"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open the database connection specified in this object&#39;s dbfile attribute&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># isolation_level = None is required to prevent Python SQLite wrapper from interfering with transactions.</span>
+            <span class="c1"># check_same_thread = False allows connection to be used from a different thread than the one that</span>
+            <span class="c1"># created it, but note that the connection may not be used from multiple threads at the same time.</span>
+            <span class="c1"># See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span> <span class="n">isolation_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_same_thread</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Connected to SQLite database at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.close"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close the database connection&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.cursor"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.cursor">[docs]</a>    <span class="k">def</span> <span class="nf">cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a cursor which can be used to query the SQLite database&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SQLiteStorageError</span><span class="p">(</span><span class="s1">&#39;Database connection is not open&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LoggingCursor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.start_transaction"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.start_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">start_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Begin a transaction, which can be reverted with :any:`_SQLiteDatabase.revert_transaction`</span>
+<span class="sd">        or committed with :any:`_SQLiteDatabase.commit_transaction`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;BEGIN EXCLUSIVE TRANSACTION;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.revert_transaction"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.revert_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">revert_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Revert a transaction previously started with :any:`_SQLiteDatabase.start_transaction` &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;ROLLBACK;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.commit_transaction"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.commit_transaction">[docs]</a>    <span class="k">def</span> <span class="nf">commit_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Commit a transaction previously started with :any:`_SQLiteDatabase.start_transaction` &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;END TRANSACTION;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.tables"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.tables">[docs]</a>    <span class="k">def</span> <span class="nf">tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of all the tables in the database</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of the target names for the tables in the database.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SQLiteStorageError: Attempt to perform and operation on a database which is not open</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name FROM sqlite_master WHERE type = &#39;table&#39;;&quot;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.table"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.table">[docs]</a>    <span class="k">def</span> <span class="nf">table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a table object for a table in this database.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            table_name (str): The name of the table requested</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A table object for the table `table_name`</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SQLiteStorageError: Attempt to perform and operation on a database which is not open</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_SQLiteJsonTable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteDatabase.purge"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteDatabase.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete every record in every table in the database.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SQLiteStorageError: Attempt to perform and operation on a database which is not open</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;_toplevel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="_SQLiteJsonTable"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable">[docs]</a><span class="k">class</span> <span class="nc">_SQLiteJsonTable</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a JSON Table within the SQLite database.</span>
+<span class="sd">    Operations on the table are made through this class.</span>
+
+<span class="sd">    Attributes:</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Record</span> <span class="o">=</span> <span class="n">_SQLiteJsonRecord</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_exists</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span> <span class="ow">and</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s1">&#39;Invalid table name </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_ensure_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE TABLE IF NOT EXISTS </span><span class="si">{}</span><span class="s2"> (id INTEGER PRIMARY KEY, data JSON NOT NULL);&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                  <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.insert"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT INTO </span><span class="si">{}</span><span class="s2"> (data) VALUES(?)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">element</span><span class="p">)])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">_SQLiteJsonRecord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">storage</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="n">cursor</span><span class="o">.</span><span class="n">lastrowid</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_json_query</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">join_string</span> <span class="o">=</span> <span class="s2">&quot; OR &quot;</span> <span class="k">if</span> <span class="n">match_any</span> <span class="k">else</span> <span class="s2">&quot; AND &quot;</span>
+        <span class="n">where_clause</span> <span class="o">=</span> <span class="n">join_string</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;json_extract(data, &#39;$.</span><span class="si">{}</span><span class="s2">&#39;) == </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">)</span> <span class="k">else</span>
+                <span class="s2">&quot;json(&#39;</span><span class="si">{}</span><span class="s2">&#39;)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">val</span><span class="p">))))</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">keys</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="n">where_clause</span><span class="p">:</span>
+            <span class="n">where_clause</span> <span class="o">=</span> <span class="s2">&quot;WHERE </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">where_clause</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">where_clause</span>
+
+    <span class="k">def</span> <span class="nf">_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">db_row</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;DELETE&#39;</span> <span class="k">if</span> <span class="n">remove</span> <span class="k">else</span> <span class="s1">&#39;SELECT id, data&#39;</span>
+
+        <span class="k">if</span> <span class="n">eid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> FROM </span><span class="si">{}</span><span class="s1"> WHERE id == ?&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="p">[</span><span class="n">eid</span><span class="p">])</span>
+            <span class="n">db_row</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">query_string</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> FROM </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">))</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+            <span class="n">db_row</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">db_row</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">row_eid</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span> <span class="o">=</span> <span class="n">db_row</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">_SQLiteJsonRecord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">storage</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">row_data</span><span class="p">),</span> <span class="n">eid</span><span class="o">=</span><span class="n">row_eid</span><span class="p">)</span>
+
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.get"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="n">eid</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.remove"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">eid</span><span class="o">=</span><span class="n">eid</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.search"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cond</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cond</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">query_string</span> <span class="o">=</span> <span class="s1">&#39;SELECT id, data FROM </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_query</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">))</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
+        <span class="n">db_rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">_SQLiteJsonRecord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">storage</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">row_data</span><span class="p">),</span> <span class="n">eid</span><span class="o">=</span><span class="n">row_eid</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="p">(</span><span class="n">row_eid</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span> <span class="ow">in</span> <span class="n">db_rows</span><span class="p">]</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.count"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cond</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">match_any</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.update"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># Construct the json_set expression</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="c1"># We were asked to update no fields, which is a no-op</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">unset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;fields must be a collection type but was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">fields</span><span class="p">)))</span>
+            <span class="n">json_set_expr</span> <span class="o">=</span> <span class="s2">&quot;json_remove(data</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;, &#39;$.</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;fields must be a dictionary but was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">fields</span><span class="p">)))</span>
+            <span class="n">json_set_expr</span> <span class="o">=</span> <span class="s2">&quot;json_set(data</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="s2">&quot;, &#39;$.</span><span class="si">{}</span><span class="s2">&#39;, json(&#39;</span><span class="si">{}</span><span class="s2">&#39;)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">fields</span><span class="p">)]))</span>
+
+        <span class="c1"># Then construct the WHERE clause to match either the EIDs provided</span>
+        <span class="c1"># or the keys provided.</span>
+        <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">keys</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Both keys and eids provided but only one should be provided&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">update_ids</span> <span class="o">=</span> <span class="n">eids</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
+                <span class="n">update_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">eids</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;eids, if set, must be of type </span><span class="si">{0}</span><span class="s1"> or collection of </span><span class="si">{0}</span><span class="s1">, but was </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">eids</span><span class="p">)))</span>
+            <span class="n">where_clause</span> <span class="o">=</span> <span class="s1">&#39;WHERE </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot; OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;id == </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span> <span class="k">for</span> <span class="n">eid</span> <span class="ow">in</span> <span class="n">update_ids</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">where_clause</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_query</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Either keys or eids must be provided&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Assemble the whole UPDATE statement</span>
+        <span class="n">update_statement</span> <span class="o">=</span> <span class="s2">&quot;UPDATE </span><span class="si">{}</span><span class="s2"> SET data = </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">json_set_expr</span><span class="p">,</span> <span class="n">where_clause</span><span class="p">)</span>
+
+        <span class="c1"># Run it</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">update_statement</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.exists"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM </span><span class="si">{}</span><span class="s2"> WHERE json_extract(data, &#39;$.</span><span class="si">{}</span><span class="s2">&#39;) IS NOT NULL;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">field</span><span class="p">))</span>
+        <span class="n">db_rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">_SQLiteJsonRecord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">storage</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">row_data</span><span class="p">),</span> <span class="n">eid</span><span class="o">=</span><span class="n">row_eid</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="p">(</span><span class="n">row_eid</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span> <span class="ow">in</span> <span class="n">db_rows</span><span class="p">]</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="_SQLiteJsonTable.purge"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;DROP TABLE IF EXISTS </span><span class="si">{}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_exists</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage">[docs]</a><span class="k">class</span> <span class="nc">SQLiteLocalFileStorage</span><span class="p">(</span><span class="n">LocalFileStorage</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A persistent, transactional record storage system.</span>
+
+<span class="sd">    Uses :py:class:`sqlite3` for both the database and the key/value store.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        dbfile (str): Absolute path to database file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Record</span> <span class="o">=</span> <span class="n">_SQLiteJsonRecord</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SQLiteLocalFileStorage</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dbfile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.sqlite3&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.database_exists"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.database_exists">[docs]</a>    <span class="k">def</span> <span class="nf">database_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">StorageError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.connect_database"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.connect_database">[docs]</a>    <span class="k">def</span> <span class="nf">connect_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open the database for reading and writing.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">util</span><span class="o">.</span><span class="n">mkdirp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="o">=</span> <span class="n">SQLiteDatabase</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s2">&quot;Failed to access </span><span class="si">%s</span><span class="s2"> database &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
+                                   <span class="s2">&quot;Check that you have `write` access&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">path_accessible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s2">&quot;Database file &#39;</span><span class="si">%s</span><span class="s2">&#39; exists but cannot be read.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">,</span>
+                                   <span class="s2">&quot;Check that you have `read` access&quot;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialized connection to SQLite database `</span><span class="si">%s</span><span class="s2">` at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.disconnect_database"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.disconnect_database">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Close the database for reading and writing.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_database</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Closed database connection to `</span><span class="si">%s</span><span class="s2">` at &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.__str__"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Human-readable identifier for this database.&quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfile</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.__enter__"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.__enter__">[docs]</a>    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initiates the database transaction.&quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">start_transaction</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.__exit__"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.__exit__">[docs]</a>    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex_type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finalizes the database transaction.&quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ex_type</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">revert_transaction</span><span class="p">()</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">commit_transaction</span><span class="p">()</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ex_type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.table"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.table">[docs]</a>    <span class="k">def</span> <span class="nf">table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect_database</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_name</span> <span class="o">=</span> <span class="s1">&#39;_toplevel&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.count"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Count the records in the database.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Number of records in the table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">({})</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.get"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find a single record.</span>
+
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: return the record with that element identifier.</span>
+<span class="sd">            * dict: return the record with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: return a list of records matching the elements of `keys`</span>
+<span class="sd">            * None: return None.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key</span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Record: The matching data record if `keys` was a self.Record.eid_type or dict.</span>
+<span class="sd">            list: All matching data records if `keys` was a list or tuple.</span>
+<span class="sd">            None: No record found or ``bool(keys) == False``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.search"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find multiple records.</span>
+
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: return the record with that element identifier.</span>
+<span class="sd">            * dict: return all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: return a list of records matching the elements of `keys`</span>
+<span class="sd">            * None: return all records.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key</span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Matching data records.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cond</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="k">if</span> <span class="n">element</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.match"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find records where `field` matches `regex` or `test`.</span>
+
+<span class="sd">        Either `regex` or `test` may be specified, not both.</span>
+<span class="sd">        If `regex` is given, then all records with `field` matching the regular expression are returned.</span>
+<span class="sd">        If test is given then all records with `field` set to a value that caues `test` to return True are returned.</span>
+<span class="sd">        If neither is given, return all records where `field` is set to any value.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            field (string): Name of the data field to match.</span>
+<span class="sd">            regex (string): Regular expression string.</span>
+<span class="sd">            test: Callable returning a boolean value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Matching data records.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Since `test` can be an arbitrary Python function, the test can&#39;t actually happen inside SQLite.</span>
+        <span class="c1"># Instead we retrieve all potentially matching records (those for which the field in question exists)</span>
+        <span class="c1"># and filter them afterwards.</span>
+        <span class="c1"># TODO This could be made more efficient if we make this function less general.</span>
+        <span class="c1"># This is only used in controller.py in the delete function</span>
+        <span class="n">possible_records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">regex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;At most one of &quot;test&quot; and &quot;regex&quot; can be provided&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">record</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">possible_records</span> <span class="k">if</span> <span class="n">test</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="n">field</span><span class="p">])]</span>
+        <span class="k">elif</span> <span class="n">regex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">record</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">possible_records</span> <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="n">field</span><span class="p">])]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">possible_records</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.contains"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if the specified table contains at least one matching record.</span>
+
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: check for the record with that element identifier.</span>
+<span class="sd">            * dict: check for the record with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: return the equivalent of ``map(contains, keys)``.</span>
+<span class="sd">            * None: return False.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key</span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the table contains at least one matching record, False otherwise.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;&quot;keys&quot; must be dict, list, tuple, or </span><span class="si">{}</span><span class="s1">, but was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">keys</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.insert"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new record.</span>
+
+<span class="sd">        If the table doesn&#39;t exist it will be created.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (dict): Data to insert in table.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Record: The new record.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.update"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update records.</span>
+
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: update the record with that element identifier.</span>
+<span class="sd">            * dict: update all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fields (dict): Data to record.</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key</span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="p">[</span><span class="n">keys</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;&quot;keys&quot; must be dict, list, tuple, or </span><span class="si">{}</span><span class="s1">, but was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">keys</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.unset"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update records by unsetting fields.</span>
+
+<span class="sd">        Update only allows you to update a record by adding new fields or overwriting existing fields.</span>
+<span class="sd">        Use this method to remove a field from the record.</span>
+
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: update the record with that element identifier.</span>
+<span class="sd">            * dict: update all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: apply update to all records matching the elements of `keys`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fields (list): Names of fields to remove from matching records.</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key</span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">eids</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">unset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">unset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.remove"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete records.</span>
+
+<span class="sd">        The behavior depends on the type of `keys`:</span>
+<span class="sd">            * self.Record.eid_type: delete the record with that element identifier.</span>
+<span class="sd">            * dict: delete all records with attributes matching `keys`.</span>
+<span class="sd">            * list or tuple: delete all records matching the elements of `keys`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            keys: Fields or element identifiers to match.</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">            match_any (bool): Only applies if `keys` is a dictionary.  If True then any key</span>
+<span class="sd">                              in `keys` may match or if False then all keys in `keys` must match.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Record</span><span class="o">.</span><span class="n">eid_type</span><span class="p">):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">eid</span><span class="o">=</span><span class="n">keys</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="c1"># TODO Change this to use a single operation</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SQLiteLocalFileStorage.purge"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete all records.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span></div></div>
+</pre></div>
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="../../../../index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Last updated on Sep 30, 2020 at 21:13:01 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

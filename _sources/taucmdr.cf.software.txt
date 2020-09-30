@@ -21,6 +21,7 @@ Submodules
    taucmdr.cf.software.papi_installation
    taucmdr.cf.software.pdt_installation
    taucmdr.cf.software.scorep_installation
+   taucmdr.cf.software.sqlite3_installation
    taucmdr.cf.software.tau_installation
 
 Module contents

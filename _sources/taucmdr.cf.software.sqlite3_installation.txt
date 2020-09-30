@@ -1,0 +1,7 @@
+taucmdr.cf.software.sqlite3_installation module
+===============================================
+
+.. automodule:: taucmdr.cf.software.sqlite3_installation
+    :members:
+    :undoc-members:
+    :show-inheritance:

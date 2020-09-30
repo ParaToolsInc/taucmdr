@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>taucmdr.cf.storage.sqlite3_project module &mdash; TAU Commander Developer Documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0
+',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="up" title="taucmdr.cf.storage package" href="taucmdr.cf.storage.html" />
+    <link rel="next" title="taucmdr.cf.storage.storage_dispatch module" href="taucmdr.cf.storage.storage_dispatch.html" />
+    <link rel="prev" title="taucmdr.cf.storage.sqlite3_file module" href="taucmdr.cf.storage.sqlite3_file.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cf.storage.sqlite3_project module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.storage.sqlite3_file.html">taucmdr.cf.storage.sqlite3_file module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.storage.storage_dispatch.html">taucmdr.cf.storage.storage_dispatch module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.cf.storage.sqlite3_project">
+<span id="taucmdr-cf-storage-sqlite3-project-module"></span><h1>taucmdr.cf.storage.sqlite3_project module<a class="headerlink" href="#module-taucmdr.cf.storage.sqlite3_project" title="Permalink to this headline">¶</a></h1>
+<p>TAU project storage container</p>
+<p>Project-level records define the project and its member components.  The user may also
+want to install software packages at the project level to avoid quotas or in situations
+where <a class="reference internal" href="taucmdr.html#taucmdr.USER_PREFIX" title="taucmdr.USER_PREFIX"><code class="xref any py py-data docutils literal"><span class="pre">USER_PREFIX</span></code></a> is not accessible from cluster compute nodes.</p>
+<dl class="class">
+<dt id="taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.storage.sqlite3_project.</code><code class="descname">SQLiteProjectStorage</code><a class="reference internal" href="_modules/taucmdr/cf/storage/sqlite3_project.html#SQLiteProjectStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage" title="taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage</span></code></a></p>
+<p>Handle the special case project storage.</p>
+<p>Each TAU Commander project has its own project storage that holds project-specific files
+(i.e. performance data) and the project configuration.</p>
+<dl class="method">
+<dt id="taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.connect_filesystem">
+<code class="descname">connect_filesystem</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/sqlite3_project.html#SQLiteProjectStorage.connect_filesystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.connect_filesystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares the store filesystem for reading and writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.destroy">
+<code class="descname">destroy</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/sqlite3_project.html#SQLiteProjectStorage.destroy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnects the database and filesystem and recursively deletes the filesystem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*args</strong> &#8211; Passed through to <a class="reference internal" href="taucmdr.cf.storage.local_file.html#taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem" title="taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem"><code class="xref any py py-meth docutils literal"><span class="pre">disconnect_filesystem</span></code></a>.</li>
+<li><strong>**kwargs</strong> &#8211; Keyword arguments for <a class="reference internal" href="taucmdr.cf.storage.local_file.html#taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem" title="taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem"><code class="xref any py py-meth docutils literal"><span class="pre">disconnect_filesystem</span></code></a> or <a class="reference external" href="https://docs.python.org/library/shutil.html#shutil.rmtree" title="(in Python v3.8)"><code class="xref any docutils literal"><span class="pre">shutil.rmtree</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.force_cwd">
+<code class="descname">force_cwd</code><span class="sig-paren">(</span><em>force</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/sqlite3_project.html#SQLiteProjectStorage.force_cwd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.force_cwd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.prefix">
+<code class="descname">prefix</code><a class="headerlink" href="#taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches the current directory and its parents for a TAU Commander project directory.</p>
+<p>This method <strong>does not</strong> create or modify files.  If the project directory cannot be found
+then an error is raised.  It&#8217;s up to the caller to determine how the error should be handled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The project directory, i.e. this storage container&#8217;s filesystem prefix.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)">str</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ProjectStorageError</span></code> &#8211;
+Neither the current directory nor any of its parent directories contain
+a TAU Commander project directory.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.tau_dir">
+<code class="descname">tau_dir</code><span class="sig-paren">(</span><em>taudir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage/sqlite3_project.html#SQLiteProjectStorage.tau_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.sqlite3_project.SQLiteProjectStorage.tau_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.storage.sqlite3_file.html">taucmdr.cf.storage.sqlite3_file module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.storage.storage_dispatch.html">taucmdr.cf.storage.storage_dispatch module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015 ParaTools, Inc..
+      Last updated on Sep 30, 2020 at 21:13:01 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

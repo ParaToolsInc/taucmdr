@@ -1,0 +1,7 @@
+taucmdr.cf.storage.tests.test_storage_dispatch module
+=====================================================
+
+.. automodule:: taucmdr.cf.storage.tests.test_storage_dispatch
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+taucmdr.cf.storage.sqlite3_file module
+======================================
+
+.. automodule:: taucmdr.cf.storage.sqlite3_file
+    :members:
+    :undoc-members:
+    :show-inheritance:
