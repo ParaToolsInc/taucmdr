@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``experiment select`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand

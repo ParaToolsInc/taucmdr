@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -37,8 +36,6 @@ TAU is the core software package of TAU Commander.
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-branches
 
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import re
 import ast
@@ -311,9 +308,9 @@ class TauInstallation(Installation):
         assert mpi_support in (True, False)
         assert isinstance(mpi_libraries, list) or mpi_libraries is None
         assert cuda_support in (True, False)
-        assert isinstance(cuda_prefix, six.string_types) or cuda_prefix is None
+        assert isinstance(cuda_prefix, str) or cuda_prefix is None
         assert opencl_support in (True, False)
-        assert isinstance(opencl_prefix, six.string_types) or opencl_prefix is None
+        assert isinstance(opencl_prefix, str) or opencl_prefix is None
         assert shmem_support in (True, False)
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
@@ -322,7 +319,7 @@ class TauInstallation(Installation):
         assert compiler_inst in ("always", "fallback", "never")
         assert keep_inst_files in (True, False)
         assert reuse_inst_files in (True, False)
-        assert isinstance(select_file, six.string_types) or select_file is None
+        assert isinstance(select_file, str) or select_file is None
         assert baseline in (True, False)
         assert profile in ("tau", "merged", "cubex", "sqlite", "none")
         assert trace in ("slog2", "otf2", "none")
@@ -351,8 +348,8 @@ class TauInstallation(Installation):
         assert isinstance(throttle_num_calls, int)
         assert isinstance(sampling_period, int)
         assert track_memory_footprint in (True, False)
-        assert isinstance(forced_makefile, six.string_types) or forced_makefile is None
-        super(TauInstallation, self).__init__('tau', 'TAU Performance System',
+        assert isinstance(forced_makefile, str) or forced_makefile is None
+        super().__init__('tau', 'TAU Performance System',
                                               sources, target_arch, target_os, compilers,
                                               REPOS, COMMANDS, None, None)
         self._tau_makefile = None
@@ -569,7 +566,7 @@ class TauInstallation(Installation):
 
     def _verify_dependency_paths(self, tau_makefile):
         LOGGER.debug("Checking dependency paths in '%s'", tau_makefile)
-        with open(tau_makefile, 'r') as fin:
+        with open(tau_makefile) as fin:
             for line in fin:
                 if line.startswith('#'):
                     continue
@@ -664,7 +661,7 @@ class TauInstallation(Installation):
         LOGGER.debug("Found iowrap link options: %s", iowrap_link_options)
 
     def verify(self):
-        super(TauInstallation, self).verify()
+        super().verify()
         if not self.minimal:
             if self.uses_papi and (HOST_ARCH == self.target_arch and HOST_OS == self.target_os):
                 try:
@@ -951,7 +948,7 @@ class TauInstallation(Installation):
                                        *unmanaged_hints)
         # Check dependencies after verifying TAU instead of before in case
         # we're using an unmanaged TAU or forced makefile.
-        for pkg in six.itervalues(self.dependencies):
+        for pkg in self.dependencies.values():
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         with new_os_environ(), util.umask(0o02):
@@ -1063,7 +1060,7 @@ class TauInstallation(Installation):
         # On non-Cray systems, exclude tags from incompatible compilers.
         compiler_tags = self._compiler_tags() if self.tau_magic.operating_system is not CRAY_CNL else {}
         compiler_tag = compiler_tags.get(cxx_compiler.info.family, None)
-        tags.update(tag for tag in six.itervalues(compiler_tags) if tag != compiler_tag)
+        tags.update(tag for tag in compiler_tags.values() if tag != compiler_tag)
         if not self.mpi_support:
             tags.add('mpi')
         if self.measure_openmp == 'ignore':
@@ -1155,11 +1152,11 @@ class TauInstallation(Installation):
             dict: `env` without TAU environment variables.
         """
         is_tau_var = lambda x: x.startswith('TAU_') or x.startswith('SCOREP_') or x in ('PROFILEDIR', 'TRACEDIR')
-        dirt = {key: val for key, val in six.iteritems(env) if is_tau_var(key)}
+        dirt = {key: val for key, val in env.items() if is_tau_var(key)}
         if dirt:
             LOGGER.info("\nIgnoring TAU environment variables set in user's environment:\n%s\n",
-                        '\n'.join(["%s=%s" % item for item in six.iteritems(dirt)]))
-        return dict([item for item in six.iteritems(env) if item[0] not in dirt])
+                        '\n'.join(["%s=%s" % item for item in dirt.items()]))
+        return dict([item for item in env.items() if item[0] not in dirt])
 
     def compiletime_config(self, compiler, opts=None, env=None):
         """Configures environment for compilation with TAU.
@@ -1176,11 +1173,11 @@ class TauInstallation(Installation):
         """
         # The additional `compiler` argument is needed to TAU falls back to the right compiler
         # pylint: disable=arguments-differ
-        opts, env = super(TauInstallation, self).compiletime_config(opts, env)
+        opts, env = super().compiletime_config(opts, env)
         env = self._sanitize_environment(env)
         if self.baseline:
             return opts, env
-        for pkg in six.itervalues(self.dependencies):
+        for pkg in self.dependencies.values():
             opts, env = pkg.compiletime_config(opts, env)
 
         try:
@@ -1258,7 +1255,7 @@ class TauInstallation(Installation):
         Returns:
             tuple: (opts, env) updated to support TAU.
         """
-        opts, env = super(TauInstallation, self).runtime_config(opts, env)
+        opts, env = super().runtime_config(opts, env)
         env = self._sanitize_environment(env)
         env['TAU_VERBOSE'] = str(int(self.verbose))
         try:
@@ -1396,7 +1393,7 @@ class TauInstallation(Installation):
         opts, env = self.compiletime_config(compiler)
         compiler_cmd = self.get_compiler_command(compiler)
         cmd = [compiler_cmd] + opts + compiler_args
-        tau_env_opts = sorted('%s=%s' % item for item in six.iteritems(env) if item[0].startswith('TAU_'))
+        tau_env_opts = sorted('%s=%s' % item for item in env.items() if item[0].startswith('TAU_'))
         LOGGER.debug('\n'.join(tau_env_opts))
         LOGGER.debug(' '.join(cmd))
         retval = util.create_subprocess(cmd, env=env, stdout=True)
@@ -1426,10 +1423,10 @@ class TauInstallation(Installation):
                 appfile_flag = flag
                 break
         else:
-            raise InternalError("None of '{}' found in '{}'".format(appfile_flags, cmd))
+            raise InternalError(f"None of '{appfile_flags}' found in '{cmd}'")
         tau_appfile = os.path.join(util.mkdtemp(), appfile+".tau")
         LOGGER.debug("Rewriting '%s' as '%s'", appfile, tau_appfile)
-        with open(tau_appfile, 'w') as fout, open(appfile, 'r') as fin:
+        with open(tau_appfile, 'w') as fout, open(appfile) as fin:
             for lineno, line in enumerate(fin, 1):
                 line = line.strip()
                 if not line or line.startswith('#'):
@@ -1620,7 +1617,7 @@ class TauInstallation(Installation):
             try:
                 return util.create_subprocess(cmd, env=env)
             except (CalledProcessError, OSError) as err:
-                raise ConfigurationError("'{}' failed: {}".format(tool, err))
+                raise ConfigurationError(f"'{tool}' failed: {err}")
         return launcher
 
     def _show_paraprof(self, fmt, paths, env):
@@ -1718,7 +1715,7 @@ class TauInstallation(Installation):
         """
         self._prep_data_analysis_tools()
         _, env = self.runtime_config()
-        for fmt, paths in six.iteritems(dataset):
+        for fmt, paths in dataset.items():
             if self.is_profile_format(fmt):
                 tools = profile_tools if profile_tools is not None else PROFILE_ANALYSIS_TOOLS
             elif self.is_trace_format(fmt):

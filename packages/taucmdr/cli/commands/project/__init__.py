@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -28,7 +27,6 @@
 """``project`` subcommand."""
 
 
-from __future__ import absolute_import
 from taucmdr.cli.cli_view import RootCommand
 from taucmdr.model.project import Project
 

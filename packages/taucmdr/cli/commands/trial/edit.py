@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``trial edit`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli.cli_view import EditCommand
 from taucmdr.model.trial import Trial
@@ -41,7 +39,7 @@ class TrialEditCommand(EditCommand):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         if not ctrl.exists({key_attr: key, 'experiment': expr.eid}):
-            self.parser.error("No {}-level {} with {}='{}'.".format(ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
         ctrl.update(data, {key_attr: key, 'experiment': expr.eid})
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``initialize`` subcommand."""
 
-from __future__ import absolute_import
 import os
 import platform
 from taucmdr import util, PROJECT_DIR

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2017, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Functions used for unit tests of copy.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.target import copy
 

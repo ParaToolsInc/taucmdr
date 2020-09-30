@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -28,8 +27,6 @@
 """``target metrics`` subcommand."""
 
 
-from __future__ import absolute_import
-from __future__ import print_function
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util
@@ -93,7 +90,7 @@ class TargetMetricsCommand(AbstractCommand):
         targ_name = args.target_name
         targ = Target.controller(storage).one({'name': targ_name})
         if not targ:
-            self.parser.error("No {}-level target named '{}'.".format(storage.name, targ_name))
+            self.parser.error(f"No {storage.name}-level target named '{targ_name}'.")
         if args.all:
             args.systems = self._measurement_systems
             args.modifiers = True

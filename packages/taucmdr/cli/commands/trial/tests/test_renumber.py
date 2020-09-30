@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2018, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 Functions used for unit tests of edit.py.
 """
 #pylint: disable=missing-docstring
-from __future__ import absolute_import
 import os
 
 from taucmdr import tests
@@ -43,7 +41,6 @@ from taucmdr.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from taucmdr.cli.commands.trial.edit import COMMAND as EDIT_COMMAND
 from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
-from six.moves import range
 
 
 class RenumberTest(tests.TestCase):
@@ -61,7 +58,7 @@ class RenumberTest(tests.TestCase):
         self.assertTrue(os.path.exists(old_path), "Data directory should exist after create")
         old_profile = os.path.join(old_path, "profile.0.0.0")
         self.assertTrue(os.path.exists(old_profile), "Profile should exist after create")
-        with open(old_profile, 'r') as f:
+        with open(old_profile) as f:
             old_profile_contents = f.read()
         num_trials_before = Trial.controller(storage=PROJECT_STORAGE).count()
         self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['0', '--to', '1'])
@@ -84,7 +81,7 @@ class RenumberTest(tests.TestCase):
         new_profile = os.path.join(new_path, "profile.0.0.0")
         self.assertTrue(os.path.exists(new_profile),
                         "Profile in data directory for new number should exist after renumber")
-        with open(new_profile, 'r') as f:
+        with open(new_profile) as f:
             new_profile_contents = f.read()
         self.assertEqual(old_profile_contents, new_profile_contents, "Profiles should be identical after renumber")
 

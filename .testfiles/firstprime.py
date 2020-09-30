@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #Program written by Devin Shende on August 5th 2018
 
 def firstPrimeAfter(x):
@@ -16,7 +15,7 @@ def firstPrimeAfter(x):
 				# Found factor. not prime
 				break # move on to next number
 			elif potentialfactor >= sqrtno:
-				print("The first prime number after {} is {}".format(x,current))
+				print(f"The first prime number after {x} is {current}")
 				return current
 		current += 1
 

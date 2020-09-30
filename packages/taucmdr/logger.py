@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -37,7 +36,6 @@ TAU Commander also logs all status messages at the highest reporting level to
 a rotating debug file in the user's TAU Commander project prefix, typically "~/.taucmdr".
 """
 
-from __future__ import absolute_import
 import os
 import re
 import sys
@@ -52,7 +50,6 @@ from datetime import datetime
 from typing import Any, Optional, Tuple, Union, cast # pylint: disable=unused-import
 import termcolor
 from taucmdr import USER_PREFIX, TAUCMDR_VERSION
-from six.moves import map
 
 
 def _prune_ansi(line):
@@ -206,7 +203,7 @@ def _get_term_size_env():
         return None
 
 
-class LogFormatter(logging.Formatter, object):
+class LogFormatter(logging.Formatter):
     """Custom log message formatter.
 
     Controls message formatting for all levels.
@@ -222,7 +219,7 @@ class LogFormatter(logging.Formatter, object):
 
     def __init__(self, line_width, printable_only=False, allow_colors=True):
         # type: (int, bool, bool) -> None
-        super(LogFormatter, self).__init__()
+        super().__init__()
         self.printable_only = printable_only
         self.allow_colors = allow_colors
         self.line_width = line_width
@@ -251,10 +248,10 @@ class LogFormatter(logging.Formatter, object):
         if self.printable_only and (not set(message).issubset(self._printable_chars)):
             message = "<<UNPRINTABLE>>"
         if __debug__:
-            marker = self._colored("[{} {}:{}]".format(record.levelname, record.name, record.lineno), 'yellow')
+            marker = self._colored(f"[{record.levelname} {record.name}:{record.lineno}]", 'yellow')
         else:
             marker = "[%s]" % record.levelname
-        return '{} {}'.format(marker, message)
+        return f'{marker} {message}'
 
     def format(self, record):
         # type: (LogRecord) -> str

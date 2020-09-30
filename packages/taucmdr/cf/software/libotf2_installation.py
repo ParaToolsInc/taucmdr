@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 The OTF2 library  provides an interface to write and read trace data.
 """
 
-from __future__ import absolute_import
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 
@@ -48,5 +46,5 @@ class Libotf2Installation(AutotoolsInstallation):
     """Encapsulates a libotf2 installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
+        super().__init__('libotf2', 'libotf2', sources,
                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)

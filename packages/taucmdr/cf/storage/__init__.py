@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -35,7 +34,6 @@ The key/value store is accessed via the `[]` operator, i.e. treat the storage ob
 """
 
 
-from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
 import six
 from taucmdr.error import Error
@@ -59,7 +57,7 @@ class StorageRecord(dict):
     eid_type = None
 
     def __init__(self, storage, eid, element):
-        super(StorageRecord, self).__init__(element)
+        super().__init__(element)
         self.storage = storage
         self.eid = eid
 
@@ -67,7 +65,7 @@ class StorageRecord(dict):
         return hash(self.eid)
 
 
-class AbstractStorage(six.with_metaclass(ABCMeta, object)):
+class AbstractStorage(metaclass=ABCMeta):
     """Abstract base class for storage containers.
 
     A storage container provides a record database, a persistent filesystem, and a key/value store.

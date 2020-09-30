@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,8 +26,6 @@
 #
 """Software installation management."""
 
-from __future__ import absolute_import
-from __future__ import division
 import os
 import multiprocessing
 from subprocess import CalledProcessError
@@ -97,7 +94,7 @@ def tmpfs_prefix():
         for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
             try:
                 tmp_prefix = util.mkdtemp(dir=prefix)
-            except (OSError, IOError) as err:
+            except OSError as err:
                 LOGGER.debug(err)
                 continue
             # Check execute privileges some distros mount tmpfs with the noexec option.
@@ -109,12 +106,12 @@ def tmpfs_prefix():
                     tmp_file.write("#!/bin/sh\nexit 0")
                 os.chmod(check_exe_script, S_IRUSR | S_IWUSR | S_IEXEC)
                 subprocess.check_call([check_exe_script])
-            except (OSError, IOError, subprocess.CalledProcessError) as err:
+            except (OSError, subprocess.CalledProcessError) as err:
                 LOGGER.debug(err)
                 continue
             try:
                 statvfs = os.statvfs(check_exe_script)
-            except (OSError, IOError) as err:
+            except OSError as err:
                 LOGGER.debug(err)
                 if candidate is None:
                     candidate = tmp_prefix
@@ -147,7 +144,7 @@ def new_os_environ():
         os.environ = old_environ
 
 
-class Installation(object):
+class Installation:
     """Encapsulates a software package installation.
 
     Attributes:
@@ -189,8 +186,8 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(name, six.string_types)
-        assert isinstance(title, six.string_types)
+        assert isinstance(name, str)
+        assert isinstance(title, str)
         assert isinstance(sources, dict)
         assert isinstance(target_arch, Architecture)
         assert isinstance(target_os, OperatingSystem)
@@ -372,13 +369,13 @@ class Installation(object):
             try:
                 archive = self._acquire_source(reuse_archive)
                 util.archive_toplevel(archive)
-            except IOError:
+            except OSError:
                 if reuse_archive:
                     archive = self.acquire_source(reuse_archive=False)
                     try:
                         util.archive_toplevel(archive)
                         return str(archive)
-                    except IOError:
+                    except OSError:
                         pass
                 try:
                     LOGGER.warning("Unable to acquire %s source package '%s'", self.name, self.src)
@@ -416,11 +413,11 @@ class Installation(object):
         LOGGER.info("Using %s source archive '%s'", self.title, archive)
         try:
             return util.extract_archive(archive, tmpfs_prefix())
-        except IOError as err:
+        except OSError as err:
             if reuse_archive:
                 LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
                 return str(self._prepare_src(reuse_archive=False))
-            raise ConfigurationError("Cannot extract source archive '{}': {}".format(archive, err),
+            raise ConfigurationError(f"Cannot extract source archive '{archive}': {err}",
                                      "Check that the file or directory is accessible")
 
     def verify(self):
@@ -479,7 +476,7 @@ class Installation(object):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in six.itervalues(self.dependencies):
+        for pkg in self.dependencies.values():
             pkg.install(force_reinstall)
         if self.unmanaged or not force_reinstall:
             try:

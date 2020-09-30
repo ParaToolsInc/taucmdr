@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 I'd rather call this module "taucmdr.cf.platform" but that would conflict with :any:`platform`.
 """
 
-from __future__ import absolute_import
 import os
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
@@ -233,7 +231,7 @@ class TauMagic(KeyedRecord):
             try:
                 inst = TauMagic.find((HOST_ARCH, HOST_OS))
             except KeyError:
-                raise ConfigurationError("{} on {} is not supported.".format(HOST_OS, HOST_ARCH))
+                raise ConfigurationError(f"{HOST_OS} on {HOST_ARCH} is not supported.")
             cls._detect = inst
             return cls._detect
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2018, ParaTools, Inc.
 # All rights reserved.
@@ -27,12 +26,8 @@
 #
 """``trial renumber`` subcommand."""
 
-from __future__ import print_function
 
-from __future__ import absolute_import
 
-from six.moves import range
-from six.moves import zip
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
@@ -83,7 +78,7 @@ class TrialRenumberCommand(AbstractCommand):
                               " Number of old trials ids should be equal to number of new trial ids.")
 
         self.logger.info("Renumbering " + ', '.join(
-            ['{} => {}'.format(i, j) for (i, j) in zip(trial_numbers, new_trial_numbers)]))
+            [f'{i} => {j}' for (i, j) in zip(trial_numbers, new_trial_numbers)]))
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
         expr = Project.selected().experiment()

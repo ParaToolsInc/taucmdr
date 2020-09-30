@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``measurement create`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import CreateCommand
 from taucmdr.model.measurement import Measurement
@@ -37,7 +35,7 @@ class MeasurementCreateCommand(CreateCommand):
     """``measurement create`` subcommand."""
 
     def _parse_args(self, argv):
-        args = super(MeasurementCreateCommand, self)._parse_args(argv)
+        args = super()._parse_args(argv)
         if hasattr(args, 'select_file'):
             if args.select_file.lower() == 'none':
                 args.select_file = None

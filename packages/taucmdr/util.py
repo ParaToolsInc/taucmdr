@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,8 +29,6 @@
 Handles system manipulation and status tasks, e.g. subprocess management or file creation.
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
 import re
 import os
 import sys
@@ -51,7 +48,6 @@ from zipfile import ZipFile
 import six.moves.urllib.request # pylint: disable=import-error
 import six.moves.urllib.parse
 import six.moves.urllib.error
-from six.moves import range
 import six
 import termcolor
 from unidecode import unidecode
@@ -198,7 +194,7 @@ def which(program, use_cached=True):
     if not program:
         return None
     prog_enc = program
-    assert isinstance(prog_enc, six.string_types)
+    assert isinstance(prog_enc, str)
     if use_cached:
         try:
             return _WHICH_CACHE[prog_enc]
@@ -259,13 +255,13 @@ def download(src, dest, timeout=8):
             LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)
         # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
         if timeout:
-            raise IOError("Failed to download '%s'" % src)
+            raise OSError("Failed to download '%s'" % src)
         with ProgressIndicator("Downloading") as progress_bar:
             try:
                 six.moves.urllib.request.urlretrieve(src, dest, reporthook=progress_bar.update)
             except Exception as err:
                 LOGGER.warning("urllib failed to download '%s': %s", src, err)
-                raise IOError("Failed to download '%s'" % src)
+                raise OSError("Failed to download '%s'" % src)
 
 
 def _create_dl_subprocess(abs_cmd, src, dest, timeout):
@@ -327,7 +323,7 @@ def archive_toplevel(archive):
     try:
         fin = tarfile.open(archive)
     except tarfile.ReadError:
-        raise IOError
+        raise OSError
     else:
         if fin.firstmember.isdir():
             topdir = str(fin.firstmember.name)
@@ -383,7 +379,7 @@ def extract_archive(archive, dest, show_progress=True):
             LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
             fin.extractall(dest)
     if not os.path.isdir(full_dest):
-        raise IOError("Extracting '{}' does not create '{}'".format(archive, full_dest))
+        raise OSError(f"Extracting '{archive}' does not create '{full_dest}'")
     return full_dest
 
 
@@ -455,7 +451,7 @@ def path_accessible(path, mode='r'):
         handle = None
         try:
             handle = open(path, mode)
-        except IOError as err:
+        except OSError as err:
             if err.errno == errno.EACCES:
                 return False
             # Some other error, not permissions
@@ -495,7 +491,7 @@ def create_subprocess(
     """
     subproc_env = dict(os.environ)
     if env:
-        for key, val in six.iteritems(env):
+        for key, val in env.items():
             if val is None:
                 subproc_env.pop(key, None)
                 _heavy_debug("unset %s", key)
@@ -598,7 +594,7 @@ def human_size(num, suffix='B'):
         num = 0
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
-            return "{:3.1f}{}{}".format(num, unit, suffix)
+            return f"{num:3.1f}{unit}{suffix}"
         num /= 1024.0
     return "{:.1f}{}{}".format(num, 'Yi', suffix)
 
@@ -628,7 +624,7 @@ def parse_bool(value, additional_true=None, additional_false=None):
         true_values.extend(additional_true)
     if additional_false:
         false_values.extend(additional_false)
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
         value = value.lower()
         if value in true_values:
             return True

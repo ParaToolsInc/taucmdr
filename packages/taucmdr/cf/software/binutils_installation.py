@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ GNU binutils provildes BFD, which TAU uses for symbol resolution during
 sampling, compiler-based instrumentation, and other measurement approaches.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import glob
@@ -63,7 +61,7 @@ class BinutilsInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build binutils) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources,
+        super().__init__('binutils', 'GNU Binutils', sources,
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags):
@@ -96,17 +94,17 @@ class BinutilsInstallation(AutotoolsInstallation):
                     raise ConfigurationError("Cannot find KNC native compilers in /usr/linux-k1om-*")
             os.environ['PATH'] = os.pathsep.join((os.path.dirname(k1om_ar), os.environ['PATH']))
             flags.append('--host=x86_64-k1om-linux')
-        return super(BinutilsInstallation, self).configure(flags)
+        return super().configure(flags)
 
     def make_install(self, flags):
-        super(BinutilsInstallation, self).make_install(flags)
+        super().make_install(flags)
         LOGGER.debug("Copying missing BFD headers")
         for hdr in glob.glob(os.path.join(str(self._src_prefix), 'bfd', '*.h')):
             shutil.copy(hdr, self.include_path)
         for hdr in glob.glob(os.path.join(str(self._src_prefix), 'include', '*')):
             try:
                 shutil.copy(hdr, self.include_path)
-            except IOError:
+            except OSError:
                 dst = os.path.join(self.include_path, os.path.basename(hdr))
                 shutil.copytree(hdr, dst)
         LOGGER.debug("Copying missing libiberty libraries")

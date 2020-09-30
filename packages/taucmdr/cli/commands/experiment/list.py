@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,8 +26,6 @@
 #
 """``experiment list`` subcommand."""
 
-from __future__ import absolute_import
-from __future__ import print_function
 from taucmdr import util, EXIT_SUCCESS
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli.cli_view import ListCommand
@@ -52,7 +49,7 @@ class ExperimentListCommand(ListCommand):
     """Base class for the `list` subcommand of command line views."""
 
     def _construct_parser(self):
-        parser = super(ExperimentListCommand, self)._construct_parser()
+        parser = super()._construct_parser()
         parser.add_argument('--current',
                             help="List current trial",
                             default=False,
@@ -83,7 +80,7 @@ class ExperimentListCommand(ListCommand):
                 print(expr['name'])
             retval = EXIT_SUCCESS
         else:
-            retval = super(ExperimentListCommand, self).main(argv)
+            retval = super().main(argv)
         return retval
 
 COMMAND = ExperimentListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)

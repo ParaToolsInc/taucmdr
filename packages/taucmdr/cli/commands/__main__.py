@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Sets up logging verbosity and launches subcommands.  Avoid doing too much work h
 Instead, process arguments in the appropriate subcommand.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import taucmdr
@@ -60,7 +58,7 @@ class MainCommand(AbstractCommand):
                          util.color_text(" [ ", attrs=['bold']),
                          util.color_text(taucmdr.TAUCMDR_URL, 'cyan', attrs=['bold']),
                          util.color_text(" ]", attrs=['bold'])]
-        super(MainCommand, self).__init__(__name__, summary_fmt=''.join(summary_parts), help_page_fmt=HELP_PAGE_FMT)
+        super().__init__(__name__, summary_fmt=''.join(summary_parts), help_page_fmt=HELP_PAGE_FMT)
         self.command = os.path.basename(TAUCMDR_SCRIPT)
 
     def _construct_parser(self):

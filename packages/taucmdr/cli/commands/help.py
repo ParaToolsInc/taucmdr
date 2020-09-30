@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``help`` subcommand."""
 
-from __future__ import absolute_import
 import os
 import mimetypes
 import re
@@ -35,14 +33,13 @@ from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
 from taucmdr.cli.command import AbstractCommand
-from six.moves import range
 
 
 LOGGER = logger.get_logger(__name__)
 
 _SCRIPT_CMD = os.path.basename(TAUCMDR_SCRIPT)
 
-_GENERIC_HELP = "See '{} --help' or contact {} for assistance".format(_SCRIPT_CMD, HELP_CONTACT)
+_GENERIC_HELP = f"See '{_SCRIPT_CMD} --help' or contact {HELP_CONTACT} for assistance"
 
 _KNOWN_FILES = {'makefile': ("makefile script",
                              "See 'taucmdr make --help' for help building with make"),
@@ -158,7 +155,7 @@ class HelpCommand(AbstractCommand):
                 pass
             else:
                 article = 'an' if desc[0] in 'aeiou' else 'a'
-                hint = "'{}' is {} {}.\n{}.".format(cmd, article, desc, hint)
+                hint = f"'{cmd}' is {article} {desc}.\n{hint}."
                 raise UnknownCommandError(cmd, hint)
 
             # Get the filetype and try to be helpful.
@@ -173,7 +170,7 @@ class HelpCommand(AbstractCommand):
                 else:
                     desc, hint = _fuzzy_index(type_hints, subtype)
                     article = 'an' if desc[0] in 'aeiou' else 'a'
-                    hint = "'{}' is {} {}.\n{}.".format(cmd, article, desc, hint)
+                    hint = f"'{cmd}' is {article} {desc}.\n{hint}."
                 raise UnknownCommandError(cmd, hint)
             else:
                 raise UnknownCommandError(cmd)

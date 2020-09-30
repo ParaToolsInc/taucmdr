@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``trial list`` subcommand."""
 
-from __future__ import absolute_import
 from texttable import Texttable
 from taucmdr import util, logger
 from taucmdr.error import InternalError
@@ -57,12 +55,12 @@ class TrialListCommand(ListCommand):
             self.parser.error("No project is selected")
         expr = proj.experiment()
 
-        records = super(TrialListCommand, self)._retrieve_records(ctrl, keys, context=context)
+        records = super()._retrieve_records(ctrl, keys, context=context)
         recs = [rec for rec in records if rec['experiment'] == expr.eid]
         return sorted(recs, key=lambda recs: recs['number'])
 
     def _format_long_item(self, key, val):
-        key, val, flags, description = super(TrialListCommand, self)._format_long_item(key, val)
+        key, val, flags, description = super()._format_long_item(key, val)
         if key == 'environment' or key == 'output':
             val = '(base64 encoded, %d bytes)' % len(val)
         return [key, val, flags, description]

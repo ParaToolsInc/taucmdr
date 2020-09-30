@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``target edit`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli import arguments
 from taucmdr.cli.cli_view import EditCommand
@@ -86,14 +84,14 @@ class TargetEditCommand(EditCommand):
 
         # Monkey-patch default actions for compiler arguments
         # pylint: disable=protected-access
-        for role in six.itervalues(kbase.roles):
+        for role in kbase.roles.values():
             action = next(act for act in group._actions if act.dest == role.keyword)
             action.__action_call__ = action.__call__
             action.__call__ = TargetEditCommand._compiler_flag_action_call(family_attr)
 
 
     def _construct_parser(self):
-        parser = super(TargetEditCommand, self)._construct_parser()
+        parser = super()._construct_parser()
         group = parser.add_argument_group('host arguments')
         self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family')
 
@@ -108,7 +106,7 @@ class TargetEditCommand(EditCommand):
         from taucmdr.cli.commands.target.copy import COMMAND as target_copy_cmd
         from taucmdr.cli.commands.experiment.delete import COMMAND as experiment_delete_cmd
         try:
-            retval = super(TargetEditCommand, self)._update_record(store, data, key)
+            retval = super()._update_record(store, data, key)
         except (ImmutableRecordError, IncompatibleRecordError) as err:
             err.hints = ["Use `%s` to create a modified copy of the target" % target_copy_cmd,
                          "Use `%s` to delete the experiments." % experiment_delete_cmd]
@@ -127,7 +125,7 @@ class TargetEditCommand(EditCommand):
         self.logger.debug('Arguments after parsing compiler flags: %s', args)
 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        for keyword, comp in six.iteritems(compilers):
+        for keyword, comp in compilers.items():
             self.logger.debug("%s=%s (%s)", keyword, comp.absolute_path, comp.info.short_descr)
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid

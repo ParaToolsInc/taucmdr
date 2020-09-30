@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Functions used for unit tests of list.py.
 """
 
 
-from __future__ import absolute_import
 from taucmdr import tests
 from taucmdr.cli.commands.measurement.create import COMMAND as CREATE_COMMAND
 from taucmdr.cli.commands.measurement.list import COMMAND as LIST_COMMAND

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -33,7 +32,6 @@ Each application of the :any:`Experiment` generates a new :any:`Trial` record al
 some performance data (profiles, traces, etc.).
 """
 
-from __future__ import absolute_import
 import os
 from taucmdr import logger
 from taucmdr.error import InternalError, ProjectSelectionError, ExperimentSelectionError
@@ -95,7 +93,7 @@ class ProjectController(Controller):
     def create(self, data):
         if self.storage is not PROJECT_STORAGE:
             raise InternalError("Projects may only be created in project-level storage")
-        return super(ProjectController, self).create(data)
+        return super().create(data)
 
     def delete(self, keys):
         to_delete = self.one(keys)
@@ -108,7 +106,7 @@ class ProjectController(Controller):
             if selected == to_delete:
                 self.unselect()
 
-        super(ProjectController, self).delete(keys)
+        super().delete(keys)
 
     def select(self, project, experiment=None):
         self.storage['selected_project'] = project.eid
@@ -156,7 +154,7 @@ class Project(Model):
                 if old_expr[model_attr] != new_expr[model_attr]:
                     new_model = new_expr.populate(model_attr)
                     old_model = old_expr.populate(model_attr)
-                    for attr, props in six.iteritems(new_model.attributes):
+                    for attr, props in new_model.attributes.items():
                         if props.get('rebuild_required'):
                             new_value = new_model.get(attr, None)
                             old_value = old_model.get(attr, None)

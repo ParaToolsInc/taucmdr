@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 We keep a separate knowledge base for CAF compilers to simplify compiler
 identification and because TAU doesn't require CAF for all configurations.
 """
-from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 CAF_COMPILERS = Knowledgebase('CAF', 'Compilers supporting Coarray Fortran',

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -37,8 +36,6 @@ TAU Commander, i.e. ``import taucmdr`` should be a safe, working operation.
 
 
 # Package name
-from __future__ import absolute_import
-from __future__ import print_function
 NAME = "taucmdr"
 
 # Package author information
@@ -253,7 +250,7 @@ class Test(TestCommand):
         self.test_args = args + self.test_args
         try:
             db_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
-            print("Running tests with database backend {}".format(db_backend))
+            print(f"Running tests with database backend {db_backend}")
             return TestCommand.run_tests(self)
         finally:
             if self.system_sandbox:
@@ -377,12 +374,12 @@ class Release(SDistCommand):
         cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
         cache_pkg = os.path.join(cache_dir, pkg)
         try:
-            with open(cache_db, 'r') as fin:
+            with open(cache_db) as fin:
                 cache = pickle.load(fin)
-        except IOError:
+        except OSError:
             cache = {}
         if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-            print("Downloading '{}' for ({}, {})".format(pkg, self.target_arch, self.target_os))
+            print(f"Downloading '{pkg}' for ({self.target_arch}, {self.target_os})")
             util.download(src, cache_pkg)
         cache[cache_pkg] = src
         with open(cache_db, 'w') as fout:

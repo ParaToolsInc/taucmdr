@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2019, ParaTools, Inc.
 # All rights reserved.
@@ -29,7 +28,6 @@
 Python Interpreter Knowledgebase (implemented using the compiler classes)
 
 """
-from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different versions of Python',
@@ -39,7 +37,7 @@ PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different ver
 PYTHON2 = PYTHON_INTERPRETERS.add('PY2_INTERPRETER',
                                   family_regex=r'^Python 2',
                                   version_flags=['--version'],
-                                  PY=('python2', 'python'))
+                                  PY=('python2.7', 'python'))
 
 PYTHON3 = PYTHON_INTERPRETERS.add('PY3_INTERPRETER',
                                   family_regex=r'^Python 3',

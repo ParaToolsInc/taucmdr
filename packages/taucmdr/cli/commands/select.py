@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``select`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
@@ -123,7 +121,7 @@ class SelectCommand(AbstractCommand):
             ctrl = model.controller(PROJECT_STORAGE)
             found = ctrl.one({"name": name})
             if not found:
-                self.parser.error('There is no {} named {}.'.format(model_name, name))
+                self.parser.error(f'There is no {model_name} named {name}.')
             else:
                 acc.add(found)
         if not acc:
@@ -143,7 +141,7 @@ class SelectCommand(AbstractCommand):
             ctrl = Experiment.controller(PROJECT_STORAGE)
             found = ctrl.one({"name": name})
             if not found:
-                self.parser.error('There is no {} named {}.'.format(model_name, name))
+                self.parser.error(f'There is no {model_name} named {name}.')
             else:
                 acc.add(found)
         if len(acc) == 1:

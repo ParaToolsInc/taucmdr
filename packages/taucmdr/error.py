@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Only error base classes should be defined here.
 Error classes should be defined in their appropriate modules.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import traceback
@@ -68,7 +66,7 @@ class Error(Exception):
             value (str): Message describing the error.
             *hints: Hint messages to help the user resolve this error.
         """
-        super(Error, self).__init__()
+        super().__init__()
         self.value = value
         self.hints = list(hints)
         self.message_fields = {'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
@@ -123,7 +121,7 @@ class ConfigurationError(Error):
         if not hints:
             hints = list()
             hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
-        super(ConfigurationError, self).__init__(value, *hints)
+        super().__init__(value, *hints)
 
     def __str__(self):
         return self.value
@@ -139,7 +137,7 @@ class ModelError(InternalError):
             model (Model): Data model.
             value (str): A message describing the error.
         """
-        super(ModelError, self).__init__("{}: {}".format(model.name, value))
+        super().__init__(f"{model.name}: {value}")
         self.model = model
 
 
@@ -153,7 +151,7 @@ class UniqueAttributeError(ModelError):
             model (Model): Data model.
             unique (dict): Dictionary of unique attributes in the data model.
         """
-        super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
+        super().__init__(model, "A record with one of '%s' already exists" % unique)
 
 
 class ImmutableRecordError(ConfigurationError):
@@ -174,7 +172,7 @@ class ProjectSelectionError(ConfigurationError):
             hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
                      "Use `%s <project_name>` to select a project configuration." % project_select_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)
-        super(ProjectSelectionError, self).__init__(value, *hints)
+        super().__init__(value, *hints)
 
 
 class ExperimentSelectionError(ConfigurationError):
@@ -186,10 +184,10 @@ class ExperimentSelectionError(ConfigurationError):
         from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
         from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
         if not hints:
-            hints = ("Use `{}` or `{}` to create a new experiment.".format(select_cmd, experiment_create_cmd),
+            hints = (f"Use `{select_cmd}` or `{experiment_create_cmd}` to create a new experiment.",
                      "Use `%s` to see current project configuration." % dashboard_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)
-        super(ExperimentSelectionError, self).__init__(value, *hints)
+        super().__init__(value, *hints)
 
 
 def excepthook(etype, value, tb):

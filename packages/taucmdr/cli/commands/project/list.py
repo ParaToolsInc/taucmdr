@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,8 +26,6 @@
 #
 """``measurement list`` subcommand."""
 
-from __future__ import absolute_import
-from __future__ import print_function
 # from types import NoneType
 from taucmdr import util, logger
 from taucmdr.error import ExperimentSelectionError
@@ -54,7 +51,7 @@ class ProjectListCommand(ListCommand):
                              {'header': 'Applications', 'function': _name_list('applications')},
                              {'header': 'Measurements', 'function': _name_list('measurements')},
                              {'header': '# Experiments', 'function': lambda x: len(x['experiments'])}]
-        super(ProjectListCommand, self).__init__(Project, __name__, dashboard_columns=dashboard_columns)
+        super().__init__(Project, __name__, dashboard_columns=dashboard_columns)
 
     def main(self, argv):
         """Command program entry point.
@@ -79,7 +76,7 @@ class ProjectListCommand(ListCommand):
             measurement_list_cmd.title_fmt = "Measurements in project '%s'" % proj_name
             experiment_list_cmd.title_fmt = "Experiments in project '%s'" % proj_name
 
-        retval = super(ProjectListCommand, self).main(argv)
+        retval = super().main(argv)
 
         if single:
             storage = levels[0]
@@ -95,7 +92,7 @@ class ProjectListCommand(ListCommand):
                     cmd.main([record[primary_key] for record in records] + ['-p'] + [proj['name']] + style_args)
                 else:
                     label = util.color_text('{}: No {}'.format(proj['name'], prop), color='red', attrs=['bold'])
-                    print("{}.  Use `{}` to view available {}.\n".format(label, cmd, prop))
+                    print(f"{label}.  Use `{cmd}` to view available {prop}.\n")
             try:
                 expr = proj.experiment()
                 if expr:

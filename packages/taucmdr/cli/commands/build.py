@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``build`` subcommand."""
 
-from __future__ import absolute_import
 import os
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
@@ -71,7 +69,7 @@ class BuildCommand(AbstractCommand):
         return os.path.basename(cmd) in [info.command for info in Knowledgebase.all_compilers()]
 
     def _construct_parser(self):
-        parts = ['  {}  {}'.format('{:<15}'.format(comp.command), comp.short_descr)
+        parts = ['  {}  {}'.format(f'{comp.command:<15}', comp.short_descr)
                  for comp in Knowledgebase.all_compilers()]
         epilog = "known compiler commands and their roles:\n%s\n" % '\n'.join(sorted(parts))
         usage = "%s <command> [arguments]" % self.command

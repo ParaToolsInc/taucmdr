@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,8 +26,6 @@
 #
 """``dashboard`` subcommand."""
 
-from __future__ import absolute_import
-from __future__ import print_function
 from taucmdr import EXIT_SUCCESS
 from taucmdr.error import ProjectSelectionError
 from taucmdr.cli import arguments

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -41,7 +40,6 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 
-from __future__ import absolute_import
 import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError

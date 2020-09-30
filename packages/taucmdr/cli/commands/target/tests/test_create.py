@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Functions used for unit tests of create.py.
 """
 #pylint: disable=missing-docstring
 
-from __future__ import absolute_import
 import os
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
@@ -88,7 +86,7 @@ class CreateTest(tests.TestCase):
         for role, expected in (CC, 'icc'), (CXX, 'icpc'), (FC, 'ifort'):
             path = test_targ.populate(role.keyword)['path']
             self.assertEqual(os.path.basename(path), expected,
-                             "Target[{}] is '{}', not '{}'".format(role, path, expected))
+                             f"Target[{role}] is '{path}', not '{expected}'")
 
     @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_host_family_pgi(self):

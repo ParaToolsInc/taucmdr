@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 Asserts that pylint score doesn't drop below minimum.
 """
 
-from __future__ import absolute_import
 import os
 import sys
 import subprocess
@@ -126,4 +124,4 @@ class PylintTest(tests.TestCase):
         self.assertGreaterEqual(
             score,
             9.0,
-            "Pylint score {}/10 is too low!\nPlease see report output for details:\n    {}".format(score, REPORT_FILE))
+            f"Pylint score {score}/10 is too low!\nPlease see report output for details:\n    {REPORT_FILE}")

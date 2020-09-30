@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2018, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``rewrite`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.error import ConfigurationError

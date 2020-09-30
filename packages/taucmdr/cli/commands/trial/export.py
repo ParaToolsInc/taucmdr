@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``trial export`` subcommand."""
 
-from __future__ import absolute_import
 import os
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cli import arguments

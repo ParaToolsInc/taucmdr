@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 Score-P is a tool suite for profiling, event tracing, and online analysis of HPC applications.
 """
 
-from __future__ import absolute_import
 import os
 from subprocess import CalledProcessError
 from taucmdr import logger, util
@@ -115,7 +113,7 @@ class ScorepInstallation(AutotoolsInstallation):
                  use_libunwind=False,
                  use_papi=False,
                  use_pdt=False):
-        super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os,
+        super().__init__('scorep', 'Score-P', sources, target_arch, target_os,
                                                  compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
@@ -171,7 +169,7 @@ class ScorepInstallation(AutotoolsInstallation):
         return flags
 
     def verify(self):
-        super(ScorepInstallation, self).verify()
+        super().verify()
         # Use Score-P's `scorep-info` command to check if this Score-P installation
         # was configured with the flags we need.
         cmd = [os.path.join(self.bin_path, 'scorep-info'), 'config-summary']
@@ -216,4 +214,4 @@ class ScorepInstallation(AutotoolsInstallation):
         #               needed when developing. Python version 2.5 or above, but no
         #               support for python 3. Use PYTHON=: to disable python support.
         os.environ['PYTHON'] = ':'
-        return super(ScorepInstallation, self).configure(flags)
+        return super().configure(flags)

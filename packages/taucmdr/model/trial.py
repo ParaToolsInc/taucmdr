@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -32,7 +31,6 @@ record completely describes the hardware and software environment that produced
 the performance data.
 """
 
-from __future__ import absolute_import
 import os
 import glob
 import errno
@@ -146,10 +144,10 @@ class TrialController(Controller):
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
         # Move TAU environment parameters to the command line
         env_parts = {}
-        for key, val in six.iteritems(env):
+        for key, val in env.items():
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in six.iteritems(env_parts)])
+        env_str = ':'.join(['%s=%s' % item for item in env_parts.items()])
         cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
@@ -322,7 +320,7 @@ class Trial(Model):
         else:
             return cmd[:idx], cmd[idx+1:]
         cmd0 = cmd[0]
-        for launcher, appfile_flags in six.iteritems(PROGRAM_LAUNCHERS):
+        for launcher, appfile_flags in PROGRAM_LAUNCHERS.items():
             if launcher not in cmd0:
                 continue
             # No '--' to indicate start of application, so look for first executable
@@ -412,7 +410,7 @@ class Trial(Model):
         try:
             util.mkdirp(self.prefix)
         except Exception as err:
-            raise ConfigurationError('Cannot create directory {!r}: {}'.format(self.prefix, err),
+            raise ConfigurationError(f'Cannot create directory {self.prefix!r}: {err}',
                                      'Check that you have write access')
 
     def on_delete(self):
@@ -512,7 +510,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('{}={}'.format(key, val) for key, val in six.iteritems(env)
+        tau_env_opts = sorted(f'{key}={val}' for key, val in env.items()
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -525,7 +523,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError("Couldn't execute {}: {}".format(cmd_str, err), errno_hint.get(err.errno, None))
+            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None))
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
@@ -546,7 +544,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('{}={}'.format(key, val) for key, val in six.iteritems(env)
+        tau_env_opts = sorted(f'{key}={val}' for key, val in env.items()
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -566,7 +564,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError("Couldn't execute {}: {}".format(cmd_str, err), errno_hint.get(err.errno, None))
+            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None))
 
         measurement = expr.populate('measurement')
 
@@ -623,7 +621,7 @@ class Trial(Model):
             raise ConfigurationError("Trial {} of experiment '{}' has no data".format(self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in six.iteritems(data):
+        for fmt, path in data.items():
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.get_minimal()

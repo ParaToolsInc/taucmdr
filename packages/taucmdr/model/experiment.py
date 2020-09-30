@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -32,7 +31,6 @@ and will have zero or more :any:`Trial`. There is one selected experiment per pr
 The selected experiment will be used for application compilation and trial visualization.
 """
 
-from __future__ import absolute_import
 import os
 import fasteners
 import six
@@ -110,11 +108,11 @@ class ExperimentController(Controller):
 
     def one(self, keys, context=True):
         # pylint: disable=unexpected-keyword-arg
-        return super(ExperimentController, self).one(keys, context=context)
+        return super().one(keys, context=context)
 
     def all(self, context=True):
         # pylint: disable=unexpected-keyword-arg
-        return super(ExperimentController, self).all(context=context)
+        return super().all(context=context)
 
     def count(self):
         try:
@@ -124,26 +122,26 @@ class ExperimentController(Controller):
 
     def search(self, keys=None, context=True):
         # pylint: disable=unexpected-keyword-arg
-        return super(ExperimentController, self).search(keys, context=context)
+        return super().search(keys, context=context)
 
     def exists(self, keys):
-        return super(ExperimentController, self).exists(keys)
+        return super().exists(keys)
 
     def _check_unique(self, data, match_any=False):
         """Default match_any to False to prevent matches outside the selected project."""
-        return super(ExperimentController, self)._check_unique(data, match_any)
+        return super()._check_unique(data, match_any)
 
     def create(self, data):
-        return super(ExperimentController, self).create(data)
+        return super().create(data)
 
     def update(self, data, keys):
-        return super(ExperimentController, self).update(data, keys)
+        return super().update(data, keys)
 
     def unset(self, fields, keys):
-        return super(ExperimentController, self).unset(fields, keys)
+        return super().unset(fields, keys)
 
     def delete(self, keys):
-        return super(ExperimentController, self).delete(keys)
+        return super().delete(keys)
 
 
 class Experiment(Model):
@@ -199,7 +197,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, six.string_types):
+            elif isinstance(val, str):
                 return "'%s'" % val
             return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
@@ -207,14 +205,14 @@ class Experiment(Model):
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
-            for attr, change in six.iteritems(changed):
+            for attr, change in changed.items():
                 old, new = (_fmt(x) for x in change)
                 if old is None:
-                    parts.append("  - {} is now set to {}".format(attr, new))
+                    parts.append(f"  - {attr} is now set to {new}")
                 elif new is None:
                     parts.append("  - %s is now unset" % attr)
                 else:
-                    parts.append("  - {} changed from {} to {}".format(attr, old, new))
+                    parts.append(f"  - {attr} changed from {old} to {new}")
         return '\n'.join(parts)
 
     @property

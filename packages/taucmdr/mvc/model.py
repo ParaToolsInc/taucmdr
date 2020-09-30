@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """TODO: FIXME: Docs"""
 
-from __future__ import absolute_import
 import six
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
@@ -77,7 +75,7 @@ class ModelMeta(type):
         try:
             return cls._key_attribute
         except AttributeError:
-            for attr, props in six.iteritems(cls.attributes):
+            for attr, props in cls.attributes.items():
                 if 'primary_key' in props:
                     cls._key_attribute = attr
                     break
@@ -87,7 +85,7 @@ class ModelMeta(type):
 
 
 
-class Model(six.with_metaclass(ModelMeta, StorageRecord)):
+class Model(StorageRecord, metaclass=ModelMeta):
     """The "M" in `MVC`_.
 
     Attributes:
@@ -116,8 +114,8 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
             except (KeyError, ModelError):
                 title = "%s" % self.name
             LOGGER.debug("Ignoring deprecated attributes %s in %s", deprecated, title)
-        super(Model, self).__init__(record.storage, record.eid,
-                                    (item for item in six.iteritems(record) if item[0] not in deprecated))
+        super().__init__(record.storage, record.eid,
+                                    (item for item in record.items() if item[0] not in deprecated))
         self._populated = None
 
     def __setitem__(self, key, value):
@@ -186,7 +184,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
     @classmethod
     def _construct_relationships(cls):
         primary_key = None
-        for attr, props in six.iteritems(cls.attributes):
+        for attr, props in cls.attributes.items():
             model_attr_name = cls.name + "." + attr
             if 'collection' in props and 'via' not in props:
                 raise ModelError(cls, "%s: collection does not define 'via'" % model_attr_name)
@@ -194,12 +192,12 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                 raise ModelError(cls, "%s: defines 'via' property but not 'model' or 'collection'" % model_attr_name)
             if not isinstance(props.get('unique', False), bool):
                 raise ModelError(cls, "%s: invalid value for 'unique'" % model_attr_name)
-            if not isinstance(props.get('description', ''), six.string_types):
+            if not isinstance(props.get('description', ''), str):
                 raise ModelError(cls, "%s: invalid value for 'description'" % model_attr_name)
             if props.get('primary_key', False):
                 if primary_key is not None:
                     raise ModelError(
-                        cls, "{}: primary key previously specified as {}".format(model_attr_name, primary_key)
+                        cls, f"{model_attr_name}: primary key previously specified as {primary_key}"
                     )
                 primary_key = attr
 
@@ -211,7 +209,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                 if not issubclass(foreign_cls, Model):
                     raise TypeError
             except TypeError:
-                raise ModelError(cls, "{}: Invalid foreign model controller: {!r}".format(model_attr_name, foreign_cls))
+                raise ModelError(cls, f"{model_attr_name}: Invalid foreign model controller: {foreign_cls!r}")
 
             forward = (foreign_cls, via)
             reverse = (cls, attr)
@@ -261,7 +259,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
             if key not in cls.attributes:
                 raise ModelError(cls, "no attribute named '%s'" % key)
         validated = {}
-        for attr, props in six.iteritems(cls.attributes):
+        for attr, props in cls.attributes.items():
             # Check required fields and defaults
             try:
                 validated[attr] = data[attr]
@@ -277,13 +275,13 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                 if not value:
                     value = []
                 elif not isinstance(value, list):
-                    raise ModelError(cls, "Value supplied for '{}' is not a list: {!r}".format(attr, value))
+                    raise ModelError(cls, f"Value supplied for '{attr}' is not a list: {value!r}")
                 else:
                     for eid in value:
                         try:
                             int(eid)
                         except ValueError:
-                            raise ModelError(cls, "Invalid non-integer ID '{}' in '{}'".format(eid, attr))
+                            raise ModelError(cls, f"Invalid non-integer ID '{eid}' in '{attr}'")
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
@@ -293,7 +291,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                         if int(value) != value:
                             raise ValueError
                     except ValueError:
-                        raise ModelError(cls, "Invalid non-integer ID '{}' in '{}'".format(value, attr))
+                        raise ModelError(cls, f"Invalid non-integer ID '{value}' in '{attr}'")
                     validated[attr] = value
         return validated
 
@@ -583,7 +581,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
             the above expressions do nothing.
         """
         as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
-        for attr, props in six.iteritems(self.attributes):
+        for attr, props in self.attributes.items():
             try:
                 compat = props['compat']
             except KeyError:
@@ -592,7 +590,7 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
                 attr_value = self[attr]
             except KeyError:
                 continue
-            for value, conditions in six.iteritems(compat):
+            for value, conditions in compat.items():
                 if (callable(value) and value(attr_value)) or attr_value == value:
                     for condition in as_tuple(conditions):
                         condition(self, attr, attr_value, rhs)
@@ -600,5 +598,5 @@ class Model(six.with_metaclass(ModelMeta, StorageRecord)):
     @classmethod
     def filter_arguments(cls, args):
         from taucmdr.cli.arguments import ArgumentsNamespace
-        filtered = dict(item for item in six.iteritems(vars(args)) if item[0] in cls.attributes)
+        filtered = dict(item for item in vars(args).items() if item[0] in cls.attributes)
         return ArgumentsNamespace(**filtered)

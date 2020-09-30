@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``application edit`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.error import ImmutableRecordError, IncompatibleRecordError
 from taucmdr.cli.cli_view import EditCommand
 from taucmdr.cli.commands.application.copy import COMMAND as application_copy_cmd
@@ -41,7 +39,7 @@ class ApplicationEditCommand(EditCommand):
 
     def _update_record(self, store, data, key):
         try:
-            retval = super(ApplicationEditCommand, self)._update_record(store, data, key)
+            retval = super()._update_record(store, data, key)
         except (ImmutableRecordError, IncompatibleRecordError) as err:
             err.hints = ["Use `%s` to create a modified copy of the application" % application_copy_cmd,
                          "Use `%s` to delete the experiments." % experiment_delete_cmd]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -27,8 +26,6 @@
 #
 """Unit test initializations and utility functions."""
 
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import sys
 import glob
@@ -170,7 +167,7 @@ class TestCase(unittest.TestCase):
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
         self._result_stream = result.stream
-        return super(TestCase, self).run(result)
+        return super().run(result)
 
     def reset_project_storage(self, init_args=None):
         """Delete and recreate project storage.
@@ -257,7 +254,7 @@ class TestCase(unittest.TestCase):
     def copy_testfile(self, src, dst=None):
         test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
         test_dst = os.path.join(get_test_workdir(), dst or src)
-        LOGGER.info("Copying test file {} to {}".format(test_src, test_dst))
+        LOGGER.info(f"Copying test file {test_src} to {test_dst}")
         shutil.copy(test_src, test_dst)
 
     def assertCompiler(self, role, target_name='targ1'):
@@ -267,7 +264,7 @@ class TestCase(unittest.TestCase):
         try:
             return targ.populate(role.keyword)['path']
         except KeyError:
-            self.fail("No {} compiler in target '{}'".format(role, target_name))
+            self.fail(f"No {role} compiler in target '{target_name}'")
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
@@ -307,11 +304,11 @@ class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""
 
     def __init__(self, *args, **kwargs):
-        super(TestRunner, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.buffer = True
 
     def run(self, test):
-        result = super(TestRunner, self).run(test)
+        result = super().run(test)
         for item in _NOT_IMPLEMENTED:
             print("WARNING: %s" % item)
         if result.wasSuccessful():

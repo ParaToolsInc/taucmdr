@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``measurement list`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cli.cli_view import ListCommand
 from taucmdr.model.measurement import Measurement
 

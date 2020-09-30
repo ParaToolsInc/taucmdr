@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``project edit`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr import EXIT_SUCCESS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli import arguments
@@ -104,7 +102,7 @@ class ProjectEditCommand(EditCommand):
             for name in names:
                 found = ctrl.one({'name': name})
                 if not found:
-                    self.parser.error("There is no {} named '{}'".format(ctrl.model.name, name))
+                    self.parser.error(f"There is no {ctrl.model.name} named '{name}'")
                 dest.add(found.eid)
                 added.add(found)
 
@@ -137,7 +135,7 @@ class ProjectEditCommand(EditCommand):
             for name in names:
                 found = ctrl.one({'name': name})
                 if not found:
-                    self.parser.error('There is no {} named {!r}'.format(ctrl.model.name, name))
+                    self.parser.error(f'There is no {ctrl.model.name} named {name!r}')
                 dest.remove(found.eid)
                 removed.add(found)
 

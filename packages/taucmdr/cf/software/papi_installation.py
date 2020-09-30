@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 PAPI is used to measure hardware performance counters.
 """
 
-from __future__ import absolute_import
 import os
 import re
 import sys
@@ -63,13 +61,13 @@ class PapiInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os,
+        super().__init__('papi', 'PAPI', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, None)
         self._xml_event_info = None
 
     def _prepare_src(self, *args, **kwargs):
         # PAPI's source lives in a 'src' directory instead of the usual top level location
-        src_prefix = super(PapiInstallation, self)._prepare_src(*args, **kwargs)
+        src_prefix = super()._prepare_src(*args, **kwargs)
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
         return src_prefix
@@ -80,14 +78,14 @@ class PapiInstallation(AutotoolsInstallation):
         os.environ['CC'] = cc
         os.environ['CXX'] = cxx
         flags.extend(['CC='+cc, 'CXX='+cxx])
-        return super(PapiInstallation, self).configure(flags)
+        return super().configure(flags)
 
     def make(self, flags):
         # PAPI's tests often fail to compile, so disable them.
         for line in fileinput.input(os.path.join(str(self._src_prefix), 'Makefile'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
-        super(PapiInstallation, self).make(flags)
+        super().make(flags)
 
     def xml_event_info(self):
         if not self._xml_event_info:

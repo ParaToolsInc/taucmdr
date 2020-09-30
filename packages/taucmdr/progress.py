@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,16 +29,12 @@
 Show bars or spinners, possibly with instantaneous CPU load average.
 """
 
-from __future__ import absolute_import
-from __future__ import division
 import os
 import sys
 import threading
 import itertools
 from datetime import datetime, timedelta
 import six
-from six.moves import range
-from six.moves import zip
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
 
@@ -62,8 +57,8 @@ def _proc_stat_cpu_load_average():
     if prev and cur:
         prev_idle = prev['idle'] + prev['iowait']
         cur_idle = cur['idle'] + cur['iowait']
-        prev_total = sum(six.itervalues(prev))
-        cur_total = sum(six.itervalues(cur))
+        prev_total = sum(prev.values())
+        cur_total = sum(cur.values())
         diff_total = cur_total - prev_total
         diff_idle = cur_idle - prev_idle
         _proc_stat_cpu_load_average.prev = cur
@@ -80,12 +75,12 @@ def load_average():
     """
     try:
         cpu_load_avg = _proc_stat_cpu_load_average()
-    except IOError:
+    except OSError:
         cpu_load_avg = None
     return cpu_load_avg
 
 
-class ProgressIndicator(object):
+class ProgressIndicator:
     """A fancy progress indicator to entertain antsy users."""
 
     _spinner = itertools.cycle(['-', '\\', '|', '/'])
@@ -165,7 +160,7 @@ class ProgressIndicator(object):
                 label, tstart, _ = printed_phases.pop()
                 tdelta = (timestamp - tstart).total_seconds()
                 self._line_reset()
-                self._line_append("{} [{:0.3f} seconds]".format(label, tdelta))
+                self._line_append(f"{label} [{tdelta:0.3f} seconds]")
                 self._line_flush(newline=True)
         label, timestamp, implicit = self._phases[-1]
         if label is not None:
@@ -174,7 +169,7 @@ class ProgressIndicator(object):
             label, tstart, _ = printed_phases.pop()
             tdelta = (timestamp - tstart).total_seconds()
             self._line_reset()
-            self._line_append("{} [{:0.3f} seconds]".format(label, tdelta))
+            self._line_append(f"{label} [{tdelta:0.3f} seconds]")
             self._line_flush(newline=True)
         self._phases = printed_phases
         self._phase_depth = len(printed_phases)

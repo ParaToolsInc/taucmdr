@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,6 @@
 #
 """``target list`` subcommand."""
 
-from __future__ import absolute_import
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.compiler.shmem import SHMEM_CC
@@ -49,7 +47,7 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
 class TargetListCommand(ListCommand):
 
     def _format_long_item(self, key, val):
-        fmt_key, fmt_val, flags, description = super(TargetListCommand, self)._format_long_item(key, val)
+        fmt_key, fmt_val, flags, description = super()._format_long_item(key, val)
         attrs = self.model.attributes[key]
         if attrs.get('model') is Compiler:
             fmt_val = '{} ({})'.format(val['path'], val['family'])

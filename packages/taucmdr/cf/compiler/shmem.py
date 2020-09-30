@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,7 +29,6 @@
 Keep a separate knowledge base for SHMEM compilers to simplify compiler
 identification and because TAU doesn't require SHMEM for all configurations.
 """
-from __future__ import absolute_import
 from taucmdr.cf.compiler import Knowledgebase
 
 

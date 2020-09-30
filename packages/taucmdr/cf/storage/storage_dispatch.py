@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -54,7 +53,7 @@ class StorageDispatch(AbstractStorage):
     default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
 
     def __init__(self, name=None, prefix=None, kind=None):
-        super(StorageDispatch, self).__init__(name)
+        super().__init__(name)
         LOGGER.debug("Initialized StorageDispatch name = %s kind = %s", name, kind)
         if kind == 'project':
             self._local_storage = ProjectStorage()
@@ -74,7 +73,7 @@ class StorageDispatch(AbstractStorage):
                            and is TinyDB otherwise.
         """
         if backend not in AVAILABLE_BACKENDS:
-            raise StorageError('Unrecognized backend {}; use one of {}'.format(backend, AVAILABLE_BACKENDS))
+            raise StorageError(f'Unrecognized backend {backend}; use one of {AVAILABLE_BACKENDS}')
         if backend == 'tinydb':
             LOGGER.debug("Using TinyDB database as requested for %s", self.name)
             self._backend = DB_TINYDB
@@ -94,7 +93,7 @@ class StorageDispatch(AbstractStorage):
             return self._local_storage
         elif self._backend == DB_SQLITE:
             return self._sqlite_storage
-        raise InternalError('Bad storage type in dispatch: {}'.format(self._backend))
+        raise InternalError(f'Bad storage type in dispatch: {self._backend}')
 
     def __getattr__(self, item):
         """Dispatches any messages not otherwise caught to the selected storage backend."""
@@ -384,7 +383,7 @@ class StorageDispatch(AbstractStorage):
 class ProjectStorageDispatch(StorageDispatch):
     """Dispatches Project storage method calls to the backing Project storage class"""
     def __init__(self):
-        super(ProjectStorageDispatch, self).__init__(name='project', prefix=None, kind='project')
+        super().__init__(name='project', prefix=None, kind='project')
 
     def destroy(self, ignore_errors=False):
         self._local_storage.destroy(ignore_errors=ignore_errors)

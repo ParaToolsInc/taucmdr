@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Functions used for unit tests of create.py.
 """
 #pylint: disable=missing-docstring
 
-from __future__ import absolute_import
 from taucmdr import tests, util
 from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd

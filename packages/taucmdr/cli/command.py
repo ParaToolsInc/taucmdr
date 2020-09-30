@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,14 +26,13 @@
 #
 """Base class for TAU Commander commands"""
 
-from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
 from taucmdr import logger, cli
 from taucmdr.cli.arguments import ArgumentsNamespace
 import six
 
 
-class AbstractCommand(six.with_metaclass(ABCMeta, object)):
+class AbstractCommand(metaclass=ABCMeta):
     """Abstract base class for TAU Commander commands.
 
     Attributes:

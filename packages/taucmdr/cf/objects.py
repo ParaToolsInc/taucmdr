@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -29,7 +28,7 @@
 import six
 
 
-class TrackedInstance(object):
+class TrackedInstance:
     """Base class for classes that need to keep track of their instances.
 
     Each subclass tracks of its own instances separately.  Unliked :any:`KeyedRecordCreator`
@@ -76,8 +75,7 @@ class TrackedInstance(object):
     @classmethod
     def all(cls):
         """Iterate over class instances."""
-        for instance in cls.__instances__:
-            yield instance
+        yield from cls.__instances__
 
 
 
@@ -110,12 +108,12 @@ class KeyedRecordCreator(type):
         try:
             instance = cls.__instances__[key]
         except KeyError:
-            instance = super(KeyedRecordCreator, cls).__call__(*args, **kwargs)
+            instance = super().__call__(*args, **kwargs)
             cls.__instances__[key] = instance
         return instance
 
 
-class KeyedRecord(six.with_metaclass(KeyedRecordCreator, object)):
+class KeyedRecord(metaclass=KeyedRecordCreator):
     """Data record with a unique key.
 
     Subclasses must declare a ``__key__`` member defining the attribute to be used as the key.
@@ -164,8 +162,7 @@ class KeyedRecord(six.with_metaclass(KeyedRecordCreator, object)):
     @classmethod
     def all(cls):
         """Iterate over class instances."""
-        for instance in six.itervalues(cls.__instances__):
-            yield instance
+        yield from cls.__instances__.values()
 
     @classmethod
     def keys(cls):

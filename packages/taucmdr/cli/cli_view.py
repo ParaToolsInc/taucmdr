@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -30,8 +29,6 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
-from __future__ import absolute_import
-from __future__ import print_function
 from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
@@ -64,7 +61,7 @@ class AbstractCliView(AbstractCommand):
         if not summary_fmt:
             summary_fmt = "Create and manage %(model_name)s configurations."
         self.include_storage_flag = include_storage_flag
-        super(AbstractCliView, self).__init__(module_name, format_fields=format_fields, summary_fmt=summary_fmt,
+        super().__init__(module_name, format_fields=format_fields, summary_fmt=summary_fmt,
                                               help_page_fmt=help_page_fmt, group=group)
 
 
@@ -96,10 +93,10 @@ class CreateCommand(AbstractCliView):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Create %(model_name)s configurations.")
-        super(CreateCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _construct_parser(self):
-        usage = "{} <{}_{}> [arguments]".format(self.command, self.model_name, self.model.key_attribute)
+        usage = f"{self.command} <{self.model_name}_{self.model.key_attribute}> [arguments]"
         parser = arguments.get_parser_from_model(self.model,
                                                  prog=self.command,
                                                  usage=usage,
@@ -127,7 +124,7 @@ class CreateCommand(AbstractCliView):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A {} with {}='{}' already exists".format(self.model_name, key_attr, key))
+            self.parser.error(f"A {self.model_name} with {key_attr}='{key}' already exists")
         if ctrl.storage is PROJECT_STORAGE:
             from taucmdr.cli.commands.project.edit import COMMAND as project_edit_cmd
             try:
@@ -152,20 +149,20 @@ class DeleteCommand(AbstractCliView):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Delete %(model_name)s configurations.")
-        super(DeleteCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "{} <{}_{}> [arguments]".format(self.command, self.model_name, key_attr)
+        usage = f"{self.command} <{self.model_name}_{key_attr}> [arguments]"
         epilog = util.color_text("WARNING: THIS OPERATION IS NOT REVERSIBLE!", 'yellow', attrs=['bold'])
         parser = arguments.get_parser(prog=self.command,
                                       usage=usage,
                                       description=self.summary,
                                       epilog=epilog)
         parser.add_argument(key_attr,
-                            help="{} of {} configuration to delete".format(key_attr.capitalize(), self.model_name),
+                            help=f"{key_attr.capitalize()} of {self.model_name} configuration to delete",
                             nargs="+",
-                            metavar='<{}_{}>'.format(self.model_name, key_attr))
+                            metavar=f'<{self.model_name}_{key_attr}>')
         if self.include_storage_flag:
             arguments.add_storage_flag(parser, "delete", self.model_name)
         return parser
@@ -174,7 +171,7 @@ class DeleteCommand(AbstractCliView):
         key_attr = self.model.key_attribute
         ctrl = self.model.controller(store)
         if not ctrl.exists({key_attr: key}):
-            self.parser.error("No {}-level {} with {}='{}'.".format(store.name, self.model_name, key_attr, key))
+            self.parser.error(f"No {store.name}-level {self.model_name} with {key_attr}='{key}'.")
         ctrl.delete({key_attr: key})
         self.logger.info("Deleted %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
@@ -194,11 +191,11 @@ class EditCommand(AbstractCliView):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Modify %(model_name)s configurations.")
         self.include_new_key_flag = kwargs.pop('include_new_key_flag', True)
-        super(EditCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = "{} <{}_{}> [arguments]".format(self.command, self.model_name, key_attr)
+        usage = f"{self.command} <{self.model_name}_{key_attr}> [arguments]"
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -219,7 +216,7 @@ class EditCommand(AbstractCliView):
         ctrl = self.model.controller(store)
         key_attr = self.model.key_attribute
         if not ctrl.exists({key_attr: key}):
-            self.parser.error("No {}-level {} with {}='{}'.".format(ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
         ctrl.update(data, {key_attr: key})
         self.logger.info("Updated %s '%s'", self.model_name, key)
         return EXIT_SUCCESS
@@ -245,7 +242,7 @@ class ListCommand(AbstractCliView):
         default_style = kwargs.pop('default_style', 'dashboard')
         dashboard_columns = kwargs.pop('dashboard_columns', None)
         title_fmt = kwargs.pop('title_fmt', "%(model_name)s Configurations (%(storage_path)s)")
-        super(ListCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         key_attr = self.model.key_attribute
         self._format_fields = {'command': self.command, 'model_name': self.model_name, 'key_attr': key_attr}
         self.default_style = default_style
@@ -323,7 +320,7 @@ class ListCommand(AbstractCliView):
             elif attrs['type'] != 'string':
                 val = str(val)
         else:
-            raise InternalError("Attribute has no type: {}, {}".format(attrs, val))
+            raise InternalError(f"Attribute has no type: {attrs}, {val}")
         description = attrs.get('description', 'No description')
         description = description[0].upper() + description[1:] + "."
         flags = ', '.join(flag for flag in attrs.get('argparse', {'flags': ('N/A',)})['flags'])
@@ -344,7 +341,7 @@ class ListCommand(AbstractCliView):
         for record in records:
             rows = [['Attribute', 'Value', 'Command Flag', 'Description']]
             populated = record.populate()
-            for key, val in sorted(six.iteritems(populated)):
+            for key, val in sorted(populated.items()):
                 if key != self.model.key_attribute:
                     rows.append(self._format_long_item(key, val))
             table = Texttable(logger.LINE_WIDTH)
@@ -521,11 +518,11 @@ class CopyCommand(CreateCommand):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('summary_fmt', "Copy and modify %(model_name)s configurations.")
-        super(CopyCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = ("{} <{}_{}> <copy_{}> [arguments]".format(self.command, self.model_name, key_attr, key_attr))
+        usage = (f"{self.command} <{self.model_name}_{key_attr}> <copy_{key_attr}> [arguments]")
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -533,7 +530,7 @@ class CopyCommand(CreateCommand):
                                                  description=self.summary)
         group = parser.add_argument_group('%s arguments' % self.model_name)
         group.add_argument('copy_%s' % key_attr,
-                           help="new {} configuration's {}".format(self.model_name, key_attr),
+                           help=f"new {self.model_name} configuration's {key_attr}",
                            metavar='<copy_%s>' % key_attr,
                            default=arguments.SUPPRESS)
         if self.include_storage_flag:
@@ -545,7 +542,7 @@ class CopyCommand(CreateCommand):
         key_attr = self.model.key_attribute
         matching = ctrl.search({key_attr: key})
         if not matching:
-            self.parser.error("No {}-level {} with {}='{}'.".format(ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
         elif len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
