@@ -780,51 +780,9 @@ class TauInstallation(Installation):
 
         if self.python_support:
             # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
-            program = '''
-import re
-import sys
-import os
-
-def find_version():
-    path = os.path.join(sys.prefix,'lib')
-    all = os.listdir(path)
-    p = re.compile(r'^(python)([1-9\\.]+)')
-    for i in all:
-        m = p.match(i)
-        if m:
-            version = m.group(2)
-            break
-    return {'version':version,'path':path}
-
-print(find_version())
-                    '''
             path = self.compilers[PY].absolute_path
-            new_file, name = tempfile.mkstemp(suffix='py', text=True) # make a temporary file
-            with os.fdopen(new_file, 'w') as f:
-                f.write(program)
-            data = get_command_output([path, name])
-            # literal_eval converts string of dict to an actual python dict
-            # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
-            data = ast.literal_eval(data)
-            # pythonlib = data['path']
-            pythoninc = data['path']+data['version']
-            pythoninc = os.path.join(os.path.dirname(data['path']), 'include')
-            pythoninc = os.path.join(pythoninc, 'python'+data['version'])
-
-            # run ldd /usr/lib and save output
-            out = get_command_output(['ldd', path])
-            pattern = re.compile(r'.*=> (.*libpython[23a-z]\.\d.so[0-9\.]+)')
-            pythonlib = pattern.search(out, re.MULTILINE)
-            if pythonlib is not None:
-                # group 1 is the path plus the file file where python is stored
-                pythonlib = str(pythonlib.group(1))
-                # pythonlib should just be the directory, not the file
-                pythonlib = str(os.path.dirname(pythonlib))
-            else:
-                print('output of ldd', out)
-                raise InternalError('output of ldd %s failed to match regex' % path)
-            print('pythonlib', pythonlib)
-            print('pythoninc', pythoninc)
+            pythonlib = get_command_output([path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
+            pythoninc = get_command_output([path, '-c', 'import sysconfig; print(sysconfig.get_path("include"))'])
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
