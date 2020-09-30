@@ -119,9 +119,7 @@ jobs:
 
       - name: Test TAU Commander
         run: |
-          rm -f ./coverage.xml || true
           coverage run setup.py test
-          coverage xml
 
       - name: Build sphinx docs
         run: python setup.py build_sphinx
