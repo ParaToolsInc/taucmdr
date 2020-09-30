@@ -341,7 +341,7 @@ def archive_toplevel(archive):
                     dirname, basename = os.path.split(name)
                     while dirname:
                         dirname, basename = os.path.split(dirname)
-                    dirs.add(str(basename))
+                    dirs += [str(basename)]
                 topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
         return str(topdir)
