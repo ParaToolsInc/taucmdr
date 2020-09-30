@@ -30,7 +30,7 @@ repos:
     - id: debug-statements
     - id: detect-private-key
     - id: end-of-file-fixer
-    - id: fix-encoding-pragma
+#    - id: fix-encoding-pragma
     - id: mixed-line-ending
 #    - id: name-tests-test
     - id: pretty-format-json
@@ -80,11 +80,11 @@ repos:
     - id: markdownlint
       args: [--fix]
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.1.0
+  rev: v2.7.2
   hooks:
     - id: pyupgrade
       language_version: python3
-      args: [--keep-percent-format]
+      args: [--keep-percent-format, --py36-plus]
 # - repo: https://github.com/pre-commit/mirrors-mypy
 #   rev: v0.770
 #   hooks:

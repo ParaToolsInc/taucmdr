@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -75,7 +74,7 @@ class SQLite3FileStorageTests(tests.TestCase):
                    'callsite': False, 'keep_inst_files': False,
                    'comm_matrix': False, 'source_inst': 'never',
                    'cuda': False, 'profile': 'tau', 'callpath': 100,
-                   'trace': 'none', 'mpi': False, 'metrics': [u'TIME'],
+                   'trace': 'none', 'mpi': False, 'metrics': ['TIME'],
                    'openmp': 'ignore', 'projects': [],
                    'throttle': True, 'name': 'sample',
                    'throttle_num_calls': 100000, 'shmem': False}
@@ -93,11 +92,11 @@ class SQLite3FileStorageTests(tests.TestCase):
     def test_sqlite_table_count(self):
         self.database.purge()
         table = self.database.table('compiler')
-        table.insert({'path': u'/usr/bin/gcc', 'role': 'Host_CC',
+        table.insert({'path': '/usr/bin/gcc', 'role': 'Host_CC',
                       'uid': '22bf4003', 'family': 'GNU'})
-        table.insert({'path': u'/usr/bin/g++', 'role': 'Host_CXX',
+        table.insert({'path': '/usr/bin/g++', 'role': 'Host_CXX',
                       'uid': '148623fa', 'family': 'GNU'})
-        table.insert({'path': u'/usr/bin/gfortran', 'role': 'Host_FC',
+        table.insert({'path': '/usr/bin/gfortran', 'role': 'Host_FC',
                       'uid': '7e1c0e82', 'family': 'GNU'})
         family_size = table.count({'family': 'GNU'})
         self.assertEqual(family_size, 3, "Wrong count for family=GNU")
@@ -158,11 +157,11 @@ class SQLite3FileStorageTests(tests.TestCase):
     def test_sqlite_table_purge(self):
         self.database.purge()
         table = self.database.table('compiler')
-        table.insert({'path': u'/usr/bin/gcc', 'role': 'Host_CC',
+        table.insert({'path': '/usr/bin/gcc', 'role': 'Host_CC',
                       'uid': '22bf4003', 'family': 'GNU'})
-        table.insert({'path': u'/usr/bin/g++', 'role': 'Host_CXX',
+        table.insert({'path': '/usr/bin/g++', 'role': 'Host_CXX',
                       'uid': '148623fa', 'family': 'GNU'})
-        table.insert({'path': u'/usr/bin/gfortran', 'role': 'Host_FC',
+        table.insert({'path': '/usr/bin/gfortran', 'role': 'Host_FC',
                       'uid': '7e1c0e82', 'family': 'GNU'})
         all_count = table.count({})
         self.assertEqual(all_count, 3, "After purge and insert, only just-inserted records should be present")
@@ -325,4 +324,3 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertEqual(count, 2, "After unsuccessful transaction, table should still have two elements")
         result_3 = self.storage.get(keys=eid_3, table_name='application')
         self.assertIsNone(result_3, "After unsuccessful transaction, table should not contain element 3")
-
