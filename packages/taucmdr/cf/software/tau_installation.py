@@ -805,7 +805,7 @@ class TauInstallation(Installation):
             path = self.compilers[PY].absolute_path
             LOGGER.info(f"Python in use: {path}")
             pythonlib = get_command_output(
-                [path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
+                [path, '-c', 'import sysconfig; print(sysconfig.get_config_var("LIBPL"))'])
             pythoninc = get_command_output(
                 [path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
             LOGGER.info(f"Python lib dir: {pythonlib}")
