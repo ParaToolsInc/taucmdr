@@ -341,6 +341,55 @@ def archive_toplevel(archive):
         return str(topdir)
 
 
+def is_clean_container(obj):
+    """Recursively checks a container for bytes, bytearray and memory view objects in keys and values.
+    Care must be taken to avoid infinite loops caused by cycles in a dictionary with cycles.
+
+    Args:
+        obj (any): Container to be checked for disallowed binary data
+
+    Returns:
+        bool: Whether or not bad binary entries were found
+    """
+    bad_types = (bytes, bytearray, memoryview)
+    sequence_types = (list, tuple, range, set, frozenset)
+
+    # Handle empty containers & types not in containers
+    if (not isinstance(obj, (list, tuple, range, set, frozenset, dict))) or not obj:
+        return not isinstance(obj, bad_types)
+
+    try:
+        stack = list(obj.items())
+    except AttributeError:
+        stack = list(obj)
+        is_dictlike = False
+    else:
+        is_dictlike = True
+    visited = set()
+    while stack:
+        if is_dictlike:
+            k, v = stack.pop()
+            if isinstance(k, bad_types):
+                return False
+            elif isinstance(k, sequence_types):
+                if not is_clean_container(k):
+                    return False
+            if isinstance(v, dict):
+                if k not in visited:
+                    stack.extend(v.items())
+                elif isinstance(v, bad_types):
+                    return False
+                visited.add(k)
+        else:
+            v = stack.pop()
+        if isinstance(v, sequence_types):
+            if not is_clean_container(v):
+                return False
+        elif isinstance(v, bad_types):
+            return False
+    return True
+
+
 def _show_extract_progress(members):
     with ProgressIndicator("Extracting", total_size=len(members), show_cpu=False) as progress_bar:
         for i, member in enumerate(members):

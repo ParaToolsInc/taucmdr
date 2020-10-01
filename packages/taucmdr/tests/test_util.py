@@ -81,3 +81,53 @@ class CamelCaseTest(tests.TestCase):
 
     def test_camelcase(self):
         self.assertEqual(util.camelcase("abc_def_ghi"), "AbcDefGhi")
+
+
+class IsCleanContainerTest(tests.TestCase):
+    """Class to test checking whether containers contain disallowed binary data."""
+
+    def test_true(self):
+        """Ensure that valid containers and other items are not flagged as being bad."""
+        good_dict = {1: True,
+                     'this': 'that',
+                     'entry': {
+                         'item1': 'dog',
+                         'list1': [1.0, 2.0, 3.0],
+                         'bools': (True, False)
+                     },
+                     'empty': None,
+                     ('tuple', 'keyed'): 'allowed'
+                     }
+        self.assertTrue(util.is_clean_container(good_dict))
+        self.assertTrue(util.is_clean_container({}))
+        self.assertTrue(util.is_clean_container(None))
+        self.assertTrue(util.is_clean_container([]))
+        self.assertTrue(util.is_clean_container(()))
+        self.assertTrue(util.is_clean_container(1))
+        self.assertTrue(util.is_clean_container(1.0))
+        self.assertTrue(util.is_clean_container(False))
+        self.assertTrue(util.is_clean_container("string"))
+        self.assertTrue(util.is_clean_container(("tuple", 1)))
+        self.assertTrue(util.is_clean_container([{}, {}]))
+        self.assertTrue(util.is_clean_container(["something", None, {"dict": "value"}, (1, "entry")]))
+
+    def test_false(self):
+        """Ensure that bytes, bytearray and memoryview objects in keys and values are detected."""
+        bytes_in_key = {'this': 'that', 'dict': {'good': 1, ('ok', b'bad'): 'bytes!'}}
+        bytes_in_value = {'this': 'that', 'dict': {
+            'good': 1, 'rhyme': [
+                ('one', 'fish'),
+                ('two', 'fish'),
+                ('red', 'fish'),
+                ('blue', 'fish')
+                ]
+            },
+            'bad': [1, True, b'Value!!', 2.0, 'string']
+        }
+        self.assertFalse(util.is_clean_container(b'bad string'))
+        self.assertFalse(util.is_clean_container(bytes_in_key))
+        self.assertFalse(util.is_clean_container(bytes_in_value))
+        self.assertFalse(util.is_clean_container({"key": bytearray(b"bad value")}))
+        self.assertFalse(util.is_clean_container(('some', 1, b'tuple')))
+        self.assertFalse(util.is_clean_container(['some', True, bytearray(b'list')]))
+        self.assertFalse(util.is_clean_container({'key': [{b'bad value', 'good value'}]}))
