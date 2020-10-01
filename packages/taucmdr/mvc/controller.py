@@ -27,6 +27,7 @@
 """TODO: FIXME: Docs"""
 
 from taucmdr import logger
+from taucmdr import util
 from taucmdr.error import InternalError, UniqueAttributeError, ModelError
 
 LOGGER = logger.get_logger(__name__)
@@ -293,6 +294,8 @@ class Controller:
             data (dict): New data for existing records.
             keys: Fields or element identifiers to match.
         """
+        if not util.is_clean_container(data):
+            raise TypeError(f'Binary data (bytes, bytearray, etc.) found in data(dict)!\n{data}')
         for attr in data:
             if attr not in self.model.attributes:
                 raise ModelError(self.model, "no attribute named '%s'" % attr)

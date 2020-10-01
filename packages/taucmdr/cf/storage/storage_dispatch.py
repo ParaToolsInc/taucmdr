@@ -31,6 +31,7 @@ This Storage class dispatches calls to either TinyDB or SQLite, depending on whi
 import os
 
 from taucmdr import logger
+from taucmdr import util
 from taucmdr.cf.storage import AbstractStorage, StorageError
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
@@ -298,7 +299,12 @@ class StorageDispatch(AbstractStorage):
 
         Returns:
             Record: The new record.
+
+        Raises:
+            TypeError: If bytes, bytearray or memoryview found in data
         """
+        if not util.is_clean_container(data):
+            raise TypeError(f"Bad binary type (bytes, bytearray, etc.) found in data(dict):\n{data}")
         return self._get_storage().insert(data, table_name=table_name)
 
     def update(self, fields, keys, table_name=None, match_any=False):
@@ -318,7 +324,12 @@ class StorageDispatch(AbstractStorage):
 
         Raises:
             ValueError: ``bool(keys) == False`` or invalid value for `keys`.
+            TypeError: If binary data (bytes, bytearray, memoryview) found in fields or key dict
         """
+        if not util.is_clean_container(fields):
+          raise TypeError(f"Bad types (bytes, bytearray, etc.) passed as fields:\n{fields}")
+        if isinstance(keys, dict) and not util.is_clean_container(keys):
+            raise TypeError(f"Bad types (bytes, bytearray, etc. passed as keys:\n{keys}")
         return self._get_storage().update(fields, keys, table_name=table_name, match_any=match_any)
 
     def unset(self, fields, keys, table_name=None, match_any=False):

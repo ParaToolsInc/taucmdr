@@ -27,6 +27,7 @@
 """TODO: FIXME: Docs"""
 
 from taucmdr import logger
+from taucmdr import util
 from taucmdr.error import IncompatibleRecordError, ModelError, InternalError
 from taucmdr.cf.storage import StorageRecord
 from taucmdr.mvc.controller import Controller
@@ -255,6 +256,8 @@ class Model(StorageRecord, metaclass=ModelMeta):
         """
         if data is None:
             return None
+        if not util.is_clean_container(data):
+            raise TypeError(f"binary types (bytes, bytearray, etc.) found in data:\n{data}")
         for key in data:
             if key not in cls.attributes:
                 raise ModelError(cls, "no attribute named '%s'" % key)
