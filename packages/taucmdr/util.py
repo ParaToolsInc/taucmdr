@@ -642,7 +642,7 @@ def is_url(url):
     Returns:
         bool: True if `url` is a URL, False otherwise.
     """
-    return bool(len(urllib.request.urlopen(url).scheme))
+    return bool(len(urllib.parse.urlparse(url).scheme))
 
 
 def camelcase(name):
