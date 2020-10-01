@@ -74,6 +74,7 @@ class ModelMeta(type):
         try:
             return cls._key_attribute
         except AttributeError:
+            # pylint: disable=no-member
             for attr, props in cls.attributes.items():
                 if 'primary_key' in props:
                     cls._key_attribute = attr
