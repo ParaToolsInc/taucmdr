@@ -803,8 +803,13 @@ class TauInstallation(Installation):
         if self.python_support:
             # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
             path = self.compilers[PY].absolute_path
-            pythonlib = get_command_output([path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
-            pythoninc = get_command_output([path, '-c', 'import sysconfig; print(sysconfig.get_path("include"))'])
+            LOGGER.info(f"Python in use: {path}")
+            pythonlib = get_command_output(
+                [path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
+            pythoninc = get_command_output(
+                [path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
+            LOGGER.info(f"Python lib dir: {pythonlib}")
+            LOGGER.info(f"Python include dir: {pythoninc}")
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
