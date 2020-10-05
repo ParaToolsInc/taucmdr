@@ -219,7 +219,7 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
-        self.assertInLastTrialData("firstPrimeAfter")
+        self.assertInLastTrialData("first_prime_after")
 
     @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
     def test_run_python2(self):
@@ -232,7 +232,7 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
-        self.assertInLastTrialData("firstPrimeAfter")
+        self.assertInLastTrialData("first_prime_after")
 
     @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
     def test_run_python3(self):
@@ -245,4 +245,4 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertFalse(stderr)
-        self.assertInLastTrialData("firstPrimeAfter")
+        self.assertInLastTrialData("first_prime_after")
