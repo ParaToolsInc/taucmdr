@@ -38,13 +38,12 @@ TAU is the core software package of TAU Commander.
 
 import os
 import re
-import ast
 import glob
 import shutil
 import datetime
 import shlex
 import resource
-import tempfile
+import platform
 import multiprocessing
 from subprocess import CalledProcessError
 from taucmdr import logger, util
@@ -804,12 +803,24 @@ class TauInstallation(Installation):
             # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
             path = self.compilers[PY].absolute_path
             LOGGER.info(f"Python in use: {path}")
-            pythonlib = get_command_output(
-                [path, '-c', 'import sysconfig; print(sysconfig.get_config_var("LIBPL"))'])
+            _pythonlib = get_command_output(
+                [path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
+            dylib_suffix = 'dylib' if platform.system() == 'Darwin' else 'so'
+            for g in glob.iglob(os.path.join(_pythonlib, '**/libpython*.'+dylib_suffix+'*'), recursive=True):
+                pythonlib = os.path.dirname(g)
+                break
+            else:  # Try searching in the parent directory of stdlib
+                for g in glob.iglob(
+                    os.path.join(os.path.dirname(_pythonlib), 'libpython*.'+dylib_suffix+'*'),
+                    recursive=True
+                ):
+                    pythonlib = os.path.dirname(g)
+                    break
+                else:
+                    raise ConfigurationError(
+                        f"Unable to find libpython in {_pythonlib} for {path}")
             pythoninc = get_command_output(
                 [path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
-            LOGGER.info(f"Python lib dir: {pythonlib}")
-            LOGGER.info(f"Python include dir: {pythoninc}")
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
