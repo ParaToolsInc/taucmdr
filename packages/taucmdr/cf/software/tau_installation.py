@@ -811,7 +811,7 @@ class TauInstallation(Installation):
                 break
             else:  # Try searching in the parent directory of stdlib
                 for g in glob.iglob(
-                    os.path.join(os.path.dirname(_pythonlib), 'libpython*.'+dylib_suffix+'*'),
+                    os.path.join(os.path.dirname(_pythonlib), '**/libpython*.'+dylib_suffix+'*'),
                     recursive=True
                 ):
                     pythonlib = os.path.dirname(g)
