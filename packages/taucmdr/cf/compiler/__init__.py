@@ -45,7 +45,7 @@ The reason for this mess is that compiler detection is very hard.  Projects like
 `SciPy`_ that depend on a compiler's stdout stream for compiler detection have more
 or less failed in this since compiler messages are exceptionally difficult to parse.
 `CMake`_ does a good job by invoking the compiler command and parsing strings out of
-a compiled object to detect compiler characteristcs, but that approach is complex
+a compiled object to detect compiler characteristics, but that approach is complex
 and still breaks easily.
 
 The TAU Commander compiler knowledgebase associates a compiler command (`icc`)
