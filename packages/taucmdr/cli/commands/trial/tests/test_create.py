@@ -216,7 +216,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python',os.path.join(test_dir,'firstprime.py')])
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python ')
+        self.assertRegexpMatches(stdout, '-tau-python-interpreter=/.*/python ')
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
 
@@ -228,7 +228,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python2',os.path.join(test_dir,'firstprime.py')])
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python2')
+        self.assertRegexpMatches(stdout, '-tau-python-interpreter=/.*/python2')
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
 
@@ -240,6 +240,6 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python3',os.path.join(test_dir,'firstprime.py')])
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
+        self.assertRegexpMatches(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
         self.assertInLastTrialData("firstPrimeAfter")
