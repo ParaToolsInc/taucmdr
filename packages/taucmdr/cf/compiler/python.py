@@ -31,7 +31,7 @@ Python Interpreter Knowledgebase (implemented using the compiler classes)
 from taucmdr.cf.compiler import Knowledgebase
 
 PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different versions of Python',
-                                    PY=('python', 'python') # language: python, envars: python
+                                    PY=('python', 'PYTHON')  # language: python, envars: PYTHON
                                    )
 
 PYTHON2 = PYTHON_INTERPRETERS.add('PY2_INTERPRETER',
