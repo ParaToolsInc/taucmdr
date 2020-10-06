@@ -498,11 +498,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-<<<<<<< HEAD
-        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
-=======
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
->>>>>>> unstable
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
