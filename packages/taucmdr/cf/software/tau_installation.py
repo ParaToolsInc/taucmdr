@@ -800,10 +800,9 @@ class TauInstallation(Installation):
 
         if self.python_support:
             # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
-            path = self.compilers[PY].absolute_path
-            LOGGER.info(f"Python in use: {path}")
+            python_path = self.compilers[PY].absolute_path
             _pythonlib = get_command_output(
-                [path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
+                [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
             dylib_suffix = 'dylib' if platform.system() == 'Darwin' else 'so'
             for g in glob.iglob(os.path.join(_pythonlib, '**/libpython*.'+dylib_suffix+'*'), recursive=True):
                 pythonlib = os.path.dirname(g)
@@ -817,9 +816,9 @@ class TauInstallation(Installation):
                     break
                 else:
                     raise ConfigurationError(
-                        f"Unable to find libpython in {_pythonlib} for {path}")
+                        f"Unable to find libpython in {_pythonlib} for {python_path}")
             pythoninc = get_command_output(
-                [path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
+                [python_path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
