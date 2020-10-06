@@ -32,9 +32,10 @@ The Dwarf library provides an interface to resolve samples by converting program
 """
 
 import os
+from taucmdr import util
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20181024.tar.gz'}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20200825.tar.gz'}
 
 LIBRARIES = {None: ['libdwarf.la', 'libdwarf.a']}
 
@@ -51,9 +52,10 @@ class LibdwarfInstallation(AutotoolsInstallation):
         self.add_dependency('libelf', sources)
 
     def configure(self, flags):
-        flags.extend(['--enable-static', '--enable-shared'])
+        flags.extend(['--with-pic'])
+
         libelf = self.dependencies.get('libelf')
         os.environ['LDFLAGS'] = '-L%s' % libelf.lib_path
-        os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path       
+        os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path          
 
         return super(LibdwarfInstallation, self).configure(flags)

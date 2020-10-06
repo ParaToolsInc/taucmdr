@@ -26,7 +26,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """TAU software installation management.
-
 TAU is the core software package of TAU Commander.
 """
 # Settle down pylint.  This is a big, ugly file and there's not much we can do about it.
@@ -167,7 +166,6 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
 
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
-
     TAU is an enormous, organic, complex piece of software so this class is
     unusually complex to consider all the corner cases.  This is where most
     of the systemization of TAU is actually implemented so it can get ugly.
@@ -238,7 +236,6 @@ class TauInstallation(Installation):
                  mpit=False,
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
-
         Args:
             sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a
                             path to a directory where the software has already been installed, or a path to a source
@@ -426,6 +423,7 @@ class TauInstallation(Installation):
         self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
         self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources 
+        self.uses_libelf = not minimal and (self.target_os is not DARWIN) and 'libelf' in sources 
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
@@ -448,7 +446,7 @@ class TauInstallation(Installation):
             mets.extend(met.split(','))
         self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2':
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -459,7 +457,6 @@ class TauInstallation(Installation):
     @classmethod
     def get_minimal(cls):
         """Creates a minimal TAU configuration for working with legacy data analysis tools.
-
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
@@ -481,10 +478,8 @@ class TauInstallation(Installation):
     @classmethod
     def check_env_compat(cls):
         """Checks the current shell environment for incompatible libraries or modules.
-
         Other instrumentation packages like Darshan can conflict with TAU.  This routine
         checks that no conflicting packages are active in the current environment.
-
         Raises:
             ConfigurationError: TAU cannot be used in the current environment.
         """
@@ -500,7 +495,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
@@ -708,6 +703,7 @@ class TauInstallation(Installation):
             library_path_flag = wrap_cc.info.family.library_path_flags[0]
             parts = [library_path_flag+path for path in library_path if path != selected_lib] + parts
             selected_library = '#'.join(parts)
+
         return selected_inc, selected_lib, selected_library
 
     def configure(self):
@@ -721,6 +717,7 @@ class TauInstallation(Installation):
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
         libdwarf = self.dependencies.get('libdwarf')
+        libelf = self.dependencies.get('libelf')
         papi = self.dependencies.get('papi')
         pdt = self.dependencies.get('pdt')
         scorep = self.dependencies.get('scorep')
@@ -844,6 +841,7 @@ print(find_version())
                   '-papi=%s' % papi.install_prefix if papi else None,
                   '-unwind=%s' % libunwind.install_prefix if libunwind else None,
                   '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
+                  '-elf=%s' % libelf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
                   '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,
@@ -898,7 +896,7 @@ print(find_version())
             flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.
-        useropts = ['-O2', '-g']
+        useropts = ['-O2', '-g', '-fPIC']
         # Work around TAU's silly hard-coded limits.
         useropts.extend(['-DTAU_MAX_THREADS=%d' % self._get_max_threads(),
                          '-DTAU_MAX_METRICS=%d' % self._get_max_metrics(),

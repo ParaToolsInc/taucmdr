@@ -28,7 +28,7 @@
 """libelf software installation management.
 
 
-The Dwarf library provides an interface to read, modify or create ELF files in 
+The ELF library provides an interface to read, modify or create ELF files in 
             an architecture-independent way. 
 """
 
@@ -36,7 +36,7 @@ from taucmdr.cf.software.installation import AutotoolsInstallation
 
 REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/elfutils-0.180.tar.bz2'}
 
-LIBRARIES = {None: ['libelf.a', 'libdw.a', 'libasm.a']}
+LIBRARIES = {None: ['libelf.a']}
 
 HEADERS = {None: ['libelf.h']}
 
