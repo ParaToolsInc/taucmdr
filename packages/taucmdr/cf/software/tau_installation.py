@@ -628,6 +628,18 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("SQLITE3DIR in '%s' is not '%s'" %
                                                        (tau_makefile, sqlite3.install_prefix))
 
+                elif 'DWARFINC=' in line:
+                    if self.uses_libdwarf:
+                        libdwarf = self.dependencies['libdwarf']
+                        libdwarf_dir = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(libdwarf_dir):
+                            raise SoftwarePackageError("DWARFINC in '%s' is not a directory" % tau_makefile)
+                        if libdwarf.include_path != libdwarf_dir:
+                            LOGGER.debug("DWARFINC='%s' != '%s'", libdwarf_dir, libdwarf.include_path)
+                            raise SoftwarePackageError("DWARFINC in '%s' is not '%s'" %
+                                                        (tau_makefile, libdwarf.include_path))
+
+
     @staticmethod
     def get_shared_dir(tau_makefile):
         """Get the shared library directory that corresponds to a given TAU Makefile
@@ -641,16 +653,6 @@ class TauInstallation(Installation):
         """
         return 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
 
-                elif 'DWARFINC=' in line:
-                    if self.uses_libdwarf:
-                        libdwarf = self.dependencies['libdwarf']
-                        libdwarf_dir = line.split('=')[1].strip().strip("-I")
-                        if not os.path.isdir(libdwarf_dir):
-                            raise SoftwarePackageError("DWARFINC in '%s' is not a directory" % tau_makefile)
-                        if libdwarf.include_path != libdwarf_dir:
-                            LOGGER.debug("DWARFINC='%s' != '%s'", libdwarf_dir, libdwarf.include_path)
-                            raise SoftwarePackageError("DWARFINC in '%s' is not '%s'" %
-                                                        (tau_makefile, libdwarf.include_path))
 
     def _verify_iowrapper(self, tau_makefile):
         # Replace right-most occurrence of 'Makefile.tau' with 'shared'
