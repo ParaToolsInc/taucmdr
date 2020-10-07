@@ -26,6 +26,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """TAU software installation management.
+
 TAU is the core software package of TAU Commander.
 """
 # Settle down pylint.  This is a big, ugly file and there's not much we can do about it.
@@ -167,6 +168,7 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
 
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
+
     TAU is an enormous, organic, complex piece of software so this class is
     unusually complex to consider all the corner cases.  This is where most
     of the systemization of TAU is actually implemented so it can get ugly.
@@ -237,6 +239,7 @@ class TauInstallation(Installation):
                  mpit=False,
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
+
         Args:
             sources (dict): Packages sources as strings indexed by package names as strings.  A source may be a
                             path to a directory where the software has already been installed, or a path to a source
@@ -460,6 +463,7 @@ class TauInstallation(Installation):
     @classmethod
     def get_minimal(cls):
         """Creates a minimal TAU configuration for working with legacy data analysis tools.
+
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
@@ -481,8 +485,10 @@ class TauInstallation(Installation):
     @classmethod
     def check_env_compat(cls):
         """Checks the current shell environment for incompatible libraries or modules.
+
         Other instrumentation packages like Darshan can conflict with TAU.  This routine
         checks that no conflicting packages are active in the current environment.
+
         Raises:
             ConfigurationError: TAU cannot be used in the current environment.
         """

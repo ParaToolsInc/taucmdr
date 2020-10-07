@@ -34,7 +34,8 @@ The Dwarf library provides an interface to resolve samples by converting program
 import os
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20200825.tar.gz'}
+REPOS = {None: ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20200825.tar.gz',
+                'https://www.prevanders.net/libdwarf-20200825.tar.gz']}
 
 LIBRARIES = {None: ['libdwarf.la', 'libdwarf.a']}
 

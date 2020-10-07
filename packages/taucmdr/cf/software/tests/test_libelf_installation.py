@@ -25,30 +25,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libelf software installation management.
+"""Test functions.
 
-
-The ELF library provides an interface to read, modify or create ELF files in 
-            an architecture-independent way. 
+Functions used for unit tests of libelf_installation.py.
 """
 
-from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.tests import TestCase, not_implemented
 
-REPOS = {None: ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/elfutils-0.180.tar.bz2',
-                'https://sourceware.org/elfutils/ftp/0.180/elfutils-0.180.tar.bz2']}
-
-LIBRARIES = {None: ['libelf.a']}
-
-HEADERS = {None: ['libelf.h']}
-
-
-class LibelfInstallation(AutotoolsInstallation):
-    """Encapsulates a libelf installation."""
-
-    def __init__(self, sources, target_arch, target_os, compilers):
-        super(LibelfInstallation, self).__init__('libelf', 'libelf', sources,
-                                                 target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
-
-    def configure(self, flags):
-        flags.extend(['--disable-debuginfod'])
-        return super(LibelfInstallation, self).configure(flags)
+@not_implemented
+class LibelfInstallationTest(TestCase):
+    pass
