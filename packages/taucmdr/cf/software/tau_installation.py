@@ -417,7 +417,7 @@ class TauInstallation(Installation):
         self.sample_resolution = sample_resolution
         self.sampling_period = sampling_period
         self.track_memory_footprint = track_memory_footprint
-        self.python_path = util.which('python')
+        self.python_path = None
         self.tags = tags
         self.forced_makefile = forced_makefile
         self.dyninst = dyninst
@@ -507,7 +507,9 @@ class TauInstallation(Installation):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
-        if self.python_path:
+        if self.uses_python and self.compilers[PY]:
+            self.python_path = self.compilers[PY].absolute_path
+        if self.uses_python and self.python_path:
             python_version = self.get_python_version(self.python_path)
             uid_parts.extend([self.python_path, python_version])
         return uid_parts
@@ -829,8 +831,6 @@ print(find_version())
             # literal_eval converts string of dict to an actual python dict
             # "{'path': '/usr/lib', 'version': '2.7'}" -> {'path': '/usr/lib', 'version': '2.7'}
             data = ast.literal_eval(data)
-            # pythonlib = data['path']
-            pythoninc = data['path']+data['version']
             pythoninc = os.path.join(os.path.dirname(data['path']), 'include')
             pythoninc = os.path.join(pythoninc, 'python'+data['version'])
 
@@ -842,10 +842,7 @@ print(find_version())
                 pythonlib = pythonlib.group(1) # group 1 is the path plus the file file where python is stored
                 pythonlib = os.path.dirname(pythonlib) # pythonlib should just be the directory, not the file
             else:
-                print 'output of ldd', out
                 raise InternalError('output of ldd %s failed to match regex' % path)
-            print 'pythonlib', pythonlib
-            print 'pythoninc', pythoninc
 
         flags = [flag for flag in
                  ['-tag=%s' % self.uid,
@@ -909,7 +906,6 @@ print(find_version())
         if self.uses_python:
             flags.append('-python')
         if self.mpit:
-            print 'append mpit'
             flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.
@@ -1521,6 +1517,7 @@ print(find_version())
             return cmd, env
         if any('python' in subcmd for subcmd in launcher_cmd):
             #self.uses_python=True
+            raise InternalError('Any python subcmd found in trial create will be removed before getting here!')
             self._tau_makefile = None
             self._uid = None
             for subcmd in launcher_cmd:
@@ -1544,7 +1541,7 @@ print(find_version())
                     'tau_python',
                     '-T',
                     ','.join([tag for tag in tags if tag != 'python']),
-                    '-tau-python-interpreter=%s' % self.python_path
+                    '-tau-python-interpreter=%s' % self.compilers[PY].absolute_path
                 ] + opts
                 launcher_cmd = []
         else:
