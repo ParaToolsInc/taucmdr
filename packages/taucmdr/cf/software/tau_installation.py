@@ -637,7 +637,7 @@ class TauInstallation(Installation):
                         if libdwarf.include_path != libdwarf_dir:
                             LOGGER.debug("DWARFINC='%s' != '%s'", libdwarf_dir, libdwarf.include_path)
                             raise SoftwarePackageError("DWARFINC in '%s' is not '%s'" %
-                                                        (tau_makefile, libdwarf.include_path))
+                                                       (tau_makefile, libdwarf.include_path))
 
 
     @staticmethod
@@ -928,7 +928,7 @@ print(find_version())
             flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.
-        useropts = ['-O2', '-g', '-fPIC']
+        useropts = ['-O2', '-g']
         # Work around TAU's silly hard-coded limits.
         useropts.extend(['-DTAU_MAX_THREADS=%d' % self._get_max_threads(),
                          '-DTAU_MAX_METRICS=%d' % self._get_max_metrics(),

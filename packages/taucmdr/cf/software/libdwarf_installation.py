@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@ The Dwarf library provides an interface to resolve samples by converting program
 """
 
 import os
-from taucmdr import util
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20200825.tar.gz'}
@@ -47,7 +46,7 @@ class LibdwarfInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         super(LibdwarfInstallation, self).__init__('libdwarf', 'libdwarf', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
         self.add_dependency('libelf', sources)
 

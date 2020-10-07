@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ class LibelfInstallation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         super(LibelfInstallation, self).__init__('libelf', 'libelf', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+                                                 target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
         flags.extend(['--disable-debuginfod'])
