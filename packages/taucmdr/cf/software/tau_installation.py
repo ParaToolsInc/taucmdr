@@ -424,8 +424,10 @@ class TauInstallation(Installation):
         self.unwind_depth = unwind_depth
         self.uses_python = False
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
-        self.uses_binutils = not minimal and (self.target_os is not DARWIN)
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
+        self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources
+        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources 
+        self.uses_libelf = not minimal and (self.target_os is not DARWIN) and 'libelf' in sources 
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
@@ -450,7 +452,7 @@ class TauInstallation(Installation):
             mets.extend(met.split(','))
         self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3':
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -502,7 +504,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
@@ -590,6 +592,7 @@ class TauInstallation(Installation):
                             LOGGER.debug("UNWIND_INC='%s' != '%s'", libunwind_inc, libunwind.include_path)
                             raise SoftwarePackageError("UNWIND_INC in '%s' is not '%s'" %
                                                        (tau_makefile, libunwind.include_path))
+
                 elif 'PAPIDIR=' in line:
                     if self.uses_papi:
                         papi = self.dependencies['papi']
@@ -631,6 +634,18 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("SQLITE3DIR in '%s' is not '%s'" %
                                                        (tau_makefile, sqlite3.install_prefix))
 
+                elif 'DWARFINC=' in line:
+                    if self.uses_libdwarf:
+                        libdwarf = self.dependencies['libdwarf']
+                        libdwarf_dir = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(libdwarf_dir):
+                            raise SoftwarePackageError("DWARFINC in '%s' is not a directory" % tau_makefile)
+                        if libdwarf.include_path != libdwarf_dir:
+                            LOGGER.debug("DWARFINC='%s' != '%s'", libdwarf_dir, libdwarf.include_path)
+                            raise SoftwarePackageError("DWARFINC in '%s' is not '%s'" %
+                                                       (tau_makefile, libdwarf.include_path))
+
+
     @staticmethod
     def get_shared_dir(tau_makefile):
         """Get the shared library directory that corresponds to a given TAU Makefile
@@ -643,6 +658,7 @@ class TauInstallation(Installation):
             would be used by the TAU configuration represented by the Makefile.
         """
         return 'shared'.join(tau_makefile.rsplit('Makefile.tau', 1))
+
 
     def _verify_iowrapper(self, tau_makefile):
         # Replace right-most occurrence of 'Makefile.tau' with 'shared'
@@ -721,6 +737,7 @@ class TauInstallation(Installation):
             library_path_flag = wrap_cc.info.family.library_path_flags[0]
             parts = [library_path_flag+path for path in library_path if path != selected_lib] + parts
             selected_library = '#'.join(parts)
+
         return selected_inc, selected_lib, selected_library
 
     def configure(self):
@@ -733,6 +750,8 @@ class TauInstallation(Installation):
         """
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
+        libdwarf = self.dependencies.get('libdwarf')
+        libelf = self.dependencies.get('libelf')
         papi = self.dependencies.get('papi')
         pdt = self.dependencies.get('pdt')
         scorep = self.dependencies.get('scorep')
@@ -856,6 +875,8 @@ print(find_version())
                   '-bfd=%s' % binutils.install_prefix if binutils else None,
                   '-papi=%s' % papi.install_prefix if papi else None,
                   '-unwind=%s' % libunwind.install_prefix if libunwind else None,
+                  '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
+                  '-elf=%s' % libelf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
                   '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,
