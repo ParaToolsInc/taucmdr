@@ -8,6 +8,8 @@ Submodules
 
    taucmdr.cf.software.tests.test_binutils_installation
    taucmdr.cf.software.tests.test_installation
+   taucmdr.cf.software.tests.test_libdwarf_installation
+   taucmdr.cf.software.tests.test_libelf_installation
    taucmdr.cf.software.tests.test_libunwind_installation
    taucmdr.cf.software.tests.test_papi_installation
    taucmdr.cf.software.tests.test_pdt_installation

@@ -115,7 +115,7 @@ prepares the experiment, and performs the operation.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
+<li><strong>compiler_cmd</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; The compiler command intercepted by TAU Commander.</li>
 <li><strong>compiler_args</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Compiler command line arguments intercepted by TAU Commander.</li>
 </ul>
 </td>
@@ -127,7 +127,7 @@ The experiment is not configured to perform the desired build.</p>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Build subprocess return code.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </td>
 </tr>
 </tbody>
@@ -152,7 +152,7 @@ under the specified experimental configuration.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>launcher_cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Application launcher with command line arguments.</li>
 <li><strong>application_cmds</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; List of application executables with command line arguments (list of lists).</li>
-<li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; If not None, a description of the run.</li>
+<li><strong>description</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; If not None, a description of the run.</li>
 </ul>
 </td>
 </tr>
@@ -163,7 +163,7 @@ The experiment is not configured to perform the desired run.</p>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Application subprocess return code.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.9)">int</a></p>
 </td>
 </tr>
 </tbody>
@@ -206,7 +206,7 @@ The experiment is not configured to perform the desired run.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String indicating why an application rebuild is required.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)">str</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -214,7 +214,7 @@ The experiment is not configured to perform the desired run.</p>
 
 <dl class="attribute">
 <dt id="taucmdr.model.experiment.Experiment.references">
-<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.project.Project'&gt;, 'experiment'), (&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment')])</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
+<code class="descname">references</code><em class="property"> = set([(&lt;class 'taucmdr.model.trial.Trial'&gt;, 'experiment'), (&lt;class 'taucmdr.model.project.Project'&gt;, 'experiment')])</em><a class="headerlink" href="#taucmdr.model.experiment.Experiment.references" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
@@ -228,7 +228,7 @@ The experiment is not configured to perform the desired run.</p>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ExperimentSelectionError</span></code> &#8211;
 No experiment with the given name in the currently selected project.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) &#8211; Name of the experiment to select.</td>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; Name of the experiment to select.</td>
 </tr>
 </tbody>
 </table>
@@ -346,7 +346,7 @@ Invalid trial number or no trials in selected experiment.</td>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Sep 30, 2020 at 21:13:01 UTC.
+      Last updated on Oct 08, 2020 at 00:15:37 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
