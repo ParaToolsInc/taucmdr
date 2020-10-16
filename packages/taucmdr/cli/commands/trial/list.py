@@ -26,10 +26,9 @@
 #
 """``trial list`` subcommand."""
 
-from texttable import Texttable
 from taucmdr import util, logger
 from taucmdr.error import InternalError
-from taucmdr.cli.cli_view import ListCommand
+from taucmdr.cli.cli_view import ListCommand, Texttable
 from taucmdr.model.project import Project
 from taucmdr.model.trial import Trial
 

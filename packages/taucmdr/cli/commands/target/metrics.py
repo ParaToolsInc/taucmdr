@@ -27,10 +27,10 @@
 """``target metrics`` subcommand."""
 
 
-from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util
 from taucmdr.cli import arguments
+from taucmdr.cli.cli_view import Texttable
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.target import Target
 

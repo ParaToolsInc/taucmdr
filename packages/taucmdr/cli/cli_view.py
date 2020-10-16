@@ -29,7 +29,9 @@
 See http://en.wikipedia.org/wiki/Model-view-controller
 """
 
-from texttable import Texttable
+import sys
+import termcolor
+from texttable import Texttable as OriginalTexttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util, cli
 from taucmdr.error import UniqueAttributeError, InternalError, ModelError, ProjectSelectionError
@@ -40,6 +42,47 @@ from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 
 LOGGER = logger.get_logger(__name__)
+
+class Texttable(OriginalTexttable):
+    """Extend the Texttable class to print header rows in bold."""
+
+    def _draw_line(self, line, isheader=False):
+        """Override original `Texttable`'s `_draw_line()` method to make headers bold.
+
+        Draws a line by looping over a single cell length, over all the cells, making any header text bold.
+        A better place to implement this would have been `_splitit()` but the logic in texttable does not strip
+        ANSI escape sequences and treats them as printable characters. This may break when texttable is upgraded
+        as it is marked for internal use only. Adapted from texttable v1.6.3:
+            https://github.com/foutaise/texttable/blob/4073cefdfc4e5c50ed587909875b64b005c70df8/texttable.py#L657-L686
+        """
+
+        line = self._splitit(line, isheader)
+        space = " "
+        out = ""
+        for i in range(len(line[0])):
+            if self._has_border():
+                out += "%s " % self._char_vert
+            length = 0
+            for cell, width, align in zip(line, self._width, self._align):
+                length += 1
+                cell_line = cell[i]
+                fill = width - len(cell_line)
+                if isheader:
+                    align = self._header_align[length - 1]
+                    if sys.stdout.isatty():
+                        cell_line = termcolor.colored(cell_line, attrs=["bold"])
+                if align == "r":
+                    out += fill * space + cell_line
+                elif align == "c":
+                    out += (int(fill / 2) * space + cell_line \
+                            + int(fill / 2 + fill % 2) * space)
+                else:
+                    out += cell_line + fill * space
+                if length < len(line):
+                    out += " %s " % [space, self._char_vert][self._has_vlines()]
+            out += "%s\n" % ['', space + self._char_vert][self._has_border()]
+        return out
+
 
 class AbstractCliView(AbstractCommand):
     """A command that works as a `view` for a `controller`.
