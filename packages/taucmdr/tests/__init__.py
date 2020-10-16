@@ -38,7 +38,7 @@ from taucmdr.util import get_command_output
 import warnings
 from io import StringIO
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
-from taucmdr.error import ConfigurationError
+from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
 from taucmdr.cf.storage import levels
@@ -54,6 +54,8 @@ LOGGER = logger.get_logger(__name__)
 def _destroy_test_workdir(path):
     onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
     shutil.rmtree(path, ignore_errors=False, onerror=onerror)
+    if os.path.isdir(path):
+        raise InternalError
 
 
 def push_test_workdir():
@@ -69,7 +71,7 @@ def push_test_workdir():
         test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
         test_dst = os.path.join(path, 'foo_launcher')
         shutil.copy(test_src, test_dst)
-        get_command_output('%s/foo_launcher' %path)
+        get_command_output(os.path.join(path, 'foo_launcher'))
     except OSError:
         shutil.rmtree(path)
         path = tempfile.mkdtemp(dir=os.getcwd())
@@ -152,7 +154,7 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        PROJECT_STORAGE.destroy(ignore_errors=True)
+        PROJECT_STORAGE.destroy(ignore_errors=False)
         # Reset stdout logger handler to use original stdout
         # pylint: disable=protected-access
         logger._STDOUT_HANDLER.stream = cls._orig_stream
@@ -181,7 +183,7 @@ class TestCase(unittest.TestCase):
             init_args (list): Command line arguments to `tau initialize`.
         """
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
-        PROJECT_STORAGE.destroy(ignore_errors=True)
+        PROJECT_STORAGE.destroy(ignore_errors=False)
         argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
         default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', None)
         if default_backend:
@@ -216,7 +218,7 @@ class TestCase(unittest.TestCase):
 
             > rm -rf .tau
         """
-        PROJECT_STORAGE.destroy(ignore_errors=True)
+        PROJECT_STORAGE.destroy(ignore_errors=False)
 
     def exec_command(self, cmd, argv):
         """Execute a tau command's main() routine and return the exit code, stdout, and stderr data.

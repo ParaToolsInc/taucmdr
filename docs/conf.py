@@ -13,8 +13,6 @@
 
 import sys
 import os
-import shlex
-import tempfile
 import datetime
 
 # Since this file is execfile()d with the current directory set to its
