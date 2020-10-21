@@ -41,7 +41,7 @@ from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
-from taucmdr.cf.storage import levels
+from taucmdr.cf.storage import levels, StorageError
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -162,8 +162,8 @@ class TestCase(unittest.TestCase):
 
     def run(self, result=None):
         # Whenever running a test, set the terminal size large enough to avoid any regex failures due to line wrap
-        logger.TERM_SIZE=(150, 150)
-        logger.LINE_WIDTH=logger.TERM_SIZE[0]
+        logger.TERM_SIZE = (150, 150)
+        logger.LINE_WIDTH = logger.TERM_SIZE[0]
         logger._STDOUT_HANDLER.setFormatter(logger.LogFormatter(line_width=logger.LINE_WIDTH, printable_only=True))
         # Nasty hack to give us access to what sys.stderr becomes when unittest.TestRunner.buffered == True
         # pylint: disable=attribute-defined-outside-init
@@ -183,7 +183,18 @@ class TestCase(unittest.TestCase):
             init_args (list): Command line arguments to `tau initialize`.
         """
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
+        try:
+            prefix = PROJECT_STORAGE.prefix
+            print(prefix)
+        except StorageError:
+            pass
         PROJECT_STORAGE.destroy(ignore_errors=False)
+        try:
+            prefix = PROJECT_STORAGE.prefix
+        except StorageError:
+            pass
+        else:
+            raise InternalError(f'Prefix {prefix} should have been removed in reset_project_storage()')
         argv = ['--project-name', 'proj1', '--target-name', 'targ1', '--application-name', 'app1', '--tau', 'nightly']
         default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', None)
         if default_backend:
