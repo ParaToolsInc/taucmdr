@@ -191,7 +191,7 @@ class TauInstallation(Installation):
                  shmem_libraries=None,
                  mpc_support=False,
                  max_threads=None,
-                 python_support=False,
+                 uses_python=False,
                  # Instrumentation methods and options
                  source_inst="never",
                  compiler_inst="never",
@@ -334,7 +334,7 @@ class TauInstallation(Installation):
         assert measure_memory_alloc in (True, False)
         assert measure_comm_matrix in (True, False)
         assert measure_callsite in (True, False)
-        assert python_support in (True, False)
+        assert uses_python in (True, False)
         assert isinstance(callpath_depth, int)
         assert throttle in (True, False)
         assert metadata_merge in (True, False)
@@ -376,7 +376,7 @@ class TauInstallation(Installation):
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
         self.max_threads = max_threads
-        self.python_support = python_support
+        self.uses_python = uses_python
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
         self.keep_inst_files = keep_inst_files
@@ -419,7 +419,6 @@ class TauInstallation(Installation):
         self.forced_makefile = forced_makefile
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
-        self.uses_python = False
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN)
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN)
@@ -798,7 +797,7 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_CXX],
                                    self.compilers[SHMEM_FC])
 
-        if self.python_support:
+        if self.uses_python:
             # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
             python_path = self.compilers[PY].absolute_path
             _pythonlib = get_command_output(
@@ -841,8 +840,8 @@ class TauInstallation(Installation):
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
                   '-shmemlib=%s' % shmemlib if shmemlib else None,
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
-                  '-pythoninc=%s' % pythoninc if self.python_support else None,
-                  '-pythonlib=%s' % pythonlib if self.python_support else None,
+                  '-pythoninc=%s' % pythoninc if self.uses_python else None,
+                  '-pythonlib=%s' % pythonlib if self.uses_python else None,
                   '-otf=%s' % libotf2.install_prefix if libotf2 else None,
                   '-sqlite3=%s' % sqlite3.install_prefix if sqlite3 else None,
                   ] if flag]
@@ -1053,7 +1052,7 @@ class TauInstallation(Installation):
             tags.add('shmem')
         if self.mpc_support:
             tags.add('mpc')
-        if self.python_support:
+        if self.uses_python:
             tags.add('python')
         if self.mpit:
             tags.add('mpit')
@@ -1499,10 +1498,10 @@ class TauInstallation(Installation):
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
                          self.measure_opencl or
                          self.tbb_support or
-                         self.pthreads_support) and not self.python_support)
+                         self.pthreads_support) and not self.uses_python)
         if not use_tau_exec:
             tau_exec = []
-            if self.python_support:
+            if self.uses_python:
                 makefile = self.get_makefile()
                 tags = self._makefile_tags(makefile)
                 if not self.mpi_support:
