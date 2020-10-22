@@ -967,6 +967,7 @@ class TauInstallation(Installation):
             try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
+                    LOGGER.info(f'Installing {self.title} to:\n    {self.install_prefix}')
                     shutil.move(self._prepare_src(), self.install_prefix)
                 self._src_prefix = self.install_prefix
                 self.installation_sequence()
