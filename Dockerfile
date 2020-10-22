@@ -6,7 +6,7 @@ RUN DEBIAN_FRONTEND=noninteractive set -v && \
         rm -rf /var/lib/apt/lists/* && \
         localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
         useradd -ms /bin/bash tau
-ENV LANG=en_US.utf8 INSTALLDIR=/home/tau/taucmdr
+ENV LANG=en_US.UTF-8 INSTALLDIR=/home/tau/taucmdr
 COPY .gitignore .gitattributes .version.sh LICENSE README.md Makefile setup.py MANIFEST.in requirements-dev.txt /tmp/taucmdr/
 COPY scripts /tmp/taucmdr/scripts
 COPY packages /tmp/taucmdr/packages
