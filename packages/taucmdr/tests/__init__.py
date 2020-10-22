@@ -45,7 +45,6 @@ from taucmdr.cf.storage import levels, StorageError
 
 _DIR_STACK = []
 _CWD_STACK = []
-_TEMPDIR_STACK = []
 _NOT_IMPLEMENTED = []
 
 LOGGER = logger.get_logger(__name__)
@@ -53,10 +52,11 @@ LOGGER = logger.get_logger(__name__)
 
 def _destroy_test_workdir(path):
     onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
-    shutil.rmtree(path, ignore_errors=False, onerror=onerror)
-    if os.path.isdir(path):
+    shutil.rmtree(path.name, ignore_errors=False, onerror=onerror)
+    if os.path.isdir(path.name):
+        del path
         raise InternalError
-
+    del path
 
 def push_test_workdir():
     """Create a new working directory for a unit test.
@@ -66,20 +66,18 @@ def push_test_workdir():
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
-    path = tempfile.mkdtemp()
+    path = tempfile.TemporaryDirectory()
     try:
         test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
-        test_dst = os.path.join(path, 'foo_launcher')
+        test_dst = os.path.join(path.name, 'foo_launcher')
         shutil.copy(test_src, test_dst)
-        get_command_output(os.path.join(path, 'foo_launcher'))
+        get_command_output(os.path.join(path.name, 'foo_launcher'))
     except OSError:
-        shutil.rmtree(path)
-        path = tempfile.mkdtemp(dir=os.getcwd())
+        del path
+        path = tempfile.TemporaryDirectory(dir=os.getcwd())
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
-    _TEMPDIR_STACK.append(tempfile.tempdir)
-    os.chdir(path)
-    tempfile.tempdir = path
+    os.chdir(path.name)
 
 
 def pop_test_workdir():
@@ -88,21 +86,20 @@ def pop_test_workdir():
     Restores the current working directory and :any:`tempfile.tempdir` to their values before
     :any:`push_test_workdir` was called.
     """
-    tempfile.tempdir = _TEMPDIR_STACK.pop()
     os.chdir(_CWD_STACK.pop())
     _destroy_test_workdir(_DIR_STACK.pop())
 
 
 def get_test_workdir():
     """Return the current unit test's working directory."""
-    return _DIR_STACK[0]
+    return _DIR_STACK[0].name
 
 
 def cleanup():
     """Checks that any files or directories created during testing have been removed."""
     if _DIR_STACK:
         for path in _DIR_STACK:
-            sys.stderr.write("\nWARNING: Test directory '%s' still exists, attempting to clean now...\n" % path)
+            sys.stderr.write("\nWARNING: Test directory '%s' still exists, attempting to clean now...\n" % path.name)
             _destroy_test_workdir(path)
 
 
