@@ -63,9 +63,6 @@ else:
         # pylint: disable=unused-argument
         pass
 
-
-_PY_SUFFEXES = ('.py', '.pyo', '.pyc')
-
 _DTEMP_STACK = []
 
 _DTEMP_ERROR_STACK = []
@@ -77,8 +74,9 @@ _COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 def _cleanup_dtemp():
     if _DTEMP_STACK:
         for path in _DTEMP_STACK:
-            if not any(path in paths for paths in _DTEMP_ERROR_STACK):
-                rmtree(path, ignore_errors=True)
+            if not any(path.name in paths for paths in _DTEMP_ERROR_STACK):
+                rmtree(path.name, ignore_errors=True)
+                del path
     if _DTEMP_ERROR_STACK:
         LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
                        ', '.join(_DTEMP_ERROR_STACK))
@@ -103,9 +101,9 @@ def calculate_uid(parts):
 
 def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
-    path = str(tempfile.mkdtemp(*args, **kwargs))
+    path = tempfile.TemporaryDirectory(*args, **kwargs)
     _DTEMP_STACK.append(path)
-    return path
+    return path.name
 
 
 def copy_file(src, dest, show_progress=True):
