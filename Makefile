@@ -229,7 +229,7 @@ dev-container:
 	$(ECHO)docker build --pull -t $(DOCKER_IMG_NAME) .
 
 run-container:
-	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
+	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,exec --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
 
 test-container:
-	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG) python setup.py test
+	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,exec --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG) python setup.py test
