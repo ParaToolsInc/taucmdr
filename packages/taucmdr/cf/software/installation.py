@@ -72,7 +72,7 @@ def tmpfs_prefix():
     """Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.
 
     /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
-    fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
+    fall back to tempfile.gettempdir(), which is usually /tmp.  If that filesystem is also
     unavailable then use the filesystem prefix of the highest writable storage container.
 
     An attempt is made to ensure that there is at least 2GiB of free space in the
