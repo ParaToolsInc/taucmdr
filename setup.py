@@ -238,13 +238,13 @@ class Test(TestCommand):
     def run_tests(self):
         os.environ['__TAUCMDR_DISABLE_PAGER__'] = '1'
         if self.system_sandbox:
-            tmp_system_prefix = tempfile.mkdtemp()
-            os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix
-            print("Sandboxing system storage: %s" % tmp_system_prefix)
+            tmp_system_prefix = tempfile.TemporaryDirectory()
+            os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = tmp_system_prefix.name
+            print("Sandboxing system storage: %s" % tmp_system_prefix.name)
         if self.user_sandbox:
-            tmp_user_prefix = tempfile.mkdtemp()
-            os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix
-            print("Sandboxing user storage: %s" % tmp_user_prefix)
+            tmp_user_prefix = tempfile.TemporaryDirectory()
+            os.environ['__TAUCMDR_USER_PREFIX__'] = tmp_user_prefix.name
+            print("Sandboxing user storage: %s" % tmp_user_prefix.name)
         args = ['--buffer']
         assert isinstance(self, TestCommand)
         self.test_args = args + self.test_args
@@ -255,8 +255,10 @@ class Test(TestCommand):
         finally:
             if self.system_sandbox:
                 shutil.rmtree(tmp_system_prefix, ignore_errors=True)
+                del tmp_system_prefix
             if self.user_sandbox:
                 shutil.rmtree(tmp_user_prefix, ignore_errors=True)
+                del tmp_user_prefix
 
 
 class InstallLib(InstallLibCommand):
