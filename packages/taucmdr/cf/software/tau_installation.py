@@ -968,7 +968,18 @@ class TauInstallation(Installation):
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
                     LOGGER.info(f'Installing {self.title} to:\n    {self.install_prefix}')
-                    shutil.move(self._prepare_src(), self.install_prefix)
+                    try:
+                        shutil.move(self._prepare_src(), self.install_prefix)
+                    except Exception as err:
+                        LOGGER.debug("Exception thrown by shutil.move, attempting to continue.")
+                        # On some docker fuse mounted file systems shutil.move was failing with symlinks
+                        # after upgrading from Python 2.7 to 3.x. The failure appears to be in calls to copystat
+                        # within copytree. Despite this the files appear to copy correctly
+                        if not all([os.path.exists(path[1]) for path in err.args[0]]):
+                            LOGGER.info("Unrecoverable exception: %s", err)
+                            raise
+                        else:
+                            LOGGER.debug("All files appear to exist, continuing.")
                 self._src_prefix = self.install_prefix
                 self.installation_sequence()
                 self.set_group()
