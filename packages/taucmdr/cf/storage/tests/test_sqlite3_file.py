@@ -42,6 +42,7 @@ class SQLite3FileStorageTests(tests.TestCase):
     """Unit tests for SQLiteLocalFileStorage."""
 
     def setUp(self):
+        super().setUp()
         # Plain database object for testing table interface
         self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
         self.database = SQLiteDatabase(self.table_db_name)
@@ -64,6 +65,7 @@ class SQLite3FileStorageTests(tests.TestCase):
             os.remove(storage_path)
         except OSError:
             pass
+        super().tearDown()
 
     def test_sqlite_table_insert(self):
         self.database.purge()

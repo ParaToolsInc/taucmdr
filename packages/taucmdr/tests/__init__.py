@@ -32,6 +32,7 @@ import glob
 import shutil
 import atexit
 import tempfile
+import time
 import unittest
 from unittest import skipIf, skipUnless
 from taucmdr.util import get_command_output
@@ -47,6 +48,7 @@ _DIR_STACK = []
 _CWD_STACK = []
 _NOT_IMPLEMENTED = []
 
+TIMING_FILE = os.path.join(TAUCMDR_HOME, f"test-timings-{int(time.time())}.csv")
 LOGGER = logger.get_logger(__name__)
 
 
@@ -157,6 +159,15 @@ class TestCase(unittest.TestCase):
         logger._STDOUT_HANDLER.stream = cls._orig_stream
         pop_test_workdir()
 
+    def setUp(self) -> None:
+        self.startTime = time.time()
+
+    def tearDown(self) -> None:
+        _done = time.time() - self.startTime
+        self._result_stream.write(f"{_done:.4g}s ... ")
+        with open(TIMING_FILE, mode='at', encoding='utf-8') as f:
+            f.write(f"{self.id()}, {_done:.6g}\n")
+
     def run(self, result=None):
         # Whenever running a test, set the terminal size large enough to avoid any regex failures due to line wrap
         logger.TERM_SIZE = (150, 150)
@@ -203,7 +214,6 @@ class TestCase(unittest.TestCase):
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
             # CI drivers like Travis don't think our unit tests have stalled.
-            import time
             import threading
             def worker():
                 initialize_cmd.main(argv)
