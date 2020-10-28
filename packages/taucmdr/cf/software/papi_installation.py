@@ -45,7 +45,8 @@ from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz'}
+REPOS = {None: ['http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz',
+         'http://fs.paratools.com/tau-mirror/papi-5.5.1.tar.gz']}
 
 LIBRARIES = {None: ['libpapi.a']}
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,27 +25,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libotf2 software installation management.
+"""Test functions.
 
-The OTF2 library  provides an interface to write and read trace data.
+Functions used for unit tests of libdwarf_installation.py.
 """
 
-from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.tests import TestCase, not_implemented
 
-
-REPOS = {None: [
-    'http://tau.uoregon.edu/otf2.tgz',
-    'http://fs.paratools.com/tau-mirror/otf2.tgz'
-]}
-
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
-
-HEADERS = {None: ['otf2/otf2.h']}
-
-
-class Libotf2Installation(AutotoolsInstallation):
-    """Encapsulates a libotf2 installation."""
-
-    def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+@not_implemented
+class LibdwarfInstallationTest(TestCase):
+    pass

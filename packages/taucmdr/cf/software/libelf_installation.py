@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,27 +25,30 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libotf2 software installation management.
+"""libelf software installation management.
 
-The OTF2 library  provides an interface to write and read trace data.
+
+The ELF library provides an interface to read, modify or create ELF files in 
+            an architecture-independent way. 
 """
 
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
+REPOS = {None: ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/elfutils-0.180.tar.bz2',
+                'https://sourceware.org/elfutils/ftp/0.180/elfutils-0.180.tar.bz2']}
 
-REPOS = {None: [
-    'http://tau.uoregon.edu/otf2.tgz',
-    'http://fs.paratools.com/tau-mirror/otf2.tgz'
-]}
+LIBRARIES = {None: ['libelf.a']}
 
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
-
-HEADERS = {None: ['otf2/otf2.h']}
+HEADERS = {None: ['libelf.h']}
 
 
-class Libotf2Installation(AutotoolsInstallation):
-    """Encapsulates a libotf2 installation."""
+class LibelfInstallation(AutotoolsInstallation):
+    """Encapsulates a libelf installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+        super(LibelfInstallation, self).__init__('libelf', 'libelf', sources,
+                                                 target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def configure(self, flags):
+        flags.extend(['--disable-debuginfod'])
+        return super(LibelfInstallation, self).configure(flags)

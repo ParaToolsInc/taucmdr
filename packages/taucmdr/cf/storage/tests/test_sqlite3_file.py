@@ -31,9 +31,9 @@
 Functions used for unit tests of sqlite3_file.py.
 """
 import os
-import unittest
 import uuid
-import requests
+from unittest import SkipTest
+
 from taucmdr import tests
 from taucmdr.cf.storage.sqlite3_file import SQLiteDatabase, SQLiteLocalFileStorage
 from taucmdr.tests import get_test_workdir
@@ -43,20 +43,30 @@ class SQLite3FileStorageTests(tests.TestCase):
     """Unit tests for SQLiteLocalFileStorage."""
 
     def setUp(self):
+        # Plain database object for testing table interface
+        self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
+        self.database = SQLiteDatabase(self.table_db_name)
+        self.database.open()
+
+        # Generate a random database name so that concurrently running tests don't interfere.
+        self.storage = SQLiteLocalFileStorage(uuid.uuid4().hex[-8:], get_test_workdir())
+        self.storage.connect_database()
+
+    def tearDown(self):
+        self.database.close()
         try:
-            # Generate a random database name so that concurrently running tests don't clobber each other.
-            # Plain database object for testing table interface
-            self.table_db_name = os.path.join(get_test_workdir(), uuid.uuid4().hex[-8:] + '.sqlite3')
-            self.database = SQLiteDatabase(self.table_db_name)
-            self.database.purge()
+            os.remove(self.table_db_name)
+        except OSError:
+            pass
 
-            self.storage = SQLiteLocalFileStorage(uuid.uuid4().hex[-8:], get_test_workdir())
-            self.storage.connect_database()
-        except (requests.ConnectionError, requests.HTTPError):
-            # Don't bother running any of the tests if we can't connect to the database
-            raise unittest.SkipTest
+        storage_path = self.storage.dbfile
+        self.storage.disconnect_database()
+        try:
+            os.remove(storage_path)
+        except OSError:
+            pass
 
-    def test_table_insert(self):
+    def test_sqlite_table_insert(self):
         self.database.purge()
         element = {'memory_alloc': False, 'sample': True, 'io': False,
                    'compiler_inst': 'never', 'heap_usage': False,
@@ -74,13 +84,13 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertIsNotNone(record.eid, 'The record should have an EID, but does not.')
         return record
 
-    def test_table_get(self):
-        record_1 = self.test_table_insert()
+    def test_sqlite_table_get(self):
+        record_1 = self.test_sqlite_table_insert()
         record_2 = self.database.table('experiment').get(eid=record_1.eid)
         self.assertDictEqual(record_1, record_2,
                              "Record retrieved from database different from record inserted.")
 
-    def test_table_count(self):
+    def test_sqlite_table_count(self):
         self.database.purge()
         table = self.database.table('compiler')
         table.insert({'path': u'/usr/bin/gcc', 'role': 'Host_CC',
@@ -96,7 +106,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         nonexistent_count = table.count({'family': 'Intel'})
         self.assertEqual(nonexistent_count, 0, "Found records but no matching records should exist")
 
-    def test_table_search(self):
+    def test_sqlite_table_search(self):
         self.database.purge()
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
@@ -126,7 +136,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         result = table.search({'opencl': True, 'mpc': True}, match_any=True)
         self.assertEqual(len(result), 2, "Wrong number of results for opencl=True, mpc=True with match_any")
 
-    def test_table_update(self):
+    def test_sqlite_table_update(self):
         self.database.purge()
         table = self.database.table('application')
         element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': False}
@@ -145,7 +155,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertTrue(updated_element_2['pthreads'], "Updated field did not change")
         self.assertTrue(updated_element_3['pthreads'], "Updated field did not change")
 
-    def test_table_purge(self):
+    def test_sqlite_table_purge(self):
         self.database.purge()
         table = self.database.table('compiler')
         table.insert({'path': u'/usr/bin/gcc', 'role': 'Host_CC',
@@ -160,7 +170,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         after_purge_count = table.count({})
         self.assertEqual(after_purge_count, 0, "After purge, table should be empty")
 
-    def test_table_remove(self):
+    def test_sqlite_table_remove(self):
         self.database.purge()
         table = self.database.table('application')
         element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': False}
@@ -177,7 +187,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         remaining_element = table.get(eid=eid_1)
         self.assertDictEqual(element_1, remaining_element, "The remaining element should be the one not removed")
 
-    def test_count(self):
+    def test_sqlite_count(self):
         self.storage.purge(table_name='application')
         element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': True}
         element_2 = {'name': 'hello2', 'opencl': True, 'mpc': False, 'pthreads': True}
@@ -186,7 +196,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         count = self.storage.count(table_name='application')
         self.assertEqual(count, 2, "After purge and insert of two elements, two elements should be present")
 
-    def test_get(self):
+    def test_sqlite_storage_get(self):
         self.storage.purge(table_name='application')
         element_1 = {'name': 'hello1', 'opencl': False, 'mpc': False, 'pthreads': True}
         element_2 = {'name': 'hello2', 'opencl': True, 'mpc': False, 'pthreads': True}
@@ -199,7 +209,7 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertEqual(get_result_2.eid, record_2.eid, "EID from insert and dict get should be same")
         self.assertDictEqual(get_result_2, record_2)
 
-    def test_search(self):
+    def test_sqlite_storage_search(self):
         self.storage.purge(table_name='application')
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': False,
@@ -230,7 +240,59 @@ class SQLite3FileStorageTests(tests.TestCase):
         result= self.storage.search(keys={'foo': 'bar'}, table_name='application')
         self.assertTrue(not result, "Search for nonexistent field should return empty")
 
-    def test_transaction(self):
+    def test_sqlite_storage_int_value(self):
+        self.storage.purge(table_name='test')
+        eid_1 = self.storage.insert({'a': 10}, table_name='test').eid
+        eid_2 = self.storage.insert({'a': 50}, table_name='test').eid
+        eid_3 = self.storage.insert({'b': 440}, table_name='test').eid
+        result = self.storage.search({'a': 10}, table_name='test')
+        self.assertEqual(len(result), 1, "Result should have 1 entry")
+        record = result[0]
+        self.assertEqual(record['a'], 10, "Retrieved value should be same as stored")
+        self.assertEqual(record.eid, eid_1, "Retrieved EID should be same as stored")
+        self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
+        self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
+
+    def test_sqlite_storage_str_value(self):
+        self.storage.purge(table_name='test')
+        eid_1 = self.storage.insert({'a': 'foo'}, table_name='test').eid
+        eid_2 = self.storage.insert({'a': 'bar'}, table_name='test').eid
+        eid_3 = self.storage.insert({'b': 'baz'}, table_name='test').eid
+        result = self.storage.search({'a': 'foo'}, table_name='test')
+        self.assertEqual(len(result), 1, "Result should have 1 entry")
+        record = result[0]
+        self.assertEqual(record['a'], 'foo', "Retrieved value should be same as stored")
+        self.assertEqual(record.eid, eid_1, "Retrieved EID should be same as stored")
+        self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
+        self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
+
+    def test_sqlite_storage_list_value(self):
+        self.storage.purge(table_name='test')
+        eid_1 = self.storage.insert({'a': ['a', 'b']}, table_name='test').eid
+        eid_2 = self.storage.insert({'a': ['b', 'c']}, table_name='test').eid
+        eid_3 = self.storage.insert({'b': ['x', 'y']}, table_name='test').eid
+        result = self.storage.search({'a': ['a', 'b']}, table_name='test')
+        self.assertEqual(len(result), 1, "Result should have 1 entry")
+        record = result[0]
+        self.assertEqual(record['a'], ['a', 'b'], "Retrieved value should be same as stored")
+        self.assertEqual(record.eid, eid_1, "Retrieved EID should be same as stored")
+        self.assertNotEqual(record.eid, eid_2, "Retrieved EID should NOT be the same as a different record's EID")
+        self.assertNotEqual(record.eid, eid_3, "Retrieved EID should NOT be the same as a different record's EID")
+
+    def test_sqlite_storage_update_by_key(self):
+        self.storage.purge(table_name='updateTest')
+        record_1 = self.storage.insert({'a': ['one', 'two']}, table_name='updateTest')
+        record_2 = self.storage.insert({'a': ['three', 'four']}, table_name='updateTest')
+        record_3 = self.storage.insert({'b': ['five', 'six']}, table_name='updateTest')
+        self.storage.update({'a': ['new', 'values']}, {'a': ['one', 'two']}, table_name='updateTest')
+        after_update_record_1 = self.storage.get(keys=record_1.eid, table_name='updateTest')
+        after_update_record_2 = self.storage.get(keys=record_2.eid, table_name='updateTest')
+        after_update_record_3 = self.storage.get(keys=record_3.eid, table_name='updateTest')
+        self.assertNotEqual(record_1, after_update_record_1, "After update first record should have changed")
+        self.assertDictEqual(record_2, after_update_record_2, "After update non-matching record 2 should be same")
+        self.assertDictEqual(record_3, after_update_record_3, "After update non-matching record 3 should be same")
+
+    def test_sqlite_storage_transaction(self):
         self.storage.purge(table_name='application')
         element_1 = {'opencl': False, 'mpc': False, 'pthreads': False,
                      'shmem': False, 'mpi': False, 'cuda': True,

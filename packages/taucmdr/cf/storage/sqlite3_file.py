@@ -32,6 +32,8 @@ A persistent, transactional record storage system using :py:class:`sqlite3` for
 both the database and the key/value store.
 """
 
+from __future__ import print_function
+
 import os
 import json
 import re
@@ -42,6 +44,14 @@ from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage import StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
+
+# Suppress debugging messages in optimized code
+if __debug__:
+    _heavy_debug = LOGGER.debug   # pylint: disable=invalid-name
+else:
+    def _heavy_debug(*args, **kwargs):
+        # pylint: disable=unused-argument
+        pass
 
 
 class _SQLiteJsonRecord(StorageRecord):
@@ -92,6 +102,29 @@ class SQLiteDatabase(object):
         self._connection = None
         self._transaction_level = 0
 
+    class _LoggingCursor(object):
+        def __init__(self, dbfile, cursor):
+            self._dbfile = dbfile
+            self._cursor = cursor
+
+        def execute(self, sql, parameters=(), log=True):
+            if log:
+                _heavy_debug("{}: Executing `{}` with parameters {}".format(self._dbfile, sql, parameters))
+            return self._cursor.execute(sql, parameters)
+
+        def fetchone(self):
+            return self._cursor.fetchone()
+
+        def fetchall(self):
+            return self._cursor.fetchall()
+
+        def close(self):
+            return self._cursor.close()
+
+        @property
+        def lastrowid(self):
+            return self._cursor.lastrowid
+
     def open(self):
         """Open the database connection specified in this object's dbfile attribute"""
         if self._connection is None:
@@ -99,8 +132,8 @@ class SQLiteDatabase(object):
             # check_same_thread = False allows connection to be used from a different thread than the one that
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
-            # TODO: Special handling for read-only filesystems
             self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
+            LOGGER.debug("Connected to SQLite database at {}".format(self.dbfile))
 
     def close(self):
         """Close the database connection"""
@@ -112,7 +145,7 @@ class SQLiteDatabase(object):
         """Returns a cursor which can be used to query the SQLite database"""
         if self._connection is None:
             raise SQLiteStorageError('Database connection is not open')
-        return self._connection.cursor()
+        return self._LoggingCursor(self.dbfile, self._connection.cursor())
 
     def start_transaction(self):
         """Begin a transaction, which can be reverted with :any:`_SQLiteDatabase.revert_transaction`
@@ -135,10 +168,10 @@ class SQLiteDatabase(object):
         Raises:
             SQLiteStorageError: Attempt to perform and operation on a database which is not open
         """
-        c = self.cursor()
-        c.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
-        result = [name for (name,) in c.fetchall() if not name.startswith('_')]
-        c.close()
+        cursor = self.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
+        result = [name for (name,) in cursor.fetchall() if not name.startswith('_')]
+        cursor.close()
         return result
 
     def table(self, table_name):
@@ -174,7 +207,7 @@ class _SQLiteJsonTable(object):
 
     def __init__(self, database, name):
         self.database = database
-        self.name = name
+        self._name = name
         self._ensure_exists()
 
     @property
@@ -182,29 +215,32 @@ class _SQLiteJsonTable(object):
         return self._name
 
     @name.setter
-    def name(self, v):
-        if v.isalpha() or (v[0] == '_' and v[1:].isalpha()):
-            self._name = v
+    def name(self, value):
+        if value.isalpha() or (value[0] == '_' and value[1:].isalpha()):
+            self._name = value
         else:
-            raise StorageError('Invalid table name {}'.format(v))
+            raise StorageError('Invalid table name {}'.format(value))
 
     def _ensure_exists(self):
-        c = self.database.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name))
-        c.close()
+        cursor = self.database.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name),
+                  log=False)
+        cursor.close()
 
     def insert(self, element):
-        c = self.database.cursor()
-        c.execute("INSERT INTO {} (data) VALUES(?)".format(self.name), [json.dumps(element)])
-        result = _SQLiteJsonRecord(self.database.storage, element, eid=c.lastrowid)
-        c.close()
+        cursor = self.database.cursor()
+        cursor.execute("INSERT INTO {} (data) VALUES(?)".format(self.name), [json.dumps(element)])
+        result = _SQLiteJsonRecord(self.database.storage, element, eid=cursor.lastrowid)
+        cursor.close()
         return result
 
     @staticmethod
     def _json_query(keys=None, match_any=False):
         join_string = " OR " if match_any else " AND "
         where_clause = join_string.join(
-            ['json_extract(data, "$.{}") == {}'.format(key, json.dumps(val)) for (key, val) in six.iteritems(keys)])
+            ["json_extract(data, '$.{}') == {}".format(key, (
+                int(val) if isinstance(val, int) else json.dumps(val) if isinstance(val, six.string_types) else
+                "json('{}')".format(json.dumps(val)))) for (key, val) in six.iteritems(keys)])
         if where_clause:
             where_clause = "WHERE {}".format(where_clause)
         return where_clause
@@ -212,23 +248,23 @@ class _SQLiteJsonTable(object):
     def _get(self, keys=None, eid=None, match_any=False, remove=False):
         db_row = None
         result = None
-        c = self.database.cursor()
+        cursor = self.database.cursor()
         command = 'DELETE' if remove else 'SELECT id, data'
 
         if eid is not None:
-            c.execute('{} FROM {} WHERE id == ?'.format(command, self.name), [eid])
-            db_row = c.fetchone()
+            cursor.execute('{} FROM {} WHERE id == ?'.format(command, self.name), [eid])
+            db_row = cursor.fetchone()
         elif isinstance(keys, dict):
             query_string = '{} FROM {} {};'.format(
                 command, self.name, self._json_query(keys, match_any=match_any))
-            c.execute(query_string)
-            db_row = c.fetchone()
+            cursor.execute(query_string)
+            db_row = cursor.fetchone()
 
         if db_row is not None:
             (row_eid, row_data) = db_row
             result = _SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
 
-        c.close()
+        cursor.close()
         return result
 
     def get(self, keys=None, eid=None, match_any=False):
@@ -240,14 +276,14 @@ class _SQLiteJsonTable(object):
     def search(self, cond, match_any=False):
         if cond is None:
             cond = {}
-        c = self.database.cursor()
+        cursor = self.database.cursor()
         query_string = 'SELECT id, data FROM {} {};'.format(
             self.name, self._json_query(cond, match_any=match_any))
-        c.execute(query_string)
-        db_rows = c.fetchall()
+        cursor.execute(query_string)
+        db_rows = cursor.fetchall()
         result = [_SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
                   for (row_eid, row_data) in db_rows]
-        c.close()
+        cursor.close()
         return result
 
     def count(self, cond, match_any=False):
@@ -258,7 +294,7 @@ class _SQLiteJsonTable(object):
 
     def update(self, fields, keys=None, eids=None, match_any=False, unset=False):
         # Construct the json_set expression
-        if len(fields) == 0:
+        if not fields:
             # We were asked to update no fields, which is a no-op
             return
         if unset:
@@ -294,23 +330,23 @@ class _SQLiteJsonTable(object):
         update_statement = "UPDATE {} SET data = {} {};".format(self.name, json_set_expr, where_clause)
 
         # Run it
-        c = self.database.cursor()
-        c.execute(update_statement)
-        c.close()
+        cursor = self.database.cursor()
+        cursor.execute(update_statement)
+        cursor.close()
 
     def exists(self, field):
-        c = self.database.cursor()
-        c.execute("SELECT * FROM {} WHERE json_extract(data, '$.{}') IS NOT NULL;".format(self.name, field))
-        db_rows = c.fetchall()
+        cursor = self.database.cursor()
+        cursor.execute("SELECT * FROM {} WHERE json_extract(data, '$.{}') IS NOT NULL;".format(self.name, field))
+        db_rows = cursor.fetchall()
         result = [_SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
                   for (row_eid, row_data) in db_rows]
-        c.close()
+        cursor.close()
         return result
 
     def purge(self):
-        c = self.database.cursor()
-        c.execute('DROP TABLE IF EXISTS {};'.format(self.name))
-        c.close()
+        cursor = self.database.cursor()
+        cursor.execute('DROP TABLE IF EXISTS {};'.format(self.name))
+        cursor.close()
         self._ensure_exists()
 
 
@@ -327,8 +363,17 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
     def __init__(self, name, prefix):
         super(SQLiteLocalFileStorage, self).__init__(name, prefix)
-        self.dbfile = os.path.join(self.prefix, self.name + '.sqlite3')
         self._database = None
+
+    @property
+    def dbfile(self):
+        return os.path.join(self.prefix, self.name + '.sqlite3')
+
+    def database_exists(self):
+        try:
+            return os.path.isfile(self.dbfile)
+        except StorageError:
+            return False
 
     def connect_database(self, *args, **kwargs):
         """Open the database for reading and writing."""
@@ -344,18 +389,19 @@ class SQLiteLocalFileStorage(LocalFileStorage):
             if not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
-            LOGGER.debug("Initialized %s database '%s'", self.name, self.dbfile)
+            LOGGER.debug("Initialized connection to SQLite database `%s` at '%s'", self.name, self.dbfile)
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
         if self._database:
             self._database.close()
             self._database = None
+            LOGGER.debug("Closed database connection to `%s` at '%s'", self.name, self.dbfile)
 
     def __str__(self):
         """Human-readable identifier for this database."""
         # pylint: disable=protected-access
-        return "<SQLiteLocalFileStorage dbfile={}>".format(self.dbfile)
+        return self.dbfile
 
     def __enter__(self):
         """Initiates the database transaction."""
@@ -393,7 +439,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         Returns:
             int: Number of records in the table.
         """
-        return self.table(table_name).count()
+        return self.table(table_name).count({})
 
     def get(self, keys, table_name=None, match_any=False):
         """Find a single record.
@@ -627,7 +673,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """
         table = self.table(table_name)
         if keys is None:
-            return None
+            return
         elif isinstance(keys, self.Record.eid_type):
             table.remove(eid=keys)
         elif isinstance(keys, dict):

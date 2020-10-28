@@ -39,20 +39,19 @@ Project-level records define the project and its member components.  The user ma
 want to install software packages at the project level to avoid quotas or in situations
 where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
+import os
 
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
-from taucmdr.cf.storage.local_file import LocalFileStorage
-from taucmdr.cf.storage.project import ProjectStorage
+from taucmdr.cf.storage.storage_dispatch import StorageDispatch, ProjectStorageDispatch
 
-
-SYSTEM_STORAGE = LocalFileStorage('system', SYSTEM_PREFIX)
+SYSTEM_STORAGE = StorageDispatch('system', SYSTEM_PREFIX)
 """System-level data storage."""
 
-USER_STORAGE = LocalFileStorage('user', USER_PREFIX)
+USER_STORAGE = StorageDispatch('user', USER_PREFIX)
 """User-level data storage."""
 
-PROJECT_STORAGE = ProjectStorage()
+PROJECT_STORAGE = ProjectStorageDispatch()
 """Project-level data storage."""
 
 ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
@@ -60,6 +59,7 @@ ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
 
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
+
 
 def highest_writable_storage():
     try:

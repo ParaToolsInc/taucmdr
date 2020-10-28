@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,27 +25,27 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libotf2 software installation management.
+"""SQLite3 software installation management.
 
-The OTF2 library  provides an interface to write and read trace data.
+SQLite3 is a single-file relational database. It can be optionally used by TAU
+to store profile data in such a database.
 """
 
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 
-REPOS = {None: [
-    'http://tau.uoregon.edu/otf2.tgz',
-    'http://fs.paratools.com/tau-mirror/otf2.tgz'
-]}
+REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/sos/sqlite-autoconf-3210000.tar.gz'}
 
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
+LIBRARIES = {None: ['libsqlite3.a', 'libsqlite3.la', 'libsqlite3.so']}
 
-HEADERS = {None: ['otf2/otf2.h']}
+HEADERS = {None: ['sqlite3.h', 'sqlite3ext.h']}
+
+COMMANDS = {None: ['sqlite3']}
 
 
-class Libotf2Installation(AutotoolsInstallation):
-    """Encapsulates a libotf2 installation."""
+class Sqlite3Installation(AutotoolsInstallation):
+    """Encapsulates a SQLite3 installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+        super(Sqlite3Installation, self).__init__('sqlite3', 'SQLite3', sources,
+                                                  target_arch, target_os, compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)

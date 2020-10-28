@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,33 +37,13 @@ import os
 from taucmdr import logger, util
 from taucmdr import PROJECT_DIR
 from taucmdr.cf.storage import StorageError
-from taucmdr.cf.storage.local_file import LocalFileStorage
+from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
+from taucmdr.cf.storage.project import ProjectStorageError
 
 LOGGER = logger.get_logger(__name__)
 
 
-class ProjectStorageError(StorageError):
-    """Indicates that the project storage has not been initialized."""
-
-    message_fmt = ("%(value)s\n"
-                   "\n"
-                   "%(hints)s\n"
-                   "Please contact %(contact)s for assistance.")
-
-    def __init__(self, search_root):
-        """Initialize the error object.
-
-        Args:
-            search_root (str): Directory in which the search for a project directory was initiated.
-        """
-        value = "Project directory not found in '%s' or any of its parent directories." % search_root
-        hints = ("Make sure that you have already run the `tau initialize` command "
-                 "in this directory or any of its parent directories.")
-        super(ProjectStorageError, self).__init__(value, hints)
-        self.search_root = search_root
-
-
-class ProjectStorage(LocalFileStorage):
+class SQLiteProjectStorage(SQLiteLocalFileStorage):
     """Handle the special case project storage.
 
     Each TAU Commander project has its own project storage that holds project-specific files
@@ -71,7 +51,7 @@ class ProjectStorage(LocalFileStorage):
     """
 
     def __init__(self):
-        super(ProjectStorage, self).__init__('project', None)
+        super(SQLiteProjectStorage, self).__init__('project', None)
         self._force_cwd = False
         self._tau_directory = None
 
@@ -82,7 +62,7 @@ class ProjectStorage(LocalFileStorage):
             project_prefix = self.prefix
         except ProjectStorageError:
             project_prefix = os.path.join(os.getcwd(), PROJECT_DIR)
-            if os.path.exists(os.path.join(project_prefix, USER_STORAGE.name + ".json")):
+            if os.path.exists(os.path.join(project_prefix, USER_STORAGE.name + ".sqlite3")):
                 raise StorageError("Cannot create project in home directory. "
                                    "Use '-@ user' option for user level storage.")
             try:
@@ -132,7 +112,7 @@ class ProjectStorage(LocalFileStorage):
             prefix = os.path.realpath(os.path.join(cwd, PROJECT_DIR))
             if os.path.isdir(prefix):
                 for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".sqlite3")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)
@@ -149,7 +129,7 @@ class ProjectStorage(LocalFileStorage):
             prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
             if os.path.isdir(prefix):
                 for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".sqlite3")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)

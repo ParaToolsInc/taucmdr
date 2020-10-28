@@ -57,6 +57,9 @@ installed
 system
 .tau
 
+# TAU Commander pylint report
+pylint.md
+
 # TAU intermediate compilation files
 *.inst.*
 *.pdb
@@ -103,6 +106,7 @@ __pycache__/
 *~
 .tox
 .cache
+venv
 
 # Deployment private and public key, but DO store encrypted private key for Travis-CI
 id_rsa_Travis2GH

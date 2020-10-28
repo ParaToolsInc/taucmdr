@@ -32,13 +32,63 @@ Asserts that pylint score doesn't drop below minimum.
 
 import os
 import sys
+import string
 import subprocess
+import re
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
+PYLINT_REPORT_TEMPLATE = \
+"""
+## Pylint Output
+
+### Report
+
+{report}
+
+<details>
+  <summary> Per-file output (click to expand) </summary>
+
+<pre>
+{details}
+</pre>
+
+</details>
+
+<details>
+  <summary> Stderror </summary>
+
+<pre>
+{stderr}
+</pre>
+
+</details>
+"""
+REPORT_START = re.compile(r'^ *[Rr]eport *[\r\n] *====== *$', re.MULTILINE)
+ROW_SEPERATOR = re.compile(r'^ *([+]-{5,}[+]?)+ *$', re.MULTILINE)
+HEADER_SEPERATOR = re.compile(r'^ *[+](={5,}[+])+ *$', re.MULTILINE)
+MODULE_DETAIL_HEADER = re.compile(r'^ *[*]{3,25} +Module +taucmdr([.]\w+)* *$', re.MULTILINE)
+TAUCMDR_MODULE = re.compile(r' +(taucmdr([.]\w+)+)')
+PYLINT_H2 = re.compile(r'^(?P<header> *(%|\w+)( +(/|\w+))* *)[\r\n]( *-{4,}) *$', re.MULTILINE)
 
 class PylintTest(tests.TestCase):
     """Runs Pylint to make sure the code scores at least 9.0"""
+
+    @staticmethod
+    def _format_pylint_report(stdout, stderr):
+        """Formats pylint output as pretty markdown"""
+        _details, _report = REPORT_START.split(stdout, maxsplit=1)
+        _report = PYLINT_H2.sub(r'#### \g<header>', _report)
+        _report_lines = []
+        for line in _report.splitlines():
+            if ROW_SEPERATOR.search(line):
+                continue
+            elif HEADER_SEPERATOR.search(line):
+                trans_table = string.maketrans("+=","|-")
+                _report_lines.append(line.translate(trans_table))
+            else:
+                _report_lines.append(line)
+        return PYLINT_REPORT_TEMPLATE.format(report="\n".join(_report_lines), details=_details.strip(), stderr=stderr.strip())
 
     def run_pylint(self, *args):
         cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
@@ -60,6 +110,10 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
+        lint_msg_file = open(os.path.join(TAUCMDR_HOME, "pylint.md"), "w")
+        lint_msg = self._format_pylint_report(stdout, stderr)
+        lint_msg_file.write(str(lint_msg))
+        lint_msg_file.close()
         self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -25,27 +25,37 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libotf2 software installation management.
+"""libdwarf software installation management.
 
-The OTF2 library  provides an interface to write and read trace data.
+The Dwarf library provides an interface to resolve samples by converting program 
+    counter addresses to function names for applications with a large number of symbols.
 """
 
+import os
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
+REPOS = {None: ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libdwarf-20200825.tar.gz',
+                'https://www.prevanders.net/libdwarf-20200825.tar.gz']}
 
-REPOS = {None: [
-    'http://tau.uoregon.edu/otf2.tgz',
-    'http://fs.paratools.com/tau-mirror/otf2.tgz'
-]}
+LIBRARIES = {None: ['libdwarf.la', 'libdwarf.a']}
 
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
-
-HEADERS = {None: ['otf2/otf2.h']}
+HEADERS = {None: ['dwarf.h', 'libdwarf.h']}
 
 
-class Libotf2Installation(AutotoolsInstallation):
-    """Encapsulates a libotf2 installation."""
+class LibdwarfInstallation(AutotoolsInstallation):
+    """Encapsulates a libdwarf installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(Libotf2Installation, self).__init__('libotf2', 'libotf2', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+        super(LibdwarfInstallation, self).__init__('libdwarf', 'libdwarf', sources,
+                                                   target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+
+        self.add_dependency('libelf', sources)
+
+    def configure(self, flags):
+        flags.extend(['--with-pic'])
+
+        libelf = self.dependencies.get('libelf')
+        os.environ['LDFLAGS'] = '-L%s' % libelf.lib_path
+        os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path          
+
+        return super(LibdwarfInstallation, self).configure(flags)
