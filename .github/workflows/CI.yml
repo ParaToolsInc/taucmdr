@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-16.04]
-        python_version: ['2.7']
+        python_version: ['3.7']
     env:
       OS: ${{ matrix.os }}
       PY_VER: ${{ matrix.python_version }}
