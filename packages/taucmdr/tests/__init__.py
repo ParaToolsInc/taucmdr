@@ -210,7 +210,7 @@ class TestCase(unittest.TestCase):
             argv.extend(['--backend', default_backend])
         if init_args is not None:
             argv.extend(init_args)
-        if '--bare' in argv or os.path.exists(os.path.join(SYSTEM_STORAGE.prefix, 'tau')):
+        if '--bare' in argv or glob.glob(os.path.join(SYSTEM_STORAGE.prefix, 'tau', 'tau-nightly-*')):
             initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
