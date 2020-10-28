@@ -549,7 +549,7 @@ def _version():
     # type: () -> str
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
     if os.path.exists(version_file):
-        with open(version_file) as fin:
+        with open(version_file, mode="rt", encoding="utf-8") as fin:
             version = fin.readline()
     else:
         try:
