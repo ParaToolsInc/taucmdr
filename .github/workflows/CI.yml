@@ -57,12 +57,12 @@ jobs:
           while read -r line ; do "${line##* is }" --version; done <<< $(type -a python)
           export INSTALLDIR="${HOME}/${INSTALLDIR}"
           echo "::set-output name=install_dir::${INSTALLDIR}"
-          echo "::set-env name=INSTALLDIR::${INSTALLDIR}"
+          echo "INSTALLDIR=${INSTALLDIR}" >> "${GITHUB_ENV}"
           echo "::set-output name=home_dir::${HOME}"
           echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
-          echo "::set-env name=__TAUCMDR_SYSTEM_PREFIX__::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+          echo "__TAUCMDR_SYSTEM_PREFIX__=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_ENV}"
           echo "::set-output name=branch::${GITHUB_REF#refs/*/}"
-          echo "::set-env name=BRANCH::${GITHUB_REF#refs/*/}"
+          echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
           BASEREF=${{ github.base_ref }}
           if [ "${BASEREF}" ]; then
@@ -119,7 +119,9 @@ jobs:
 
       - name: Test TAU Commander
         run: |
+          rm -f ./coverage.xml || true
           coverage run setup.py test
+          coverage xml
 
       - name: Build sphinx docs
         run: python setup.py build_sphinx
