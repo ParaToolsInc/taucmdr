@@ -48,6 +48,7 @@ jobs:
           # Get info for debugging and set some environment variables to use later
           uname -a
           mount
+          df -h
           gcc --version
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref:        ${{ github.ref }}"
