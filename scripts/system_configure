@@ -198,7 +198,7 @@ def main(argv):
                                     'tau-options', 'from-tau-makefile', 'bare', 'tag'])
     args = parser.parse_args(argv)
 
-    os.chdir(util.mkdtemp())
+    os.chdir(util.mkdtemp().name)
     if args.tau_config == 'minimal':
         tau_prefix = _configure_minimal(args)
     elif args.tau_config == 'full':

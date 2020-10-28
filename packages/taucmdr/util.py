@@ -41,6 +41,7 @@ import pkgutil
 import tarfile
 import gzip
 import tempfile
+from stat import S_IRUSR, S_IWUSR, S_IEXEC
 import hashlib
 import urllib
 from collections import deque
@@ -49,7 +50,8 @@ from zipfile import ZipFile
 import termcolor
 from unidecode import unidecode
 from taucmdr import logger
-from taucmdr.error import InternalError
+from taucmdr.cf.storage.levels import highest_writable_storage
+from taucmdr.error import InternalError, ConfigurationError
 from taucmdr.progress import ProgressIndicator
 
 
@@ -72,14 +74,17 @@ _COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 
 
 def _cleanup_dtemp():
-    if _DTEMP_STACK:
-        for path in _DTEMP_STACK:
-            if not any(path.name in paths for paths in _DTEMP_ERROR_STACK):
-                rmtree(path.name, ignore_errors=True)
-                del path
     if _DTEMP_ERROR_STACK:
+        _paths = []
+        for dir in _DTEMP_ERROR_STACK:
+            name = os.path.basename(os.path.normpath(dir))
+            src = os.path.dirname(os.path.normpath(dir))
+            dst =os.path.join(tempfile.gettempdir(), name)
+            shutil.copytree(os.path.normpath(dir), dst)
+            _paths += dst
         LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
-                       ', '.join(_DTEMP_ERROR_STACK))
+                       ', '.join(_paths))
+
 atexit.register(_cleanup_dtemp)
 
 
@@ -103,7 +108,7 @@ def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
     path = tempfile.TemporaryDirectory(*args, **kwargs)
     _DTEMP_STACK.append(path)
-    return path.name
+    return path
 
 
 def copy_file(src, dest, show_progress=True):
@@ -156,7 +161,10 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         except Exception as err:        # pylint: disable=broad-except
             LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
-    shutil.rmtree(path, ignore_errors, onerror)
+    try:
+        shutil.rmtree(path, ignore_errors, onerror)
+    except FileNotFoundError:
+        pass
 
 
 @contextmanager
@@ -772,3 +780,61 @@ def get_binary_linkage(cmd):
     if proc.returncode:
         return 'static' if stdout else None
     return 'dynamic'
+
+
+def tmpfs_prefix():
+    """Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.
+
+    /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
+    fall back to tempfile.gettempdir(), which is usually /tmp.  If that filesystem is also
+    unavailable then use the filesystem prefix of the highest writable storage container.
+
+    An attempt is made to ensure that there is at least 2GiB of free space in the
+    selected filesystem.
+
+    Returns:
+        str: Path to a uniquely-named directory in the temporary filesystem. The directory
+            and all its contents **will be deleted** when the program exits if it installs
+            correctly.
+    """
+    candidate = None
+    for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
+        try:
+            tmp_prefix = mkdtemp(dir=prefix)
+        except OSError as err:
+            LOGGER.debug(err)
+            continue
+        # Check execute privileges some distros mount tmpfs with the noexec option.
+        check_exe_script = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", dir=tmp_prefix.name, delete=False) as tmp_file:
+                check_exe_script = tmp_file.name
+                tmp_file.write("#!/bin/sh\nexit 0")
+            os.chmod(check_exe_script, S_IRUSR | S_IWUSR | S_IEXEC)
+            subprocess.check_call([check_exe_script])
+        except (OSError, subprocess.CalledProcessError) as err:
+            LOGGER.debug(err)
+            continue
+        try:
+            statvfs = os.statvfs(check_exe_script)
+        except OSError as err:
+            LOGGER.debug(err)
+            if candidate is None:
+                candidate = tmp_prefix
+            continue
+        else:
+            free_mib = (statvfs.f_frsize*statvfs.f_bavail)//0x100000
+            LOGGER.debug("%s: %sMB free", tmp_prefix.name, free_mib)
+            if free_mib < 2000:
+                continue
+        if check_exe_script:
+            os.remove(check_exe_script)
+        break
+    else:
+        if not candidate:
+            raise ConfigurationError("No filesystem has at least 2GB free space and supports executables.")
+        tmp_prefix = candidate
+        LOGGER.warning("Unable to count available bytes in '%s'", tmp_prefix)
+    tmpfs_prefix.value = tmp_prefix
+    LOGGER.debug("Temporary prefix: '%s'", tmp_prefix)
+    return tmpfs_prefix.value

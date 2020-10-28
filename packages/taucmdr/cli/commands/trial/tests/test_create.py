@@ -30,7 +30,6 @@ Functions used for unit tests of create.py.
 """
 
 import os
-import shutil
 import tempfile
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN

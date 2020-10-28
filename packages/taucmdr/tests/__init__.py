@@ -35,14 +35,13 @@ import tempfile
 import time
 import unittest
 from unittest import skipIf, skipUnless
-from taucmdr.util import get_command_output
-import warnings
+from taucmdr.util import get_command_output, tmpfs_prefix
 from io import StringIO
 from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
-from taucmdr.cf.storage import levels, StorageError
+from taucmdr.cf.storage import StorageError
 
 _DIR_STACK = []
 _CWD_STACK = []
@@ -54,11 +53,14 @@ LOGGER = logger.get_logger(__name__)
 
 def _destroy_test_workdir(path):
     onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
-    shutil.rmtree(path.name, ignore_errors=False, onerror=onerror)
-    if os.path.isdir(path.name):
+    dir = path.name
+    try:
         del path
-        raise InternalError
-    del path
+    except FileNotFoundError:
+        pass
+    if os.path.isdir(dir):
+        shutil.rmtree(dir, ignore_errors=True, onerror=onerror)
+
 
 def push_test_workdir():
     """Create a new working directory for a unit test.
@@ -68,7 +70,7 @@ def push_test_workdir():
     Directories created via this method are tracked.  If any of them exist when the program exits then
     an error message is shown for each.
     """
-    path = tempfile.TemporaryDirectory()
+    path = tmpfs_prefix()
     try:
         test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
         test_dst = os.path.join(path.name, 'foo_launcher')
@@ -90,7 +92,9 @@ def pop_test_workdir():
     :any:`push_test_workdir` was called.
     """
     os.chdir(_CWD_STACK.pop())
-    _destroy_test_workdir(_DIR_STACK.pop())
+    # The temp directories get deleted automatically when the tempdir object is deleted
+    to_delete = _DIR_STACK.pop()
+    del to_delete
 
 
 def get_test_workdir():
