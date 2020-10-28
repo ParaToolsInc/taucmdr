@@ -80,6 +80,7 @@ def push_test_workdir():
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
     os.chdir(path.name)
+    LOGGER.debug(f"Testing in {path.name}")
 
 
 def pop_test_workdir():
@@ -177,6 +178,7 @@ class TestCase(unittest.TestCase):
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
         self._result_stream = result.stream
+        LOGGER.debug(f"Running {self} in {get_test_workdir()}.")
         return super().run(result)
 
     def reset_project_storage(self, init_args=None):
@@ -193,7 +195,6 @@ class TestCase(unittest.TestCase):
         from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
         try:
             prefix = PROJECT_STORAGE.prefix
-            print(prefix)
         except StorageError:
             pass
         PROJECT_STORAGE.destroy(ignore_errors=False)
@@ -226,6 +227,7 @@ class TestCase(unittest.TestCase):
             while thread.is_alive():
                 time.sleep(5)
                 self._result_stream.write('.')
+                self._result_stream.flush()
             elapsed = time.time() - tstart
             self._result_stream.writeln('\nTAU initialized in %s seconds' % elapsed)
 
