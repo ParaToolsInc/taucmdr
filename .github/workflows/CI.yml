@@ -27,9 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-16.04]
+        backend: ['tinydb', 'sqlite']
         python_version: ['3.7']
     env:
       OS: ${{ matrix.os }}
+      __TAUCMDR_DB_BACKEND__: ${{ matrix.backend }}
       PY_VER: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v2
@@ -157,7 +159,7 @@ jobs:
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: true # optional (default = false)
           path_to_write_report: codecov-upload.txt
-          env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
+          env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
