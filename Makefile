@@ -127,7 +127,11 @@ else
 		endif
 	endif
 endif
-CONDA_VERSION = latest
+ifeq ($(PY_MAJ_VERSION),2)
+	CONDA_VERSION = v1.2.0 # Last release of CommanderConda supporting python2
+else
+	CONDA_VERSION = latest
+endif
 CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/$(CONDA_VERSION)/download
 CONDA_PKG = CommanderConda$(PY_MAJ_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
