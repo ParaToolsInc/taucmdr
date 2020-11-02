@@ -57,7 +57,7 @@ class ParseTauAction(arguments.Action):
         if value not in value_keywords:
             value = os.path.abspath(os.path.expanduser(value))
             if not (os.path.isdir(value) or util.path_accessible(value)):
-                raise arguments.ArgumentError(self, "'minimal', 'full', 'default, or valid path required: %s" % value)
+                raise arguments.ArgumentError(self, "'minimal', 'full', 'default', or valid path required: %s" % value)
         setattr(namespace, self.dest, value)
 
 
@@ -66,7 +66,7 @@ def _translate_arg(flag, arg):
     if flag == '--openmp':
         if arg is True:
             return [flag]
-        elif arg is False:
+        elif arg is False or arg is None:
             return [flag, 'ignore']
         return [flag, arg]
     if isinstance(arg, basestring):
