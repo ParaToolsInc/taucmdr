@@ -344,6 +344,7 @@ class Release(SDistCommand):
             src = default
         else:
             src = arch_dct.get(self.target_os, arch_dct.get(None, default))
+
         pkg = os.path.basename(src)
         cache_dir = tempfile.gettempdir()
         cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')

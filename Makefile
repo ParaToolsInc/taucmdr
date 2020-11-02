@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,11 @@
 ###############################################################################
 
 # TAU configuration level:
-#   minimal: Install just enough to support the default project (`tau initialize` without any args).
+#   minimal: Install just enough to support processing TAU profile data
+#   default: Install just enough to support the default project configuration (`tau initialize` with no arguments)
 #   full   : Install as many TAU configurations as possible for the current environment.
 #   <path> : Use the TAU installation provided at <path>.
-TAU ?= minimal
+TAU ?= default
 
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.

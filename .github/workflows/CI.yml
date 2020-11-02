@@ -91,7 +91,7 @@ jobs:
 
       - name: Install TAU Commander
         run: |
-          make INSTALLDIR="${INSTALLDIR}" install
+          make INSTALLDIR="${INSTALLDIR}" TAU=minimal install
           echo "::add-path::${INSTALLDIR}/conda/bin"
           export PATH="${INSTALLDIR}/conda/bin:${PATH}"
           which python

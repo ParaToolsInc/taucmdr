@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2020, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,11 +53,11 @@ LOGGER = logger.get_logger(__name__)
 class ParseTauAction(arguments.Action):
     # pylint: disable=too-few-public-methods
     def __call__(self, parser, namespace, value, unused_option_string=None):
-        value_keywords = 'minimal', 'full'
+        value_keywords = 'minimal', 'full', 'default'
         if value not in value_keywords:
             value = os.path.abspath(os.path.expanduser(value))
             if not (os.path.isdir(value) or util.path_accessible(value)):
-                raise arguments.ArgumentError(self, "'minimal', 'full', or valid path required: %s" % value)
+                raise arguments.ArgumentError(self, "'minimal', 'full', 'default, or valid path required: %s" % value)
         setattr(namespace, self.dest, value)
 
 
@@ -136,7 +136,7 @@ def _configure_project(args):
 
 
 def _configure_full(args):
-    """Proceedureally generated TAU configurations.
+    """Procedurally  generated TAU configurations.
 
     Iterate over as many valid TAU projects as possible for the provided command line arguments.
     For each project, iterate over possible experiments and select them to trigger TAU rebuild.
@@ -167,6 +167,13 @@ def _configure_full(args):
             for i, key in enumerate(features.iterkeys()):
                 setattr(args, key, bool(j & (1 << i)))
             _configure_project(args)
+    return _configure_minimal(args)
+
+
+def _configure_default(args):
+    """Builds TAU configurations to support the options required by the default project configuration
+    as obtained by calling `tau initialize` with no additional arguments."""
+    _configure_project(args)
     return _configure_minimal(args)
 
 
@@ -204,6 +211,8 @@ def main(argv):
         tau_prefix = _configure_minimal(args)
     elif args.tau_config == 'full':
         tau_prefix = _configure_full(args)
+    elif args.tau_config == 'default':
+        tau_prefix = _configure_default(args)
     else:
         tau_prefix = _configure_override_tau_source(args)
 
