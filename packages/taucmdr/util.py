@@ -43,7 +43,8 @@ import gzip
 import tempfile
 from stat import S_IRUSR, S_IWUSR, S_IEXEC
 import hashlib
-import urllib
+import urllib.parse
+import urllib.request
 from collections import deque
 from contextlib import contextmanager
 from zipfile import ZipFile
