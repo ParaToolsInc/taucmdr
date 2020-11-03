@@ -233,7 +233,9 @@ dev-container:
 	$(ECHO)docker build --pull -t $(DOCKER_IMG_NAME) .
 
 run-container:
-	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev --privileged -v ${PWD}:/home/tau/src --env __TAUCMDR_USER_PREFIX__=/dev/shm/taucmdr_user --env __TAUCMDR_SYSTEM_PREFIX__=/home/tau/taucmdr/system $(DOCKER_IMG_NAME):$(DOCKER_TAG) $(ARGS)
+	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
+	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) $(ARGS)
 
 test-container:
-	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev --privileged -v ${PWD}:/home/tau/src --env __TAUCMDR_USER_PREFIX__=/dev/shm/taucmdr_user --env __TAUCMDR_SYSTEM_PREFIX__=/home/tau/taucmdr/system $(DOCKER_IMG_NAME):$(DOCKER_TAG) test $(ARGS)
+	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
+	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) test $(ARGS)

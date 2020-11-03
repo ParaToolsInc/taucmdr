@@ -19,3 +19,5 @@ RUN ls -la ; make clean ; make install ; chown -R tau:tau ${INSTALLDIR}
 USER tau
 WORKDIR /home/tau/src
 ENV PATH="/home/tau/taucmdr/conda/bin:$PATH:/home/tau/taucmdr/bin"
+ENV __TAUCMDR_SYSTEM_PREFIX__="/home/tau/taucmdr/system"
+ENV __TAUCMDR_USER_PREFIX__="/dev/shm/taucmdr_user"
