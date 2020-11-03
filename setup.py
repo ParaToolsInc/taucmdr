@@ -368,25 +368,38 @@ class Release(SDistCommand):
         try:
             arch_dct = repos[self.target_arch]
         except KeyError:
-            src = default
+            srcs = default
         else:
-            src = arch_dct.get(self.target_os, arch_dct.get(None, default))
-        pkg = os.path.basename(src)
-        cache_dir = tempfile.gettempdir()
-        cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
-        cache_pkg = os.path.join(cache_dir, pkg)
-        try:
-            with open(cache_db) as fin:
-                cache = pickle.load(fin)
-        except OSError:
-            cache = {}
-        if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-            print(f"Downloading '{pkg}' for ({self.target_arch}, {self.target_os})")
-            util.download(src, cache_pkg)
-        cache[cache_pkg] = src
-        with open(cache_db, 'w') as fout:
-            pickle.dump(cache, fout)
-        util.download(cache_pkg, os.path.join('system', 'src', pkg))
+            srcs = arch_dct.get(self.target_os, arch_dct.get(None, default))
+        if not isinstance(srcs, list):
+            srcs = [srcs]
+        success = False
+        while srcs and not success:
+            try:
+                src = srcs.pop(0)
+                pkg = os.path.basename(src)
+                cache_dir = tempfile.gettempdir()
+                cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
+                cache_pkg = os.path.join(cache_dir, pkg)
+                try:
+                    with open(cache_db, 'r') as fin:
+                        cache = pickle.load(fin)
+                except IOError:
+                    cache = {}
+                if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
+                    print "Downloading '{}' for ({}, {})".format(pkg, self.target_arch, self.target_os)
+                    util.download(src, cache_pkg)
+                cache[cache_pkg] = src
+                with open(cache_db, 'w') as fout:
+                    pickle.dump(cache, fout)
+                util.download(cache_pkg, os.path.join('system', 'src', pkg))
+                success = True
+            except IOError:
+                print "Failed to download {} from URL {}; falling back to next mirror.".format(pkg, src)
+                pass
+        if not success:
+            raise IOError("Unable to download {} from any mirror.".format(pkg))
+
 
     def _download_python(self):
         from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64
