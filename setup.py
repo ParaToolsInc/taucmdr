@@ -382,23 +382,23 @@ class Release(SDistCommand):
                 cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
                 cache_pkg = os.path.join(cache_dir, pkg)
                 try:
-                    with open(cache_db, 'r') as fin:
+                    with open(cache_db) as fin:
                         cache = pickle.load(fin)
-                except IOError:
+                except OSError:
                     cache = {}
                 if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-                    print "Downloading '{}' for ({}, {})".format(pkg, self.target_arch, self.target_os)
+                    print(f"Downloading '{pkg}' for ({self.target_arch}, {self.target_os})")
                     util.download(src, cache_pkg)
                 cache[cache_pkg] = src
                 with open(cache_db, 'w') as fout:
                     pickle.dump(cache, fout)
                 util.download(cache_pkg, os.path.join('system', 'src', pkg))
                 success = True
-            except IOError:
-                print "Failed to download {} from URL {}; falling back to next mirror.".format(pkg, src)
+            except OSError:
+                print(f"Failed to download {pkg} from URL {src}; falling back to next mirror.")
                 pass
         if not success:
-            raise IOError("Unable to download {} from any mirror.".format(pkg))
+            raise OSError(f"Unable to download {pkg} from any mirror.")
 
 
     def _download_python(self):
