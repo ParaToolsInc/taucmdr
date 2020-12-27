@@ -45,7 +45,7 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.gz'}
+REPOS = {None: 'http://ftp.gnu.org/gnu/binutils/binutils-2.35.1.tar.gz'}
 
 LIBRARIES = {None: ['libbfd.a']}
 
@@ -65,7 +65,7 @@ class BinutilsInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags):
-        from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
+        from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC, NEC_SX
         flags.extend(['--disable-nls', '--disable-werror'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
             os.environ.pop(var, None)
@@ -94,6 +94,9 @@ class BinutilsInstallation(AutotoolsInstallation):
                     raise ConfigurationError("Cannot find KNC native compilers in /usr/linux-k1om-*")
             os.environ['PATH'] = os.pathsep.join((os.path.dirname(k1om_ar), os.environ['PATH']))
             flags.append('--host=x86_64-k1om-linux')
+        elif self.target_arch is NEC_SX:
+            flags.append('CC=ncc')
+            flags.append('CXX=nc++')
         return super(BinutilsInstallation, self).configure(flags)
 
     def make_install(self, flags):

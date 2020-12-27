@@ -60,7 +60,7 @@ from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
 from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.compiler.python import PY
-from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, NEC_SX, HOST_ARCH, HOST_OS
 from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
 
 
@@ -430,6 +430,7 @@ class TauInstallation(Installation):
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2') and ('libotf2' in sources)
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        self.uses_zlib = self.uses_binutils
         if 'TIME' not in self.metrics[0]:
             # TAU assumes the first metric is always some kind of wallclock timer
             # so move the first wallclock metric to the front of the list
@@ -445,7 +446,7 @@ class TauInstallation(Installation):
             mets.extend(met.split(','))
         self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2':
+        for pkg in 'binutils', 'libunwind', 'papi', 'pdt', 'ompt', 'libotf2', 'zlib':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -615,6 +616,16 @@ class TauInstallation(Installation):
                             LOGGER.debug("OTFINC='%s' != '%s'", libotf2_dir, libotf2.include_path)
                             raise SoftwarePackageError("OTFINC in '%s' is not '%s'" %
                                                        (tau_makefile, libotf2.include_path))
+                elif 'ZLIBINCLUDE=' in line:
+                    if self.uses_zlib:
+                        zlib = self.dependencies['zlib']
+                        zlib_inc = shlex.split(line.split('=')[1])[0].strip('-I')
+                        if not os.path.isdir(zlib_inc):
+                            raise SoftwarePackageError("ZLIBINCLUDE in '%s' is not a directory" % tau_makefile)
+                        if zlib.include_path != zlib_inc:
+                            LOGGER.debug("ZLIBINCLUDE='%s' != '%s'", zlib_inc, zlib.include_path)
+                            raise SoftwarePackageError("ZLIBINCLUDE in '%s' is not '%s'" %
+                                                       (tau_makefile, zlib.include_path))
 
     def _verify_iowrapper(self, tau_makefile):
         # Replace right-most occurrence of 'Makefile.tau' with 'shared'
@@ -710,6 +721,7 @@ class TauInstallation(Installation):
         scorep = self.dependencies.get('scorep')
         ompt = self.dependencies.get('ompt')
         libotf2 = self.dependencies.get('libotf2')
+        zlib = self.dependencies.get('zlib')
 
         if self.minimal:
             LOGGER.info("Configuring minimal TAU...")
@@ -719,6 +731,7 @@ class TauInstallation(Installation):
                     '-arch=%s' % self.tau_magic.name,
                     '-bfd=%s' % binutils.install_prefix if binutils else None,
                     '-unwind=%s' % libunwind.install_prefix if libunwind else None,
+                    '-zlib=%s' % zlib.install_prefix if zlib else None,
                    ] if flag]
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
@@ -743,6 +756,7 @@ class TauInstallation(Installation):
                             host_compilers.CRAY: 'cray',
                             host_compilers.IBM: 'ibm',
                             host_compilers.ARM: 'armflang',
+                            host_compilers.NEC_SX: 'nfort',
                             host_compilers.IBM_BG: 'ibm'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
@@ -828,6 +842,7 @@ print(find_version())
                   '-papi=%s' % papi.install_prefix if papi else None,
                   '-unwind=%s' % libunwind.install_prefix if libunwind else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
+                  '-zlib=%s' %zlib.install_prefix if zlib else None,
                   '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,
                   '-mpiinc=%s' % mpiinc if mpiinc else None,
@@ -1507,7 +1522,10 @@ print(find_version())
                                "to crash or produce invalid data.  If you're unsure, use '--tau=download' when "
                                "creating your target to allow TAU Commander to manage your TAU configurations.",
                                makefile)
-            tau_exec = ['tau_exec', '-T', ','.join(tags)] + opts
+            if self.target_arch == NEC_SX:
+                tau_exec = [os.path.join(self.bin_path, 'tau_exec'), '-T', ','.join(tags)] + opts
+            else:
+                tau_exec = ['tau_exec', '-T', ','.join(tags)] + opts
         if not application_cmds:
             cmd = self._rewrite_launcher_appfile_cmd(launcher_cmd, tau_exec)
         else:
