@@ -1,0 +1,5 @@
+@import url('base.css');
+
+.svg_logo {
+    background-image: url('paratools.svg');
+}
