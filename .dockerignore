@@ -1,0 +1,9 @@
+**/*.pyo
+**/*.pyc
+build/
+system/
+VERSION
+**/*.egg-info
+**/*.egg
+venv/
+.idea/

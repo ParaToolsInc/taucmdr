@@ -41,7 +41,8 @@ from taucmdr.cf.platforms import X86_64, IBM64, PPC64, PPC64LE
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
+REPOS = {None: ['http://www.cs.uoregon.edu/research/tau/scorep.tgz',
+                'http://fs.paratools.com/tau-mirror/scorep.tgz']}
 
 COMMANDS = {None:
             [

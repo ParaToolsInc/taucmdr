@@ -32,6 +32,7 @@ A persistent, transactional record storage system using :py:class:`TinyDB` for
 both the database and the key/value store.
 """
 
+import copy
 import os
 import json
 import tempfile
@@ -43,7 +44,6 @@ from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError
 
 LOGGER = logger.get_logger(__name__)
-
 
 
 class _JsonRecord(StorageRecord):
@@ -177,18 +177,17 @@ class LocalFileStorage(AbstractStorage):
         """Open the database for reading and writing."""
         if self._database is None:
             util.mkdirp(self.prefix)
-            dbfile = os.path.join(self.prefix, self.name + '.json')
             try:
                 storage = CachingMiddleware(_JsonFileStorage)
                 storage.WRITE_CACHE_SIZE = 0
-                self._database = tinydb.TinyDB(dbfile, storage=storage)
+                self._database = tinydb.TinyDB(self.dbfile, storage=storage)
             except IOError as err:
-                raise StorageError("Failed to access %s database '%s': %s" % (self.name, dbfile, err),
+                raise StorageError("Failed to access %s database '%s': %s" % (self.name, self.dbfile, err),
                                    "Check that you have `write` access")
-            if not util.path_accessible(dbfile):
-                raise StorageError("Database file '%s' exists but cannot be read." % dbfile,
+            if not util.path_accessible(self.dbfile):
+                raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
-            LOGGER.debug("Initialized %s database '%s'", self.name, dbfile)
+            LOGGER.debug("Initialized TinyDB %s database '%s'", self.name, self.dbfile)
 
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
@@ -199,6 +198,16 @@ class LocalFileStorage(AbstractStorage):
     @property
     def prefix(self):
         return self._prefix
+
+    @property
+    def dbfile(self):
+        return os.path.join(self.prefix, self.name + '.json')
+
+    def database_exists(self):
+        try:
+            return os.path.isfile(self.dbfile)
+        except (StorageError, AttributeError):
+            return False
 
     def __str__(self):
         """Human-readable identifier for this database."""
@@ -211,7 +220,7 @@ class LocalFileStorage(AbstractStorage):
         # pylint: disable=protected-access
         if self._transaction_count == 0:
             self.connect_database()
-            self._db_copy = self._database._read()
+            self._db_copy = copy.deepcopy(self._database._read())
         self._transaction_count += 1
         return self
 

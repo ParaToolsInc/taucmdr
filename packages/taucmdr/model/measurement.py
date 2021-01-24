@@ -113,10 +113,11 @@ def attributes():
                          'group': 'output format',
                          'metavar': '<format>',
                          'nargs': '?',
-                         'choices': ('tau', 'merged', 'cubex', 'none'),
+                         'choices': ('tau', 'merged', 'cubex', 'sqlite', 'none'),
                          'const': 'tau'},
             'compat': {'cubex': Target.exclude('scorep_source', None),
-                       'merged': _merged_profile_compat},
+                       'merged': _merged_profile_compat,
+                       'sqlite': Target.exclude('sqlite3_source', None)},
             'rebuild_required': True
         },
         'trace': {
@@ -350,6 +351,16 @@ def attributes():
                          'metavar': 'count',
                          'nargs': '?',
                          'const': 100000},
+        },
+        'sample_resolution': {
+            'type': 'string',
+            'default': 'line',
+            'description': 'sample resolution',
+            'argparse': {'flags': ('--sample-resolution',),
+                         'choices': ('file', 'function', 'line',),
+                         'metavar': 'file/function/line',
+                         'nargs': '?',},
+            'compat': {True: (Measurement.require('sample', True))}
         },
         'sampling_period': {
             'type': 'integer',

@@ -416,7 +416,31 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN),
-                                                  Target.exclude('host_arch', NEC_SX))},
+                                                   Target.exclude('host_arch', NEC_SX))},
+            'rebuild_required': True
+        },
+        'libdwarf_source': {
+            'type': 'string',
+            'description': 'path or URL to a libdwarf installation or archive file',
+            'default': 'download' if HOST_OS is not DARWIN else None,
+            'argparse': {'flags': ('--libdwarf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN), 
+                                                   Target.require('libelf_source'))},
+            'rebuild_required': True
+        },
+        'libelf_source': {
+            'type': 'string',
+            'description': 'libelf installation for libdwarf use',
+            'default': 'download' if HOST_OS is not DARWIN else None,
+            'argparse': {'flags': ('--libelf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+
+            'compat':  {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
         'papi_source': {
@@ -450,7 +474,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|download-tr6|None)',
+                         'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
@@ -469,6 +493,16 @@ def attributes():
             'description': 'path or URL to zlib installation or archive file',
             'default': 'download',
             'argparse': {'flags': ('--zlib',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
+        'sqlite3_source': {
+            'type': 'string',
+            'description': 'path or URL to SQLite3 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--sqlite3',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
