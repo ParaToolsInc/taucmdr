@@ -91,7 +91,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
         self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
         self.assertFalse(stderr)
-        self.assertManagedBuild(0, CC, [], 'matmult.c')
+        self.assertManagedBuild(0, CC, ['-g', '-no-pie'], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         self.assertIn("Trial 0 produced 1 profile files", stdout)
         self.assertIn("TAU_SHOW_MEMORY_FUNCTIONS=1", stdout)
