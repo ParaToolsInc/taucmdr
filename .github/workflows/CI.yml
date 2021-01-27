@@ -95,7 +95,7 @@ jobs:
       - name: Install TAU Commander
         run: |
           make INSTALLDIR="${INSTALLDIR}" install
-          echo "::add-path::${INSTALLDIR}/conda/bin"
+          echo "${INSTALLDIR}/conda/bin" >> $GITHUB_PATH
           export PATH="${INSTALLDIR}/conda/bin:${PATH}"
           which python
           which pip
