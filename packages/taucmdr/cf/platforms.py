@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -235,7 +234,7 @@ class TauMagic(KeyedRecord):
             try:
                 inst = TauMagic.find((HOST_ARCH, HOST_OS))
             except KeyError:
-                raise ConfigurationError("%s on %s is not supported." % (HOST_OS, HOST_ARCH))
+                raise ConfigurationError(f"{HOST_OS} on {HOST_ARCH} is not supported.")
             cls._detect = inst
             return cls._detect
 

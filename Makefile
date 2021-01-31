@@ -46,6 +46,14 @@ MKDIR = mkdir -p
 
 VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
 
+# Override this with 2 to test with Python 2.7
+PY_MAJ_VERSION ?= 3
+
+# Allow INSTALL_DIR too
+ifneq ($(INSTALL_DIR),)
+        INSTALLDIR ?= $(INSTALL_DIR)
+endif
+
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
 	BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
@@ -90,11 +98,11 @@ else
 	endif
 endif
 
-# Miniconda configuration
-USE_MINICONDA = true
+# CommanderConda configuration
+USE_COMMANDERCONDA = true
 ifeq ($(HOST_OS),Darwin)
 ifeq ($(HOST_ARCH),i386)
-	USE_MINICONDA = false
+	USE_COMMANDERCONDA = false
 endif
 endif
 ifeq ($(HOST_OS),Darwin)
@@ -103,7 +111,7 @@ else
 	ifeq ($(HOST_OS),Linux)
 		CONDA_OS = Linux
 	else
-		USE_MINICONDA = false
+		USE_COMMANDERCONDA = false
 	endif
 endif
 ifeq ($(HOST_ARCH),x86_64)
@@ -115,24 +123,27 @@ else
 		ifeq ($(HOST_ARCH),ppc64le)
 			CONDA_ARCH = ppc64le
 		else
-			USE_MINICONDA = false
+			USE_COMMANDERCONDA = false
 		endif
 	endif
 endif
-CONDA_VERSION = latest
-CONDA_REPO = https://repo.continuum.io/miniconda
-CONDA_PKG = Miniconda2-$(CONDA_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
+ifeq ($(PY_MAJ_VERSION),2)
+	CONDA_VERSION = v1.2.0 # Last release of CommanderConda supporting python2
+else
+	CONDA_VERSION = latest
+endif
+CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/$(CONDA_VERSION)/download
+CONDA_PKG = CommanderConda$(PY_MAJ_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = system/src/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
 CONDA = $(CONDA_DEST)/bin/python
 
-ifeq ($(USE_MINICONDA),true)
+ifeq ($(USE_COMMANDERCONDA),true)
 	PYTHON_EXE = $(CONDA)
 	PYTHON_FLAGS = -EOu
-#	PYTHON_FLAGS = -EOu3
 else
-	$(warning WARNING: There are no miniconda packages for this system: $(HOST_OS), $(HOST_ARCH).)
+	$(warning WARNING: There are no CommanderConda packages for this system: $(HOST_OS), $(HOST_ARCH).)
 	CONDA_SRC =
 	PYTHON_EXE = $(shell command -pv python || type -P python || which python)
 	PYTHON_FLAGS = -O
@@ -141,6 +152,9 @@ else
 	else
 		$(warning WARNING: Trying to use '$(PYTHON_EXE)' instead.)
 	endif
+endif
+ifeq ($(PY_MAJ_VERSION),2)
+	PYTHON_FLAGS := $(PYTHON_FLAGS)3
 endif
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
@@ -219,7 +233,9 @@ dev-container:
 	$(ECHO)docker build --pull -t $(DOCKER_IMG_NAME) .
 
 run-container:
-	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
+	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
+	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) $(ARGS)
 
 test-container:
-	$(ECHO)docker run -it --privileged -v ${PWD}:/home/tau/src $(DOCKER_IMG_NAME):$(DOCKER_TAG)
+	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
+	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) test $(ARGS)

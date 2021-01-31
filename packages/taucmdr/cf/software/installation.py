@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -69,70 +68,6 @@ def parallel_make_flags(nprocs=None):
     return ['-j', str(nprocs)]
 
 
-def tmpfs_prefix():
-    """Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.
-
-    /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
-    fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also
-    unavailable then use the filesystem prefix of the highest writable storage container.
-
-    An attempt is made to ensure that there is at least 2GiB of free space in the
-    selected filesystem.  If
-
-    Returns:
-        str: Path to a uniquely-named directory in the temporary filesystem. The directory
-            and all its contents **will be deleted** when the program exits if it installs
-            correctly.
-    """
-    try:
-        return tmpfs_prefix.value
-    except AttributeError:
-        import tempfile
-        import subprocess
-        from stat import S_IRUSR, S_IWUSR, S_IEXEC
-        candidate = None
-        for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
-            try:
-                tmp_prefix = util.mkdtemp(dir=prefix)
-            except (OSError, IOError) as err:
-                LOGGER.debug(err)
-                continue
-            # Check execute privileges some distros mount tmpfs with the noexec option.
-            check_exe_script = None
-            try:
-                with tempfile.NamedTemporaryFile(dir=tmp_prefix, delete=False) as tmp_file:
-                    check_exe_script = tmp_file.name
-                    tmp_file.write("#!/bin/sh\nexit 0")
-                os.chmod(check_exe_script, S_IRUSR | S_IWUSR | S_IEXEC)
-                subprocess.check_call([check_exe_script])
-            except (OSError, IOError, subprocess.CalledProcessError) as err:
-                LOGGER.debug(err)
-                continue
-            try:
-                statvfs = os.statvfs(check_exe_script)
-            except (OSError, IOError) as err:
-                LOGGER.debug(err)
-                if candidate is None:
-                    candidate = tmp_prefix
-                continue
-            else:
-                free_mib = (statvfs.f_frsize*statvfs.f_bavail)/0x100000
-                LOGGER.debug("%s: %sMB free", tmp_prefix, free_mib)
-                if free_mib < 2000:
-                    continue
-            if check_exe_script:
-                os.remove(check_exe_script)
-            break
-        else:
-            if not candidate:
-                raise ConfigurationError("No filesystem has at least 2GB free space and supports executables.")
-            tmp_prefix = candidate
-            LOGGER.warning("Unable to count available bytes in '%s'", tmp_prefix)
-        tmpfs_prefix.value = tmp_prefix
-        LOGGER.debug("Temporary prefix: '%s'", tmp_prefix)
-        return tmp_prefix
-
-
 @contextmanager
 def new_os_environ():
     old_environ = os.environ
@@ -143,7 +78,7 @@ def new_os_environ():
         os.environ = old_environ
 
 
-class Installation(object):
+class Installation:
     """Encapsulates a software package installation.
 
     Attributes:
@@ -185,8 +120,8 @@ class Installation(object):
             headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.
         """
         # pylint: disable=too-many-arguments
-        assert isinstance(name, basestring)
-        assert isinstance(title, basestring)
+        assert isinstance(name, str)
+        assert isinstance(title, str)
         assert isinstance(sources, dict)
         assert isinstance(target_arch, Architecture)
         assert isinstance(target_os, OperatingSystem)
@@ -247,11 +182,11 @@ class Installation(object):
     @property
     def uid(self):
         if self._uid is None:
-            self._uid = util.calculate_uid(self.uid_items())
+            self._uid = str(util.calculate_uid(self.uid_items()))
         return self._uid
 
     def _get_install_tag(self):
-        return self.uid
+        return str(self.uid)
 
     def _get_install_prefix(self):
         if not self._install_prefix:
@@ -262,7 +197,7 @@ class Installation(object):
                 # Search the storage hierarchy for an existing installation
                 for storage in reversed(ORDERED_LEVELS):
                     try:
-                        self._set_install_prefix(os.path.join(storage.prefix, self.name, tag))
+                        self._set_install_prefix(str(os.path.join(storage.prefix, self.name, tag)))
                         self.verify()
                     except (StorageError, SoftwarePackageError) as err:
                         LOGGER.debug(err)
@@ -277,7 +212,7 @@ class Installation(object):
 
     def _set_install_prefix(self, value):
         assert value is not None
-        self._install_prefix = value
+        self._install_prefix = str(value)
 
     @property
     def install_prefix(self):
@@ -338,11 +273,11 @@ class Installation(object):
                 except StorageError:
                     continue
                 if os.path.exists(archive):
-                    return archive
+                    return str(archive)
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
         util.download(self.src, archive)
-        return archive
+        return str(archive)
 
     def acquire_source(self, reuse_archive=True):
         """Acquires package source code archive file via download or file copy.
@@ -362,19 +297,19 @@ class Installation(object):
         if not self.src:
             raise ConfigurationError("No source code provided for %s" % self.title)
         if self.unmanaged:
-            return self.src
+            return str(self.src)
         # Check that archive is valid by getting archive top-level directory
         while self.src:
             try:
                 archive = self._acquire_source(reuse_archive)
                 util.archive_toplevel(archive)
-            except IOError:
+            except OSError:
                 if reuse_archive:
                     archive = self.acquire_source(reuse_archive=False)
                     try:
                         util.archive_toplevel(archive)
-                        return archive
-                    except IOError:
+                        return str(archive)
+                    except OSError:
                         pass
                 try:
                     LOGGER.warning("Unable to acquire %s source package '%s'", self.name, self.src)
@@ -383,7 +318,7 @@ class Installation(object):
                 except IndexError:
                     self.src = None
             else:
-                return archive
+                return str(archive)
         if self.src is None:
             archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
             hints = ("If a firewall is blocking access to this server, use another method to download "
@@ -391,7 +326,7 @@ class Installation(object):
                      "Check that the file or directory is accessible")
             raise ConfigurationError("Cannot acquire source archive '%s'." % ', '.join(self.srcs_avail), *hints)
         else:
-            return archive
+            return str(archive)
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
@@ -411,12 +346,12 @@ class Installation(object):
         archive = self.acquire_source(reuse_archive)
         LOGGER.info("Using %s source archive '%s'", self.title, archive)
         try:
-            return util.extract_archive(archive, tmpfs_prefix())
-        except IOError as err:
+            return util.extract_archive(archive, util.tmpfs_prefix().name)
+        except OSError as err:
             if reuse_archive:
                 LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
-                return self._prepare_src(reuse_archive=False)
-            raise ConfigurationError("Cannot extract source archive '%s': %s" % (archive, err),
+                return str(self._prepare_src(reuse_archive=False))
+            raise ConfigurationError(f"Cannot extract source archive '{archive}': {err}",
                                      "Check that the file or directory is accessible")
 
     def verify(self):
@@ -475,7 +410,7 @@ class Installation(object):
         Raises:
             SoftwarePackageError: Installation failed.
         """
-        for pkg in self.dependencies.itervalues():
+        for pkg in self.dependencies.values():
             pkg.install(force_reinstall)
         if self.unmanaged or not force_reinstall:
             try:

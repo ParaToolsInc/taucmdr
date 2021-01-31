@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -41,7 +40,7 @@ class EditTest(tests.TestCase):
     def test_noargs(self):
         self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, [])
-        self.assertIn('too few arguments', stderr)
+        self.assertIn('the following arguments are required', stderr)
         self.assertFalse(stdout)
 
     def test_rename(self):

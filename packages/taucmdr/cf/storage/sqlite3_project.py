@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -51,7 +50,7 @@ class SQLiteProjectStorage(SQLiteLocalFileStorage):
     """
 
     def __init__(self):
-        super(SQLiteProjectStorage, self).__init__('project', None)
+        super().__init__('project', None)
         self._force_cwd = False
         self._tau_directory = None
 

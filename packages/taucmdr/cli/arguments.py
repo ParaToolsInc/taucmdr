@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -71,7 +70,7 @@ class MutableArgumentGroup(argparse._ArgumentGroup):
     # pylint: disable=protected-access
 
     def __init__(self, *args, **kwargs):
-        super(MutableArgumentGroup, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __getitem__(self, option_string):
         return self._option_string_actions[option_string]
@@ -87,7 +86,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
     # pylint: disable=protected-access
 
     def __init__(self, *args, **kwargs):
-        super(MutableArgumentGroupParser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.actions = self._actions
 
     def __getitem__(self, option_string):
@@ -216,7 +215,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=None):
         if width is None:
             width = logger.LINE_WIDTH
-        super(HelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
+        super().__init__(prog, indent_increment, max_help_position, width)
 
     def _split_lines(self, text, width):
         parts = []
@@ -230,7 +229,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
         helpstr = helpstr[0].upper() + helpstr[1:] + "."
         choices = getattr(action, 'choices', None)
         if choices:
-            helpstr += '\n%s- %s: %s' % (indent, action.metavar, ', '.join(choices))
+            helpstr += '\n{}- {}: {}'.format(indent, action.metavar, ', '.join(choices))
         if '%(default)' not in action.help:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
@@ -289,7 +288,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
                 default = action.dest.upper()
                 args_string = self._format_args(action, default)
                 for option_string in action.option_strings:
-                    parts.append('%s %s' % (self._format_optional(option_string), args_string))
+                    parts.append('{} {}'.format(self._format_optional(option_string), args_string))
             return ', '.join(parts)
 
 
@@ -297,7 +296,7 @@ class ConsoleHelpFormatter(HelpFormatter):
     """Custom help string formatter for console output."""
 
     def start_section(self, heading):
-        return super(ConsoleHelpFormatter, self).start_section(util.color_text(heading, attrs=['bold']))
+        return super().start_section(util.color_text(heading, attrs=['bold']))
 
     def add_argument(self, action):
         if action.help is not SUPPRESS:
@@ -364,12 +363,12 @@ class MarkdownHelpFormatter(HelpFormatter):
     first_col_width = 30
 
     def __init__(self, prog, indent_increment=2, max_help_position=30, width=logger.LINE_WIDTH):
-        super(MarkdownHelpFormatter, self).__init__(prog, indent_increment, max_help_position, width)
+        super().__init__(prog, indent_increment, max_help_position, width)
         trans = {'<': '*',
                  '>': '*',
                  '|': r'\|'}
-        self._escape_rep = {re.escape(k): v for k, v in trans.iteritems()}
-        self._escape_pattern = re.compile("|".join(self._escape_rep.keys()))
+        self._escape_rep = {re.escape(k): v for k, v in trans.items()}
+        self._escape_pattern = re.compile("|".join(list(self._escape_rep.keys())))
 
 
     class _Section(argparse.HelpFormatter._Section):
@@ -388,8 +387,8 @@ class MarkdownHelpFormatter(HelpFormatter):
                 return ''
             if self.heading is not SUPPRESS and self.heading is not None:
                 title = '{:<{}}'.format(self.heading, MarkdownHelpFormatter.first_col_width)
-                heading = ' \n%s | %s\n%s:| %s' % (title, 'Description',
-                                                   '-'*len(title), '-'*len('Description'))
+                heading = ' \n{} | {}\n{}:| {}'.format(title, 'Description',
+                                                       '-'*len(title), '-'*len('Description'))
             else:
                 heading = ''
             return join(['\n', heading, '\n', item_help, '\n'])
@@ -413,15 +412,15 @@ class MarkdownHelpFormatter(HelpFormatter):
         helpstr = helpstr[0].upper() + helpstr[1:] + "."
         choices = getattr(action, 'choices', None)
         if choices:
-            helpstr += self._escape_markdown('\n  - %s: %s' % (action.metavar, ', '.join(choices)))
+            helpstr += self._escape_markdown('\n  - {}: {}'.format(action.metavar, ', '.join(choices)))
         return helpstr
 
     def _format_usage(self, usage, actions, groups, prefix):
-        usage = super(MarkdownHelpFormatter, self)._format_usage(usage, actions, groups, "")
+        usage = super()._format_usage(usage, actions, groups, "")
         return "`%s`" % usage.strip() + '\n\n'
 
     def _format_action_invocation(self, action):
-        invocation = super(MarkdownHelpFormatter, self)._format_action_invocation(action)
+        invocation = super()._format_action_invocation(action)
         return '{}{:>{}}'.format(' '*self._indent_increment, self._escape_markdown(invocation),
                                  MarkdownHelpFormatter.first_col_width - self._indent_increment)
 
@@ -577,12 +576,12 @@ def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, descr
     """
     parser = get_parser(prog, usage, description, epilog)
     groups = {}
-    for attr, props in model.attributes.iteritems():
+    for attr, props in model.attributes.items():
         try:
             options = dict(props['argparse'])
         except KeyError:
             if 'primary_key' in props:
-                options = {'metavar': '<%s_%s>' % (model.name.lower(), attr)}
+                options = {'metavar': f'<{model.name.lower()}_{attr}>'}
             else:
                 continue
         if use_defaults:

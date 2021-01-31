@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -108,11 +107,11 @@ class ExperimentController(Controller):
 
     def one(self, keys, context=True):
         # pylint: disable=unexpected-keyword-arg
-        return super(ExperimentController, self).one(keys, context=context)
+        return super().one(keys, context=context)
 
     def all(self, context=True):
         # pylint: disable=unexpected-keyword-arg
-        return super(ExperimentController, self).all(context=context)
+        return super().all(context=context)
 
     def count(self):
         try:
@@ -122,26 +121,26 @@ class ExperimentController(Controller):
 
     def search(self, keys=None, context=True):
         # pylint: disable=unexpected-keyword-arg
-        return super(ExperimentController, self).search(keys, context=context)
+        return super().search(keys, context=context)
 
     def exists(self, keys):
-        return super(ExperimentController, self).exists(keys)
+        return super().exists(keys)
 
     def _check_unique(self, data, match_any=False):
         """Default match_any to False to prevent matches outside the selected project."""
-        return super(ExperimentController, self)._check_unique(data, match_any)
+        return super()._check_unique(data, match_any)
 
     def create(self, data):
-        return super(ExperimentController, self).create(data)
+        return super().create(data)
 
     def update(self, data, keys):
-        return super(ExperimentController, self).update(data, keys)
+        return super().update(data, keys)
 
     def unset(self, fields, keys):
-        return super(ExperimentController, self).unset(fields, keys)
+        return super().unset(fields, keys)
 
     def delete(self, keys):
-        return super(ExperimentController, self).delete(keys)
+        return super().delete(keys)
 
 
 class Experiment(Model):
@@ -177,7 +176,8 @@ class Experiment(Model):
         data = {"name": name, "project": proj.eid}
         matching = expr_ctrl.search(data)
         if not matching:
-            raise ExperimentSelectionError("There is no experiment named '%s' in project '%s'." % (name, proj['name']))
+            raise ExperimentSelectionError(
+                "There is no experiment named '{}' in project '{}'.".format(name, proj['name']))
         elif len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
         else:
@@ -196,7 +196,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, basestring):
+            elif isinstance(val, str):
                 return "'%s'" % val
             return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
@@ -204,14 +204,14 @@ class Experiment(Model):
             return ''
         parts = ["Application rebuild required:"]
         for changed in rebuild_required:
-            for attr, change in changed.iteritems():
+            for attr, change in changed.items():
                 old, new = (_fmt(x) for x in change)
                 if old is None:
-                    parts.append("  - %s is now set to %s" % (attr, new))
+                    parts.append(f"  - {attr} is now set to {new}")
                 elif new is None:
                     parts.append("  - %s is now unset" % attr)
                 else:
-                    parts.append("  - %s changed from %s to %s" % (attr, old, new))
+                    parts.append(f"  - {attr} changed from {old} to {new}")
         return '\n'.join(parts)
 
     @property
@@ -277,73 +277,73 @@ class Experiment(Model):
         application = populated['application']
         measurement = populated['measurement']
         baseline = measurement.get_or_default('baseline')
-        tau = TauInstallation(\
-                    target.sources(),
-                    target_arch=target.architecture(),
-                    target_os=target.operating_system(),
-                    compilers=target.compilers(),
-                    # Use a minimal configuration for the baseline measurement
-                    minimal=baseline,
-                    # TAU feature support
-                    application_linkage=application.get_or_default('linkage'),
-                    openmp_support=application.get_or_default('openmp'),
-                    pthreads_support=application.get_or_default('pthreads'),
-                    tbb_support=application.get_or_default('tbb'),
-                    mpi_support=application.get_or_default('mpi'),
-                    mpi_libraries=target.get('mpi_libraries', []),
-                    caf_support=application.get_or_default('caf'),
-                    cuda_support=application.get_or_default('cuda'),
-                    cuda_prefix=target.get('cuda_toolkit', None),
-                    opencl_support=application.get_or_default('opencl'),
-                    opencl_prefix=target.get('opencl', None),
-                    shmem_support=application.get_or_default('shmem'),
-                    shmem_libraries=target.get('shmem_libraries', []),
-                    mpc_support=application.get_or_default('mpc'),
-                    max_threads=application.get('max_threads', None),
-                    python_support=application.get_or_default('python'),
-                    # Instrumentation methods and options
-                    source_inst=measurement.get_or_default('source_inst'),
-                    compiler_inst=measurement.get_or_default('compiler_inst'),
-                    keep_inst_files=measurement.get_or_default('keep_inst_files'),
-                    reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
-                    select_file=measurement.get('select_file', None),
-                    # Measurement methods and options
-                    baseline=baseline,
-                    profile=measurement.get_or_default('profile'),
-                    trace=measurement.get_or_default('trace'),
-                    sample=measurement.get_or_default('sample'),
-                    metrics=measurement.get_or_default('metrics'),
-                    measure_io=measurement.get_or_default('io'),
-                    measure_mpi=measurement.get_or_default('mpi'),
-                    measure_openmp=measurement.get_or_default('openmp'),
-                    measure_opencl=measurement.get_or_default('opencl'),
-                    measure_cuda=measurement.get_or_default('cuda'),
-                    measure_shmem=measurement.get_or_default('shmem'),
-                    measure_heap_usage=measurement.get_or_default('heap_usage'),
-                    measure_system_load=measurement.get_or_default('system_load'),
-                    measure_memory_alloc=measurement.get_or_default('memory_alloc'),
-                    measure_comm_matrix=measurement.get_or_default('comm_matrix'),
-                    measure_callsite=measurement.get_or_default('callsite'),
-                    callpath_depth=measurement.get_or_default('callpath'),
-                    throttle=measurement.get_or_default('throttle'),
-                    metadata_merge=measurement.get_or_default('metadata_merge'),
-                    throttle_per_call=measurement.get_or_default('throttle_per_call'),
-                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    sample_resolution=measurement.get_or_default('sample_resolution'),
-                    sampling_period=measurement.get_or_default('sampling_period'),
-                    track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
-                    update_nightly=measurement.get_or_default('update_nightly'),
-                    ptts=measurement.get_or_default('ptts'),
-                    ptts_post=measurement.get_or_default('ptts_post'),
-                    ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
-                    ptts_restart=measurement.get_or_default('ptts_restart'),
-                    ptts_start=measurement.get_or_default('ptts_start'),
-                    ptts_stop=measurement.get_or_default('ptts_stop'),
-                    ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
-                    tags=measurement.get_or_default('tag'),
-                    forced_makefile=target.get('forced_makefile', None),
-                    mpit=measurement.get_or_default('mpit'),
-                    unwind_depth=measurement.get_or_default('unwind_depth'))
+        tau = TauInstallation(
+            target.sources(),
+            target_arch=target.architecture(),
+            target_os=target.operating_system(),
+            compilers=target.compilers(),
+            # Use a minimal configuration for the baseline measurement
+            minimal=baseline,
+            # TAU feature support
+            application_linkage=application.get_or_default('linkage'),
+            openmp_support=application.get_or_default('openmp'),
+            pthreads_support=application.get_or_default('pthreads'),
+            tbb_support=application.get_or_default('tbb'),
+            mpi_support=application.get_or_default('mpi'),
+            mpi_libraries=target.get('mpi_libraries', []),
+            caf_support=application.get_or_default('caf'),
+            cuda_support=application.get_or_default('cuda'),
+            cuda_prefix=target.get('cuda_toolkit', None),
+            opencl_support=application.get_or_default('opencl'),
+            opencl_prefix=target.get('opencl', None),
+            shmem_support=application.get_or_default('shmem'),
+            shmem_libraries=target.get('shmem_libraries', []),
+            mpc_support=application.get_or_default('mpc'),
+            max_threads=application.get('max_threads', None),
+            uses_python=application.get_or_default('python'),
+            # Instrumentation methods and options
+            source_inst=measurement.get_or_default('source_inst'),
+            compiler_inst=measurement.get_or_default('compiler_inst'),
+            keep_inst_files=measurement.get_or_default('keep_inst_files'),
+            reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
+            select_file=measurement.get('select_file', None),
+            # Measurement methods and options
+            baseline=baseline,
+            profile=measurement.get_or_default('profile'),
+            trace=measurement.get_or_default('trace'),
+            sample=measurement.get_or_default('sample'),
+            metrics=measurement.get_or_default('metrics'),
+            measure_io=measurement.get_or_default('io'),
+            measure_mpi=measurement.get_or_default('mpi'),
+            measure_openmp=measurement.get_or_default('openmp'),
+            measure_opencl=measurement.get_or_default('opencl'),
+            measure_cuda=measurement.get_or_default('cuda'),
+            measure_shmem=measurement.get_or_default('shmem'),
+            measure_heap_usage=measurement.get_or_default('heap_usage'),
+            measure_system_load=measurement.get_or_default('system_load'),
+            measure_memory_alloc=measurement.get_or_default('memory_alloc'),
+            measure_comm_matrix=measurement.get_or_default('comm_matrix'),
+            measure_callsite=measurement.get_or_default('callsite'),
+            callpath_depth=measurement.get_or_default('callpath'),
+            throttle=measurement.get_or_default('throttle'),
+            metadata_merge=measurement.get_or_default('metadata_merge'),
+            throttle_per_call=measurement.get_or_default('throttle_per_call'),
+            throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+            sample_resolution=measurement.get_or_default('sample_resolution'),
+            sampling_period=measurement.get_or_default('sampling_period'),
+            track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
+            update_nightly=measurement.get_or_default('update_nightly'),
+            ptts=measurement.get_or_default('ptts'),
+            ptts_post=measurement.get_or_default('ptts_post'),
+            ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
+            ptts_restart=measurement.get_or_default('ptts_restart'),
+            ptts_start=measurement.get_or_default('ptts_start'),
+            ptts_stop=measurement.get_or_default('ptts_stop'),
+            ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+            tags=measurement.get_or_default('tag'),
+            forced_makefile=target.get('forced_makefile', None),
+            mpit=measurement.get_or_default('mpit'),
+            unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
@@ -442,68 +442,69 @@ class Experiment(Model):
         else:
             source_inst = 'never'
             dyninst = True
-        tau = TauInstallation(\
-                    target.sources(),
-                    target_arch=target.architecture(),
-                    target_os=target.operating_system(),
-                    compilers=target.compilers(),
-                    # TAU feature support
-                    application_linkage=application.get_or_default('linkage'),
-                    openmp_support=application.get_or_default('openmp'),
-                    pthreads_support=application.get_or_default('pthreads'),
-                    tbb_support=application.get_or_default('tbb'),
-                    mpi_support=application.get_or_default('mpi'),
-                    mpi_libraries=target.get('mpi_libraries', []),
-                    caf_support=application.get_or_default('caf'),
-                    cuda_support=application.get_or_default('cuda'),
-                    cuda_prefix=target.get('cuda_toolkit', None),
-                    opencl_support=application.get_or_default('opencl'),
-                    opencl_prefix=target.get('opencl', None),
-                    shmem_support=application.get_or_default('shmem'),
-                    shmem_libraries=target.get('shmem_libraries', []),
-                    mpc_support=application.get_or_default('mpc'),
-                    max_threads=application.get('max_threads', None),
-                    # Instrumentation methods and options
-                    source_inst=source_inst,
-                    compiler_inst=measurement.get_or_default('compiler_inst'),
-                    keep_inst_files=measurement.get_or_default('keep_inst_files'),
-                    reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
-                    select_file=measurement.get('select_file', None),
-                    # Measurement methods and options
-                    profile=measurement.get_or_default('profile'),
-                    trace=measurement.get_or_default('trace'),
-                    sample=measurement.get_or_default('sample'),
-                    metrics=measurement.get_or_default('metrics'),
-                    measure_io=measurement.get_or_default('io'),
-                    measure_mpi=measurement.get_or_default('mpi'),
-                    measure_openmp=measurement.get_or_default('openmp'),
-                    measure_opencl=measurement.get_or_default('opencl'),
-                    measure_cuda=measurement.get_or_default('cuda'),
-                    measure_shmem=measurement.get_or_default('shmem'),
-                    measure_heap_usage=measurement.get_or_default('heap_usage'),
-                    measure_system_load=measurement.get_or_default('system_load'),
-                    measure_memory_alloc=measurement.get_or_default('memory_alloc'),
-                    measure_comm_matrix=measurement.get_or_default('comm_matrix'),
-                    measure_callsite=measurement.get_or_default('callsite'),
-                    callpath_depth=measurement.get_or_default('callpath'),
-                    throttle=measurement.get_or_default('throttle'),
-                    metadata_merge=measurement.get_or_default('metadata_merge'),
-                    throttle_per_call=measurement.get_or_default('throttle_per_call'),
-                    throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
-                    sampling_period=measurement.get_or_default('sampling_period'),
-                    track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
-                    update_nightly=measurement.get_or_default('update_nightly'),
-                    ptts=measurement.get_or_default('ptts'),
-                    ptts_post=measurement.get_or_default('ptts_post'),
-                    ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
-                    ptts_restart=measurement.get_or_default('ptts_restart'),
-                    ptts_start=measurement.get_or_default('ptts_start'),
-                    ptts_stop=measurement.get_or_default('ptts_stop'),
-                    ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
-                    forced_makefile=target.get('forced_makefile', None),
-                    mpit=measurement.get_or_default('mpit'),
-                    unwind_depth=measurement.get_or_default('unwind_depth'),
-                    dyninst=dyninst)
+        tau = TauInstallation(
+            target.sources(),
+            target_arch=target.architecture(),
+            target_os=target.operating_system(),
+            compilers=target.compilers(),
+            # TAU feature support
+            application_linkage=application.get_or_default('linkage'),
+            openmp_support=application.get_or_default('openmp'),
+            pthreads_support=application.get_or_default('pthreads'),
+            tbb_support=application.get_or_default('tbb'),
+            mpi_support=application.get_or_default('mpi'),
+            mpi_libraries=target.get('mpi_libraries', []),
+            caf_support=application.get_or_default('caf'),
+            cuda_support=application.get_or_default('cuda'),
+            cuda_prefix=target.get('cuda_toolkit', None),
+            opencl_support=application.get_or_default('opencl'),
+            opencl_prefix=target.get('opencl', None),
+            shmem_support=application.get_or_default('shmem'),
+            shmem_libraries=target.get('shmem_libraries', []),
+            mpc_support=application.get_or_default('mpc'),
+            max_threads=application.get('max_threads', None),
+            # Instrumentation methods and options
+            source_inst=source_inst,
+            compiler_inst=measurement.get_or_default('compiler_inst'),
+            keep_inst_files=measurement.get_or_default('keep_inst_files'),
+            reuse_inst_files=measurement.get_or_default('reuse_inst_files'),
+            select_file=measurement.get('select_file', None),
+            # Measurement methods and options
+            profile=measurement.get_or_default('profile'),
+            trace=measurement.get_or_default('trace'),
+            sample=measurement.get_or_default('sample'),
+            metrics=measurement.get_or_default('metrics'),
+            measure_io=measurement.get_or_default('io'),
+            measure_mpi=measurement.get_or_default('mpi'),
+            measure_openmp=measurement.get_or_default('openmp'),
+            measure_opencl=measurement.get_or_default('opencl'),
+            measure_cuda=measurement.get_or_default('cuda'),
+            measure_shmem=measurement.get_or_default('shmem'),
+            measure_heap_usage=measurement.get_or_default('heap_usage'),
+            measure_system_load=measurement.get_or_default('system_load'),
+            measure_memory_alloc=measurement.get_or_default('memory_alloc'),
+            measure_comm_matrix=measurement.get_or_default('comm_matrix'),
+            measure_callsite=measurement.get_or_default('callsite'),
+            callpath_depth=measurement.get_or_default('callpath'),
+            throttle=measurement.get_or_default('throttle'),
+            metadata_merge=measurement.get_or_default('metadata_merge'),
+            throttle_per_call=measurement.get_or_default('throttle_per_call'),
+            throttle_num_calls=measurement.get_or_default('throttle_num_calls'),
+            sample_resolution=measurement.get_or_default('sample_resolution'),
+            sampling_period=measurement.get_or_default('sampling_period'),
+            track_memory_footprint=measurement.get_or_default('track_memory_footprint'),
+            update_nightly=measurement.get_or_default('update_nightly'),
+            ptts=measurement.get_or_default('ptts'),
+            ptts_post=measurement.get_or_default('ptts_post'),
+            ptts_sample_flags=measurement.get_or_default('ptts_sample_flags'),
+            ptts_restart=measurement.get_or_default('ptts_restart'),
+            ptts_start=measurement.get_or_default('ptts_start'),
+            ptts_stop=measurement.get_or_default('ptts_stop'),
+            ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
+            forced_makefile=target.get('forced_makefile', None),
+            mpit=measurement.get_or_default('mpit'),
+            unwind_depth=measurement.get_or_default('unwind_depth'),
+            dyninst=dyninst)
         tau.install()
         tau.rewrite(rewrite_package, executable, inst_file)
         return tau

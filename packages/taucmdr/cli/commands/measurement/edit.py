@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -40,7 +39,7 @@ class MeasurementEditCommand(EditCommand):
     """``measurement edit`` subcommand."""
 
     def _parse_args(self, argv):
-        args = super(MeasurementEditCommand, self)._parse_args(argv)
+        args = super()._parse_args(argv)
         if hasattr(args, 'select_file'):
             if args.select_file.lower() == 'none':
                 args.select_file = None
@@ -48,7 +47,7 @@ class MeasurementEditCommand(EditCommand):
 
     def _update_record(self, store, data, key):
         try:
-            retval = super(MeasurementEditCommand, self)._update_record(store, data, key)
+            retval = super()._update_record(store, data, key)
         except (ImmutableRecordError, IncompatibleRecordError) as err:
             err.hints = ["Use `%s` to create a modified copy of the measurement" % measurement_copy_cmd,
                          "Use `%s` to delete the experiments." % experiment_delete_cmd]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -63,7 +62,7 @@ class BinutilsInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build binutils) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(BinutilsInstallation, self).__init__('binutils', 'GNU Binutils', sources,
+        super().__init__('binutils', 'GNU Binutils', sources,
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags):
@@ -99,24 +98,24 @@ class BinutilsInstallation(AutotoolsInstallation):
         elif self.target_arch is NEC_SX:
             flags.append('CC=ncc')
             flags.append('CXX=nc++')
-        return super(BinutilsInstallation, self).configure(flags)
+        return super().configure(flags)
 
     def make_install(self, flags):
-        super(BinutilsInstallation, self).make_install(flags)
+        super().make_install(flags)
         LOGGER.debug("Copying missing BFD headers")
-        for hdr in glob.glob(os.path.join(self._src_prefix, 'bfd', '*.h')):
+        for hdr in glob.glob(os.path.join(str(self._src_prefix), 'bfd', '*.h')):
             shutil.copy(hdr, self.include_path)
-        for hdr in glob.glob(os.path.join(self._src_prefix, 'include', '*')):
+        for hdr in glob.glob(os.path.join(str(self._src_prefix), 'include', '*')):
             try:
                 shutil.copy(hdr, self.include_path)
-            except IOError:
+            except OSError:
                 dst = os.path.join(self.include_path, os.path.basename(hdr))
                 shutil.copytree(hdr, dst)
         LOGGER.debug("Copying missing libiberty libraries")
-        shutil.copy(os.path.join(self._src_prefix, 'libiberty', 'libiberty.a'), self.lib_path)
-        shutil.copy(os.path.join(self._src_prefix, 'opcodes', 'libopcodes.a'), self.lib_path)
+        shutil.copy(os.path.join(str(self._src_prefix), 'libiberty', 'libiberty.a'), self.lib_path)
+        shutil.copy(os.path.join(str(self._src_prefix), 'opcodes', 'libopcodes.a'), self.lib_path)
         LOGGER.debug("Fixing BFD header")
-        for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=1):
+        for line in fileinput.input(os.path.join(self.include_path, 'bfd.h'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('#if !defined PACKAGE && !defined PACKAGE_VERSION', '#if 0'))
 

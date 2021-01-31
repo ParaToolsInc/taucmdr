@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -39,8 +38,9 @@ Project-level records define the project and its member components.  The user ma
 want to install software packages at the project level to avoid quotas or in situations
 where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
-import os
 
+
+import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.storage_dispatch import StorageDispatch, ProjectStorageDispatch

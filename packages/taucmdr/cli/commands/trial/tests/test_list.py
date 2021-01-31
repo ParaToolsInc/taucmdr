@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -78,7 +77,7 @@ class ListTest(tests.TestCase):
     def test_list_multiple(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        for _ in xrange(3):
+        for _ in range(3):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['0', '1', '2'])
         self.assertIn('./a.out', stdout)
@@ -92,7 +91,7 @@ class ListTest(tests.TestCase):
     def test_list_multiple_subset(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        for _ in xrange(4):
+        for _ in range(4):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
         stdout, stderr = self.assertCommandReturnValue(0, LIST_COMMAND, ['1', '3'])
         self.assertIn('./a.out', stdout)
