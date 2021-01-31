@@ -57,10 +57,8 @@ class ZlibInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags):
-        print("install prefix: %s" %(self.install_prefix))
         os.environ['CC'] = self.compilers[CC].unwrap().absolute_path
         return super(ZlibInstallation, self).configure(flags)
 
     def make(self, flags):
         super(ZlibInstallation, self).make(flags)
-        print self.dependencies
