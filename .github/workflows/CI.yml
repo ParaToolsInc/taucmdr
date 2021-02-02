@@ -113,12 +113,12 @@ jobs:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
-      - name: Upload TAU Commander minimal install
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
+      # - name: Upload TAU Commander minimal install
+      #   if: always()
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: taucmdr-installation-${{ matrix.os }}
+      #     path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
 
       - name: Test TAU Commander
         run: |
