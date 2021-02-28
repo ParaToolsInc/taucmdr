@@ -1015,6 +1015,8 @@ print(find_version())
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
                     shutil.move(self._prepare_src(), self.install_prefix)
+                self.tau_version = self.get_tau_version(os.path.join(self.install_prefix, 'include/TAU.h.default'))
+                self.deprecation_check()
                 self._src_prefix = self.install_prefix
                 self.installation_sequence()
                 self.set_group()
@@ -1927,3 +1929,24 @@ print(find_version())
         p = re.compile(r'\d+\.\d+\.\d+')
         m = p.search(out)
         return m.group()
+
+    def get_tau_version(self, header_path):
+        with open(header_path) as f:
+            for line in f:
+                if line.startswith("#define TAU_VERSION"):
+                    verline = line
+                    break
+        verstr = re.findall('"([^"]*)"', verline)[0]
+        if verstr.endswith('-git'):
+            ver = verstr[:-len('-git')]
+        return ver
+
+    def deprecation_check(self):
+        print('deprecation check')
+        print(self.uses_ompt_tr4)
+        print(self.uses_ompt_tr6)
+        print(self.uses_ompt)
+        if self.uses_ompt_tr4:
+            LOGGER.warning("\"--ompt download-tr4\" is deprecated in TAU version %s and will be removed in a later release", self.tau_version)
+        if self.uses_ompt_tr6:
+            LOGGER.warning("\"--ompt download-tr6\" is deprecated in TAU version %s and will be removed in a later release", self.tau_version)
