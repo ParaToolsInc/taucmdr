@@ -39,6 +39,9 @@ VERBOSE = true
 DOCKER_IMG_NAME = cmdr-dev-0.1.0
 DOCKER_TAG = latest
 
+# Set this if you are a TAU Commander developer
+__TAUCMDR_DEVELOPER__?=
+
 # Shell utilities
 RM = rm -f
 MV = mv -f
@@ -162,8 +165,12 @@ help:
 	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)] [TAU=(minimal|full|<path>)]"
 	@echo "-------------------------------------------------------------------------------"
 
+ifneq($(__TAUCMDR_DEVELOPER__,))
+    INSTALL_DEV_REQS=$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
+endif
+
 build: python_check
-	$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
+	$(INSTALL_DEV_REQS)
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 
