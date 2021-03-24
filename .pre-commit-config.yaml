@@ -59,7 +59,7 @@ repos:
   rev: v2.0.0
   hooks:
     - id: codespell
-      args: [--check-filenames, --check-hidden, --write-changes, --ignore-words-list, 'iff,creat']
+      args: [--check-filenames, --check-hidden, --write-changes, --ignore-words-list, 'iff,creat,inout']
 # - repo: https://github.com/Lucas-C/pre-commit-hooks-markup
 #   rev: 54db9d2ed7d626fabb237c86c4f12b67a254ae97
 #   hooks:
