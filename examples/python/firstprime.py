@@ -15,7 +15,7 @@ def first_prime_after(x):
                 # Found factor. not prime
                 break  # move on to next number
             elif potential_factor >= sqrtno:
-                print("The first prime number after {} is {}".format(x, current))
+                print(f"The first prime number after {x} is {current}")
                 return current
         current += 1
 
