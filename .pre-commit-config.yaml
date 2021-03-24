@@ -14,7 +14,7 @@ exclude: >
   )$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.5.0
+  rev: v3.4.0
   hooks:
     - id: check-added-large-files
     - id: check-ast
@@ -47,18 +47,16 @@ repos:
 #     - id: dead
 #       language_version: python3
 - repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 1.11.0
+  rev: 2.1.5
   hooks:
     - id: script-must-have-extension
       types: [shell, non-executable]
     - id: shellcheck
       args: [--color=always, --check-sourced, --external-sources]
-      additional_dependencies: [shellcheck]
     - id: shfmt
-      additional_dependencies: [shfmt]
       args: [-s, -sr, -w, -i, "2"]
 - repo: https://github.com/codespell-project/codespell.git
-  rev: v1.16.0
+  rev: v2.0.0
   hooks:
     - id: codespell
       args: [--check-filenames, --check-hidden, --write-changes, --ignore-words-list, 'iff,creat']
@@ -67,7 +65,7 @@ repos:
 #   hooks:
 #   - id: rst-linter
 - repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.5.1
+  rev: v1.8.0
   hooks:
     - id: python-check-mock-methods
     - id: python-no-eval
@@ -75,12 +73,12 @@ repos:
     - id: rst-backticks
 #    - id: text-unicode-replacement-char
 - repo: https://github.com/igorshubovych/markdownlint-cli.git
-  rev: v0.22.0
+  rev: v0.27.1
   hooks:
     - id: markdownlint
       args: [--fix]
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.7.2
+  rev: v2.11.0
   hooks:
     - id: pyupgrade
       language_version: python3

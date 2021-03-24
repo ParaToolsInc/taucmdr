@@ -165,7 +165,7 @@ help:
 	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)] [TAU=(minimal|full|<path>)]"
 	@echo "-------------------------------------------------------------------------------"
 
-ifneq($(__TAUCMDR_DEVELOPER__,))
+ifneq ($(__TAUCMDR_DEVELOPER__),)
     INSTALL_DEV_REQS=$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
 endif
 

@@ -115,8 +115,6 @@ os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
 
-collect_types.init_types_collection()
-
 # Customize the BuildSphinx command depending on if Sphinx is installed
 try:
     from sphinx import apidoc as sphinx_apidoc
@@ -561,7 +559,7 @@ def _version():
     # type: () -> str
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
     if os.path.exists(version_file):
-        with open(version_file, mode="rt", encoding="utf-8") as fin:
+        with open(version_file, encoding="utf-8") as fin:
             version = fin.readline()
     else:
         try:
