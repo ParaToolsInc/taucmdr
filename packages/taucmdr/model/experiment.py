@@ -94,6 +94,10 @@ def attributes():
             'type': 'string',
             'description': 'TAU Makefile used during this experiment, if any.'
         },
+        'tau_version': {
+            'type': 'string',
+            'description': 'TAU version used during this experiment'
+        },
         'record_output': {
             'type': 'boolean',
             'default': False,
@@ -234,6 +238,26 @@ class Experiment(Model):
             for rhs in [targ, app, meas]:
                 lhs.check_compatibility(rhs)
 
+        # Check for deprecated attributes
+        if 'tau_version' in self.controller(self.storage).search(self.eid)[0]:
+            tau_version_str = self.controller(self.storage).search(self.eid)[0]['tau_version']
+            tau_version = [int(i) for i in tau_version_str.split('.')]
+            tau_version.extend([0]*(3-len(tau_version)))
+        else:
+            return
+        for comp in [targ, app, meas]:
+            for attr, props in comp.attributes.iteritems():
+                if 'deprecated' in props:
+                    if comp.controller(self.storage).search(self.eid)[0][attr] in props['deprecated']:
+                        deprecated_option = comp.controller(self.storage).search(self.eid)[0][attr]
+                        depr_str = props['deprecated'][targ[attr]]
+                        depr  = [int(i) for i in depr_str.split('.')]
+                        depr.extend([0]*(3-len(depr)))
+                        if tau_version >= depr:
+                            LOGGER.warning(
+                                "The \"--%s %s\" has been deprecated in TAU version %s and will be removed in a future release." %(attr, deprecated_option, depr_str)
+                            )
+
     def on_create(self):
         self.verify()
         try:
@@ -347,6 +371,8 @@ class Experiment(Model):
         tau.install()
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
+        self.controller(self.storage).update({'tau_version': tau.get_version()}, self.eid)
+        self.verify()
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):
