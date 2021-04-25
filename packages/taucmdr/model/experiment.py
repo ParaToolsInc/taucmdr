@@ -250,13 +250,36 @@ class Experiment(Model):
                 if 'deprecated' in props:
                     if comp.controller(self.storage).search(self.eid)[0][attr] in props['deprecated']:
                         deprecated_option = comp.controller(self.storage).search(self.eid)[0][attr]
-                        depr_str = props['deprecated'][targ[attr]]
-                        depr  = [int(i) for i in depr_str.split('.')]
-                        depr.extend([0]*(3-len(depr)))
-                        if tau_version >= depr:
+                        dep = props['deprecated'][targ[attr]]
+                        if isinstance(dep, list):
+                            if len(dep) == 2 and dep[1] != '':
+                                rem_str = dep[1]
+                                rem = [int(i) for i in rem_str.split('.')]
+                                rem.extend([0]*(3-len(rem)))
+                                is_removed = tau_version >= rem
+                            else:
+                                is_removed = False
+
+                            if is_removed:
+                                is_deprecated = False
+                            else:
+                                depr_str = dep[0]
+                                depr  = [int(i) for i in depr_str.split('.')]
+                                depr.extend([0]*(3-len(depr)))
+                                is_deprecated = tau_version >= depr
+                        else:
+                            depr_str = dep
+                            depr  = [int(i) for i in depr_str.split('.')]
+                            depr.extend([0]*(3-len(depr)))
+                            is_deprecated = tau_version >= depr
+                            is_removed = False
+
+                        if is_deprecated:
                             LOGGER.warning(
-                                "The \"--%s %s\" has been deprecated in TAU version %s and will be removed in a future release." %(attr, deprecated_option, depr_str)
+                                "The \"--%s %s\" option has been deprecated in TAU version %s and will be removed in a future release." %(attr, deprecated_option, depr_str)
                             )
+                        elif is_removed:
+                            raise ConfigurationError('The \"--%s %s\" option was removed in TAU version %s.' % (attr, deprecated_option, rem_str))
 
     def on_create(self):
         self.verify()

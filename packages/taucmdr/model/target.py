@@ -475,7 +475,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
                          'action': ParsePackagePathAction},
-            'deprecated': {'download-tr4' : '2.29.1', 'download-tr6' : '2.29.1'},
+            'deprecated': {'download-tr4' : ['2.29.1',''], 'download-tr6' : ['2.29.1','']},
             'rebuild_required': True
         },
         'libotf2_source': {
