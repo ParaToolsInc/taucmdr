@@ -180,9 +180,9 @@ def attributes():
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
-    pgi_or_gnu = _require_compiler_family([PGI, GNU],
-                                              "You must use PGI or GNU compilers to use the backtrace unwinder",
-                                              "Try adding `--compilers=PGI` or `--compilers=GNU` to the command line")
+    gnu_only = _require_compiler_family([PGI, GNU],
+                                              "You must use GNU compilers to use the backtrace unwinder",
+                                              "Try adding `--compilers=GNU` to the command line")
 
     return {
         'projects': {
@@ -421,9 +421,9 @@ def attributes():
                           'group': 'software package',
                           'metavar': '(libunwind|backtrace)'},
             'compat': {'libunwind': Target.exclude('host_arch', PPC64LE),
-                       'backtrace': (Target.require(CC.keyword, pgi_or_gnu),
-                                     Target.require(CXX.keyword, pgi_or_gnu),
-                                     Target.require(FC.keyword, pgi_or_gnu))},
+                       'backtrace': (Target.require(CC.keyword, gnu_only),
+                                     Target.require(CXX.keyword, gnu_only),
+                                     Target.require(FC.keyword, gnu_only))},
             'rebuild_required': True
         },
         'libunwind_source': {
