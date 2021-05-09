@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2018, ParaTools, Inc.
 # All rights reserved.
@@ -59,7 +58,7 @@ class RenumberTest(tests.TestCase):
         self.assertTrue(os.path.exists(old_path), "Data directory should exist after create")
         old_profile = os.path.join(old_path, "profile.0.0.0")
         self.assertTrue(os.path.exists(old_profile), "Profile should exist after create")
-        with open(old_profile, 'r') as f:
+        with open(old_profile) as f:
             old_profile_contents = f.read()
         num_trials_before = Trial.controller(storage=PROJECT_STORAGE).count()
         self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['0', '--to', '1'])
@@ -82,7 +81,7 @@ class RenumberTest(tests.TestCase):
         new_profile = os.path.join(new_path, "profile.0.0.0")
         self.assertTrue(os.path.exists(new_profile),
                         "Profile in data directory for new number should exist after renumber")
-        with open(new_profile, 'r') as f:
+        with open(new_profile) as f:
             new_profile_contents = f.read()
         self.assertEqual(old_profile_contents, new_profile_contents, "Profiles should be identical after renumber")
 
@@ -90,7 +89,7 @@ class RenumberTest(tests.TestCase):
     def test_swaptrials(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
-        for i in xrange(3):
+        for i in range(3):
             self.assertCommandReturnValue(0, CREATE_COMMAND, ['./a.out'])
             self.assertCommandReturnValue(0, EDIT_COMMAND, [str(i), '--description', 'desc%s' %i])
         self.assertCommandReturnValue(0, RENUMBER_COMMAND, ['0', '1', '2', '--to', '1', '2', '0'])

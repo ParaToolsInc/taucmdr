@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -62,7 +61,7 @@ class OmptInstallation(CMakeInstallation):
                 'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz',
                 'https://fs.paratools.com/tau-mirror/LLVM-openmp-0.2.tar.gz'
             ]
-        super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os,
+        super().__init__('ompt', 'ompt', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def cmake(self, flags):
@@ -72,8 +71,8 @@ class OmptInstallation(CMakeInstallation):
                       '-DCMAKE_CXX_FLAGS=-fPIC',
                       '-DCMAKE_BUILD_TYPE=Release',
                       '-DCMAKE_DISABLE_FIND_PACKAGE_CUDA:BOOL=TRUE'])
-        return super(OmptInstallation, self).cmake(flags)
+        return super().cmake(flags)
 
     def make(self, flags):
-        super(OmptInstallation, self).make(flags + ['libomp-needed-headers'])
-        return super(OmptInstallation, self).make(flags)
+        super().make(flags + ['libomp-needed-headers'])
+        return super().make(flags)

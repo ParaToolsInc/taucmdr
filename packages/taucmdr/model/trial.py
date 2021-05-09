@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -135,7 +134,7 @@ class TrialController(Controller):
     @staticmethod
     def _mark_time(mark, expr):
         timestamp = str(datetime.utcnow())
-        headline = '\n{:=<{}}\n'.format('== %s %s at %s ==' % (mark, expr['name'], timestamp), logger.LINE_WIDTH)
+        headline = '\n{:=<{}}\n'.format('== {} {} at {} =='.format(mark, expr['name'], timestamp), logger.LINE_WIDTH)
         LOGGER.info(headline)
         return timestamp
 
@@ -144,10 +143,10 @@ class TrialController(Controller):
             raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
         # Move TAU environment parameters to the command line
         env_parts = {}
-        for key, val in env.iteritems():
+        for key, val in env.items():
             if key not in os.environ:
                 env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.iteritems()])
+        env_str = ':'.join(['%s=%s' % item for item in env_parts.items()])
         cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
         cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
         env = dict(os.environ)
@@ -190,7 +189,7 @@ class TrialController(Controller):
                 data_size += os.path.getsize(os.path.join(dir_path, name))
         fields['data_size'] = data_size
         if record_output:
-            fields['output'] = output
+            fields['output'] = str(output)
         self.update(fields, trial.eid)
         if retval != 0:
             if data_size != 0:
@@ -208,7 +207,7 @@ class TrialController(Controller):
         LOGGER.info('Data size: %s bytes', util.human_size(data_size))
         LOGGER.info('Elapsed seconds: %s', elapsed)
         if record_output:
-            return retval, output
+            return retval, str(output)
         return retval
 
     def perform(self, proj, cmd, cwd, env, description, record_output=False):
@@ -240,7 +239,7 @@ class TrialController(Controller):
         measurement = expr.populate('measurement')
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
-        b64env = base64.b64encode(repr(env))
+        b64env = base64.standard_b64encode(repr(env).encode()).decode()
         is_bluegene = expr.populate('target').architecture().is_bluegene()
         is_cray_login = expr.populate('target').operating_system().is_cray_login()
         if is_cray_login:
@@ -320,7 +319,7 @@ class Trial(Model):
         else:
             return cmd[:idx], cmd[idx+1:]
         cmd0 = cmd[0]
-        for launcher, appfile_flags in PROGRAM_LAUNCHERS.iteritems():
+        for launcher, appfile_flags in PROGRAM_LAUNCHERS.items():
             if launcher not in cmd0:
                 continue
             # No '--' to indicate start of application, so look for first executable
@@ -410,7 +409,7 @@ class Trial(Model):
         try:
             util.mkdirp(self.prefix)
         except Exception as err:
-            raise ConfigurationError('Cannot create directory %r: %s' % (self.prefix, err),
+            raise ConfigurationError(f'Cannot create directory {self.prefix!r}: {err}',
                                      'Check that you have write access')
 
     def on_delete(self):
@@ -468,7 +467,7 @@ class Trial(Model):
         """
         expr = self.populate('experiment')
         if self.get('data_size', 0) <= 0:
-            raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+            raise ConfigurationError("Trial {} of experiment '{}' has no data".format(self['number'], expr['name']))
         meas = self.populate('experiment').populate('measurement')
         profile_fmt = meas.get('profile', 'none')
         trace_fmt = meas.get('trace', 'none')
@@ -510,7 +509,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+        tau_env_opts = sorted(f'{key}={val}' for key, val in env.items()
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -523,7 +522,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None))
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
@@ -544,7 +543,7 @@ class Trial(Model):
             int: Subprocess return code.
         """
         cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted('%s=%s' % (key, val) for key, val in env.iteritems()
+        tau_env_opts = sorted(f'{key}={val}' for key, val in env.items()
                               if (key.startswith('TAU_') or
                                   key.startswith('SCOREP_') or
                                   key in ('PROFILEDIR', 'TRACEDIR')))
@@ -556,7 +555,7 @@ class Trial(Model):
             elapsed = time.time() - begin_time
             if record_output:
                 retval = ret[0]
-                output = base64.b64encode(repr(ret[1]))
+                output = base64.standard_b64encode(repr(ret[1]).encode()).decode()
             else:
                 retval = ret
         except OSError as err:
@@ -564,7 +563,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError("Couldn't execute %s: %s" % (cmd_str, err), errno_hint.get(err.errno, None))
+            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None))
 
         measurement = expr.populate('measurement')
 
@@ -604,7 +603,7 @@ class Trial(Model):
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         if record_output:
-            return retval, output, elapsed
+            return retval, str(output), elapsed
         return retval, elapsed
 
     def export(self, dest):
@@ -618,10 +617,10 @@ class Trial(Model):
         """
         expr = self.populate('experiment')
         if self.get('data_size', 0) <= 0:
-            raise ConfigurationError("Trial %s of experiment '%s' has no data" % (self['number'], expr['name']))
+            raise ConfigurationError("Trial {} of experiment '{}' has no data".format(self['number'], expr['name']))
         data = self.get_data_files()
         stem = '%s.trial%d' % (expr['name'], self['number'])
-        for fmt, path in data.iteritems():
+        for fmt, path in data.items():
             if fmt == 'tau':
                 export_file = os.path.join(dest, stem+'.ppk')
                 tau = TauInstallation.get_minimal()
@@ -640,7 +639,7 @@ class Trial(Model):
             elif fmt == 'otf2':
                 export_file = os.path.join(dest, stem+'.tgz')
                 expr_dir, trial_dir = os.path.split(os.path.dirname(path))
-                items = [os.path.join(trial_dir, item) for item in 'traces', 'traces.def', 'traces.otf2']
+                items = [os.path.join(trial_dir, item) for item in ('traces', 'traces.def', 'traces.otf2')]
                 util.create_archive('tgz', export_file, items, expr_dir)
             elif fmt == 'sqlite':
                 export_file = os.path.join(dest, stem+'.db')

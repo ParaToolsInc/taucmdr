@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -519,7 +518,7 @@ class MeasurementController(Controller):
             if used_by:
                 raise ImmutableRecordError("Measurement '%s' cannot be modified because "
                                            "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
-        return super(MeasurementController, self).delete(keys)
+        return super().delete(keys)
 
 class Measurement(Model):
     """Measurement data model."""
@@ -572,7 +571,7 @@ class Measurement(Model):
         self._check_select_file()
         self._check_metrics()
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in changes.items():
                 if self.attributes[attr].get('rebuild_required'):
                     if attr == 'metrics':
                         old_value, new_value = change

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -50,7 +49,7 @@ class _JsonRecord(StorageRecord):
     eid_type = int
 
     def __init__(self, database, element, eid=None):
-        super(_JsonRecord, self).__init__(database, eid or element.eid, element)
+        super().__init__(database, eid or element.eid, element)
 
     def __str__(self):
         return json.dumps(self)
@@ -67,10 +66,10 @@ class _JsonFileStorage(tinydb.JSONStorage):
     """
     def __init__(self, path):
         try:
-            super(_JsonFileStorage, self).__init__(path)
-        except IOError:
-            self.path = path
-            self._handle = open(path, 'r')
+            super().__init__(path)
+        except OSError:
+            self.path = str(path)
+            self._handle = open(path)
             self.readonly = True
             LOGGER.debug("'%s' opened read-only", path)
         else:
@@ -81,7 +80,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
         if self.readonly:
             raise ConfigurationError("Cannot write to '%s'" % self.path, "Check that you have `write` access.")
         else:
-            super(_JsonFileStorage, self).write(*args, **kwargs)
+            super().write(*args, **kwargs)
 
 
 class LocalFileStorage(AbstractStorage):
@@ -96,7 +95,7 @@ class LocalFileStorage(AbstractStorage):
     Record = _JsonRecord
 
     def __init__(self, name, prefix):
-        super(LocalFileStorage, self).__init__(name)
+        super().__init__(name)
         self._transaction_count = 0
         self._db_copy = None
         self._database = None
@@ -129,15 +128,15 @@ class LocalFileStorage(AbstractStorage):
         for item in self.search():
             yield item['key']
 
-    def iterkeys(self):
+    def keys(self):
         for item in self.search():
             yield item['key']
 
-    def itervalues(self):
+    def values(self):
         for item in self.search():
             yield item['value']
 
-    def iteritems(self):
+    def items(self):
         for item in self.search():
             yield item['key'], item['value']
 
@@ -154,9 +153,9 @@ class LocalFileStorage(AbstractStorage):
         if not os.access(self.prefix, os.W_OK):
             return False
         try:
-            with tempfile.NamedTemporaryFile(dir=self.prefix, delete=True) as tmp_file:
+            with tempfile.NamedTemporaryFile(mode="w", dir=self.prefix, delete=True) as tmp_file:
                 tmp_file.write("Write test. Delete this file.")
-        except (OSError, IOError):
+        except OSError:
             return False
         return True
 
@@ -166,7 +165,9 @@ class LocalFileStorage(AbstractStorage):
             try:
                 util.mkdirp(self._prefix)
             except Exception as err:
-                raise StorageError("Failed to access %s filesystem prefix '%s': %s" % (self.name, self._prefix, err))
+                raise StorageError(
+                    f"Failed to access {self.name} filesystem prefix '{self._prefix}': {err}"
+                )
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, self._prefix)
 
     def disconnect_filesystem(self, *args, **kwargs):
@@ -181,8 +182,8 @@ class LocalFileStorage(AbstractStorage):
                 storage = CachingMiddleware(_JsonFileStorage)
                 storage.WRITE_CACHE_SIZE = 0
                 self._database = tinydb.TinyDB(self.dbfile, storage=storage)
-            except IOError as err:
-                raise StorageError("Failed to access %s database '%s': %s" % (self.name, self.dbfile, err),
+            except OSError as err:
+                raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
                                    "Check that you have `write` access")
             if not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
@@ -197,7 +198,7 @@ class LocalFileStorage(AbstractStorage):
 
     @property
     def prefix(self):
-        return self._prefix
+        return str(self._prefix)
 
     @property
     def dbfile(self):
@@ -212,7 +213,7 @@ class LocalFileStorage(AbstractStorage):
     def __str__(self):
         """Human-readable identifier for this database."""
         # pylint: disable=protected-access
-        return self._database._storage.path
+        return str(self._database._storage.path)
 
     def __enter__(self):
         """Initiates the database transaction."""
@@ -248,8 +249,8 @@ class LocalFileStorage(AbstractStorage):
         def _or(lhs, rhs):
             return lhs | rhs
         join = _or if match_any else _and
-        itr = keys.iteritems()
-        key, val = itr.next()
+        itr = keys.items()
+        key, val = next(iter(itr))
         query = (tinydb.where(key) == val)
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))

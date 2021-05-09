@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # TauCmdr documentation build configuration file, created by
 # sphinx-quickstart on Fri Apr 10 14:18:42 2015.
@@ -14,8 +13,6 @@
 
 import sys
 import os
-import shlex
-import tempfile
 import datetime
 
 # Since this file is execfile()d with the current directory set to its
@@ -65,9 +62,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'TAU Commander'
-copyright = u'2015 ParaTools, Inc.'
-author = u'ParaTools, Inc.'
+project = 'TAU Commander'
+copyright = '2015 ParaTools, Inc.'
+author = 'ParaTools, Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -255,7 +252,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'TauCmdr.tex', u'%s Documentation' % project,
+    (master_doc, 'TauCmdr.tex', '%s Documentation' % project,
      author, 'manual'),
 ]
 
@@ -285,7 +282,7 @@ latex_logo = 'taulogo_large.png'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'taucmdr', u'%s Documentation' % project,
+    (master_doc, 'taucmdr', '%s Documentation' % project,
      [author], 1)
 ]
 
@@ -299,7 +296,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'TauCmdr', u'%s Documentation' % project,
+    (master_doc, 'TauCmdr', '%s Documentation' % project,
      author, 'TauCmdr', 'TAU for the rest of us.',
      'Miscellaneous'),
 ]

@@ -115,9 +115,9 @@ To get more information on a particular message, use
 Prefer ``pylint: disable`` to the deprecated older form
 ``pylint: disable-msg``.
 
-Unused argument warnings can be suppressed by using `_` as the
+Unused argument warnings can be suppressed by using ``_`` as the
 identifier for the unused argument or prefixing the argument name with
-`unused_`. In situations where changing the argument names is
+``unused_``. In situations where changing the argument names is
 infeasible, you can mention them at the beginning of the function. For
 example:
 
@@ -373,7 +373,7 @@ over it.
     if key not in adict: ...
     if obj in alist: ...
     for line in afile: ...
-    for k, v in dict.iteritems(): ...
+    for k, v in dict.items(): ...
 
 **No:**
 

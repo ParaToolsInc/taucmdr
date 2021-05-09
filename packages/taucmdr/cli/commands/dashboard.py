@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -57,7 +56,7 @@ class DashboardCommand(AbstractCommand):
         args = self._parse_args(argv)
         subargs = ['--' + args.style]
         proj_ctrl = Project.controller()
-        print
+        print()
         try:
             proj = proj_ctrl.selected()
         except ProjectSelectionError as err:
@@ -72,7 +71,7 @@ class DashboardCommand(AbstractCommand):
             raise err
         else:
             project_list_cmd.main(subargs + [proj['name']])
-        print
+        print()
         return EXIT_SUCCESS
 
 COMMAND = DashboardCommand(__name__, summary_fmt="Show all project components.")

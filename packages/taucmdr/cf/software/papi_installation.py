@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -34,7 +33,7 @@ import os
 import re
 import sys
 import fileinput
-from HTMLParser import HTMLParser
+import html
 from subprocess import CalledProcessError
 from xml.etree import ElementTree
 from taucmdr import logger, util
@@ -45,8 +44,8 @@ from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: ['http://icl.utk.edu/projects/papi/downloads/papi-5.5.1.tar.gz',
-         'http://fs.paratools.com/tau-mirror/papi-5.5.1.tar.gz']}
+REPOS = {None: ['http://icl.utk.edu/projects/papi/downloads/papi-6.0.0.1.tar.gz',
+                'http://fs.paratools.com/tau-mirror/papi-6.0.0.1.tar.gz']}
 
 LIBRARIES = {None: ['libpapi.a']}
 
@@ -62,13 +61,13 @@ class PapiInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(PapiInstallation, self).__init__('papi', 'PAPI', sources, target_arch, target_os,
+        super().__init__('papi', 'PAPI', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, None)
         self._xml_event_info = None
 
     def _prepare_src(self, *args, **kwargs):
         # PAPI's source lives in a 'src' directory instead of the usual top level location
-        src_prefix = super(PapiInstallation, self)._prepare_src(*args, **kwargs)
+        src_prefix = super()._prepare_src(*args, **kwargs)
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
         return src_prefix
@@ -79,14 +78,14 @@ class PapiInstallation(AutotoolsInstallation):
         os.environ['CC'] = cc
         os.environ['CXX'] = cxx
         flags.extend(['CC='+cc, 'CXX='+cxx])
-        return super(PapiInstallation, self).configure(flags)
+        return super().configure(flags)
 
     def make(self, flags):
         # PAPI's tests often fail to compile, so disable them.
-        for line in fileinput.input(os.path.join(self._src_prefix, 'Makefile'), inplace=1):
+        for line in fileinput.input(os.path.join(str(self._src_prefix), 'Makefile'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('TESTS =', '#TESTS ='))
-        super(PapiInstallation, self).make(flags)
+        super().make(flags)
 
     def xml_event_info(self):
         if not self._xml_event_info:
@@ -167,10 +166,9 @@ class PapiInstallation(AutotoolsInstallation):
         """
         assert event_type == "PRESET" or event_type == "NATIVE"
         metrics = []
-        html_parser = HTMLParser()
         def _format(item):
             name = item.attrib['name']
-            desc = html_parser.unescape(item.attrib['desc'])
+            desc = html.unescape(item.attrib['desc'])
             desc = desc[0].capitalize() + desc[1:] + "."
             return name, desc
         xml_event_info = self.xml_event_info()

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -42,6 +41,7 @@ class StorageDispatchTests(tests.TestCase):
     """Unit tests for SQLiteLocalFileStorage."""
 
     def setUp(self):
+        super().setUp()
         # Generate a random database name so that concurrently running tests don't interfere.
         self.tinydb_storage = StorageDispatch(uuid.uuid4().hex[-8:], get_test_workdir())
         self.tinydb_storage.set_backend('tinydb')
@@ -63,6 +63,7 @@ class StorageDispatchTests(tests.TestCase):
             os.remove(storage_path)
         except OSError:
             pass
+        super().tearDown()
 
     def test_sqlite_dispatch_count(self):
         self.sqlite_storage.purge(table_name='application')

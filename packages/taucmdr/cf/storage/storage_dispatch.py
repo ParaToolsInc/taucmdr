@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -32,6 +31,7 @@ This Storage class dispatches calls to either TinyDB or SQLite, depending on whi
 import os
 
 from taucmdr import logger
+from taucmdr import util
 from taucmdr.cf.storage import AbstractStorage, StorageError
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage.sqlite3_file import SQLiteLocalFileStorage
@@ -54,7 +54,7 @@ class StorageDispatch(AbstractStorage):
     default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
 
     def __init__(self, name=None, prefix=None, kind=None):
-        super(StorageDispatch, self).__init__(name)
+        super().__init__(name)
         LOGGER.debug("Initialized StorageDispatch name = %s kind = %s", name, kind)
         if kind == 'project':
             self._local_storage = ProjectStorage()
@@ -74,7 +74,7 @@ class StorageDispatch(AbstractStorage):
                            and is TinyDB otherwise.
         """
         if backend not in AVAILABLE_BACKENDS:
-            raise StorageError('Unrecognized backend {}; use one of {}'.format(backend, AVAILABLE_BACKENDS))
+            raise StorageError(f'Unrecognized backend {backend}; use one of {AVAILABLE_BACKENDS}')
         if backend == 'tinydb':
             LOGGER.debug("Using TinyDB database as requested for %s", self.name)
             self._backend = DB_TINYDB
@@ -94,7 +94,7 @@ class StorageDispatch(AbstractStorage):
             return self._local_storage
         elif self._backend == DB_SQLITE:
             return self._sqlite_storage
-        raise InternalError('Bad storage type in dispatch: {}'.format(self._backend))
+        raise InternalError(f'Bad storage type in dispatch: {self._backend}')
 
     def __getattr__(self, item):
         """Dispatches any messages not otherwise caught to the selected storage backend."""
@@ -124,17 +124,17 @@ class StorageDispatch(AbstractStorage):
         """Iterate over keys in the key/value store."""
         return iter(self._get_storage())
 
-    def iterkeys(self):
+    def keys(self):
         """Iterate over keys in the key/value store."""
-        return self._get_storage().iterkeys()
+        return self._get_storage().keys()
 
-    def itervalues(self):
+    def values(self):
         """Iterate over values in the key/value store."""
-        return self._get_storage().iteritems()
+        return self._get_storage().items()
 
-    def iteritems(self):
+    def items(self):
         """Iterate over items in the key/value store."""
-        return self._get_storage().iteritems()
+        return self._get_storage().items()
 
     def connect_filesystem(self, *args, **kwargs):
         """Prepares the store filesystem for reading and writing."""
@@ -299,7 +299,12 @@ class StorageDispatch(AbstractStorage):
 
         Returns:
             Record: The new record.
+
+        Raises:
+            TypeError: If bytes, bytearray or memoryview found in data
         """
+        if not util.is_clean_container(data):
+            raise TypeError(f"Bad binary type (bytes, bytearray, etc.) found in data(dict):\n{data}")
         return self._get_storage().insert(data, table_name=table_name)
 
     def update(self, fields, keys, table_name=None, match_any=False):
@@ -319,7 +324,12 @@ class StorageDispatch(AbstractStorage):
 
         Raises:
             ValueError: ``bool(keys) == False`` or invalid value for `keys`.
+            TypeError: If binary data (bytes, bytearray, memoryview) found in fields or key dict
         """
+        if not util.is_clean_container(fields):
+          raise TypeError(f"Bad types (bytes, bytearray, etc.) passed as fields:\n{fields}")
+        if isinstance(keys, dict) and not util.is_clean_container(keys):
+            raise TypeError(f"Bad types (bytes, bytearray, etc. passed as keys:\n{keys}")
         return self._get_storage().update(fields, keys, table_name=table_name, match_any=match_any)
 
     def unset(self, fields, keys, table_name=None, match_any=False):
@@ -384,7 +394,7 @@ class StorageDispatch(AbstractStorage):
 class ProjectStorageDispatch(StorageDispatch):
     """Dispatches Project storage method calls to the backing Project storage class"""
     def __init__(self):
-        super(ProjectStorageDispatch, self).__init__(name='project', prefix=None, kind='project')
+        super().__init__(name='project', prefix=None, kind='project')
 
     def destroy(self, ignore_errors=False):
         self._local_storage.destroy(ignore_errors=ignore_errors)
