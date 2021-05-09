@@ -87,8 +87,12 @@ def _require_compiler_family(family, *hints):
         except KeyError:
             raise ConfigurationError("%s but it is undefined" % msg)
         given_family_name = compiler_record['family']
-        if given_family_name != family.name:
-            raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        if isinstance(family, list):
+            if given_family_name not in [fam.name for fam in family]:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        else:
+            if given_family_name != family.name:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
     return callback
 
 def knc_require_k1om(*_):
@@ -163,7 +167,7 @@ def attributes():
     """
     from taucmdr.model.project import Project
     from taucmdr.cli.arguments import ParsePackagePathAction
-    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
+    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, GNU
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
@@ -177,8 +181,8 @@ def attributes():
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
     pgi_or_gnu = _require_compiler_family([PGI, GNU],
-                                              "You must use Intel compilers to target the Xeon Phi (KNC)",
-                                              "Try adding `--compilers=Intel` to the command line")
+                                              "You must use PGI or GNU compilers to use the backtrace unwinder",
+                                              "Try adding `--compilers=PGI` or `--compilers=GNU` to the command line")
 
     return {
         'projects': {
@@ -417,7 +421,9 @@ def attributes():
                           'group': 'software package',
                           'metavar': '(libunwind|backtrace)'},
             'compat': {'libunwind': Target.exclude('host_arch', PPC64LE),
-                       'backtrace': Target.require(pgi_or_gnu)},
+                       'backtrace': (Target.require(CC.keyword, pgi_or_gnu),
+                                     Target.require(CXX.keyword, pgi_or_gnu),
+                                     Target.require(FC.keyword, pgi_or_gnu))},
             'rebuild_required': True
         },
         'libunwind_source': {
