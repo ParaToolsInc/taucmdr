@@ -55,7 +55,7 @@ PYLINT_REPORT_TEMPLATE = \
 </details>
 
 <details>
-  <summary> Stderror </summary>
+  <summary> Stderr </summary>
 
 <pre>
 {stderr}
@@ -64,11 +64,12 @@ PYLINT_REPORT_TEMPLATE = \
 </details>
 """
 REPORT_START = re.compile(r'^ *[Rr]eport *[\r\n] *====== *$', re.MULTILINE)
-ROW_SEPERATOR = re.compile(r'^ *([+]-{5,}[+]?)+ *$', re.MULTILINE)
-HEADER_SEPERATOR = re.compile(r'^ *[+](={5,}[+])+ *$', re.MULTILINE)
+ROW_SEPARATOR = re.compile(r'^ *([+]-{5,}[+]?)+ *$', re.MULTILINE)
+HEADER_SEPARATOR = re.compile(r'^ *[+](={5,}[+])+ *$', re.MULTILINE)
 MODULE_DETAIL_HEADER = re.compile(r'^ *[*]{3,25} +Module +taucmdr([.]\w+)* *$', re.MULTILINE)
 TAUCMDR_MODULE = re.compile(r' +(taucmdr([.]\w+)+)')
 PYLINT_H2 = re.compile(r'^(?P<header> *(%|\w+)( +(/|\w+))* *)[\r\n]( *-{4,}) *$', re.MULTILINE)
+
 
 class PylintTest(tests.TestCase):
     """Runs Pylint to make sure the code scores at least 9.0"""
@@ -80,14 +81,17 @@ class PylintTest(tests.TestCase):
         _report = PYLINT_H2.sub(r'#### \g<header>', _report)
         _report_lines = []
         for line in _report.splitlines():
-            if ROW_SEPERATOR.search(line):
+            if ROW_SEPARATOR.search(line):
                 continue
-            elif HEADER_SEPERATOR.search(line):
-                trans_table = str.maketrans("+=","|-")
+            elif HEADER_SEPARATOR.search(line):
+                trans_table = str.maketrans("+=", "|-")
                 _report_lines.append(line.translate(trans_table))
             else:
                 _report_lines.append(line)
-        return PYLINT_REPORT_TEMPLATE.format(report="\n".join(_report_lines), details=_details.strip(), stderr=stderr.strip())
+        return PYLINT_REPORT_TEMPLATE.format(
+            report="\n".join(_report_lines),
+            details=_details.strip(),
+            stderr=stderr.strip())
 
     def run_pylint(self, *args):
         cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
