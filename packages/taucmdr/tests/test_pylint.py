@@ -36,6 +36,7 @@ import re
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
+MAX_REPORT_LENGTH = 65500
 REPORT_FILE = os.path.join(TAUCMDR_HOME, "pylint.md")
 PYLINT_REPORT_TEMPLATE = \
 """
@@ -88,6 +89,13 @@ class PylintTest(tests.TestCase):
                 _report_lines.append(line.translate(trans_table))
             else:
                 _report_lines.append(line)
+        _report_length_left =\
+            MAX_REPORT_LENGTH - (len(PYLINT_REPORT_TEMPLATE) + len("\n".join(_report_lines)) + len(stderr) + 30)
+        _details = _details.strip()
+        if len(_details) > _report_length_left:
+            _details = _details[0:_report_length_left].strip()
+            _details, _ = _details.rsplit("\n", maxsplit=1)
+            _details = _details + "\n ... __*TRUNCATED*__ ...\n"
         return PYLINT_REPORT_TEMPLATE.format(
             report="\n".join(_report_lines),
             details=_details.strip(),
