@@ -419,7 +419,7 @@ def attributes():
             'default': 'backtrace' if HOST_ARCH is PPC64LE else 'libunwind',
             'argparse': {'flags': ('--unwinder',),
                           'group': 'software package',
-                          'metavar': '(libunwind|backtrace)'},
+                          'metavar': '(libunwind|backtrace|None)'},
             'compat': {'libunwind': Target.exclude('host_arch', PPC64LE),
                        'backtrace': (Target.require(CC.keyword, gnu_only),
                                      Target.require(CXX.keyword, gnu_only),

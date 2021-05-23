@@ -425,7 +425,7 @@ class TauInstallation(Installation):
         self.unwind_depth = unwind_depth
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources and self.unwinder == 'libunwind'
         self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources
         self.uses_libelf = not minimal and (self.target_os is not DARWIN) and 'libelf' in sources
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
@@ -850,7 +850,7 @@ class TauInstallation(Installation):
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
                   '-bfd=%s' % binutils.install_prefix if binutils else None,
                   '-papi=%s' % papi.install_prefix if papi else None,
-                  '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else self.unwinder if self.unwinder != 'libunwind' else None,
+                  '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else '-unwind=%s' % self.unwinder if self.unwinder != 'None' else None,
                   '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
                   '-elf=%s' % libelf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
