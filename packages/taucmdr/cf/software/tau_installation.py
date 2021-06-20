@@ -766,7 +766,8 @@ class TauInstallation(Installation):
                     '-tag=%s' % self.uid,
                     '-arch=%s' % self.tau_magic.name,
                     '-bfd=%s' % binutils.install_prefix if binutils else None,
-                    '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else self.unwinder if self.unwinder != 'libunwind' else None,
+                    '-unwinder=%s' % self.unwinder,
+                    '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else None,
                    ] if flag]
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
@@ -850,7 +851,8 @@ class TauInstallation(Installation):
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
                   '-bfd=%s' % binutils.install_prefix if binutils else None,
                   '-papi=%s' % papi.install_prefix if papi else None,
-                  '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else '-unwind=%s' % self.unwinder if self.unwinder != 'None' else None,
+                  '-unwinder=%s' % self.unwinder,
+                  '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else None,
                   '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
                   '-elf=%s' % libelf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
