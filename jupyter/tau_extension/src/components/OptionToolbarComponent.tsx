@@ -50,9 +50,9 @@ export const OptionToolbar = (props: any) => {
 
     return (
         <div className={classes.header}>
-        	{ props.project ? (
+       		{ props.project ? (
 			<React.Fragment>
-	     	    <div>
+	     	    		<div>
 					<Button 
 						className={classes.button} 
 						size='small' 
@@ -61,33 +61,33 @@ export const OptionToolbar = (props: any) => {
 							props.onSetProject(null); 
 						}}
 					>
-                    	Update
-                	</Button>
+                    				Update
+                			</Button>
 
 					<Button 
-					  className={classes.button} 
-					  size='small'
-                      aria-controls="simple-menu" 
-                      aria-haspopup="true" 
-                      onClick={handleClick}
+						className={classes.button} 
+					  	size='small'
+					     	aria-controls="simple-menu" 
+					      	aria-haspopup="true" 
+					      	onClick={handleClick}
 					>
-   	    			    New
-          			</Button>
+						New
+					</Button>
 
-                    <Menu
-                      id="simple-menu"
-                      anchorEl={anchorEl}
-                      keepMounted
-                      open={Boolean(anchorEl)}
-                      onClose={handleClose}
-                      className={classes.menu}
-                    >
-                        <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Project');}}>New Project</MenuItem>
-                        <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Target');}}>New Target</MenuItem>
-                        <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Application');}}>New Application</MenuItem>
-                        <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Measurement');}}>New Measurement</MenuItem>
-                        <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Experiment');}}>New Experiment</MenuItem>
-                    </Menu>
+					<Menu
+					      id="simple-menu"
+					      anchorEl={anchorEl}
+					      keepMounted
+					      open={Boolean(anchorEl)}
+					      onClose={handleClose}
+					      className={classes.menu}
+					>
+						<MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Project');}}>New Project</MenuItem>
+						<MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Target');}}>New Target</MenuItem>
+						<MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Application');}}>New Application</MenuItem>
+						<MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Measurement');}}>New Measurement</MenuItem>
+						<MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Experiment');}}>New Experiment</MenuItem>
+						    </Menu>
 		 		</div>
 
 				<div>
@@ -96,7 +96,8 @@ export const OptionToolbar = (props: any) => {
 		    				{props.project}
 					</p>
 				</div>
-		    </React.Fragment>
+
+			</React.Fragment>
 		) : (
 			<React.Fragment>
 				<Button 
