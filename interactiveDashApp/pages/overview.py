@@ -97,7 +97,6 @@ def display_click_data(clickData):
     returns:
         the updated pathname and search components of the url
     """
-    print(clickData)
     #won't update if there is no click data
     if clickData is None:
         raise PreventUpdate

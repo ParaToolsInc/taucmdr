@@ -58,7 +58,7 @@ def display_runtime_breakdown(metric):
         if len(newString)>20:
             subtract = len(brkdwn_data.index[i])-20
             newString[:-subtract]
-            print('Subtracted')
+            #print('Subtracted')
                 
         fig.add_trace(go.Scatter(
         x=x, y=brkdwn_data.iloc[i],     #sum(sorted_data.iloc[i][0:i])
