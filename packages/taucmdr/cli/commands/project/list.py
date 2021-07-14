@@ -81,6 +81,7 @@ class ProjectListCommand(ListCommand):
         if single:
             storage = levels[0]
             ctrl = Project.controller(storage)
+            # pylint: disable=unexpected-keyword-arg
             proj = ctrl.one({'name': keys[0]}, context=False)
             for cmd, prop in ((target_list_cmd, 'targets'),
                               (application_list_cmd, 'applications'),
