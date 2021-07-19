@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
+        os: [ubuntu-18.04]
         backend: ['tinydb', 'sqlite']
         python_version: ['3.7']
     env:
