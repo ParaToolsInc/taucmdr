@@ -226,7 +226,7 @@ class CreateTest(tests.TestCase):
         )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python ')
+        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python[23]? ')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 
