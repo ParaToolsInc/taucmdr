@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,7 @@
 #
 """libdwarf software installation management.
 
-The Dwarf library provides an interface to resolve samples by converting program 
+The Dwarf library provides an interface to resolve samples by converting program
     counter addresses to function names for applications with a large number of symbols.
 """
 
@@ -46,7 +45,7 @@ class LibdwarfInstallation(AutotoolsInstallation):
     """Encapsulates a libdwarf installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(LibdwarfInstallation, self).__init__('libdwarf', 'libdwarf', sources,
+        super().__init__('libdwarf', 'libdwarf', sources,
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
         self.add_dependency('libelf', sources)
@@ -56,6 +55,6 @@ class LibdwarfInstallation(AutotoolsInstallation):
 
         libelf = self.dependencies.get('libelf')
         os.environ['LDFLAGS'] = '-L%s' % libelf.lib_path
-        os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path          
+        os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path
 
-        return super(LibdwarfInstallation, self).configure(flags)
+        return super().configure(flags)

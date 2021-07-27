@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -51,7 +50,7 @@ class CreateTest(tests.TestCase):
     def test_no_args(self):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, [])
-        self.assertIn('error: too few arguments', stderr)
+        self.assertIn('error: the following arguments are required', stderr)
 
     def test_h_arg(self):
         self.reset_project_storage()
@@ -87,7 +86,7 @@ class CreateTest(tests.TestCase):
         for role, expected in (CC, 'icc'), (CXX, 'icpc'), (FC, 'ifort'):
             path = test_targ.populate(role.keyword)['path']
             self.assertEqual(os.path.basename(path), expected,
-                             "Target[%s] is '%s', not '%s'" % (role, path, expected))
+                             f"Target[{role}] is '{path}', not '{expected}'")
 
     @tests.skipUnless(util.which('pgcc'), "PGI compilers required for this test")
     def test_host_family_pgi(self):
@@ -117,12 +116,12 @@ class CreateTest(tests.TestCase):
 
     @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
     def test_python_init(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
 
     @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
     def test_python2_init(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python2'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
 
     @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
     def test_python3_init(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python3'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])

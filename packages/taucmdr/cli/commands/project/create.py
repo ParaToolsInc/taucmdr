@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -74,7 +73,7 @@ class ProjectCreateCommand(CreateCommand):
             for name in names:
                 found = ctrl.one({"name": name})
                 if not found:
-                    self.parser.error('There is no %s named %s.' % (model_name, name))
+                    self.parser.error(f'There is no {model_name} named {name}.')
                 else:
                     acc.add(found)
 

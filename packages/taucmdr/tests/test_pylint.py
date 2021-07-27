@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -32,12 +31,13 @@ Asserts that pylint score doesn't drop below minimum.
 
 import os
 import sys
-import string
 import subprocess
 import re
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
+MAX_REPORT_LENGTH = 65500
+REPORT_FILE = os.path.join(TAUCMDR_HOME, "pylint.md")
 PYLINT_REPORT_TEMPLATE = \
 """
 ## Pylint Output
@@ -56,7 +56,7 @@ PYLINT_REPORT_TEMPLATE = \
 </details>
 
 <details>
-  <summary> Stderror </summary>
+  <summary> Stderr </summary>
 
 <pre>
 {stderr}
@@ -65,11 +65,12 @@ PYLINT_REPORT_TEMPLATE = \
 </details>
 """
 REPORT_START = re.compile(r'^ *[Rr]eport *[\r\n] *====== *$', re.MULTILINE)
-ROW_SEPERATOR = re.compile(r'^ *([+]-{5,}[+]?)+ *$', re.MULTILINE)
-HEADER_SEPERATOR = re.compile(r'^ *[+](={5,}[+])+ *$', re.MULTILINE)
+ROW_SEPARATOR = re.compile(r'^ *([+]-{5,}[+]?)+ *$', re.MULTILINE)
+HEADER_SEPARATOR = re.compile(r'^ *[+](={5,}[+])+ *$', re.MULTILINE)
 MODULE_DETAIL_HEADER = re.compile(r'^ *[*]{3,25} +Module +taucmdr([.]\w+)* *$', re.MULTILINE)
 TAUCMDR_MODULE = re.compile(r' +(taucmdr([.]\w+)+)')
 PYLINT_H2 = re.compile(r'^(?P<header> *(%|\w+)( +(/|\w+))* *)[\r\n]( *-{4,}) *$', re.MULTILINE)
+
 
 class PylintTest(tests.TestCase):
     """Runs Pylint to make sure the code scores at least 9.0"""
@@ -81,14 +82,24 @@ class PylintTest(tests.TestCase):
         _report = PYLINT_H2.sub(r'#### \g<header>', _report)
         _report_lines = []
         for line in _report.splitlines():
-            if ROW_SEPERATOR.search(line):
+            if ROW_SEPARATOR.search(line):
                 continue
-            elif HEADER_SEPERATOR.search(line):
-                trans_table = string.maketrans("+=","|-")
+            elif HEADER_SEPARATOR.search(line):
+                trans_table = str.maketrans("+=", "|-")
                 _report_lines.append(line.translate(trans_table))
             else:
                 _report_lines.append(line)
-        return PYLINT_REPORT_TEMPLATE.format(report="\n".join(_report_lines), details=_details.strip(), stderr=stderr.strip())
+        _report_length_left =\
+            MAX_REPORT_LENGTH - (len(PYLINT_REPORT_TEMPLATE) + len("\n".join(_report_lines)) + len(stderr) + 30)
+        _details = _details.strip()
+        if len(_details) > _report_length_left:
+            _details = _details[0:_report_length_left].strip()
+            _details, _ = _details.rsplit("\n", maxsplit=1)
+            _details = _details + "\n ... __*TRUNCATED*__ ...\n"
+        return PYLINT_REPORT_TEMPLATE.format(
+            report="\n".join(_report_lines),
+            details=_details.strip(),
+            stderr=stderr.strip())
 
     def run_pylint(self, *args):
         cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
@@ -100,9 +111,12 @@ class PylintTest(tests.TestCase):
 
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
-        self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
+        self.assertRegex(stderr, '(^ *[Uu]sing config file .*pylintrc.*)|(^$)')
         try:
-            version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
+            if re.search(r'__main__.py', stdout):
+                version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
+            else:
+                version_parts = stdout.split('\n')[0].split('pylint')[1].split('.')
         except IndexError:
             self.fail("Unable to parse pylint version string:\n%s" % stdout)
         version = tuple(int(x) for x in version_parts)
@@ -110,11 +124,16 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
-        lint_msg_file = open(os.path.join(TAUCMDR_HOME, "pylint.md"), "w")
-        lint_msg = self._format_pylint_report(stdout, stderr)
-        lint_msg_file.write(str(lint_msg))
-        lint_msg_file.close()
-        self.assertRegexpMatches(stderr, '^ *[Uu]sing config file .*pylintrc.*')
+        with open(REPORT_FILE, "w") as lint_msg_file:
+            try:
+                lint_msg = self._format_pylint_report(stdout, stderr)
+                lint_msg_file.write(str(lint_msg))
+            finally:
+                lint_msg_file.close()
+        self.assertRegex(stderr, '(^ *[Uu]sing config file .*pylintrc.*)|(^$)')
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
-        self.assertGreaterEqual(score, 9.0, "%s\nPylint score %s/10 is too low!" % (stdout, score))
+        self.assertGreaterEqual(
+            score,
+            9.0,
+            f"Pylint score {score}/10 is too low!\nPlease see report output for details:\n    {REPORT_FILE}")

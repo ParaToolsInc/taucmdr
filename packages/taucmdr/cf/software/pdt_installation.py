@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -191,7 +190,7 @@ class PdtInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os,
+        super().__init__('pdt', 'PDT', sources, target_arch, target_os,
                                               compilers, REPOS, COMMANDS, None, None)
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -214,7 +213,7 @@ class PdtInstallation(AutotoolsInstallation):
         # Sometimes PDT doesn't build the edg44 rose parsers even though they could be built.
         # If verification fails, try configuring those parsers and see if it helps.
         try:
-            super(PdtInstallation, self).verify()
+            super().verify()
         except SoftwarePackageError as err:
             if not (os.path.exists(self.install_prefix) and self._retry_verify):
                 raise err

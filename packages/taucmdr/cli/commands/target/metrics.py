@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -28,10 +27,10 @@
 """``target metrics`` subcommand."""
 
 
-from texttable import Texttable
 from taucmdr import EXIT_SUCCESS
 from taucmdr import logger, util
 from taucmdr.cli import arguments
+from taucmdr.cli.cli_view import Texttable
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.model.target import Target
 
@@ -60,7 +59,7 @@ class TargetMetricsCommand(AbstractCommand):
         return parser
 
     def _draw_table(self, targ, metric, rows):
-        parts = [util.hline("%s Metrics on Target '%s'" % (metric, targ['name']), 'cyan')]
+        parts = [util.hline("{} Metrics on Target '{}'".format(metric, targ['name']), 'cyan')]
         table = Texttable(logger.LINE_WIDTH)
         table.set_cols_align(['r', 'l'])
         name_width = max([len(row[0]) for row in rows])
@@ -91,7 +90,7 @@ class TargetMetricsCommand(AbstractCommand):
         targ_name = args.target_name
         targ = Target.controller(storage).one({'name': targ_name})
         if not targ:
-            self.parser.error("No %s-level target named '%s'." % (storage.name, targ_name))
+            self.parser.error(f"No {storage.name}-level target named '{targ_name}'.")
         if args.all:
             args.systems = self._measurement_systems
             args.modifiers = True
@@ -104,7 +103,7 @@ class TargetMetricsCommand(AbstractCommand):
             parts.extend(self._format_papi_metrics(targ, 'NATIVE', args.modifiers))
         if 'TAU' in args.systems:
             parts.extend(self._format_tau_metrics(targ))
-        print '\n'.join(parts)
+        print('\n'.join(parts))
         return EXIT_SUCCESS
 
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -69,10 +68,10 @@ def _translate_arg(flag, arg):
         elif arg is False:
             return [flag, 'ignore']
         return [flag, arg]
-    if isinstance(arg, basestring):
+    if isinstance(arg, str):
         return [flag, arg]
     if isinstance(arg, bool):
-        return ['{}={}'.format(flag, arg)]
+        return [f'{flag}={arg}']
     try:
         return [flag] + list(arg)
     except TypeError:
@@ -88,7 +87,7 @@ def _execute(cmd, argv):
 def _configure_project(args):
     PROJECT_STORAGE.destroy()
     argv = []
-    for key, val in vars(args).iteritems():
+    for key, val in vars(args).items():
         for action in initialize_cmd.parser.actions:
             if key == action.dest:
                 argv.extend(_translate_arg(action.option_strings[0], val))
@@ -157,14 +156,14 @@ def _configure_full(args):
 
     # Build a bitmask to filter out TAU project configurations where ``features[key] == False``.
     # From Python documentation: https://docs.python.org/2/library/stdtypes.html#dict.items
-    #   "If items(), keys(), values(), iteritems(), iterkeys(), and itervalues() are called with
+    #   "If items(), keys(), values(), items(), keys(), and values() are called with
     #    no intervening modifications to the dictionary, the lists will directly correspond."
     mask = 0
-    for i, val in enumerate(features.itervalues()):
+    for i, val in enumerate(features.values()):
         mask |= (not val) << i
-    for j in xrange(1 << len(features)):
+    for j in range(1 << len(features)):
         if not j & mask:
-            for i, key in enumerate(features.iterkeys()):
+            for i, key in enumerate(features.keys()):
                 setattr(args, key, bool(j & (1 << i)))
             _configure_project(args)
     return _configure_minimal(args)
@@ -199,7 +198,7 @@ def main(argv):
                                     'tau-options', 'from-tau-makefile', 'bare', 'tag'])
     args = parser.parse_args(argv)
 
-    os.chdir(util.mkdtemp())
+    os.chdir(util.mkdtemp().name)
     if args.tau_config == 'minimal':
         tau_prefix = _configure_minimal(args)
     elif args.tau_config == 'full':

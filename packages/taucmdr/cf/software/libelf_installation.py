@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -28,8 +27,8 @@
 """libelf software installation management.
 
 
-The ELF library provides an interface to read, modify or create ELF files in 
-            an architecture-independent way. 
+The ELF library provides an interface to read, modify or create ELF files in
+            an architecture-independent way.
 """
 
 from taucmdr.cf.software.installation import AutotoolsInstallation
@@ -46,9 +45,9 @@ class LibelfInstallation(AutotoolsInstallation):
     """Encapsulates a libelf installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super(LibelfInstallation, self).__init__('libelf', 'libelf', sources,
+        super().__init__('libelf', 'libelf', sources,
                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
         flags.extend(['--disable-debuginfod'])
-        return super(LibelfInstallation, self).configure(flags)
+        return super().configure(flags)

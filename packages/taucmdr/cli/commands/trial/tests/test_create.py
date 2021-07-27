@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2016, ParaTools, Inc.
 # All rights reserved.
@@ -31,7 +30,6 @@ Functions used for unit tests of create.py.
 """
 
 import os
-import shutil
 import tempfile
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN
@@ -93,7 +91,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, select_cmd, ['sample'])
         self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
         self.assertFalse(stderr)
-        self.assertManagedBuild(0, CC, [], 'matmult.c')
+        self.assertManagedBuild(0, CC, ['-g', '-no-pie'], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         self.assertIn("Trial 0 produced 1 profile files", stdout)
         self.assertIn("TAU_SHOW_MEMORY_FUNCTIONS=1", stdout)
@@ -149,6 +147,7 @@ class CreateTest(tests.TestCase):
 
     def sample_resolution_helper(self, option):
         self.reset_project_storage()
+        self.assertIn(option, ['file', 'line', 'function'])
         stdout, stderr = self.assertCommandReturnValue(0, measurement_edit_cmd,
                                             ['sample', '--sample-resolution', option])
         self.assertIn("Updated measurement 'sample'", stdout)
@@ -199,16 +198,15 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         test_dir = os.getcwd()
-        path = tempfile.mkdtemp()
-        os.chdir(path)
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, [test_dir+'/a.out', '--tau-dir', test_dir])
-        self.assertIn('BEGIN targ1-app1', stdout)
-        self.assertIn('END targ1-app1', stdout)
-        self.assertIn('Trial 0 produced', stdout)
-        self.assertIn('profile files', stdout)
-        self.assertFalse(stderr)
-        os.chdir(test_dir)
-        shutil.rmtree(path)
+        with tempfile.TemporaryDirectory() as path:
+            os.chdir(path)
+            stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, [test_dir+'/a.out', '--tau-dir', test_dir])
+            self.assertIn('BEGIN targ1-app1', stdout)
+            self.assertIn('END targ1-app1', stdout)
+            self.assertIn('Trial 0 produced', stdout)
+            self.assertIn('profile files', stdout)
+            self.assertFalse(stderr)
+            os.chdir(test_dir)
 
     def test_description(self):
         """Test --description option"""
@@ -220,33 +218,42 @@ class CreateTest(tests.TestCase):
 
     @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
     def test_run_python(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
         self.copy_testfile('firstprime.py')
         test_dir = os.getcwd()
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python',os.path.join(test_dir,'firstprime.py')])
+        stdout, stderr = self.assertCommandReturnValue(
+            0, trial_create_cmd, ['python', os.path.join(test_dir, 'firstprime.py')]
+        )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
+        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python[23]?(\r\n?|\n| )')
         self.assertFalse(stderr)
-        self.assertInLastTrialData("firstPrimeAfter")
+        self.assertInLastTrialData("first_prime_after")
 
     @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
     def test_run_python2(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python2'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
         self.copy_testfile('firstprime.py')
         test_dir = os.getcwd()
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python2',os.path.join(test_dir,'firstprime.py')])
+        stdout, stderr = self.assertCommandReturnValue(
+            0, trial_create_cmd, ['python2', os.path.join(test_dir, 'firstprime.py')]
+        )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
+        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python2')
         self.assertFalse(stderr)
-        self.assertInLastTrialData("firstPrimeAfter")
+        self.assertInLastTrialData("first_prime_after")
 
     @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
     def test_run_python3(self):
-        self.reset_project_storage(['--python','T','--python-interpreter','python3'])
+        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])
         self.copy_testfile('firstprime.py')
         test_dir = os.getcwd()
-        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['python3',os.path.join(test_dir,'firstprime.py')])
+        stdout, stderr = self.assertCommandReturnValue(
+            0, trial_create_cmd, ['python3', os.path.join(test_dir, 'firstprime.py')]
+        )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
+        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
-        self.assertInLastTrialData("firstPrimeAfter")
+        self.assertInLastTrialData("first_prime_after")

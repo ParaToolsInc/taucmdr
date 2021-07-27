@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2020, ParaTools, Inc.
 # All rights reserved.
@@ -32,13 +31,11 @@ A persistent, transactional record storage system using :py:class:`sqlite3` for
 both the database and the key/value store.
 """
 
-from __future__ import print_function
 
 import os
 import json
 import re
 import sqlite3
-import six
 from taucmdr import logger, util
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage import StorageRecord, StorageError
@@ -58,7 +55,7 @@ class _SQLiteJsonRecord(StorageRecord):
     eid_type = int
 
     def __init__(self, database, element, eid=None):
-        super(_SQLiteJsonRecord, self).__init__(database, eid or element.eid, element)
+        super().__init__(database, eid or element.eid, element)
 
     def __str__(self):
         return json.dumps(self)
@@ -82,14 +79,14 @@ class SQLiteStorageError(StorageError):
             table_name (str): Table on which access was attempted
         """
         if table_name:
-            value = "Attempt to access table {} before database connection established".format(table_name)
+            value = f"Attempt to access table {table_name} before database connection established"
         else:
             value = "Attempt to access database before connection established"
-        super(SQLiteStorageError, self).__init__(value)
+        super().__init__(value)
         self.table_name = table_name
 
 
-class SQLiteDatabase(object):
+class SQLiteDatabase:
     """Represents a connection to the database.
 
     Attributes:
@@ -102,14 +99,14 @@ class SQLiteDatabase(object):
         self._connection = None
         self._transaction_level = 0
 
-    class _LoggingCursor(object):
+    class _LoggingCursor:
         def __init__(self, dbfile, cursor):
             self._dbfile = dbfile
             self._cursor = cursor
 
         def execute(self, sql, parameters=(), log=True):
             if log:
-                _heavy_debug("{}: Executing `{}` with parameters {}".format(self._dbfile, sql, parameters))
+                _heavy_debug(f"{self._dbfile}: Executing `{sql}` with parameters {parameters}")
             return self._cursor.execute(sql, parameters)
 
         def fetchone(self):
@@ -133,7 +130,7 @@ class SQLiteDatabase(object):
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
             self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
-            LOGGER.debug("Connected to SQLite database at {}".format(self.dbfile))
+            LOGGER.debug(f"Connected to SQLite database at {self.dbfile}")
 
     def close(self):
         """Close the database connection"""
@@ -195,7 +192,7 @@ class SQLiteDatabase(object):
         self.table('_toplevel').purge()
 
 
-class _SQLiteJsonTable(object):
+class _SQLiteJsonTable:
     """Represents a JSON Table within the SQLite database.
     Operations on the table are made through this class.
 
@@ -219,17 +216,17 @@ class _SQLiteJsonTable(object):
         if value.isalpha() or (value[0] == '_' and value[1:].isalpha()):
             self._name = value
         else:
-            raise StorageError('Invalid table name {}'.format(value))
+            raise StorageError(f'Invalid table name {value}')
 
     def _ensure_exists(self):
         cursor = self.database.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY, data JSON NOT NULL);".format(self.name),
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.name} (id INTEGER PRIMARY KEY, data JSON NOT NULL);",
                   log=False)
         cursor.close()
 
     def insert(self, element):
         cursor = self.database.cursor()
-        cursor.execute("INSERT INTO {} (data) VALUES(?)".format(self.name), [json.dumps(element)])
+        cursor.execute(f"INSERT INTO {self.name} (data) VALUES(?)", [json.dumps(element)])
         result = _SQLiteJsonRecord(self.database.storage, element, eid=cursor.lastrowid)
         cursor.close()
         return result
@@ -239,10 +236,10 @@ class _SQLiteJsonTable(object):
         join_string = " OR " if match_any else " AND "
         where_clause = join_string.join(
             ["json_extract(data, '$.{}') == {}".format(key, (
-                int(val) if isinstance(val, int) else json.dumps(val) if isinstance(val, six.string_types) else
-                "json('{}')".format(json.dumps(val)))) for (key, val) in six.iteritems(keys)])
+                int(val) if isinstance(val, int) else json.dumps(val) if isinstance(val, str) else
+                "json('{}')".format(json.dumps(val)))) for (key, val) in keys.items()])
         if where_clause:
-            where_clause = "WHERE {}".format(where_clause)
+            where_clause = f"WHERE {where_clause}"
         return where_clause
 
     def _get(self, keys=None, eid=None, match_any=False, remove=False):
@@ -252,7 +249,7 @@ class _SQLiteJsonTable(object):
         command = 'DELETE' if remove else 'SELECT id, data'
 
         if eid is not None:
-            cursor.execute('{} FROM {} WHERE id == ?'.format(command, self.name), [eid])
+            cursor.execute(f'{command} FROM {self.name} WHERE id == ?', [eid])
             db_row = cursor.fetchone()
         elif isinstance(keys, dict):
             query_string = '{} FROM {} {};'.format(
@@ -300,13 +297,13 @@ class _SQLiteJsonTable(object):
         if unset:
             if not isinstance(fields, (list, tuple)):
                 raise ValueError('fields must be a collection type but was {}'.format(type(fields)))
-            json_set_expr = "json_remove(data{})".format("".join([", '$.{}'".format(key) for key in fields]))
+            json_set_expr = "json_remove(data{})".format("".join([f", '$.{key}'" for key in fields]))
         else:
             if not isinstance(fields, dict):
                 raise ValueError('fields must be a dictionary but was {}'.format(type(fields)))
             json_set_expr = "json_set(data{})".format(
                 "".join(
-                    [", '$.{}', json('{}')".format(key, json.dumps(value)) for (key, value) in six.iteritems(fields)]))
+                    [", '$.{}', json('{}')".format(key, json.dumps(value)) for (key, value) in fields.items()]))
 
         # Then construct the WHERE clause to match either the EIDs provided
         # or the keys provided.
@@ -320,14 +317,14 @@ class _SQLiteJsonTable(object):
             else:
                 raise ValueError('eids, if set, must be of type {0} or collection of {0}, but was {1}'.format(
                     self.Record.eid_type, type(eids)))
-            where_clause = 'WHERE {}'.format(" OR ".join(["id == {}".format(eid) for eid in update_ids]))
+            where_clause = 'WHERE {}'.format(" OR ".join([f"id == {eid}" for eid in update_ids]))
         elif isinstance(keys, dict):
             where_clause = self._json_query(keys, match_any)
         else:
             raise ValueError('Either keys or eids must be provided')
 
         # Assemble the whole UPDATE statement
-        update_statement = "UPDATE {} SET data = {} {};".format(self.name, json_set_expr, where_clause)
+        update_statement = f"UPDATE {self.name} SET data = {json_set_expr} {where_clause};"
 
         # Run it
         cursor = self.database.cursor()
@@ -336,7 +333,7 @@ class _SQLiteJsonTable(object):
 
     def exists(self, field):
         cursor = self.database.cursor()
-        cursor.execute("SELECT * FROM {} WHERE json_extract(data, '$.{}') IS NOT NULL;".format(self.name, field))
+        cursor.execute(f"SELECT * FROM {self.name} WHERE json_extract(data, '$.{field}') IS NOT NULL;")
         db_rows = cursor.fetchall()
         result = [_SQLiteJsonRecord(self.database.storage, json.loads(row_data), eid=row_eid)
                   for (row_eid, row_data) in db_rows]
@@ -345,7 +342,7 @@ class _SQLiteJsonTable(object):
 
     def purge(self):
         cursor = self.database.cursor()
-        cursor.execute('DROP TABLE IF EXISTS {};'.format(self.name))
+        cursor.execute(f'DROP TABLE IF EXISTS {self.name};')
         cursor.close()
         self._ensure_exists()
 
@@ -362,7 +359,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
     Record = _SQLiteJsonRecord
 
     def __init__(self, name, prefix):
-        super(SQLiteLocalFileStorage, self).__init__(name, prefix)
+        super().__init__(name, prefix)
         self._database = None
 
     @property
@@ -383,8 +380,8 @@ class SQLiteLocalFileStorage(LocalFileStorage):
             try:
                 self._database = SQLiteDatabase(self.dbfile, storage=self)
                 self._database.open()
-            except IOError as err:
-                raise StorageError("Failed to access %s database '%s': %s" % (self.name, self.dbfile, err),
+            except OSError as err:
+                raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
                                    "Check that you have `write` access")
             if not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,

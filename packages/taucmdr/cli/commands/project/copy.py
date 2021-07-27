@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -53,13 +52,13 @@ class ProjectCopyCommand(CopyCommand):
             for name in names:
                 found = ctrl.one({"name": name})
                 if not found:
-                    self.parser.error('There is no %s named %s.' % (model_name, name))
+                    self.parser.error(f'There is no {model_name} named {name}.')
                 else:
                     acc.add(found)
         return acc
 
     def _construct_parser(self):
-        parser = super(ProjectCopyCommand, self)._construct_parser()
+        parser = super()._construct_parser()
         parser.add_argument('--targets',
                             help="Target configurations in the project copy",
                             metavar='t',
@@ -82,7 +81,7 @@ class ProjectCopyCommand(CopyCommand):
         key_attr = self.model.key_attribute
         matching = ctrl.search({key_attr: key})
         if not matching:
-            self.parser.error("No %s-level %s with %s='%s'." % (ctrl.storage.name, self.model_name, key_attr, key))
+            self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
         elif len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
@@ -97,7 +96,7 @@ class ProjectCopyCommand(CopyCommand):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+            self.parser.error(f"A {self.model_name} with {key_attr}='{key}' already exists")
         self.logger.info("Created a new %s-level %s: '%s'.", ctrl.storage.name, self.model_name, key)
         return EXIT_SUCCESS
 

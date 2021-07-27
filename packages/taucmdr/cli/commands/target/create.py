@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -94,9 +93,9 @@ class TargetCreateCommand(CreateCommand):
                     tau_arch = arch
                     break
             else:
-                parts = ["TAU Makefile '%s' targets an ambiguous TAU architecture: %s" % (makefile, tau_arch_name),
+                parts = [f"TAU Makefile '{makefile}' targets an ambiguous TAU architecture: {tau_arch_name}",
                          "It could be any of these:"]
-                parts.extend(["  - %s on %s" % (arch.operating_system.name, arch.architecture.name)
+                parts.extend([f"  - {arch.operating_system.name} on {arch.architecture.name}"
                               for arch in matches])
                 raise ConfigurationError("\n".join(parts))
         self.logger.info("Parsing TAU Makefile '%s' to populate command line arguments:", makefile)
@@ -106,7 +105,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --host-os='%s'", args.host_os)
         args.tau_source = os.path.abspath(os.path.join(os.path.dirname(makefile), '..', '..'))
         self.logger.info("  --taucmdr='%s'", args.tau_source)
-        with open(makefile, 'r') as fin:
+        with open(makefile) as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
             package_parts = {"BFDINCLUDE": ("binutils_source",
                                             lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))),
@@ -208,7 +207,7 @@ class TargetCreateCommand(CreateCommand):
 
     def _configure_argument_group(self, group, kbase, family_flag, family_attr, hint):
         # Check environment variables for default compilers.
-        compilers = {role: self._get_compiler_from_env(role) for role in kbase.roles.itervalues()}
+        compilers = {role: self._get_compiler_from_env(role) for role in kbase.roles.values()}
         # Use the result of previous compiler detection to find compilers not specified in the environment
         if hint:
             try:
@@ -221,11 +220,11 @@ class TargetCreateCommand(CreateCommand):
                 # e.g. Intel doesn't have SHMEM compilers.
                 pass
             else:
-                for role, comp in compilers.iteritems():
+                for role, comp in compilers.items():
                     if comp is None and role in family:
                         compilers[role] = family[role]
-        sibling = next((comp for comp in compilers.itervalues() if comp is not None), None)
-        for role, comp in compilers.iteritems():
+        sibling = next((comp for comp in compilers.values() if comp is not None), None)
+        for role, comp in compilers.items():
             if not comp:
                 if sibling:
                     # If some compilers found, but not all, then use compiler
@@ -235,7 +234,7 @@ class TargetCreateCommand(CreateCommand):
                     # No environment variables specify compiler defaults so use model defaults.
                     compilers[role] = self._get_compiler_from_defaults(kbase, role)
         # Use the majority family as the default compiler family.
-        family_count = Counter(comp.info.family for comp in compilers.itervalues() if comp is not None)
+        family_count = Counter(comp.info.family for comp in compilers.values() if comp is not None)
         try:
             family_default = family_count.most_common()[0][0].name
         except IndexError:
@@ -254,7 +253,7 @@ class TargetCreateCommand(CreateCommand):
                            action=TargetCreateCommand._family_flag_action(kbase, family_attr))
         # Monkey-patch default actions for compiler arguments
         # pylint: disable=protected-access
-        for role, comp in compilers.iteritems():
+        for role, comp in compilers.items():
             action = next(act for act in group._actions if act.dest == role.keyword)
             action.default = comp.absolute_path if comp else arguments.SUPPRESS
             action.__action_call__ = action.__call__
@@ -263,7 +262,7 @@ class TargetCreateCommand(CreateCommand):
         return family_default
 
     def _construct_parser(self):
-        parser = super(TargetCreateCommand, self)._construct_parser()
+        parser = super()._construct_parser()
         group = parser.add_argument_group('host arguments')
         host_family_name = self._configure_argument_group(group, HOST_COMPILERS, '--compilers', 'host_family', None)
 
@@ -283,7 +282,7 @@ class TargetCreateCommand(CreateCommand):
         return parser
 
     def _parse_args(self, argv):
-        args = super(TargetCreateCommand, self)._parse_args(argv)
+        args = super()._parse_args(argv)
         # Check that all required compilers were found
         for role in TAU_MINIMAL_COMPILERS:
             if role.keyword not in args:
@@ -304,7 +303,7 @@ class TargetCreateCommand(CreateCommand):
         """
         compilers = {}
         for kbase in HOST_COMPILERS, MPI_COMPILERS, SHMEM_COMPILERS, CUDA_COMPILERS, CAF_COMPILERS, PYTHON_INTERPRETERS:
-            for role in kbase.roles.itervalues():
+            for role in kbase.roles.values():
                 try:
                     command = getattr(args, role.keyword)
                 except AttributeError:
@@ -322,11 +321,11 @@ class TargetCreateCommand(CreateCommand):
         compilers = self.parse_compiler_flags(args)
 
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
-        for comp in compilers.itervalues():
+        for comp in compilers.values():
             record = Compiler.controller(store).register(comp)
             data[comp.info.role.keyword] = record.eid
 
-        return super(TargetCreateCommand, self)._create_record(store, data)
+        return super()._create_record(store, data)
 
 
 COMMAND = TargetCreateCommand(Target, __name__)

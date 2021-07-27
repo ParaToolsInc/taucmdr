@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -59,7 +58,7 @@ class ProjectStorageError(StorageError):
         value = "Project directory not found in '%s' or any of its parent directories." % search_root
         hints = ("Make sure that you have already run the `tau initialize` command "
                  "in this directory or any of its parent directories.")
-        super(ProjectStorageError, self).__init__(value, hints)
+        super().__init__(value, hints)
         self.search_root = search_root
 
 
@@ -71,7 +70,7 @@ class ProjectStorage(LocalFileStorage):
     """
 
     def __init__(self):
-        super(ProjectStorage, self).__init__('project', None)
+        super().__init__('project', None)
         self._force_cwd = False
         self._tau_directory = None
 
