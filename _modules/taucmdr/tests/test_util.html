@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.tests.test_util</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2016, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -129,6 +128,56 @@
 
 <div class="viewcode-block" id="CamelCaseTest.test_camelcase"><a class="viewcode-back" href="../../../taucmdr.tests.test_util.html#taucmdr.tests.test_util.CamelCaseTest.test_camelcase">[docs]</a>    <span class="k">def</span> <span class="nf">test_camelcase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">camelcase</span><span class="p">(</span><span class="s2">&quot;abc_def_ghi&quot;</span><span class="p">),</span> <span class="s2">&quot;AbcDefGhi&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="IsCleanContainerTest"><a class="viewcode-back" href="../../../taucmdr.tests.test_util.html#taucmdr.tests.test_util.IsCleanContainerTest">[docs]</a><span class="k">class</span> <span class="nc">IsCleanContainerTest</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class to test checking whether containers contain disallowed binary data.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IsCleanContainerTest.test_true"><a class="viewcode-back" href="../../../taucmdr.tests.test_util.html#taucmdr.tests.test_util.IsCleanContainerTest.test_true">[docs]</a>    <span class="k">def</span> <span class="nf">test_true</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that valid containers and other items are not flagged as being bad.&quot;&quot;&quot;</span>
+        <span class="n">good_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                     <span class="s1">&#39;this&#39;</span><span class="p">:</span> <span class="s1">&#39;that&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;entry&#39;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s1">&#39;item1&#39;</span><span class="p">:</span> <span class="s1">&#39;dog&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;list1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span>
+                         <span class="s1">&#39;bools&#39;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                     <span class="p">},</span>
+                     <span class="s1">&#39;empty&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="p">(</span><span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="s1">&#39;keyed&#39;</span><span class="p">):</span> <span class="s1">&#39;allowed&#39;</span>
+                     <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="n">good_dict</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">({}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">([]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">((</span><span class="s2">&quot;tuple&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">([{},</span> <span class="p">{}]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">([</span><span class="s2">&quot;something&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;dict&quot;</span><span class="p">:</span> <span class="s2">&quot;value&quot;</span><span class="p">},</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;entry&quot;</span><span class="p">)]))</span></div>
+
+<div class="viewcode-block" id="IsCleanContainerTest.test_false"><a class="viewcode-back" href="../../../taucmdr.tests.test_util.html#taucmdr.tests.test_util.IsCleanContainerTest.test_false">[docs]</a>    <span class="k">def</span> <span class="nf">test_false</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that bytes, bytearray and memoryview objects in keys and values are detected.&quot;&quot;&quot;</span>
+        <span class="n">bytes_in_key</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;this&#39;</span><span class="p">:</span> <span class="s1">&#39;that&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;good&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;ok&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;bad&#39;</span><span class="p">):</span> <span class="s1">&#39;bytes!&#39;</span><span class="p">}}</span>
+        <span class="n">bytes_in_value</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;this&#39;</span><span class="p">:</span> <span class="s1">&#39;that&#39;</span><span class="p">,</span> <span class="s1">&#39;dict&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;good&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;rhyme&#39;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">(</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;fish&#39;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;fish&#39;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;fish&#39;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;fish&#39;</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;bad&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;Value!!&#39;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;bad string&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="n">bytes_in_key</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="n">bytes_in_value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">({</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;bad value&quot;</span><span class="p">)}))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">((</span><span class="s1">&#39;some&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;tuple&#39;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">([</span><span class="s1">&#39;some&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;list&#39;</span><span class="p">)]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">({</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="sa">b</span><span class="s1">&#39;bad value&#39;</span><span class="p">,</span> <span class="s1">&#39;good value&#39;</span><span class="p">}]}))</span></div></div>
 </pre></div>
 
       </div>
@@ -142,7 +191,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

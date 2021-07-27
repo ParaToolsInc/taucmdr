@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cf.software.scorep_installation</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -160,7 +159,7 @@
                  <span class="n">use_libunwind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">use_papi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">use_pdt</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ScorepInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">,</span> <span class="s1">&#39;Score-P&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;scorep&#39;</span><span class="p">,</span> <span class="s1">&#39;Score-P&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span>
                                                  <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="n">COMMANDS</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="n">HEADERS</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="n">use_mpi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_shmem</span> <span class="o">=</span> <span class="n">use_shmem</span>
@@ -174,7 +173,7 @@
 <div class="viewcode-block" id="ScorepInstallation.uid_items"><a class="viewcode-back" href="../../../../taucmdr.cf.software.scorep_installation.html#taucmdr.cf.software.scorep_installation.ScorepInstallation.uid_items">[docs]</a>    <span class="k">def</span> <span class="nf">uid_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">uid_parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
         <span class="c1"># Score-P changes if any compiler changes.</span>
-        <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">uid</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()))</span>
+        <span class="n">uid_parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">comp</span><span class="o">.</span><span class="n">uid</span> <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
         <span class="c1"># Score-P installations have different symbols depending on what flags were used.</span>
         <span class="n">uid_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_flags</span><span class="p">()))</span>
         <span class="k">return</span> <span class="n">uid_parts</span></div>
@@ -216,7 +215,7 @@
         <span class="k">return</span> <span class="n">flags</span>
 
 <div class="viewcode-block" id="ScorepInstallation.verify"><a class="viewcode-back" href="../../../../taucmdr.cf.software.scorep_installation.html#taucmdr.cf.software.scorep_installation.ScorepInstallation.verify">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ScorepInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
         <span class="c1"># Use Score-P&#39;s `scorep-info` command to check if this Score-P installation</span>
         <span class="c1"># was configured with the flags we need.</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_path</span><span class="p">,</span> <span class="s1">&#39;scorep-info&#39;</span><span class="p">),</span> <span class="s1">&#39;config-summary&#39;</span><span class="p">]</span>
@@ -261,7 +260,7 @@
         <span class="c1">#               needed when developing. Python version 2.5 or above, but no</span>
         <span class="c1">#               support for python 3. Use PYTHON=: to disable python support.</span>
         <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PYTHON&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;:&#39;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ScorepInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div></div>
 </pre></div>
 
       </div>
@@ -275,7 +274,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

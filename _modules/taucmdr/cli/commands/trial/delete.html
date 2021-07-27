@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cli.commands.trial.delete</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -104,9 +103,11 @@
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Invalid trial number: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
         <span class="n">fields</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="n">number</span><span class="p">}</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">([</span><span class="n">trial_ctrl</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">field</span><span class="p">)</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No trial number </span><span class="si">%s</span><span class="s2"> in the current experiment.  &quot;</span>
-                              <span class="s2">&quot;See `trial list` to see all trial numbers.&quot;</span> <span class="o">%</span> <span class="n">number</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">trial_ctrl</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No trial number </span><span class="si">%s</span><span class="s2"> in the current experiment.  &quot;</span>
+                                <span class="s2">&quot;See `trial list` to see all trial numbers.&quot;</span> <span class="o">%</span> <span class="n">field</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">])</span>
+                <span class="k">break</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
             <span class="n">trial_ctrl</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Deleted trial </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -126,7 +127,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

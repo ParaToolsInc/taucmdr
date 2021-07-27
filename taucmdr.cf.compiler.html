@@ -102,7 +102,7 @@ painpoint for TAU users.</p>
 <a class="reference external" href="http://www.scipy.org/">SciPy</a> that depend on a compiler&#8217;s stdout stream for compiler detection have more
 or less failed in this since compiler messages are exceptionally difficult to parse.
 <a class="reference external" href="http://www.cmake.org/">CMake</a> does a good job by invoking the compiler command and parsing strings out of
-a compiled object to detect compiler characteristcs, but that approach is complex
+a compiled object to detect compiler characteristics, but that approach is complex
 and still breaks easily.</p>
 <p>The TAU Commander compiler knowledgebase associates a compiler command (<cite>icc</cite>)
 with characteristics like family (<cite>Intel</cite>) and role (<cite>CC</cite>).  Any compiler commands
@@ -403,18 +403,13 @@ one compiler in each required compiler role.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.compiler.InstalledCompilerSet.iteritems">
-<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.iteritems" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cf.compiler.InstalledCompilerSet.items">
+<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.items" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.compiler.InstalledCompilerSet.iterkeys">
-<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.iterkeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.iterkeys" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="taucmdr.cf.compiler.InstalledCompilerSet.itervalues">
-<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.itervalues" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cf.compiler.InstalledCompilerSet.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.keys" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -422,6 +417,11 @@ one compiler in each required compiler role.</p>
 <code class="descname">modify</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.modify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.modify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a modified copy of this object.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.compiler.InstalledCompilerSet.values">
+<code class="descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerSet.values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerSet.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -596,7 +596,7 @@ and compares the output against <a class="reference internal" href="#taucmdr.cf.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>absolute_path</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; Absolute path to a compiler command.</li>
-<li><strong>candidates</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; If present, a list of families that are most likely.</li>
+<li><strong>candidates</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; If present, a list of families that are most likely.</li>
 </ul>
 </td>
 </tr>
@@ -669,7 +669,7 @@ The compiler might not be installed.</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">_CompilerInfo instances matching given compiler information.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -736,7 +736,7 @@ or even a linker.  TAU Commander must identify a compiler&#8217;s role so it can
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

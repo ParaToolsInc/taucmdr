@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cli.command</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -79,7 +78,7 @@
 <span class="kn">from</span> <span class="nn">taucmdr.cli.arguments</span> <span class="kn">import</span> <span class="n">ArgumentsNamespace</span>
 
 
-<div class="viewcode-block" id="AbstractCommand"><a class="viewcode-back" href="../../../taucmdr.cli.command.html#taucmdr.cli.command.AbstractCommand">[docs]</a><span class="k">class</span> <span class="nc">AbstractCommand</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractCommand"><a class="viewcode-back" href="../../../taucmdr.cli.command.html#taucmdr.cli.command.AbstractCommand">[docs]</a><span class="k">class</span> <span class="nc">AbstractCommand</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class for TAU Commander commands.</span>
 
 <span class="sd">    Attributes:</span>
@@ -89,8 +88,6 @@
 <span class="sd">        help_page (str): Long and informative description of the command.</span>
 <span class="sd">        group (str): If not None, commands will be grouped together by group name in help messages.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">ABCMeta</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">format_fields</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">summary_fmt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help_page_fmt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">summary_fmt</span><span class="p">:</span>
@@ -163,7 +160,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

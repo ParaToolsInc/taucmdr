@@ -89,12 +89,12 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-taucmdr.cf.storage" title="Permalink to this headline">¶</a></h2>
 <p>TAU Storage Containers.</p>
 <p>A storage container provides a record database, a persistent filesystem, and a key/value store.
-The database is accessed via member methods like <a class="reference internal" href="taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.insert" title="taucmdr.cf.storage.sqlite3_file.SQLiteLocalFileStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span>Search Page</span></a>, etc.
-The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="taucmdr.cf.storage.local_file.html#taucmdr.cf.storage.local_file.LocalFileStorage.prefix" title="taucmdr.cf.storage.local_file.LocalFileStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
+The database is accessed via member methods like <a class="reference internal" href="#taucmdr.cf.storage.AbstractStorage.insert" title="taucmdr.cf.storage.AbstractStorage.insert"><code class="xref any py py-meth docutils literal"><span class="pre">insert</span></code></a>, <a class="reference internal" href="search.html"><span>Search Page</span></a>, etc.
+The filesystem is accessed via its filesystem prefix (e.g. <code class="docutils literal"><span class="pre">/usr/local/packages</span></code>) via <a class="reference internal" href="#taucmdr.cf.storage.AbstractStorage.prefix" title="taucmdr.cf.storage.AbstractStorage.prefix"><code class="xref any py py-attr docutils literal"><span class="pre">prefix</span></code></a>.
 The key/value store is accessed via the <cite>[]</cite> operator, i.e. treat the storage object like a dictionary.</p>
 <dl class="class">
 <dt id="taucmdr.cf.storage.AbstractStorage">
-<em class="property">class </em><code class="descclassname">taucmdr.cf.storage.</code><code class="descname">AbstractStorage</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">taucmdr.cf.storage.</code><code class="descname">AbstractStorage</code><span class="sig-paren">(</span><em>name: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Abstract base class for storage containers.</p>
 <p>A storage container provides a record database, a persistent filesystem, and a key/value store.
@@ -304,7 +304,7 @@ list: All matching data records if <cite>keys</cite> was a list or tuple.
 None: No record found or <code class="docutils literal"><span class="pre">bool(keys)</span> <span class="pre">==</span> <span class="pre">False</span></code>.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record" title="taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record">Record</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#taucmdr.cf.storage.AbstractStorage.Record" title="taucmdr.cf.storage.AbstractStorage.Record">Record</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
@@ -333,7 +333,7 @@ Invalid value for <cite>keys</cite>.</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The new record.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="taucmdr.cf.storage.sqlite3_file.html#taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record" title="taucmdr.cf.storage.sqlite3_file._SQLiteJsonTable.Record">Record</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#taucmdr.cf.storage.AbstractStorage.Record" title="taucmdr.cf.storage.AbstractStorage.Record">Record</a></p>
 </td>
 </tr>
 </tbody>
@@ -341,21 +341,15 @@ Invalid value for <cite>keys</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.storage.AbstractStorage.iteritems">
-<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.iteritems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage.iteritems" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cf.storage.AbstractStorage.items">
+<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage.items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over items in the key/value store.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="taucmdr.cf.storage.AbstractStorage.iterkeys">
-<code class="descname">iterkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.iterkeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage.iterkeys" title="Permalink to this definition">¶</a></dt>
+<dt id="taucmdr.cf.storage.AbstractStorage.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage.keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate over keys in the key/value store.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="taucmdr.cf.storage.AbstractStorage.itervalues">
-<code class="descname">itervalues</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.itervalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage.itervalues" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterate over values in the key/value store.</p>
 </dd></dl>
 
 <dl class="method">
@@ -381,7 +375,7 @@ If neither is given, return all records where <cite>field</cite> is set to any v
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list">list</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
@@ -394,7 +388,7 @@ Invalid value for <cite>keys</cite>.</p>
 
 <dl class="method">
 <dt>
-<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a></dt>
+<code class="descname">prefix</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; str<a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.prefix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Get the filesystem prefix for file storage.</p>
 <p>The filesystem must be persistent and provide the usual POSIX filesystem calls.
 In particular, GNU software packages should be installable in the filesystem.</p>
@@ -486,7 +480,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Matching data records.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list">list</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#ValueError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> &#8211;
@@ -536,7 +530,7 @@ Use this method to remove a field from the record.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fields</strong> (<a class="reference internal" href="taucmdr.cli.commands.trial.list.html#module-taucmdr.cli.commands.trial.list" title="taucmdr.cli.commands.trial.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
+<li><strong>fields</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Names of fields to remove from matching records.</li>
 <li><strong>keys</strong> &#8211; Fields or element identifiers to match.</li>
 <li><strong>table_name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; Name of the table to operate on.  See <a class="reference internal" href="#taucmdr.cf.storage.AbstractStorage.table" title="taucmdr.cf.storage.AbstractStorage.table"><code class="xref any py py-meth docutils literal"><span class="pre">AbstractStorage.table</span></code></a>.</li>
 <li><strong>match_any</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) &#8211; Only applies if <cite>keys</cite> is a dictionary.  If True then any key
@@ -586,6 +580,12 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="taucmdr.cf.storage.AbstractStorage.values">
+<code class="descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/storage.html#AbstractStorage.values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.storage.AbstractStorage.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over values in the key/value store.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="exception">
@@ -625,9 +625,8 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
 <dl class="attribute">
 <dt>
-<code class="descname">eid_type</code></dt>
-<dd><p>alias of <a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal"><span class="pre">str</span></code></a></p>
-</dd></dl>
+<code class="descname">eid_type</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -650,7 +649,7 @@ in <cite>keys</cite> may match or if False then all keys in <cite>keys</cite> mu
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

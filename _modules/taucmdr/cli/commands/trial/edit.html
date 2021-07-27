@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cli.commands.trial.edit</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -87,7 +86,7 @@
         <span class="n">ctrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
         <span class="n">key_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">key_attribute</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ctrl</span><span class="o">.</span><span class="n">exists</span><span class="p">({</span><span class="n">key_attr</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">}):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No </span><span class="si">%s</span><span class="s2">-level </span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2">=&#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">key_attr</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">ctrl</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-level </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">key_attr</span><span class="si">}</span><span class="s2">=&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
         <span class="n">ctrl</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">{</span><span class="n">key_attr</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">expr</span><span class="o">.</span><span class="n">eid</span><span class="p">})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updated </span><span class="si">%s</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EXIT_SUCCESS</span></div>
@@ -107,7 +106,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

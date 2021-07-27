@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -81,12 +80,6 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="c1"># Python3 compatibility</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">basestring</span>
-<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
-    <span class="c1"># pylint: disable=invalid-name</span>
-    <span class="n">basestring</span> <span class="o">=</span> <span class="nb">str</span>
 
 <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.0.0&quot;</span>
 <span class="sd">&quot;&quot;&quot;str: TAU Commander Version&quot;&quot;&quot;</span>
@@ -109,21 +102,21 @@
 <span class="n">TAUCMDR_URL</span> <span class="o">=</span> <span class="s1">&#39;www.taucommander.com&#39;</span>
 <span class="sd">&quot;&quot;&quot;str: URL of the TAU Commander project.&quot;&quot;&quot;</span>
 
-<span class="n">REQUIRED_PYTHON_VERSION</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;tuple: Required Python version for TAU Comamnder.</span>
+<span class="n">REQUIRED_PYTHON_VERSIONS</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)]</span>
+<span class="sd">&quot;&quot;&quot;list of tuples: Required Python versions for TAU Commander.</span>
 
-<span class="sd">A tuple of at least (MAJOR, MINOR) directly comparible to :any:`sys.version_info`</span>
+<span class="sd">A list of tuples (MAJOR, MINOR) directly comparible to :any:`sys.version_info`</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">REQUIRED_PYTHON_VERSION</span><span class="p">:</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="ow">in</span> <span class="n">REQUIRED_PYTHON_VERSIONS</span><span class="p">:</span>
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]])</span>
-    <span class="n">EXPECTED</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">REQUIRED_PYTHON_VERSION</span><span class="p">])</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span><span class="si">%s</span><span class="s2"></span>
-<span class="si">%s</span><span class="s2"></span>
-<span class="si">%s</span><span class="s2"></span>
-<span class="s2">Your Python version is </span><span class="si">%s</span><span class="s2"> but Python </span><span class="si">%s</span><span class="s2"> is required.</span>
-<span class="s2">Please install the required Python version or contact </span><span class="si">%s</span><span class="s2"> for support.</span>
-<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">TAUCMDR_URL</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">,</span> <span class="n">EXPECTED</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">))</span>
+    <span class="n">EXPECTED</span> <span class="o">=</span> <span class="s1">&#39; or &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="n">REQUIRED_PYTHON_VERSIONS</span><span class="p">])</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span><span class="si">{}</span><span class="s2"></span>
+<span class="si">{}</span><span class="s2"></span>
+<span class="si">{}</span><span class="s2"></span>
+<span class="s2">Your Python version is </span><span class="si">{}</span><span class="s2"> but Python </span><span class="si">{}</span><span class="s2"> is required.</span>
+<span class="s2">Please install the required Python version or contact </span><span class="si">{}</span><span class="s2"> for support.</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TAUCMDR_URL</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">,</span> <span class="n">EXPECTED</span><span class="p">,</span> <span class="n">HELP_CONTACT</span><span class="p">))</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">)</span>
 
 <span class="n">TAUCMDR_HOME</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__TAUCMDR_HOME__&#39;</span><span class="p">,</span>
@@ -152,8 +145,7 @@
 <span class="n">PROJECT_DIR</span> <span class="o">=</span> <span class="s1">&#39;.tau&#39;</span>
 <span class="sd">&quot;&quot;&quot;str: Name of the project-level directory containing TAU Commander project files.&quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="version_banner"><a class="viewcode-back" href="../taucmdr.html#taucmdr.version_banner">[docs]</a><span class="k">def</span> <span class="nf">version_banner</span><span class="p">():</span>
+<div class="viewcode-block" id="version_banner"><a class="viewcode-back" href="../taucmdr.html#taucmdr.version_banner">[docs]</a><span class="k">def</span> <span class="nf">version_banner</span><span class="p">():</span> <span class="c1"># type: () -&gt; str</span>
     <span class="sd">&quot;&quot;&quot;Return a human readable text banner describing the TAU Commander installation.&quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">platform</span>
     <span class="kn">import</span> <span class="nn">socket</span>
@@ -200,7 +192,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cf.software.libunwind_installation</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -115,7 +114,7 @@
             <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;GNU compilers (required to build libunwind) could not be found.&quot;</span><span class="p">)</span>
             <span class="n">compilers</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">Host_CC</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">],</span> <span class="n">Host_CXX</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">])</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LibunwindInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="s1">&#39;libunwind&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span>
                                                     <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="n">HEADERS</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LibunwindInstallation.configure"><a class="viewcode-back" href="../../../../taucmdr.cf.software.libunwind_installation.html#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.configure">[docs]</a>    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
@@ -124,7 +123,8 @@
         <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;CXX&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">absolute_path</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span> <span class="ow">is</span> <span class="n">IBM_BGQ</span><span class="p">:</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--disable-shared&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">,</span> <span class="s1">&#39;unwind&#39;</span><span class="p">,</span> <span class="s1">&#39;Resume.c&#39;</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">),</span>
+                                                     <span class="s1">&#39;src&#39;</span><span class="p">,</span> <span class="s1">&#39;unwind&#39;</span><span class="p">,</span> <span class="s1">&#39;Resume.c&#39;</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
                 <span class="c1"># fileinput.input with inplace=1 redirects stdout to the input file ... freaky</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_Unwind_Resume&#39;</span><span class="p">,</span> <span class="s1">&#39;_Unwind_Resume_other&#39;</span><span class="p">))</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_os</span> <span class="ow">is</span> <span class="n">CRAY_CNL</span><span class="p">:</span>
@@ -133,12 +133,12 @@
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--disable-shared&#39;</span><span class="p">)</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--disable-minidebuginfo&#39;</span><span class="p">)</span>
         <span class="c1"># If needed, fix test so `make install` succeeds more frequently.</span>
-        <span class="n">crasher_c</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;crasher.c&#39;</span><span class="p">)</span>
+        <span class="n">crasher_c</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">),</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;crasher.c&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">crasher_c</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">crasher_c</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="n">crasher_c</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
                 <span class="c1"># fileinput.input with inplace=1 redirects stdout to the input file ... freaky</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;r = c(1);&#39;</span><span class="p">,</span> <span class="s1">&#39;r = 1;&#39;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">LibunwindInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LibunwindInstallation.make"><a class="viewcode-back" href="../../../../taucmdr.cf.software.libunwind_installation.html#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.make">[docs]</a>    <span class="k">def</span> <span class="nf">make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Build libunwind.</span>
@@ -149,7 +149,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=broad-except</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">LibunwindInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;libunwind make failed, but continuing anyway: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span></div>
 
@@ -157,14 +157,14 @@
 <div class="viewcode-block" id="LibunwindInstallation.make_install"><a class="viewcode-back" href="../../../../taucmdr.cf.software.libunwind_installation.html#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.make_install">[docs]</a>    <span class="k">def</span> <span class="nf">make_install</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span> <span class="ow">in</span> <span class="p">[</span><span class="n">PPC64</span><span class="p">,</span> <span class="n">PPC64LE</span><span class="p">]:</span>
             <span class="n">flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;-i&#39;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">LibunwindInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">make_install</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">make_install</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LibunwindInstallation.installation_sequence"><a class="viewcode-back" href="../../../../taucmdr.cf.software.libunwind_installation.html#taucmdr.cf.software.libunwind_installation.LibunwindInstallation.installation_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">installation_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_arch</span> <span class="ow">is</span> <span class="n">ARM64</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using pre-built libunwind package from U. Oregon Performance Research Laboratory&quot;</span><span class="p">)</span>
-            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_prefix</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">install_prefix</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">LibunwindInstallation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">installation_sequence</span><span class="p">()</span></div></div>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">installation_sequence</span><span class="p">()</span></div></div>
 </pre></div>
 
       </div>
@@ -178,7 +178,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

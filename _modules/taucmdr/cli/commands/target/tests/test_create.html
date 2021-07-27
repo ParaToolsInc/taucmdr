@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cli.commands.target.tests.test_create</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2016, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -98,7 +97,7 @@
 <div class="viewcode-block" id="CreateTest.test_no_args"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_no_args">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertNotCommandReturnValue</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;error: too few arguments&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;error: the following arguments are required&#39;</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CreateTest.test_h_arg"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_h_arg">[docs]</a>    <span class="k">def</span> <span class="nf">test_h_arg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
@@ -134,7 +133,7 @@
         <span class="k">for</span> <span class="n">role</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="p">(</span><span class="n">CC</span><span class="p">,</span> <span class="s1">&#39;icc&#39;</span><span class="p">),</span> <span class="p">(</span><span class="n">CXX</span><span class="p">,</span> <span class="s1">&#39;icpc&#39;</span><span class="p">),</span> <span class="p">(</span><span class="n">FC</span><span class="p">,</span> <span class="s1">&#39;ifort&#39;</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">test_targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">expected</span><span class="p">,</span>
-                             <span class="s2">&quot;Target[</span><span class="si">%s</span><span class="s2">] is &#39;</span><span class="si">%s</span><span class="s2">&#39;, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">expected</span><span class="p">))</span></div>
+                             <span class="sa">f</span><span class="s2">&quot;Target[</span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2">] is &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;, not &#39;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span></div>
 
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;pgcc&#39;</span><span class="p">),</span> <span class="s2">&quot;PGI compilers required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_host_family_pgi"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_host_family_pgi">[docs]</a>    <span class="k">def</span> <span class="nf">test_host_family_pgi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -164,15 +163,15 @@
 
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 or 3 required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_python_init"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_python_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_python_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python&#39;</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">])</span></div>
 
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python2&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_python2_init"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_python2_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_python2_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python2&#39;</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span> <span class="s1">&#39;python2&#39;</span><span class="p">])</span></div>
 
     <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python3&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 3 required for this test&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="CreateTest.test_python3_init"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_python3_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_python3_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">,</span><span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span><span class="s1">&#39;python3&#39;</span><span class="p">])</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span> <span class="s1">&#39;python3&#39;</span><span class="p">])</span></div></div>
 </pre></div>
 
       </div>
@@ -186,7 +185,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cf.software.installation</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -116,70 +115,6 @@
     <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;-j&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nprocs</span><span class="p">)]</span></div>
 
 
-<div class="viewcode-block" id="tmpfs_prefix"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.tmpfs_prefix">[docs]</a><span class="k">def</span> <span class="nf">tmpfs_prefix</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.</span>
-
-<span class="sd">    /dev/shm is the preferred tmpfs, but if it&#39;s unavailable or mounted with noexec then</span>
-<span class="sd">    fall back to tempfile.gettemdir(), which is usually /tmp.  If that filesystem is also</span>
-<span class="sd">    unavailable then use the filesystem prefix of the highest writable storage container.</span>
-
-<span class="sd">    An attempt is made to ensure that there is at least 2GiB of free space in the</span>
-<span class="sd">    selected filesystem.  If</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        str: Path to a uniquely-named directory in the temporary filesystem. The directory</span>
-<span class="sd">            and all its contents **will be deleted** when the program exits if it installs</span>
-<span class="sd">            correctly.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">tmpfs_prefix</span><span class="o">.</span><span class="n">value</span>
-    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-        <span class="kn">import</span> <span class="nn">tempfile</span>
-        <span class="kn">import</span> <span class="nn">subprocess</span>
-        <span class="kn">from</span> <span class="nn">stat</span> <span class="kn">import</span> <span class="n">S_IRUSR</span><span class="p">,</span> <span class="n">S_IWUSR</span><span class="p">,</span> <span class="n">S_IEXEC</span>
-        <span class="n">candidate</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="s2">&quot;/dev/shm&quot;</span><span class="p">,</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">highest_writable_storage</span><span class="p">()</span><span class="o">.</span><span class="n">prefix</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">tmp_prefix</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="c1"># Check execute privileges some distros mount tmpfs with the noexec option.</span>
-            <span class="n">check_exe_script</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_prefix</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp_file</span><span class="p">:</span>
-                    <span class="n">check_exe_script</span> <span class="o">=</span> <span class="n">tmp_file</span><span class="o">.</span><span class="n">name</span>
-                    <span class="n">tmp_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;#!/bin/sh</span><span class="se">\n</span><span class="s2">exit 0&quot;</span><span class="p">)</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">check_exe_script</span><span class="p">,</span> <span class="n">S_IRUSR</span> <span class="o">|</span> <span class="n">S_IWUSR</span> <span class="o">|</span> <span class="n">S_IEXEC</span><span class="p">)</span>
-                <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="n">check_exe_script</span><span class="p">])</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">statvfs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">statvfs</span><span class="p">(</span><span class="n">check_exe_script</span><span class="p">)</span>
-            <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">candidate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">candidate</span> <span class="o">=</span> <span class="n">tmp_prefix</span>
-                <span class="k">continue</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">free_mib</span> <span class="o">=</span> <span class="p">(</span><span class="n">statvfs</span><span class="o">.</span><span class="n">f_frsize</span><span class="o">*</span><span class="n">statvfs</span><span class="o">.</span><span class="n">f_bavail</span><span class="p">)</span><span class="o">/</span><span class="mh">0x100000</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">MB free&quot;</span><span class="p">,</span> <span class="n">tmp_prefix</span><span class="p">,</span> <span class="n">free_mib</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">free_mib</span> <span class="o">&lt;</span> <span class="mi">2000</span><span class="p">:</span>
-                    <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">check_exe_script</span><span class="p">:</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">check_exe_script</span><span class="p">)</span>
-            <span class="k">break</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">candidate</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No filesystem has at least 2GB free space and supports executables.&quot;</span><span class="p">)</span>
-            <span class="n">tmp_prefix</span> <span class="o">=</span> <span class="n">candidate</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to count available bytes in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tmp_prefix</span><span class="p">)</span>
-        <span class="n">tmpfs_prefix</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">tmp_prefix</span>
-        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Temporary prefix: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tmp_prefix</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">tmp_prefix</span></div>
-
-
 <span class="nd">@contextmanager</span>
 <div class="viewcode-block" id="new_os_environ"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.new_os_environ">[docs]</a><span class="k">def</span> <span class="nf">new_os_environ</span><span class="p">():</span>
     <span class="n">old_environ</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
@@ -190,7 +125,7 @@
         <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="o">=</span> <span class="n">old_environ</span></div>
 
 
-<div class="viewcode-block" id="Installation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation">[docs]</a><span class="k">class</span> <span class="nc">Installation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Installation"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation">[docs]</a><span class="k">class</span> <span class="nc">Installation</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Encapsulates a software package installation.</span>
 
 <span class="sd">    Attributes:</span>
@@ -232,8 +167,8 @@
 <span class="sd">            headers (dict): Dictionary of headers, indexed by architecture and OS, that must be installed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_arch</span><span class="p">,</span> <span class="n">Architecture</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_os</span><span class="p">,</span> <span class="n">OperatingSystem</span><span class="p">)</span>
@@ -294,11 +229,11 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">uid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_uid</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">calculate_uid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uid_items</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_uid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">calculate_uid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uid_items</span><span class="p">()))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid</span>
 
     <span class="k">def</span> <span class="nf">_get_install_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">uid</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_install_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_install_prefix</span><span class="p">:</span>
@@ -309,7 +244,7 @@
                 <span class="c1"># Search the storage hierarchy for an existing installation</span>
                 <span class="k">for</span> <span class="n">storage</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">ORDERED_LEVELS</span><span class="p">):</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_install_prefix</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tag</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_install_prefix</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tag</span><span class="p">)))</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
                     <span class="k">except</span> <span class="p">(</span><span class="n">StorageError</span><span class="p">,</span> <span class="n">SoftwarePackageError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
@@ -324,7 +259,7 @@
 
     <span class="k">def</span> <span class="nf">_set_install_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_install_prefix</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_install_prefix</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">install_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -385,11 +320,11 @@
                 <span class="k">except</span> <span class="n">StorageError</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">archive</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="n">archive</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
         <span class="n">archive_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">highest_writable_storage</span><span class="p">()</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
         <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">archive_prefix</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">))</span>
         <span class="n">util</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">archive</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Installation.acquire_source"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.acquire_source">[docs]</a>    <span class="k">def</span> <span class="nf">acquire_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_archive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Acquires package source code archive file via download or file copy.</span>
@@ -409,19 +344,19 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No source code provided for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
         <span class="c1"># Check that archive is valid by getting archive top-level directory</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="p">)</span>
                 <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">reuse_archive</span><span class="p">:</span>
                     <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">util</span><span class="o">.</span><span class="n">archive_toplevel</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
-                        <span class="k">return</span> <span class="n">archive</span>
-                    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                         <span class="k">pass</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to acquire </span><span class="si">%s</span><span class="s2"> source package &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
@@ -430,7 +365,7 @@
                 <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">archive</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">archive_prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">highest_writable_storage</span><span class="p">()</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;src&quot;</span><span class="p">)</span>
             <span class="n">hints</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;If a firewall is blocking access to this server, use another method to download &quot;</span>
@@ -438,7 +373,7 @@
                      <span class="s2">&quot;Check that the file or directory is accessible&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot acquire source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">srcs_avail</span><span class="p">),</span> <span class="o">*</span><span class="n">hints</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">archive</span></div>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Installation._prepare_src"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation._prepare_src">[docs]</a>    <span class="k">def</span> <span class="nf">_prepare_src</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_archive</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Prepares source code for installation.</span>
@@ -458,12 +393,13 @@
         <span class="n">archive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_source</span><span class="p">(</span><span class="n">reuse_archive</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using </span><span class="si">%s</span><span class="s2"> source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">util</span><span class="o">.</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">tmpfs_prefix</span><span class="p">())</span>
-        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">tmpfs_prefix</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">files</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">reuse_archive</span><span class="p">:</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Unable to extract source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;.  Downloading a new copy.&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">(</span><span class="n">reuse_archive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;Cannot extract source archive &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">err</span><span class="p">),</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_src</span><span class="p">(</span><span class="n">reuse_archive</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot extract source archive &#39;</span><span class="si">{</span><span class="n">archive</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                                      <span class="s2">&quot;Check that the file or directory is accessible&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Installation.verify"><a class="viewcode-back" href="../../../../taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation.verify">[docs]</a>    <span class="k">def</span> <span class="nf">verify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -522,7 +458,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            SoftwarePackageError: Installation failed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">pkg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependencies</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">pkg</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="n">force_reinstall</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unmanaged</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">force_reinstall</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -761,7 +697,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

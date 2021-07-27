@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cf.storage.storage_dispatch</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2020, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -79,6 +78,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">util</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage</span> <span class="kn">import</span> <span class="n">AbstractStorage</span><span class="p">,</span> <span class="n">StorageError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.local_file</span> <span class="kn">import</span> <span class="n">LocalFileStorage</span>
 <span class="kn">from</span> <span class="nn">taucmdr.cf.storage.sqlite3_file</span> <span class="kn">import</span> <span class="n">SQLiteLocalFileStorage</span>
@@ -101,7 +101,7 @@
     <span class="n">default_backend</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__TAUCMDR_DB_BACKEND__&#39;</span><span class="p">,</span> <span class="s1">&#39;auto&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">StorageDispatch</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Initialized StorageDispatch name = </span><span class="si">%s</span><span class="s2"> kind = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;project&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_local_storage</span> <span class="o">=</span> <span class="n">ProjectStorage</span><span class="p">()</span>
@@ -121,7 +121,7 @@
 <span class="sd">                           and is TinyDB otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AVAILABLE_BACKENDS</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="s1">&#39;Unrecognized backend </span><span class="si">{}</span><span class="s1">; use one of </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">AVAILABLE_BACKENDS</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">StorageError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unrecognized backend </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s1">; use one of </span><span class="si">{</span><span class="n">AVAILABLE_BACKENDS</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;tinydb&#39;</span><span class="p">:</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using TinyDB database as requested for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">DB_TINYDB</span>
@@ -141,7 +141,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_storage</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">==</span> <span class="n">DB_SQLITE</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqlite_storage</span>
-        <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="s1">&#39;Bad storage type in dispatch: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="n">InternalError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Bad storage type in dispatch: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StorageDispatch.__getattr__"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.__getattr__">[docs]</a>    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dispatches any messages not otherwise caught to the selected storage backend.&quot;&quot;&quot;</span>
@@ -171,17 +171,17 @@
         <span class="sd">&quot;&quot;&quot;Iterate over keys in the key/value store.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="StorageDispatch.iterkeys"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.iterkeys">[docs]</a>    <span class="k">def</span> <span class="nf">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageDispatch.keys"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over keys in the key/value store.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="StorageDispatch.itervalues"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.itervalues">[docs]</a>    <span class="k">def</span> <span class="nf">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageDispatch.values"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.values">[docs]</a>    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over values in the key/value store.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="StorageDispatch.iteritems"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageDispatch.items"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over items in the key/value store.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="StorageDispatch.connect_filesystem"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.connect_filesystem">[docs]</a>    <span class="k">def</span> <span class="nf">connect_filesystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Prepares the store filesystem for reading and writing.&quot;&quot;&quot;</span>
@@ -346,7 +346,12 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Record: The new record.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If bytes, bytearray or memoryview found in data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad binary type (bytes, bytearray, etc.) found in data(dict):</span><span class="se">\n</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StorageDispatch.update"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -366,7 +371,12 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: ``bool(keys) == False`` or invalid value for `keys`.</span>
+<span class="sd">            TypeError: If binary data (bytes, bytearray, memoryview) found in fields or key dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+          <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad types (bytes, bytearray, etc.) passed as fields:</span><span class="se">\n</span><span class="si">{</span><span class="n">fields</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">util</span><span class="o">.</span><span class="n">is_clean_container</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad types (bytes, bytearray, etc. passed as keys:</span><span class="se">\n</span><span class="si">{</span><span class="n">keys</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_storage</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="n">match_any</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StorageDispatch.unset"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.StorageDispatch.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">match_any</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -431,7 +441,7 @@
 <div class="viewcode-block" id="ProjectStorageDispatch"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.ProjectStorageDispatch">[docs]</a><span class="k">class</span> <span class="nc">ProjectStorageDispatch</span><span class="p">(</span><span class="n">StorageDispatch</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Dispatches Project storage method calls to the backing Project storage class&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectStorageDispatch</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;project&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;project&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ProjectStorageDispatch.destroy"><a class="viewcode-back" href="../../../../taucmdr.cf.storage.storage_dispatch.html#taucmdr.cf.storage.levels.ProjectStorageDispatch.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_local_storage</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="n">ignore_errors</span><span class="o">=</span><span class="n">ignore_errors</span><span class="p">)</span>
@@ -449,7 +459,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

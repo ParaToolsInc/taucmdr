@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.cf.objects</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -75,7 +74,7 @@
 <span class="sd">&quot;&quot;&quot;TAU Common Framework (CF) common objects.&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="TrackedInstance"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.TrackedInstance">[docs]</a><span class="k">class</span> <span class="nc">TrackedInstance</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="TrackedInstance"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.TrackedInstance">[docs]</a><span class="k">class</span> <span class="nc">TrackedInstance</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Base class for classes that need to keep track of their instances.</span>
 
 <span class="sd">    Each subclass tracks of its own instances separately.  Unliked :any:`KeyedRecordCreator`</span>
@@ -111,19 +110,18 @@
 <span class="sd">        &gt;&gt;&gt; water</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="TrackedInstance.__new__"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.TrackedInstance.__new__">[docs]</a>    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Ensure that __instances__ is set and track new instances.&quot;&quot;&quot;</span>
-        <span class="n">instance</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">&quot;__instances__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">instance</span>
+        <span class="k">return</span> <span class="n">instance</span></div>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="TrackedInstance.all"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.TrackedInstance.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over class instances.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">instance</span></div></div>
+        <span class="k">yield from</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span></div></div>
 
 
 
@@ -141,14 +139,14 @@
 <span class="sd">    * http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python</span>
 <span class="sd">    * http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
+<div class="viewcode-block" id="KeyedRecordCreator.__new__"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecordCreator.__new__">[docs]</a>    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set ``__instances__`` attribute as soon as the class is created.</span>
 
 <span class="sd">        We do this in ``__new__`` so that each subclass has its own ``__instances__`` attribute.</span>
 <span class="sd">        This is how we keep subclass instances from being listed among their base class instances.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;__instances__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="KeyedRecordCreator.__call__"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecordCreator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create the new instance.&quot;&quot;&quot;</span>
@@ -156,12 +154,12 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">instance</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">KeyedRecordCreator</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
         <span class="k">return</span> <span class="n">instance</span></div></div>
 
 
-<div class="viewcode-block" id="KeyedRecord"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord">[docs]</a><span class="k">class</span> <span class="nc">KeyedRecord</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="KeyedRecord"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord">[docs]</a><span class="k">class</span> <span class="nc">KeyedRecord</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">KeyedRecordCreator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Data record with a unique key.</span>
 
 <span class="sd">    Subclasses must declare a ``__key__`` member defining the attribute to be used as the key.</span>
@@ -195,13 +193,14 @@
     <span class="c1"># Some members of this class are set by the metaclass __new__ method.</span>
     <span class="c1"># pylint: disable=no-member</span>
 
-    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">KeyedRecordCreator</span>
-
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key__</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key__</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key__</span><span class="p">))</span>
@@ -209,8 +208,7 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="KeyedRecord.all"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord.all">[docs]</a>    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate over class instances.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">instance</span></div>
+        <span class="k">yield from</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">values</span><span class="p">()</span></div>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="KeyedRecord.keys"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -219,7 +217,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: All instance keys.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__instances__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="KeyedRecord.find"><a class="viewcode-back" href="../../../taucmdr.cf.objects.html#taucmdr.cf.objects.KeyedRecord.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -248,7 +246,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

@@ -194,9 +194,9 @@ To get more information on a particular message, use
 <code class="docutils literal"><span class="pre">pylint</span> <span class="pre">--help-msg=C6409</span></code>.</p>
 <p>Prefer <code class="docutils literal"><span class="pre">pylint:</span> <span class="pre">disable</span></code> to the deprecated older form
 <code class="docutils literal"><span class="pre">pylint:</span> <span class="pre">disable-msg</span></code>.</p>
-<p>Unused argument warnings can be suppressed by using <cite>_</cite> as the
+<p>Unused argument warnings can be suppressed by using <code class="docutils literal"><span class="pre">_</span></code> as the
 identifier for the unused argument or prefixing the argument name with
-<cite>unused_</cite>. In situations where changing the argument names is
+<code class="docutils literal"><span class="pre">unused_</span></code>. In situations where changing the argument names is
 infeasible, you can mention them at the beginning of the function. For
 example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">unused_b</span><span class="p">,</span> <span class="n">unused_c</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -409,7 +409,7 @@ over it.</p>
 <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adict</span><span class="p">:</span> <span class="o">...</span>
 <span class="k">if</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">alist</span><span class="p">:</span> <span class="o">...</span>
 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">afile</span><span class="p">:</span> <span class="o">...</span>
-<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span> <span class="o">...</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p><strong>No:</strong></p>
@@ -605,25 +605,25 @@ a value which is known to be an integer (and is not the result of
 <code class="docutils literal"><span class="pre">len()</span></code>) against the integer 0.</li>
 </ul>
 <p><strong>Yes:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">users</span><span class="p">:</span>
-    <span class="nb">print</span> <span class="s1">&#39;no users&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>if not users:
+    print &#39;no users&#39;
 
-<span class="k">if</span> <span class="n">foo</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">handle_zero</span><span class="p">()</span>
+if foo == 0:
+    self.handle_zero()
 
-<span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">handle_multiple_of_ten</span><span class="p">()</span>
+if i % 10 == 0:
+    self.handle_multiple_of_ten()
 </pre></div>
 </div>
 <p><strong>No:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">users</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="nb">print</span> <span class="s1">&#39;no users&#39;</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>if len(users) == 0:
+    print &#39;no users&#39;
 
-<span class="k">if</span> <span class="n">foo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">foo</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">handle_zero</span><span class="p">()</span>
+if foo is not None and not foo:
+    self.handle_zero()
 
-<span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span><span class="p">:</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">handle_multiple_of_ten</span><span class="p">()</span>
+if not i % 10:
+    self.handle_multiple_of_ten()
 </pre></div>
 </div>
 <ul class="simple">
@@ -683,16 +683,16 @@ global variable.</p>
 to experienced Lisp and Scheme (and Haskell and ML and …) programmers.</p>
 <p><strong>Cons:</strong> Can lead to confusing bugs. Such as this example based on
 <a class="reference external" href="http://www.python.org/dev/peps/pep-0227/">PEP-0227</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">bar</span><span class="p">():</span>
-        <span class="nb">print</span> <span class="n">i</span><span class="p">,</span>
-    <span class="c1"># ...</span>
-    <span class="c1"># A bunch of code here</span>
-    <span class="c1"># ...</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>  <span class="c1"># Ah, i *is* local to Foo, so this is what Bar sees</span>
-        <span class="nb">print</span> <span class="n">i</span><span class="p">,</span>
-    <span class="n">bar</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>i = 4
+def foo(x):
+    def bar():
+        print i,
+    # ...
+    # A bunch of code here
+    # ...
+    for i in x:  # Ah, i *is* local to Foo, so this is what Bar sees
+        print i,
+    bar()
 </pre></div>
 </div>
 <p>So <code class="docutils literal"><span class="pre">foo([1,</span> <span class="pre">2,</span> <span class="pre">3])</span></code> will print <code class="docutils literal"><span class="pre">1</span> <span class="pre">2</span> <span class="pre">3</span> <span class="pre">3</span></code>, not <code class="docutils literal"><span class="pre">1</span> <span class="pre">2</span> <span class="pre">3</span> <span class="pre">4</span></code>.</p>
@@ -924,15 +924,15 @@ punctuation.</p>
 <p>No whitespace before a comma, semicolon, or colon. Do use whitespace
 after a comma, semicolon, or colon except at the end of the line.</p>
 <p><strong>Yes:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-    <span class="nb">print</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
-<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>if x == 4:
+    print x, y
+x, y = y, x
 </pre></div>
 </div>
 <p><strong>No:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">4</span> <span class="p">:</span>
-    <span class="nb">print</span> <span class="n">x</span> <span class="p">,</span> <span class="n">y</span>
-<span class="n">x</span> <span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="p">,</span> <span class="n">x</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>if x == 4 :
+    print x , y
+x , y = y , x
 </pre></div>
 </div>
 <p>No whitespace before the open paren/bracket that starts an argument
@@ -1292,18 +1292,18 @@ intended (e.g. in tracebacks of exceptions, inside globals, etc).</li>
 </ul>
 <p>The preferred way to manage files is using the <a class="reference external" href="http://docs.python.org/reference/compound_stmts.html#the-with-statement">&#8220;with&#8221;
 statement</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;hello.txt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hello_file</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hello_file</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="n">line</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>with open(&quot;hello.txt&quot;) as hello_file:
+    for line in hello_file:
+        print line
 </pre></div>
 </div>
 <p>For file-like objects that do not support the &#8220;with&#8221; statement, use
 contextlib.closing():</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">contextlib</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>import contextlib
 
-<span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">closing</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s2">&quot;http://www.python.org/&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">front_page</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">front_page</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="n">line</span>
+with contextlib.closing(urllib.urlopen(&quot;http://www.python.org/&quot;)) as front_page:
+    for line in front_page:
+        print line
 </pre></div>
 </div>
 <p>Legacy AppEngine code using Python 2.5 may enable the &#8220;with&#8221; statement
@@ -1484,7 +1484,7 @@ operations that should not be executed when the file is being
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

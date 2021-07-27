@@ -45,8 +45,7 @@
         
         
   <h1>Source code for taucmdr.util</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="c1">#</span>
+<span></span><span class="c1">#</span>
 <span class="c1"># Copyright (c) 2015, ParaTools, Inc.</span>
 <span class="c1"># All rights reserved.</span>
 <span class="c1">#</span>
@@ -85,21 +84,22 @@
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">urllib</span>
 <span class="kn">import</span> <span class="nn">pkgutil</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">import</span> <span class="nn">urlparse</span>
+<span class="kn">from</span> <span class="nn">stat</span> <span class="kn">import</span> <span class="n">S_IRUSR</span><span class="p">,</span> <span class="n">S_IWUSR</span><span class="p">,</span> <span class="n">S_IEXEC</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span> <span class="nn">zipimport</span> <span class="kn">import</span> <span class="n">zipimporter</span>
 <span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
-<span class="kn">from</span> <span class="nn">termcolor</span> <span class="kn">import</span> <span class="n">termcolor</span>
+<span class="kn">import</span> <span class="nn">termcolor</span>
 <span class="kn">from</span> <span class="nn">unidecode</span> <span class="kn">import</span> <span class="n">unidecode</span>
 <span class="kn">from</span> <span class="nn">taucmdr</span> <span class="kn">import</span> <span class="n">logger</span>
-<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">InternalError</span>
+<span class="kn">from</span> <span class="nn">taucmdr.cf.storage.levels</span> <span class="kn">import</span> <span class="n">highest_writable_storage</span>
+<span class="kn">from</span> <span class="nn">taucmdr.error</span> <span class="kn">import</span> <span class="n">InternalError</span><span class="p">,</span> <span class="n">ConfigurationError</span>
 <span class="kn">from</span> <span class="nn">taucmdr.progress</span> <span class="kn">import</span> <span class="n">ProgressIndicator</span>
 
 
@@ -113,9 +113,6 @@
         <span class="c1"># pylint: disable=unused-argument</span>
         <span class="k">pass</span>
 
-
-<span class="n">_PY_SUFFEXES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">,</span> <span class="s1">&#39;.pyo&#39;</span><span class="p">,</span> <span class="s1">&#39;.pyc&#39;</span><span class="p">)</span>
-
 <span class="n">_DTEMP_STACK</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="n">_DTEMP_ERROR_STACK</span> <span class="o">=</span> <span class="p">[]</span>
@@ -125,13 +122,17 @@
 
 
 <span class="k">def</span> <span class="nf">_cleanup_dtemp</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">_DTEMP_STACK</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_DTEMP_STACK</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">paths</span> <span class="ow">in</span> <span class="n">_DTEMP_ERROR_STACK</span><span class="p">):</span>
-                <span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">_DTEMP_ERROR_STACK</span><span class="p">:</span>
+        <span class="n">_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">_DTEMP_ERROR_STACK</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="nb">dir</span><span class="p">))</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="nb">dir</span><span class="p">))</span>
+            <span class="n">dst</span> <span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="nb">dir</span><span class="p">),</span> <span class="n">dst</span><span class="p">)</span>
+            <span class="n">_paths</span> <span class="o">+=</span> <span class="n">dst</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;The following temporary directories were not deleted due to build errors: </span><span class="si">%s</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_DTEMP_ERROR_STACK</span><span class="p">))</span>
+                       <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_paths</span><span class="p">))</span>
+
 <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">_cleanup_dtemp</span><span class="p">)</span>
 
 
@@ -146,14 +147,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">uid</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
-        <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
-    <span class="n">digest</span> <span class="o">=</span> <span class="n">uid</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">uid</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uid</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;UID: (</span><span class="si">%s</span><span class="s2">): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">digest</span><span class="p">,</span> <span class="n">parts</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">digest</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="mkdtemp"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.mkdtemp">[docs]</a><span class="k">def</span> <span class="nf">mkdtemp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Like tempfile.mkdtemp but directory will be recursively deleted when program exits.&quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">_DTEMP_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">path</span></div>
 
@@ -162,7 +163,7 @@
     <span class="sd">&quot;&quot;&quot;Works just like :any:`shutil.copy` except with progress bars.&quot;&quot;&quot;</span>
     <span class="n">context</span> <span class="o">=</span> <span class="n">ProgressIndicator</span> <span class="k">if</span> <span class="n">show_progress</span> <span class="k">else</span> <span class="n">_null_context</span>
     <span class="k">with</span> <span class="n">context</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span></div>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">dest</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="mkdirp"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.mkdirp">[docs]</a><span class="k">def</span> <span class="nf">mkdirp</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -185,7 +186,7 @@
                     <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="add_error_stack"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.add_error_stack">[docs]</a><span class="k">def</span> <span class="nf">add_error_stack</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="n">_DTEMP_ERROR_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+    <span class="n">_DTEMP_ERROR_STACK</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="rmtree"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.rmtree">[docs]</a><span class="k">def</span> <span class="nf">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">onerror</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Wrapper around shutil.rmtree to work around stale or slow NFS directories.</span>
@@ -202,13 +203,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">return</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">attempts</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">attempts</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>        <span class="c1"># pylint: disable=broad-except</span>
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unexpected error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="p">,</span> <span class="n">onerror</span><span class="p">)</span></div>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="p">,</span> <span class="n">onerror</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
 
 
 <span class="nd">@contextmanager</span>
@@ -240,30 +244,31 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">program</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">program</span><span class="p">,</span> <span class="n">basestring</span><span class="p">)</span>
+    <span class="n">prog_enc</span> <span class="o">=</span> <span class="n">program</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prog_enc</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">use_cached</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">program</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">prog_enc</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">pass</span>
     <span class="n">_is_exec</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">fpath</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)</span>
-    <span class="n">fpath</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+    <span class="n">fpath</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">prog_enc</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fpath</span><span class="p">:</span>
-        <span class="n">abs_program</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+        <span class="n">abs_program</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">prog_enc</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_is_exec</span><span class="p">(</span><span class="n">abs_program</span><span class="p">):</span>
-            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;which(</span><span class="si">%s</span><span class="s2">) = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">abs_program</span><span class="p">)</span>
-            <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">program</span><span class="p">]</span> <span class="o">=</span> <span class="n">abs_program</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;which(</span><span class="si">%s</span><span class="s2">) = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">prog_enc</span><span class="p">,</span> <span class="n">abs_program</span><span class="p">)</span>
+            <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">prog_enc</span><span class="p">]</span> <span class="o">=</span> <span class="n">abs_program</span>
             <span class="k">return</span> <span class="n">abs_program</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
-            <span class="n">exe_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">program</span><span class="p">)</span>
+            <span class="n">exe_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">prog_enc</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">_is_exec</span><span class="p">(</span><span class="n">exe_file</span><span class="p">):</span>
-                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;which(</span><span class="si">%s</span><span class="s2">) = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">program</span><span class="p">,</span> <span class="n">exe_file</span><span class="p">)</span>
-                <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">program</span><span class="p">]</span> <span class="o">=</span> <span class="n">exe_file</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;which(</span><span class="si">%s</span><span class="s2">) = &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">prog_enc</span><span class="p">,</span> <span class="n">exe_file</span><span class="p">)</span>
+                <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">prog_enc</span><span class="p">]</span> <span class="o">=</span> <span class="n">exe_file</span>
                 <span class="k">return</span> <span class="n">exe_file</span>
-    <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;which(</span><span class="si">%s</span><span class="s2">): command not found&quot;</span><span class="p">,</span> <span class="n">program</span><span class="p">)</span>
-    <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">program</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;which(</span><span class="si">%s</span><span class="s2">): command not found&quot;</span><span class="p">,</span> <span class="n">prog_enc</span><span class="p">)</span>
+    <span class="n">_WHICH_CACHE</span><span class="p">[</span><span class="n">prog_enc</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="kc">None</span></div>
 
 
@@ -281,9 +286,11 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        IOError: File copy or download failed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">timeout</span> <span class="o">&gt;=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;file://&#39;</span><span class="p">):</span>
-        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="mi">6</span><span class="p">:])</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Copying &#39;</span><span class="si">%s</span><span class="s2">&#39; to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
         <span class="n">mkdirp</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dest</span><span class="p">))</span>
@@ -299,20 +306,21 @@
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;. Retrying with a different method...&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
         <span class="c1"># Fallback: urllib is usually **much** slower than curl or wget and doesn&#39;t support timeout</span>
         <span class="k">if</span> <span class="n">timeout</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s2">&quot;Failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">ProgressIndicator</span><span class="p">(</span><span class="s2">&quot;Downloading&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">progress_bar</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">urllib</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">reporthook</span><span class="o">=</span><span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_stream</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out_file</span><span class="p">:</span>
+                    <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">in_stream</span><span class="p">,</span> <span class="n">out_file</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;urllib failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span></div>
+                <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="s2">&quot;Failed to download &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">src</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_create_dl_subprocess</span><span class="p">(</span><span class="n">abs_cmd</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
-    <span class="k">if</span> <span class="s2">&quot;curl&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">abs_cmd</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;curl&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">abs_cmd</span><span class="p">)):</span>
         <span class="n">size_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">abs_cmd</span><span class="p">,</span> <span class="s1">&#39;-sI&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;--location&#39;</span><span class="p">,</span> <span class="s1">&#39;--max-time&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">timeout</span><span class="p">)]</span>
         <span class="n">get_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">abs_cmd</span><span class="p">,</span> <span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="s1">&#39;-L&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;--connect-timeout&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">timeout</span><span class="p">)]</span>
-    <span class="k">elif</span> <span class="s2">&quot;wget&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">abs_cmd</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="s2">&quot;wget&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">abs_cmd</span><span class="p">)):</span>
         <span class="n">size_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">abs_cmd</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;--spider&#39;</span><span class="p">,</span> <span class="s1">&#39;--server-response&#39;</span><span class="p">,</span> <span class="s1">&#39;--timeout=</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">timeout</span><span class="p">,</span> <span class="s1">&#39;--tries=1&#39;</span><span class="p">]</span>
         <span class="n">get_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">abs_cmd</span><span class="p">,</span> <span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;-O&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;--timeout=</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">timeout</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -329,7 +337,7 @@
         <span class="n">file_size</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">with</span> <span class="n">ProgressIndicator</span><span class="p">(</span><span class="s2">&quot;Downloading&quot;</span><span class="p">,</span> <span class="n">total_size</span><span class="o">=</span><span class="n">file_size</span><span class="p">)</span> <span class="k">as</span> <span class="n">progress_bar</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">devnull</span><span class="p">:</span>
-            <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">get_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">devnull</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">get_cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">devnull</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">while</span> <span class="n">proc</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">current_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span><span class="o">.</span><span class="n">st_size</span>
@@ -367,25 +375,73 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">fin</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">ReadError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">IOError</span>
+        <span class="k">raise</span> <span class="ne">OSError</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">fin</span><span class="o">.</span><span class="n">firstmember</span><span class="o">.</span><span class="n">isdir</span><span class="p">():</span>
-            <span class="n">topdir</span> <span class="o">=</span> <span class="n">fin</span><span class="o">.</span><span class="n">firstmember</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">topdir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fin</span><span class="o">.</span><span class="n">firstmember</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">isdir</span><span class="p">()]</span>
+            <span class="n">dirs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">isdir</span><span class="p">()]</span>
             <span class="k">if</span> <span class="n">dirs</span><span class="p">:</span>
                 <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">dirs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-                <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">isfile</span><span class="p">()]</span>
+                <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">fin</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">isfile</span><span class="p">()]</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
                     <span class="n">dirname</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
                     <span class="k">while</span> <span class="n">dirname</span><span class="p">:</span>
                         <span class="n">dirname</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
-                    <span class="n">dirs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">basename</span><span class="p">)</span>
+                    <span class="n">dirs</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">basename</span><span class="p">)]</span>
                 <span class="n">topdir</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dirs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Top-level directory in &#39;</span><span class="si">%s</span><span class="s2">&#39; is &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">topdir</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">topdir</span></div>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">topdir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="is_clean_container"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.is_clean_container">[docs]</a><span class="k">def</span> <span class="nf">is_clean_container</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Recursively checks a container for bytes, bytearray and memory view objects in keys and values.</span>
+<span class="sd">    Care must be taken to avoid infinite loops caused by cycles in a dictionary with cycles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj (any): Container to be checked for disallowed binary data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: Whether or not bad binary entries were found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bad_types</span> <span class="o">=</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">,</span> <span class="nb">memoryview</span><span class="p">)</span>
+    <span class="n">sequence_types</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="nb">set</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">)</span>
+
+    <span class="c1"># Handle empty containers &amp; types not in containers</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="nb">set</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">obj</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">bad_types</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">is_dictlike</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">is_dictlike</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_dictlike</span><span class="p">:</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">bad_types</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">sequence_types</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">is_clean_container</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">bad_types</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">sequence_types</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_clean_container</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">bad_types</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <span class="k">def</span> <span class="nf">_show_extract_progress</span><span class="p">(</span><span class="n">members</span><span class="p">):</span>
@@ -424,7 +480,7 @@
             <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting &#39;</span><span class="si">%s</span><span class="s2">&#39; to create &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">archive</span><span class="p">,</span> <span class="n">full_dest</span><span class="p">)</span>
             <span class="n">fin</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">full_dest</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Extracting &#39;</span><span class="si">%s</span><span class="s2">&#39; does not create &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">full_dest</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracting &#39;</span><span class="si">{</span><span class="n">archive</span><span class="si">}</span><span class="s2">&#39; does not create &#39;</span><span class="si">{</span><span class="n">full_dest</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">full_dest</span></div>
 
 
@@ -449,7 +505,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;zip&#39;</span><span class="p">:</span>
                 <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
-                    <span class="n">archive</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;Created by TAU Commander&quot;</span>
+                    <span class="n">archive</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;Created by TAU Commander&quot;</span>
                     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
                         <span class="n">archive</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;tar&#39;</span><span class="p">,</span> <span class="s1">&#39;tgz&#39;</span><span class="p">,</span> <span class="s1">&#39;tar.bz2&#39;</span><span class="p">):</span>
@@ -496,7 +552,7 @@
         <span class="n">handle</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">err</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EACCES</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="c1"># Some other error, not permissions</span>
@@ -505,9 +561,9 @@
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">handle</span><span class="p">:</span>
-                <span class="n">handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
+                <span class="n">handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
+<span class="c1"># pylint: disable=unused-argument</span>
 <span class="nd">@contextmanager</span>
 <span class="k">def</span> <span class="nf">_null_context</span><span class="p">(</span><span class="n">label</span><span class="p">):</span>
     <span class="k">yield</span>
@@ -536,7 +592,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">subproc_env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">env</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">env</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">subproc_env</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;unset </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
@@ -549,16 +605,16 @@
         <span class="k">if</span> <span class="n">error_buf</span><span class="p">:</span>
             <span class="n">buf</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="n">error_buf</span><span class="p">)</span>
         <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">subproc_env</span><span class="p">,</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">subproc_env</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                 <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
             <span class="c1"># Use iter to avoid hidden read-ahead buffer bug in named pipes:</span>
             <span class="c1"># http://bugs.python.org/issue3907</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readline</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readline</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
                     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">stdout</span><span class="p">:</span>
-                    <span class="nb">print</span> <span class="n">line</span><span class="p">,</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">error_buf</span><span class="p">:</span>
                     <span class="n">buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">record_output</span><span class="p">:</span>
@@ -568,7 +624,7 @@
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">retval</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">retval</span> <span class="ow">and</span> <span class="n">error_buf</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stdout</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">buf</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="n">line</span><span class="p">,</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">record_output</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">retval</span><span class="p">,</span> <span class="n">output</span>
     <span class="k">return</span> <span class="n">retval</span></div>
@@ -599,14 +655,14 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">_heavy_debug</span><span class="p">(</span><span class="s2">&quot;Using cached output for command: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking subprocess output: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
-    <span class="n">stdout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+    <span class="n">stdout</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">get_command_output</span><span class="o">.</span><span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">stdout</span>
     <span class="n">_heavy_debug</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> returned 0&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">stdout</span></div>
 
 
-<div class="viewcode-block" id="page_output"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.page_output">[docs]</a><span class="k">def</span> <span class="nf">page_output</span><span class="p">(</span><span class="n">output_string</span><span class="p">):</span>
+<div class="viewcode-block" id="page_output"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.page_output">[docs]</a><span class="k">def</span> <span class="nf">page_output</span><span class="p">(</span><span class="n">output_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Pipe string to a pager.</span>
 
 <span class="sd">    If PAGER is an environment then use that as pager, otherwise</span>
@@ -616,9 +672,9 @@
 <span class="sd">        output_string (str): String to put output.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">output_string</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">output_string</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+    <span class="n">output_string</span> <span class="o">=</span> <span class="n">unidecode</span><span class="p">(</span><span class="n">output_string</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__TAUCMDR_DISABLE_PAGER__&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="nb">print</span> <span class="n">output_string</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">output_string</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pager_cmd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PAGER&#39;</span><span class="p">,</span> <span class="s1">&#39;less -F -R -S -X -K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
         <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">pager_cmd</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
@@ -639,9 +695,9 @@
         <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Ki&#39;</span><span class="p">,</span> <span class="s1">&#39;Mi&#39;</span><span class="p">,</span> <span class="s1">&#39;Gi&#39;</span><span class="p">,</span> <span class="s1">&#39;Ti&#39;</span><span class="p">,</span> <span class="s1">&#39;Pi&#39;</span><span class="p">,</span> <span class="s1">&#39;Ei&#39;</span><span class="p">,</span> <span class="s1">&#39;Zi&#39;</span><span class="p">]:</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1024.0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%3.1f%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num</span><span class="si">:</span><span class="s2">3.1f</span><span class="si">}{</span><span class="n">unit</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">num</span> <span class="o">/=</span> <span class="mf">1024.0</span>
-    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%.1f%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="s1">&#39;Yi&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{:.1f}{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="s1">&#39;Yi&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="parse_bool"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.parse_bool">[docs]</a><span class="k">def</span> <span class="nf">parse_bool</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">additional_true</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">additional_false</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -669,7 +725,7 @@
         <span class="n">true_values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">additional_true</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">additional_false</span><span class="p">:</span>
         <span class="n">false_values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">additional_false</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">true_values</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -689,7 +745,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        bool: True if `url` is a URL, False otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">scheme</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="camelcase"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.camelcase">[docs]</a><span class="k">def</span> <span class="nf">camelcase</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
@@ -751,60 +807,12 @@
     <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">_COLOR_CONTROL_RE</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="walk_packages"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.walk_packages">[docs]</a><span class="k">def</span> <span class="nf">walk_packages</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Fix :any:`pkgutil.walk_packages` to work with Python zip files.</span>
-
-<span class="sd">    Python&#39;s default :any:`zipimporter` doesn&#39;t provide an `iter_modules` method so</span>
-<span class="sd">    :any:`pkgutil.walk_packages` silently fails to list modules and packages when</span>
-<span class="sd">    they are in a zip file.  This implementation works around this.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">seen</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dct</span><span class="o">=</span><span class="p">{}):</span>     <span class="c1"># pylint: disable=dangerous-default-value</span>
-        <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">dct</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="n">dct</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">for</span> <span class="n">importer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span> <span class="ow">in</span> <span class="n">_iter_modules</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="n">importer</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span>
-        <span class="k">if</span> <span class="n">ispkg</span><span class="p">:</span>
-            <span class="nb">__import__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="s1">&#39;__path__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">seen</span><span class="p">(</span><span class="n">p</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">walk_packages</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">item</span></div>
-
-
-<div class="viewcode-block" id="_zipimporter_iter_modules"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util._zipimporter_iter_modules">[docs]</a><span class="k">def</span> <span class="nf">_zipimporter_iter_modules</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;The missing zipimporter.iter_modules method.&quot;&quot;&quot;</span>
-    <span class="n">libdir</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">pkgpath</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">archive</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">libdir</span><span class="p">,</span> <span class="n">archive</span><span class="p">))</span> <span class="k">as</span> <span class="n">zipfile</span><span class="p">:</span>
-        <span class="n">namelist</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">namelist</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">iter_modules</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">namelist</span><span class="p">:</span>
-            <span class="n">fname</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">_PY_SUFFEXES</span><span class="p">:</span>
-                <span class="n">extrapath</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">modname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">pkgpath</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">extrapath</span> <span class="ow">or</span> <span class="n">modname</span> <span class="o">==</span> <span class="s1">&#39;__init__&#39;</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="n">pkgname</span><span class="p">,</span> <span class="n">modname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">pkgname</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="ow">in</span> <span class="n">pkgname</span><span class="p">:</span>
-                        <span class="k">continue</span>
-                    <span class="k">yield</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">pkgname</span><span class="p">,</span> <span class="kc">True</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">modname</span><span class="p">,</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="n">iter_modules</span></div>
-
-
 <span class="k">def</span> <span class="nf">_iter_modules</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
     <span class="c1"># pylint: disable=no-member</span>
     <span class="n">yielded</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
         <span class="n">importer</span> <span class="o">=</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">get_importer</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">importer</span><span class="p">,</span> <span class="n">zipimporter</span><span class="p">):</span>
-            <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">importer</span><span class="o">.</span><span class="n">archive</span><span class="p">)</span>
-            <span class="n">iter_importer_modules</span> <span class="o">=</span> <span class="n">_zipimporter_iter_modules</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">iter_importer_modules</span> <span class="o">=</span> <span class="n">importer</span><span class="o">.</span><span class="n">iter_modules</span>
+        <span class="n">iter_importer_modules</span> <span class="o">=</span> <span class="n">importer</span><span class="o">.</span><span class="n">iter_modules</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span> <span class="ow">in</span> <span class="n">iter_importer_modules</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">yielded</span><span class="p">:</span>
                 <span class="n">yielded</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -820,6 +828,64 @@
     <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;static&#39;</span> <span class="k">if</span> <span class="n">stdout</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="s1">&#39;dynamic&#39;</span></div>
+
+
+<div class="viewcode-block" id="tmpfs_prefix"><a class="viewcode-back" href="../../taucmdr.util.html#taucmdr.util.tmpfs_prefix">[docs]</a><span class="k">def</span> <span class="nf">tmpfs_prefix</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.</span>
+
+<span class="sd">    /dev/shm is the preferred tmpfs, but if it&#39;s unavailable or mounted with noexec then</span>
+<span class="sd">    fall back to tempfile.gettempdir(), which is usually /tmp.  If that filesystem is also</span>
+<span class="sd">    unavailable then use the filesystem prefix of the highest writable storage container.</span>
+
+<span class="sd">    An attempt is made to ensure that there is at least 2GiB of free space in the</span>
+<span class="sd">    selected filesystem.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Path to a uniquely-named directory in the temporary filesystem. The directory</span>
+<span class="sd">            and all its contents **will be deleted** when the program exits if it installs</span>
+<span class="sd">            correctly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">candidate</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="s2">&quot;/dev/shm&quot;</span><span class="p">,</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="n">highest_writable_storage</span><span class="p">()</span><span class="o">.</span><span class="n">prefix</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tmp_prefix</span> <span class="o">=</span> <span class="n">mkdtemp</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="c1"># Check execute privileges some distros mount tmpfs with the noexec option.</span>
+        <span class="n">check_exe_script</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">tmp_prefix</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp_file</span><span class="p">:</span>
+                <span class="n">check_exe_script</span> <span class="o">=</span> <span class="n">tmp_file</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">tmp_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;#!/bin/sh</span><span class="se">\n</span><span class="s2">exit 0&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">check_exe_script</span><span class="p">,</span> <span class="n">S_IRUSR</span> <span class="o">|</span> <span class="n">S_IWUSR</span> <span class="o">|</span> <span class="n">S_IEXEC</span><span class="p">)</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="n">check_exe_script</span><span class="p">])</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">statvfs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">statvfs</span><span class="p">(</span><span class="n">check_exe_script</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">candidate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">candidate</span> <span class="o">=</span> <span class="n">tmp_prefix</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">free_mib</span> <span class="o">=</span> <span class="p">(</span><span class="n">statvfs</span><span class="o">.</span><span class="n">f_frsize</span><span class="o">*</span><span class="n">statvfs</span><span class="o">.</span><span class="n">f_bavail</span><span class="p">)</span><span class="o">//</span><span class="mh">0x100000</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">MB free&quot;</span><span class="p">,</span> <span class="n">tmp_prefix</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">free_mib</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">free_mib</span> <span class="o">&lt;</span> <span class="mi">2000</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">check_exe_script</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">check_exe_script</span><span class="p">)</span>
+        <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">candidate</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s2">&quot;No filesystem has at least 2GB free space and supports executables.&quot;</span><span class="p">)</span>
+        <span class="n">tmp_prefix</span> <span class="o">=</span> <span class="n">candidate</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to count available bytes in &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tmp_prefix</span><span class="p">)</span>
+    <span class="n">tmpfs_prefix</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">tmp_prefix</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Temporary prefix: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">tmp_prefix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tmpfs_prefix</span><span class="o">.</span><span class="n">value</span></div>
 </pre></div>
 
       </div>
@@ -833,7 +899,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Nov 03, 2020 at 18:24:46 UTC.
+      Last updated on Jul 27, 2021 at 01:38:46 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
