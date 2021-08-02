@@ -1,0 +1,80 @@
+.tau-extension-body {
+    display: block;
+    overflow: auto;
+    height: 100%;
+}
+
+.tau-table-body {
+    padding: 0% 5% 5% 5%;
+}
+
+.tau-table {
+    min-width: 650px;
+}
+
+.tau-table-column {
+    font-weight: bold !important;
+    background-color: #e7eaeb;
+}
+
+.tau-table-row:hover {
+    background-color: #d9e6fa;
+}
+
+.tau-table-row-clickable:hover {
+    cursor: pointer;
+}
+
+.tau-dialog-form {
+    overflow: hidden;
+}
+
+.tau-dialog-name {
+    width: 100%;
+}
+
+.tau-dialog-checkbox-container {
+    display: flex;
+    flex-direction: row;
+    padding: 5% 0 5% 5%;
+}
+
+.tau-dialog-checkbox {
+    padding: 0 20% 0 0;
+}
+
+.tau-dialog-body div:nth-child(1) {
+    max-height: fit-content;
+}
+
+.tau-dialog-invisible-form {
+    display: none;
+}
+
+.tau-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: .5px solid #aaa;
+    padding: 0% 0% 0% 0%;
+}
+
+.tau-option-button {
+    border-radius: 0px !important;
+    padding: 2px 8px !important;
+    text-transform: none !important;
+    min-width: 50px !important;
+}
+
+.tau-option-current {
+    padding-right: 5px;
+}
+
+.tau-option-menu ul {
+    padding: 0% 0% 0% 0%;
+}
+
+.tau-option-menu .MuiPaper-rounded {
+    border-radius: 0px;
+    transform: none !important;
+}

@@ -3,9 +3,7 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import {
-    ICommandPalette,
-} from '@jupyterlab/apputils';
+import { ICommandPalette } from '@jupyterlab/apputils';
 
 import { WidgetApp } from './App';
 

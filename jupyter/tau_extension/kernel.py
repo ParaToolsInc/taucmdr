@@ -6,6 +6,14 @@ parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../.."))
 sys.path.insert(0, os.path.join(parent_dir, 'packages'))
 
 from taucmdr.model.project import Project
+from taucmdr.cli.commands.project.select import COMMAND as select_project
+
+from taucmdr.cli.commands.project.create import COMMAND as create_project
+from taucmdr.cli.commands.target.create import COMMAND as create_target
+from taucmdr.cli.commands.application.create import COMMAND as create_application
+from taucmdr.cli.commands.measurement.create import COMMAND as create_measurement
+from taucmdr.cli.commands.experiment.create import COMMAND as create_experiment
+
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.compiler.shmem import SHMEM_CC
@@ -60,59 +68,135 @@ experiment_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Measurement', 'function': lambda x: x['measurement']['name']},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
-
-def read_column(source, dashboard_columns):
-    header_row = [col['header'] for col in dashboard_columns]
-    rows = [header_row]
-    for record in source:
-        populated = record.populate(context=False)
-        row = []
-        for col in dashboard_columns:
-            if 'value' in col:
-                try:
-                   cell = populated[col['value']]
-                except KeyError:
-                    cell = 'N/A'
-            elif 'yesno' in col:
-                cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
-            elif 'function' in col:
-                cell = col['function'](populated)
-            else:
-                raise InternalError("Invalid column definition: %s" % col)
-            row.append(cell)
-        rows.append(row)
-    keys = rows[0]
-    ret_val = {}
-    for meas in [dict(zip(keys, values)) for values in rows[1:]]:
-        name = meas.pop('Name')
-        ret_val[name] = meas
-
-    return ret_val
-
-def get_project(proj):
-    project = {}
-    target = proj.populate('targets')
-    application = proj.populate('applications')
-    measurement = proj.populate('measurements')
-    experiment = proj.populate('experiments')
-
-    project['name'] = proj['name']
-    project['targets'] = read_column(target, target_columns)
-    project['applications'] = read_column(application, application_columns)
-    project['measurements'] = read_column(measurement, measurement_columns)
-    project['experiments'] = read_column(experiment, experiment_columns)
-    return project
-
-def get_all_projects():
-    ctrl = Project.controller()
-    projects = ctrl.all()
-    project_dict = {}
-    for project in projects:
-        project_dict[project['name']] = get_project(project)
-    return project_dict
+class TauKernel(object):
     
+    @staticmethod
+    def read_column(source, dashboard_columns):
+        header_row = [col['header'] for col in dashboard_columns]
+        rows = [header_row]
+        for record in source:
+            populated = record.populate(context=False)
+            row = []
+            for col in dashboard_columns:
+                if 'value' in col:
+                    try:
+                       cell = populated[col['value']]
+                    except KeyError:
+                        cell = 'N/A'
+                elif 'yesno' in col:
+                    cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
+                elif 'function' in col:
+                    cell = col['function'](populated)
+                else:
+                    raise InternalError("Invalid column definition: %s" % col)
+                row.append(cell)
+            rows.append(row)
+        keys = rows[0]
+        ret_val = {}
+        for meas in [dict(zip(keys, values)) for values in rows[1:]]:
+            name = meas.pop('Name')
+            ret_val[name] = meas
 
-def run():
-    projects = get_all_projects()
-    json_ret = json.dumps(projects)
-    return json_ret
+        return ret_val
+
+    @staticmethod
+    def get_project(proj):
+        project = {}
+        target = proj.populate('targets')
+        application = proj.populate('applications')
+        measurement = proj.populate('measurements')
+        experiment = proj.populate('experiments')
+
+        project['name'] = proj['name']
+        project['targets'] = TauKernel.read_column(target, target_columns)
+        project['applications'] = TauKernel.read_column(application, application_columns)
+        project['measurements'] = TauKernel.read_column(measurement, measurement_columns)
+        project['experiments'] = TauKernel.read_column(experiment, experiment_columns)
+        return project
+
+    @staticmethod
+    def get_all_projects():
+        ctrl = Project.controller()
+        current_project = ctrl.selected()
+        projects = ctrl.all()
+        project_dict = {}
+        for project in projects:
+            TauKernel.change_project(project['name'])
+            project_dict[project['name']] = TauKernel.get_project(project)
+
+        TauKernel.change_project(current_project['name'])
+        return project_dict
+
+    @staticmethod
+    def refresh():
+        projects = TauKernel.get_all_projects()
+        json_ret = json.dumps(projects)
+        return json_ret
+
+    @staticmethod
+    def change_project(project_name):
+        select_project.main([project_name])
+        return
+
+    @staticmethod
+    def new_project(name):
+        cmd = create_project.main([name])
+        print(cmd)
+        if not cmd:
+            return json.dumps({'status': True})
+        return json.dumps({'status': False})
+
+    @staticmethod
+    def new_target(name, host_os, host_arch, host_compiler, mpi_compiler, shmem_compiler):
+        cmd = create_target.main([name, 
+                            '--os', host_os, 
+                            '--arch', host_arch, 
+                            '--compilers', host_compiler, 
+                            '--mpi-wrappers', mpi_compiler, 
+                            '--shmem-compilers', shmem_compiler])
+        if not cmd:
+            return json.dumps({'status': True})
+        return json.dumps({'status': False})
+
+    @staticmethod
+    def new_application(name, linkage, openmp, cuda, pthreads, opencl, tbb, shmem, mpi, mpc):
+        cmd = create_application.main([name,
+                                '--linkage', linkage,
+                                '--openmp', openmp,
+                                '--cuda', cuda,
+                                '--pthreads', pthreads,
+                                '--opencl', opencl,
+                                '--tbb', tbb,
+                                '--shmem', shmem,
+                                '--mpi', mpc])
+        if not cmd:
+            return json.dumps({'status': True})
+        return json.dumps({'status': False})
+
+    @staticmethod
+    def new_measurement(name, profile, trace, source_inst, compiler_inst, openmp, sample, mpi, cuda, shmem, io):
+        cmd = create_measurement.main([name,
+                                 '--profile', profile,
+                                 '--trace', trace,
+                                 '--source-inst', source_inst,
+                                 '--compiler-inst', compiler_inst,
+                                 '--openmp', openmp,
+                                 '--sample', sample,
+                                 '--mpi', mpi,
+                                 '--cuda', cuda,
+                                 '--shmem', shmem,
+                                 '--io', io])
+        if not cmd:
+            return json.dumps({'status': True})
+        return json.dumps({'status': False})
+
+    @staticmethod
+    def new_experiment(name, target, application, measurement, record):
+        cmd = create_experiment.main([name,
+                           '--target', target,
+                           '--application', application,
+                           '--measurement', measurement,
+                           '--record-output', record])
+        if not cmd:
+            return json.dumps({'status': True})
+        return json.dumps({'status': False})
