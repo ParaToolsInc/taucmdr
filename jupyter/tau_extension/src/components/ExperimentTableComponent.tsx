@@ -85,7 +85,9 @@ export const ExperimentTable = (props: any) => {
                             </Table>
                         </TableContainer>
                     </div>
-                ) : null }
+                ) : ( 
+		    <React.Fragment></React.Fragment>
+		)}
             </React.Fragment>
         )
     }

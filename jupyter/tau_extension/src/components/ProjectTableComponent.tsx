@@ -80,7 +80,9 @@ export const ProjectTable = (props: any) => {
                         </Table>
                     </TableContainer>
         	</div>
-            ) : null }
+            ) : (
+		<React.Fragment></React.Fragment>
+	    )}
     	</React.Fragment>
     )
 };

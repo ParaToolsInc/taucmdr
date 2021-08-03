@@ -308,8 +308,8 @@ export const makeDialog = (model: KernelModel, form: string, currentProject: str
 	    switch (result.value.form) {
 		case 'project':
 			args = `'${result.value.name}'`;
-                	model.execute('TauKernel.new_project(${args})'); 
-			console.log(args);
+                	model.execute(`TauKernel.new_project(${args})`); 
+			model.execute('TauKernel.refresh()');
 			break;
 
             	case 'target': 
@@ -334,7 +334,6 @@ export const makeDialog = (model: KernelModel, form: string, currentProject: str
 			args = `'${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}', '${result.value.record}'`;
 	                model.execute(`TauKernel.new_experiment(${args})`); 
 			model.execute('TauKernel.refresh()');
-			console.log(args);
 			break;
 
 	    	default:

@@ -19,7 +19,6 @@ export const TargetTable = (props: any) => {
     let rowData:any[] = null;
 
     useEffect(() => {
-	console.log('updating target');
 	setOutputHandle(true);
     }, [props.output, props.project]);
 
@@ -84,7 +83,9 @@ export const TargetTable = (props: any) => {
 			    </Table>
 		        </TableContainer>
 		    </div>
-	        ) : null }
+	        ) : (
+		    <React.Fragment></React.Fragment>
+		)}
 	    </React.Fragment>
 	)
     }

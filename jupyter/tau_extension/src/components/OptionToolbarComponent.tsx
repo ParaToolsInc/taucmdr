@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { makeDialog } from './Dialogs';
 
@@ -8,7 +8,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 export const OptionToolbar = (props: any) => {
 
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -63,7 +63,7 @@ export const OptionToolbar = (props: any) => {
                             <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Experiment', props.project);}}>New Experiment</MenuItem>
                         </div>
                     ) : (
-                        <div></div>
+			<React.Fragment></React.Fragment>
                     )}
                 </Menu>
             </div>

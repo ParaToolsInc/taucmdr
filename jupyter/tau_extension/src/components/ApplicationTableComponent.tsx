@@ -94,7 +94,9 @@ export const ApplicationTable = (props: any) => {
                             </Table>
                         </TableContainer>
                     </div>
-                ) : null }
+                ) : (
+		    <React.Fragment></React.Fragment>
+		)}
 	    </React.Fragment>
 	)
     }

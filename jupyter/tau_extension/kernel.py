@@ -14,6 +14,8 @@ from taucmdr.cli.commands.application.create import COMMAND as create_applicatio
 from taucmdr.cli.commands.measurement.create import COMMAND as create_measurement
 from taucmdr.cli.commands.experiment.create import COMMAND as create_experiment
 
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.compiler.shmem import SHMEM_CC
@@ -69,6 +71,8 @@ experiment_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
 class TauKernel(object):
+
+    current_project = None
     
     @staticmethod
     def read_column(source, dashboard_columns):
@@ -117,49 +121,56 @@ class TauKernel(object):
     @staticmethod
     def get_all_projects():
         ctrl = Project.controller()
-        current_project = ctrl.selected()
+        TauKernel.current_project = ctrl.selected()['name']
+
         projects = ctrl.all()
         project_dict = {}
         for project in projects:
-            TauKernel.change_project(project['name'])
+            select_project.main([project['name']])
             project_dict[project['name']] = TauKernel.get_project(project)
 
-        TauKernel.change_project(current_project['name'])
         return project_dict
 
     @staticmethod
     def refresh():
         projects = TauKernel.get_all_projects()
         json_ret = json.dumps(projects)
+        PROJECT_STORAGE.disconnect_filesystem()
         return json_ret
 
     @staticmethod
     def change_project(project_name):
-        select_project.main([project_name])
+        TauKernel.current_project = project_name
         return
 
     @staticmethod
     def new_project(name):
+        PROJECT_STORAGE.connect_filesystem()
         cmd = create_project.main([name])
-        print(cmd)
+
+        PROJECT_STORAGE.disconnect_filesystem()
         if not cmd:
             return json.dumps({'status': True})
         return json.dumps({'status': False})
 
     @staticmethod
     def new_target(name, host_os, host_arch, host_compiler, mpi_compiler, shmem_compiler):
+        select_project.main([TauKernel.current_project])
         cmd = create_target.main([name, 
                             '--os', host_os, 
                             '--arch', host_arch, 
                             '--compilers', host_compiler, 
                             '--mpi-wrappers', mpi_compiler, 
                             '--shmem-compilers', shmem_compiler])
+        
+        PROJECT_STORAGE.disconnect_filesystem()
         if not cmd:
             return json.dumps({'status': True})
         return json.dumps({'status': False})
 
     @staticmethod
     def new_application(name, linkage, openmp, cuda, pthreads, opencl, tbb, shmem, mpi, mpc):
+        select_project.main([TauKernel.current_project])
         cmd = create_application.main([name,
                                 '--linkage', linkage,
                                 '--openmp', openmp,
@@ -169,12 +180,15 @@ class TauKernel(object):
                                 '--tbb', tbb,
                                 '--shmem', shmem,
                                 '--mpi', mpc])
+
+        PROJECT_STORAGE.disconnect_filesystem()
         if not cmd:
             return json.dumps({'status': True})
         return json.dumps({'status': False})
 
     @staticmethod
     def new_measurement(name, profile, trace, source_inst, compiler_inst, openmp, sample, mpi, cuda, shmem, io):
+        select_project.main([TauKernel.current_project])
         cmd = create_measurement.main([name,
                                  '--profile', profile,
                                  '--trace', trace,
@@ -186,17 +200,22 @@ class TauKernel(object):
                                  '--cuda', cuda,
                                  '--shmem', shmem,
                                  '--io', io])
+
+        PROJECT_STORAGE.disconnect_filesystem()
         if not cmd:
             return json.dumps({'status': True})
         return json.dumps({'status': False})
 
     @staticmethod
     def new_experiment(name, target, application, measurement, record):
+        select_project.main([TauKernel.current_project])
         cmd = create_experiment.main([name,
                            '--target', target,
                            '--application', application,
                            '--measurement', measurement,
                            '--record-output', record])
+
+        PROJECT_STORAGE.disconnect_filesystem()
         if not cmd:
             return json.dumps({'status': True})
         return json.dumps({'status': False})
