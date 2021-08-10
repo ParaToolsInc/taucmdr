@@ -16,7 +16,7 @@ export const TargetTable = (props: any) => {
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
     var json:any = null;
-    let rowData:any[] = null;
+    let rowData:any[];
 
     useEffect(() => {
 	setOutputHandle(true);
@@ -28,9 +28,7 @@ export const TargetTable = (props: any) => {
             let string_output = bundle['text/plain'] as string;
             json = JSON.parse(string_output.replace(/\'/g, "")) as ProjectList;
 
-	    if ('status' in json) {
-	        console.log(json);
-	    } else {
+	    if (!('status' in json)) {
                 rowData = [];
                 Object.entries(json[props.project]['targets']).map((target: any) => {
                     let name = target[0];
@@ -68,9 +66,9 @@ export const TargetTable = (props: any) => {
 			        </TableHead>
 			        <TableBody>
 				    {rows.map((row: any) => (
-				        <TableRow className='tau-table-row' key={row.name}>
+					<TableRow className='tau-table-row' key={row.name}>
 					    <TableCell component="th" scope="row">
-					        {row.name}
+						{row.name}
 					    </TableCell>
 					    <TableCell align="right">{row.hostOS}</TableCell>
 					    <TableCell align="right">{row.hostArch}</TableCell>
@@ -82,7 +80,7 @@ export const TargetTable = (props: any) => {
 			        </TableBody>
 			    </Table>
 		        </TableContainer>
-		    </div>
+		    </div>				
 	        ) : (
 		    <React.Fragment></React.Fragment>
 		)}

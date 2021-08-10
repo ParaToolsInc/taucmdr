@@ -16,7 +16,7 @@ export const ExperimentTable = (props: any) => {
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
     var json:any = null;
-    let rowData:any[] = null;
+    let rowData:any[];
 
     useEffect(() => {
 	setOutputHandle(true);
@@ -28,9 +28,7 @@ export const ExperimentTable = (props: any) => {
             let string_output = bundle['text/plain'] as string;
             json = JSON.parse(string_output.replace(/\'/g, "")) as ProjectList;
 
-            if ('status' in json) {
-                console.log(json);
-            } else {
+	    if (!('status' in json)) {
                 rowData = [];
                 Object.entries(json[props.project]['experiments']).map((experiment: any) => {
                     let name = experiment[0];

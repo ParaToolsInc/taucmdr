@@ -146,76 +146,86 @@ class TauKernel(object):
     @staticmethod
     def new_project(name):
         PROJECT_STORAGE.connect_filesystem()
-        cmd = create_project.main([name])
+        try:
+            create_project.main([name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in creation'})
 
         PROJECT_STORAGE.disconnect_filesystem()
-        if not cmd:
-            return json.dumps({'status': True})
-        return json.dumps({'status': False})
+        return json.dumps({'status': True})
 
     @staticmethod
     def new_target(name, host_os, host_arch, host_compiler, mpi_compiler, shmem_compiler):
         select_project.main([TauKernel.current_project])
-        cmd = create_target.main([name, 
-                            '--os', host_os, 
-                            '--arch', host_arch, 
-                            '--compilers', host_compiler, 
-                            '--mpi-wrappers', mpi_compiler, 
-                            '--shmem-compilers', shmem_compiler])
+        try:
+            create_target.main([name, 
+                        '--os', host_os, 
+                        '--arch', host_arch, 
+                        '--compilers', host_compiler, 
+                        '--mpi-wrappers', mpi_compiler, 
+                        '--shmem-compilers', shmem_compiler])
         
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in creation'})
+
         PROJECT_STORAGE.disconnect_filesystem()
-        if not cmd:
-            return json.dumps({'status': True})
-        return json.dumps({'status': False})
+        return json.dumps({'status': True})
 
     @staticmethod
     def new_application(name, linkage, openmp, cuda, pthreads, opencl, tbb, shmem, mpi, mpc):
         select_project.main([TauKernel.current_project])
-        cmd = create_application.main([name,
-                                '--linkage', linkage,
-                                '--openmp', openmp,
-                                '--cuda', cuda,
-                                '--pthreads', pthreads,
-                                '--opencl', opencl,
-                                '--tbb', tbb,
-                                '--shmem', shmem,
-                                '--mpi', mpc])
+        try:
+            create_application.main([name,
+                        '--linkage', linkage,
+                        '--openmp', openmp,
+                        '--cuda', cuda,
+                        '--pthreads', pthreads,
+                        '--opencl', opencl,
+                        '--tbb', tbb,
+                        '--shmem', shmem,
+                        '--mpi', mpc])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in creation'})
 
         PROJECT_STORAGE.disconnect_filesystem()
-        if not cmd:
-            return json.dumps({'status': True})
-        return json.dumps({'status': False})
+        return json.dumps({'status': True})
 
     @staticmethod
     def new_measurement(name, profile, trace, source_inst, compiler_inst, openmp, sample, mpi, cuda, shmem, io):
         select_project.main([TauKernel.current_project])
-        cmd = create_measurement.main([name,
-                                 '--profile', profile,
-                                 '--trace', trace,
-                                 '--source-inst', source_inst,
-                                 '--compiler-inst', compiler_inst,
-                                 '--openmp', openmp,
-                                 '--sample', sample,
-                                 '--mpi', mpi,
-                                 '--cuda', cuda,
-                                 '--shmem', shmem,
-                                 '--io', io])
+        try:
+            create_measurement.main([name,
+                        '--profile', profile,
+                        '--trace', trace,
+                        '--source-inst', source_inst,
+                        '--compiler-inst', compiler_inst,
+                        '--openmp', openmp,
+                        '--sample', sample,
+                        '--mpi', mpi,
+                        '--cuda', cuda,
+                        '--shmem', shmem,
+                        '--io', io])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in creation'})
 
         PROJECT_STORAGE.disconnect_filesystem()
-        if not cmd:
-            return json.dumps({'status': True})
-        return json.dumps({'status': False})
+        return json.dumps({'status': True})
 
     @staticmethod
     def new_experiment(name, target, application, measurement, record):
         select_project.main([TauKernel.current_project])
-        cmd = create_experiment.main([name,
-                           '--target', target,
-                           '--application', application,
-                           '--measurement', measurement,
-                           '--record-output', record])
+        try:
+            create_experiment.main([name,
+                       '--target', target,
+                       '--application', application,
+                       '--measurement', measurement,
+                       '--record-output', record])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in creation'})
 
         PROJECT_STORAGE.disconnect_filesystem()
-        if not cmd:
-            return json.dumps({'status': True})
-        return json.dumps({'status': False})
+        return json.dumps({'status': True})

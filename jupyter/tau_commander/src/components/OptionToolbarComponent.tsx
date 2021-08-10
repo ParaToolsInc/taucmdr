@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { makeDialog } from './Dialogs';
+import { makeNewDialog, makeColorDialog } from './Dialogs';
 
 import Button from "@material-ui/core/Button";
 import Menu from '@material-ui/core/Menu';
@@ -17,10 +17,19 @@ export const OptionToolbar = (props: any) => {
     const handleClose = () => {
         setAnchorEl(null);
     };
-    
+
     return (
         <div className='tau-option-header'>
             <div>
+		<Button
+		    className='tau-option-button'
+		    size='small'
+		    target='_blank'
+		    href='https://github.com/ParaToolsInc'
+		>
+		    <span className='tau-logo-button'></span> 
+		</Button>
+
                 <Button 
                     className='tau-option-button' 
                     size='small' 
@@ -54,21 +63,21 @@ export const OptionToolbar = (props: any) => {
                   onClose={handleClose}
                   className='tau-option-menu'
                 >
-                    <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Project', props.project);}}>New Project</MenuItem>
+                    <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Project', props.project);}}>New Project</MenuItem>
                     { props.project ? (
                         <div>
-                            <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Target', props.project);}}>New Target</MenuItem>
-                            <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Application', props.project);}}>New Application</MenuItem>
-                            <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Measurement', props.project);}}>New Measurement</MenuItem>
-                            <MenuItem onClick={() => {handleClose(); makeDialog(props.model, 'Experiment', props.project);}}>New Experiment</MenuItem>
+                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Target', props.project);}}>New Target</MenuItem>
+                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Application', props.project);}}>New Application</MenuItem>
+                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Measurement', props.project);}}>New Measurement</MenuItem>
+                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Experiment', props.project);}}>New Experiment</MenuItem>
                         </div>
                     ) : (
-			<React.Fragment></React.Fragment>
+			<div></div>
                     )}
                 </Menu>
             </div>
 
-            <div>
+            <div className='tau-option-right-side'>
                 { props.project ? (
                     <p className='tau-option-current'>
                         <b>Current project: </b>
@@ -77,6 +86,19 @@ export const OptionToolbar = (props: any) => {
                 ) : (
                     <React.Fragment></React.Fragment>
                 )}
+
+                { props.output ? (
+	 	    <Button
+		        className='tau-option-button'
+		        size='small'
+		        onClick={() => {makeColorDialog();}}
+		    >
+		        <span className='tau-color-button'></span> 
+		    </Button>
+	        ) : (
+		    <React.Fragment></React.Fragment>
+	        )}
+
             </div>
         </div>
     )

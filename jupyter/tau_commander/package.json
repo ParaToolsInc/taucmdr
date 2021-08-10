@@ -1,31 +1,31 @@
 {
-  "name": "tau_extension",
+  "name": "tau_commander",
   "version": "0.1.0",
-  "description": "A JupyterLab extension.",
+  "description": "A JupyterLab extension for Tau Commander.",
   "keywords": [
     "jupyter",
     "jupyterlab",
     "jupyterlab-extension"
   ],
-  "homepage": "https://github.com/ParaToolsInc",
+  "homepage": "https://github.com/ParaToolsInc/taucmdr",
   "bugs": {
-    "url": "https://github.com/ParaToolsInc/issues"
+    "url": "https://github.com/ParaToolsInc/taucmdr/issues"
   },
   "license": "BSD-3-Clause",
   "author": {
     "name": "Cameron Durbin",
-    "email": ""
+    "email": "Cameronfdurbin@gmail.com"
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
-    "style/*.{js,css}"
+    "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
   ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ParaToolsInc.git"
+    "url": "https://github.com/ParaToolsInc/taucmdr.git"
   },
   "scripts": {
     "build": "jlpm run build:lib && jlpm run build:labextension:dev",
@@ -35,7 +35,7 @@
     "build:lib": "tsc",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf tau_extension/labextension",
+    "clean:labextension": "rimraf tau_commander/labextension",
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
@@ -47,8 +47,10 @@
   "dependencies": {
     "@jupyterlab/application": "^3.0.0",
     "@material-ui/core": "^4.11.4",
-    "react-dom": "^17.0.2",
-    "reactstrap": "^8.9.0"
+    "@types/react-color": "^3.0.5",
+    "react-color": "^2.19.3",
+    "react-contextmenu": "^2.14.0",
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.0.0",
@@ -63,9 +65,21 @@
     "rimraf": "^3.0.2",
     "typescript": "~4.1.3"
   },
+  "sideEffects": [
+    "style/*.css",
+    "style/index.js"
+  ],
+  "styleModule": "style/index.js",
   "jupyterlab": {
     "extension": true,
-    "outputDir": "tau_extension/labextension"
+    "outputDir": "tau_commander/labextension"
   },
-  "styleModule": "style/index.js"
+  "jupyter-releaser": {
+    "hooks": {
+      "before-build-npm": [
+        "python -m pip install jupyterlab~=3.1",
+        "jlpm"
+      ]
+    }
+  }
 }

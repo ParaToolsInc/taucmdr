@@ -8,7 +8,7 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { WidgetApp } from './App';
 
 const extension: JupyterFrontEndPlugin<void> = {
-  id: 'tau_extension:plugin',
+  id: 'tau_commander:plugin',
   autoStart: true,
   requires: [ICommandPalette],
   activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
@@ -24,7 +24,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     }
 
     app.commands.addCommand(command, {
-        label: 'Taucmdr',
+        label: 'TAU Commander',
         execute: createWidget        
     });
 

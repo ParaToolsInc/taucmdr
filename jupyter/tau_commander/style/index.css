@@ -1,3 +1,23 @@
+.tau-logo-toolbar {
+    content: url(tau_logo.svg);
+    height: fit-content;
+    padding-top: 4px;
+}
+
+.tau-logo-button {
+    content: url(tau_logo.svg);
+    height: fit-content;
+    max-height: 20px;
+    transform: scale(0.9);
+}
+
+.tau-color-button {
+    content: url(color_wheel.svg);
+    height: fit-content;
+    max-height: 20px;
+    transform: scale(0.9);
+}
+
 .tau-extension-body {
     display: block;
     overflow: auto;
@@ -14,7 +34,7 @@
 
 .tau-table-column {
     font-weight: bold !important;
-    background-color: #e7eaeb;
+    background-color: var(--table-color);
 }
 
 .tau-table-row:hover {
@@ -51,10 +71,15 @@
     display: none;
 }
 
+.tau-option-right-side {
+    display: flex;
+    align-items: center;
+}
+
 .tau-option-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     border-bottom: .5px solid #aaa;
     padding: 0% 0% 0% 0%;
 }
@@ -63,7 +88,7 @@
     border-radius: 0px !important;
     padding: 2px 8px !important;
     text-transform: none !important;
-    min-width: 50px !important;
+    min-width: 20px !important;
 }
 
 .tau-option-current {

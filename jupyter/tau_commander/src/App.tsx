@@ -14,8 +14,13 @@ import { TableView } from './TableView';
 export class WidgetApp extends StackedPanel {
     constructor(manager: ServiceManager.IManager) {
         super();
+
+
+        let root = document.documentElement;
+	root.style.setProperty('--table-color', '#E7EAEB');
         
         this.id = 'taucmdr_body';
+        this.title.iconClass = 'tau-logo-toolbar';
         this.title.label = 'Taucmdr';
         this.title.closable = true;
 

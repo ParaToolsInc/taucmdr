@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
+import { GithubPicker } from 'react-color';
 
 import { KernelModel } from '../KernelModel';
 import { Dialog } from '@jupyterlab/apputils';
@@ -258,7 +259,7 @@ const writeBody = (model: KernelModel, form: string, currentProject: string) => 
     }
 }
 
-class DialogBody extends Widget {
+class NewDialogBody extends Widget {
     constructor(domElement: HTMLElement) {
         super({node : domElement});
     }
@@ -284,14 +285,14 @@ class DialogBody extends Widget {
     }
 }
 
-export const makeDialog = (model: KernelModel, form: string, currentProject: string) => {
+export const makeNewDialog = (model: KernelModel, form: string, currentProject: string) => {
 
     let body = document.createElement('div');
     ReactDOM.render(writeBody(model, form, currentProject), body);
 
     const dialog = new Dialog({
       title: `New ${form}`,
-      body: new DialogBody(body),
+      body: new NewDialogBody(body),
       buttons: [
         Dialog.cancelButton({ label: 'Cancel' }),
         Dialog.okButton({ label: 'Submit' })
@@ -343,6 +344,56 @@ export const makeDialog = (model: KernelModel, form: string, currentProject: str
 		}
 	    }
         }
-
-	);
+    );
 };
+
+export const makeErrorDialog = (message: string) => {
+    const dialog = new Dialog({
+	title: `Error`,
+	body: message,
+	buttons: [
+	    Dialog.cancelButton({ label: 'Okay' }),
+	]
+    });
+
+    return dialog.launch().then(result => {
+	dialog.dispose();
+    });
+};
+
+class ColorDialogBody extends Widget {
+    constructor(domElement: HTMLElement) {
+	super({node : domElement});
+    }
+
+};
+
+export const makeColorDialog = () => {
+    
+    let root = document.documentElement;
+    const handleColorChange = (colorPicked: any) => {
+	root.style.setProperty('--table-color', colorPicked.hex);
+    };
+
+    
+    let body = document.createElement('div');
+    ReactDOM.render(<GithubPicker triangle='hide' onChangeComplete={ handleColorChange }/>, body);
+
+    const dialog = new Dialog({
+	title: `Color Change`,
+	body: new ColorDialogBody(body), 
+	buttons: [
+	    Dialog.cancelButton({ label: 'Revert' }),
+	    Dialog.okButton({ label: 'Okay' }),
+	]
+    });
+
+    return dialog.launch().then(result => {
+	if (result.button.label == 'Revert') {
+	    root.style.setProperty('--table-color', '#E7EAEB');
+	}
+	dialog.dispose();
+    });
+};
+
+

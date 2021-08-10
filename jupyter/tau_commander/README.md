@@ -1,8 +1,8 @@
-# tau_extension
+# tau_commander
 
-![Github Actions Status](https://github.com/ParaToolsInc/workflows/Build/badge.svg)
+![Github Actions Status](https://github.com/ParaToolsInc/taucmdr/workflows/Build/badge.svg)
 
-A JupyterLab extension.
+A JupyterLab extension for Tau Commander.
 
 
 
@@ -15,7 +15,7 @@ A JupyterLab extension.
 To install the extension, execute:
 
 ```bash
-pip install tau_extension
+pip install tau_commander
 ```
 
 ## Uninstall
@@ -23,7 +23,7 @@ pip install tau_extension
 To remove the extension, execute:
 
 ```bash
-pip uninstall tau_extension
+pip uninstall tau_commander
 ```
 
 
@@ -39,7 +39,7 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the tau_extension directory
+# Change directory to the tau_commander directory
 # Install package in development mode
 pip install -e .
 # Link your development version of the extension with JupyterLab
@@ -68,9 +68,9 @@ jupyter lab build --minimize=False
 ### Development uninstall
 
 ```bash
-pip uninstall tau_extension
+pip uninstall tau_commander
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `tau_extension` within that folder.
+folder is located. Then you can remove the symlink named `tau_commander` within that folder.

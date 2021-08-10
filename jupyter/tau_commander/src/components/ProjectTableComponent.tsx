@@ -8,6 +8,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
+import { makeErrorDialog } from './Dialogs';
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import { ProjectList } from './interfaces';
 
@@ -16,7 +17,7 @@ export const ProjectTable = (props: any) => {
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
     var json:any = null;
-    let rowData:any[] = null;
+    let rowData:any[];
 
     useEffect(() => {
 	setOutputHandle(true);
@@ -28,7 +29,10 @@ export const ProjectTable = (props: any) => {
             json = JSON.parse(string_output.replace(/\'/g, '')) as ProjectList;
 
 	    if ('status' in json) {
-	        console.log(json);
+		if (json['status'] == false) {
+		    makeErrorDialog(json['message']);
+		}
+					
 	    } else {
                 rowData = [];
                 Object.entries(json).map((project: any) => {
