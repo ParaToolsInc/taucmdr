@@ -17,7 +17,7 @@ export class WidgetApp extends StackedPanel {
 
 
         let root = document.documentElement;
-	root.style.setProperty('--table-color', '#E7EAEB');
+	root.style.setProperty('--tau-table-color', '#E7EAEB');
         
         this.id = 'taucmdr_body';
         this.title.iconClass = 'tau-logo-toolbar';

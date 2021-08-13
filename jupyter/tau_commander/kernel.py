@@ -14,6 +14,12 @@ from taucmdr.cli.commands.application.create import COMMAND as create_applicatio
 from taucmdr.cli.commands.measurement.create import COMMAND as create_measurement
 from taucmdr.cli.commands.experiment.create import COMMAND as create_experiment
 
+from taucmdr.cli.commands.project.delete import COMMAND as delete_project
+from taucmdr.cli.commands.target.delete import COMMAND as delete_target
+from taucmdr.cli.commands.application.delete import COMMAND as delete_application
+from taucmdr.cli.commands.measurement.delete import COMMAND as delete_measurement
+from taucmdr.cli.commands.experiment.delete import COMMAND as delete_experiment
+
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 from taucmdr.cf.compiler.host import CC
@@ -121,9 +127,15 @@ class TauKernel(object):
     @staticmethod
     def get_all_projects():
         ctrl = Project.controller()
-        TauKernel.current_project = ctrl.selected()['name']
 
         projects = ctrl.all()
+        if len(projects) == 0:
+            return {}
+        if len(projects) == 1:
+            select_project.main([projects[0]['name']])
+
+        TauKernel.current_project = ctrl.selected()['name']
+
         project_dict = {}
         for project in projects:
             select_project.main([project['name']])
@@ -229,3 +241,85 @@ class TauKernel(object):
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
+
+    @staticmethod
+    def test():
+        PROJECT_STORAGE.connect_filesystem()
+        try:
+
+            print(projects)
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+
+    @staticmethod
+    def delete_project(name):
+        PROJECT_STORAGE.connect_filesystem()
+        try:
+#            ctrl = Project.controller()
+ #           projects = ctrl.all()
+  #          if len(projects) == 1:
+   #             return json.dumps({'status': False, 'message': 'There must be at least 1 project'})
+    #        for project in projects:
+     #           if project['name'] != name:
+      #              select_project.main([project['name']])
+       #             break
+
+            delete_project.main([name])
+
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def delete_target(name):
+        select_project.main([TauKernel.current_project])
+        try:
+            delete_target.main([name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def delete_application(name):
+        select_project.main([TauKernel.current_project])
+        try:
+            delete_application.main([name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def delete_measurement(name):
+        select_project.main([TauKernel.current_project])
+        try:
+            delete_measurement.main([name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def delete_experiment(name):
+        select_project.main([TauKernel.current_project])
+        try:
+            delete_experiment.main([name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+

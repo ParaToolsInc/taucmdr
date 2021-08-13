@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { makeDeleteDialog } from './Dialogs';
+
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -9,14 +11,31 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+
 import { ProjectList } from './interfaces';
 
 export const ApplicationTable = (props: any) => {
 
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
+    const [activeRow, setActiveRow] = useState<string | null>(null);
     var json:any = null;
     let rowData:any[];
+
+    let root = document.documentElement;
+    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, rowName: string) => {
+	let offset = document.getElementById('application-title').getBoundingClientRect().x
+	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
+        setAnchorEl(event.currentTarget);
+	setActiveRow(rowName);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     useEffect(() => {
 	setOutputHandle(true);
@@ -54,7 +73,7 @@ export const ApplicationTable = (props: any) => {
 	    <React.Fragment>
 	        { props.output ? (
                     <div>
-                        <h2>Application</h2>
+                        <h2 id='application-title'>Application</h2>
                         <TableContainer component={Paper}>
                             <Table size="small" className='tau-table' aria-label="simple table">
                                 <TableHead>
@@ -73,10 +92,8 @@ export const ApplicationTable = (props: any) => {
                                 </TableHead>
                                 <TableBody>
                                     {rows.map((row: any) => (
-                                        <TableRow className='tau-table-row' key={row.name}>
-                                            <TableCell component="th" scope="row">
-                                                {row.name}
-                                            </TableCell>
+					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row.name)}}>
+                                            <TableCell component="th" scope="row">{row.name}</TableCell>
                                             <TableCell align="right">{row.linkage}</TableCell>
                                             <TableCell align="right">{row.openMP}</TableCell>
                                             <TableCell align="right">{row.pThreads}</TableCell>
@@ -91,6 +108,18 @@ export const ApplicationTable = (props: any) => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                    	<Menu
+                          id="simple-menu"
+                  	  anchorEl={anchorEl}
+                          keepMounted
+                          open={Boolean(anchorEl)}
+                          onClose={handleClose}
+                          className='tau-option-menu'
+                        >
+			    <MenuItem>Edit</MenuItem>
+			    <MenuItem>Copy</MenuItem>
+			    <MenuItem onClick={() => {handleClose(); makeDeleteDialog(props.model, 'Application', `${activeRow}`)}}>Delete</MenuItem>
+                	</Menu>
                     </div>
                 ) : (
 		    <React.Fragment></React.Fragment>

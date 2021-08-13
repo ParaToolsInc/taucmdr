@@ -34,7 +34,7 @@
 
 .tau-table-column {
     font-weight: bold !important;
-    background-color: var(--table-color);
+    background-color: var(--tau-table-color);
 }
 
 .tau-table-row:hover {
@@ -100,6 +100,8 @@
 }
 
 .tau-option-menu .MuiPaper-rounded {
+    margin-left: var(--tau-menu-margin);
     border-radius: 0px;
     transform: none !important;
+    border: 1px var(--tau-table-color) solid;
 }

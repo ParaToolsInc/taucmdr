@@ -10,7 +10,7 @@ import { Widget } from '@lumino/widgets';
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import { ProjectList } from './interfaces';
 
-const writeBody = (model: KernelModel, form: string, currentProject: string) => {
+const writeNewBody = (model: KernelModel, form: string, currentProject: string) => {
 
     let bundle = model.output['data'] as IMimeBundle;
     let string_output = bundle['text/plain'] as string;
@@ -20,7 +20,6 @@ const writeBody = (model: KernelModel, form: string, currentProject: string) => 
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
-		    <input className='tau-dialog-invisible-form' type='text' name='form' value='project' readOnly/>
                     <label>
                         Name:
                         <br/>
@@ -35,7 +34,6 @@ const writeBody = (model: KernelModel, form: string, currentProject: string) => 
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
-		    <input className='tau-dialog-invisible-form' type='text' name='form' value='target' readOnly/>
                     <label>
                         Name:
                         <br/>
@@ -108,7 +106,6 @@ const writeBody = (model: KernelModel, form: string, currentProject: string) => 
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
-		    <input className='tau-dialog-invisible-form' type='text' name='form' value='application' readOnly/>
                     <label>
                         Name:
                         <br/>
@@ -146,7 +143,6 @@ const writeBody = (model: KernelModel, form: string, currentProject: string) => 
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
-		    <input className='tau-dialog-invisible-form' type='text' name='form' value='measurement' readOnly/>
                     <label>
                         Name:
                         <br/>
@@ -216,7 +212,6 @@ const writeBody = (model: KernelModel, form: string, currentProject: string) => 
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
-		    <input className='tau-dialog-invisible-form' type='text' name='form' value='experiment' readOnly/>
                     <label>
                         Name:
                         <br/>
@@ -288,7 +283,7 @@ class NewDialogBody extends Widget {
 export const makeNewDialog = (model: KernelModel, form: string, currentProject: string) => {
 
     let body = document.createElement('div');
-    ReactDOM.render(writeBody(model, form, currentProject), body);
+    ReactDOM.render(writeNewBody(model, form, currentProject), body);
 
     const dialog = new Dialog({
       title: `New ${form}`,
@@ -306,50 +301,40 @@ export const makeNewDialog = (model: KernelModel, form: string, currentProject: 
 
         if (result.value) {
 	    let args;
-	    switch (result.value.form) {
+	    switch (form.toLowerCase()) {
 		case 'project':
-			args = `'${result.value.name}'`;
-                	model.execute(`TauKernel.new_project(${args})`); 
-			model.execute('TauKernel.refresh()');
-			break;
+		    args = `'${result.value.name}'`;
+		    break;
 
             	case 'target': 
-			args = `'${result.value.name}', '${result.value.hostos}', '${result.value.hostArch}', '${result.value.hostCompiler}', '${result.value.mpiCompiler}', '${result.value.shmemCompiler}'`;
-                	model.execute(`TauKernel.new_target(${args})`); 
-			model.execute('TauKernel.refresh()');
-			break;
+		    args = `'${result.value.name}', '${result.value.hostos}', '${result.value.hostArch}', '${result.value.hostCompiler}', '${result.value.mpiCompiler}', '${result.value.shmemCompiler}'`;
+		    break;
 
 	    	case 'application':
-			args = `'${result.value.name}', '${result.value.linkage}', '${result.value.openmp}', '${result.value.cuda}', '${result.value.pthreads}', '${result.value.opencl}', '${result.value.tbb}', '${result.value.shmem}', '${result.value.mpi}', '${result.value.mpc}'`; 
-        	        model.execute(`TauKernel.new_application(${args})`); 
-			model.execute('TauKernel.refresh()');
-			break;
+		    args = `'${result.value.name}', '${result.value.linkage}', '${result.value.openmp}', '${result.value.cuda}', '${result.value.pthreads}', '${result.value.opencl}', '${result.value.tbb}', '${result.value.shmem}', '${result.value.mpi}', '${result.value.mpc}'`; 
+		    break;
 
 	    	case 'measurement': 
-			args = `'${result.value.name}', '${result.value.profile}', '${result.value.trace}', '${result.value.sourceInstr}', '${result.value.compilerInstr}', '${result.value.openmp}', '${result.value.sample}', '${result.value.mpi}', '${result.value.cuda}', '${result.value.shmem}', '${result.value.io}'`;
-        	        model.execute(`TauKernel.new_measurement(${args})`); 
-			model.execute('TauKernel.refresh()');
-			break;
+		    args = `'${result.value.name}', '${result.value.profile}', '${result.value.trace}', '${result.value.sourceInstr}', '${result.value.compilerInstr}', '${result.value.openmp}', '${result.value.sample}', '${result.value.mpi}', '${result.value.cuda}', '${result.value.shmem}', '${result.value.io}'`;
+		    break;
 
 	    	case 'experiment': 
-			args = `'${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}', '${result.value.record}'`;
-	                model.execute(`TauKernel.new_experiment(${args})`); 
-			model.execute('TauKernel.refresh()');
-			break;
+		    args = `'${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}', '${result.value.record}'`;
+		    break;
 
-	    	default:
-			console.log(result.value);
-                	model.execute('TauKernel.refresh()'); 
-			console.log('Error');
-		}
+		default:
+		    return;
 	    }
-        }
-    );
+
+	    model.execute(`TauKernel.new_${form.toLowerCase()}(${args})`); 
+	    model.execute('TauKernel.refresh()');
+	}
+    });
 };
 
 export const makeErrorDialog = (message: string) => {
     const dialog = new Dialog({
-	title: `Error`,
+	title: 'Error',
 	body: message,
 	buttons: [
 	    Dialog.cancelButton({ label: 'Okay' }),
@@ -369,15 +354,24 @@ class ColorDialogBody extends Widget {
 };
 
 export const makeColorDialog = () => {
-    
+
     let root = document.documentElement;
     const handleColorChange = (colorPicked: any) => {
-	root.style.setProperty('--table-color', colorPicked.hex);
+
+	let r = colorPicked.rgb.r;
+	let g = colorPicked.rgb.g;
+	let b = colorPicked.rgb.b;
+	let a = Math.ceil(colorPicked.rgb.a * 100);
+	let rgba = 'rgb(' + r + " " + g + " " + b + ' / ' + a + '%)';
+	root.style.setProperty('--tau-table-color', rgba);
     };
 
+
+    let colors = ['#eb14147a', '#eb14bc7a', '#4014eb7a', '#14b8eb7a', '#14eb757a', '#7aeb147a', '#ebdb147a', '#eb78147a', 
+	          '#eb141442', '#eb14bc42', '#4014eb42', '#14b8eb42', '#14eb7542', '#7aeb1442', '#ebdb1442', '#eb781442'];
     
     let body = document.createElement('div');
-    ReactDOM.render(<GithubPicker triangle='hide' onChangeComplete={ handleColorChange }/>, body);
+    ReactDOM.render(<GithubPicker colors={colors} triangle='hide' onChangeComplete={ handleColorChange }/>, body);
 
     const dialog = new Dialog({
 	title: `Color Change`,
@@ -390,10 +384,28 @@ export const makeColorDialog = () => {
 
     return dialog.launch().then(result => {
 	if (result.button.label == 'Revert') {
-	    root.style.setProperty('--table-color', '#E7EAEB');
+	    root.style.setProperty('--tau-table-color', '#E7EAEB');
 	}
 	dialog.dispose();
     });
 };
 
+export const makeDeleteDialog = (model: KernelModel, form:string, currentForm: string) => {
+    const dialog = new Dialog({
+	title: `Delete ${form}`,
+	body: `Are you sure you want to delete ${form}: ${currentForm}?`,
+	buttons: [
+	    Dialog.cancelButton({ label: 'Cancel' }),
+	    Dialog.warnButton({ label: 'Delete' }),
+	]
+    });
+
+    return dialog.launch().then(result => {
+	if (result.button.label == 'Delete') {
+	    model.execute(`TauKernel.delete_${form.toLowerCase()}('${currentForm}')`);
+   	    model.execute('TauKernel.refresh()');
+	}
+	dialog.dispose();
+    });
+};
 

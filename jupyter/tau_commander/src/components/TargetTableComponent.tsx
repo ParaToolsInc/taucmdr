@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { makeDeleteDialog } from './Dialogs';
+
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -9,14 +11,32 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+
 import { ProjectList } from './interfaces';
 
 export const TargetTable = (props: any) => {
 
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
+    const [activeRow, setActiveRow] = useState<string | null>(null);
     var json:any = null;
     let rowData:any[];
+
+    let root = document.documentElement;
+    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, rowName: string) => {
+	let offset = document.getElementById('target-title').getBoundingClientRect().x
+	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
+        setAnchorEl(event.currentTarget);
+	setActiveRow(rowName);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+	setActiveRow(null);
+    };
 
     useEffect(() => {
 	setOutputHandle(true);
@@ -51,7 +71,7 @@ export const TargetTable = (props: any) => {
    	    <React.Fragment>
 	        {props.output ? (	
 		    <div>
-		        <h2>Targets</h2>
+		        <h2 id='target-title'>Targets</h2>
 		        <TableContainer component={Paper}>
 			    <Table size="small" className='tau-table' aria-label="simple table">
 			        <TableHead>
@@ -66,10 +86,8 @@ export const TargetTable = (props: any) => {
 			        </TableHead>
 			        <TableBody>
 				    {rows.map((row: any) => (
-					<TableRow className='tau-table-row' key={row.name}>
-					    <TableCell component="th" scope="row">
-						{row.name}
-					    </TableCell>
+					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row.name)}}>
+					    <TableCell component="th" scope="row">{row.name}</TableCell>
 					    <TableCell align="right">{row.hostOS}</TableCell>
 					    <TableCell align="right">{row.hostArch}</TableCell>
 					    <TableCell align="right">{row.hostCompilers}</TableCell>
@@ -80,6 +98,18 @@ export const TargetTable = (props: any) => {
 			        </TableBody>
 			    </Table>
 		        </TableContainer>
+                    	<Menu
+                          id="simple-menu"
+                  	  anchorEl={anchorEl}
+                          keepMounted
+                          open={Boolean(anchorEl)}
+                          onClose={handleClose}
+                          className='tau-option-menu'
+                        >
+			    <MenuItem>Edit</MenuItem>
+			    <MenuItem>Copy</MenuItem>
+			    <MenuItem onClick={() => {handleClose(); makeDeleteDialog(props.model, 'Target', `${activeRow}`)}}>Delete</MenuItem>
+                	</Menu>
 		    </div>				
 	        ) : (
 		    <React.Fragment></React.Fragment>

@@ -10,7 +10,10 @@ export const OptionToolbar = (props: any) => {
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+    let root = document.documentElement;
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+	let offset = document.getElementById('new-button').getBoundingClientRect().x
+	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
         setAnchorEl(event.currentTarget);
     };
 
@@ -44,6 +47,7 @@ export const OptionToolbar = (props: any) => {
                 { props.output ? (
                     <Button 
                       className='tau-option-button' 
+		      id='new-button'
                       size='small'
                       aria-controls="simple-menu" 
                       aria-haspopup="true" 
@@ -54,27 +58,6 @@ export const OptionToolbar = (props: any) => {
                 ) : (
                     <React.Fragment></React.Fragment>
                 )}
-
-                <Menu
-                  id="simple-menu"
-                  anchorEl={anchorEl}
-                  keepMounted
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                  className='tau-option-menu'
-                >
-                    <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Project', props.project);}}>New Project</MenuItem>
-                    { props.project ? (
-                        <div>
-                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Target', props.project);}}>New Target</MenuItem>
-                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Application', props.project);}}>New Application</MenuItem>
-                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Measurement', props.project);}}>New Measurement</MenuItem>
-                            <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Experiment', props.project);}}>New Experiment</MenuItem>
-                        </div>
-                    ) : (
-			<div></div>
-                    )}
-                </Menu>
             </div>
 
             <div className='tau-option-right-side'>
@@ -98,8 +81,28 @@ export const OptionToolbar = (props: any) => {
 	        ) : (
 		    <React.Fragment></React.Fragment>
 	        )}
-
             </div>
+
+	    <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+              className='tau-option-menu'
+            >
+                <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Project', props.project);}}>New Project</MenuItem>
+                { props.project ? (
+                    <div>
+                        <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Target', props.project);}}>New Target</MenuItem>
+                        <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Application', props.project);}}>New Application</MenuItem>
+                        <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Measurement', props.project);}}>New Measurement</MenuItem>
+                        <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Experiment', props.project);}}>New Experiment</MenuItem>
+                    </div>
+                ) : (
+		    <div></div>
+                )}
+            </Menu>
         </div>
     )
 };
