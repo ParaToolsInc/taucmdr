@@ -1,14 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom'
-import { GithubPicker } from 'react-color';
+import ReactDOM from 'react-dom';
 
-import { KernelModel } from '../KernelModel';
+import { KernelModel } from '../../KernelModel';
 import { Dialog } from '@jupyterlab/apputils';
 import { Checkbox } from '@jupyterlab/ui-components';
 import { Widget } from '@lumino/widgets';
 
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
-import { ProjectList } from './interfaces';
+import { ProjectList } from '../interfaces';
 
 const writeNewBody = (model: KernelModel, form: string, currentProject: string) => {
 
@@ -25,7 +24,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                         <br/>
                         <input className='tau-dialog-name' type='text' name='name' />
                     </label>
-                </form>  
+                </form>
             </React.Fragment>
         )
     }
@@ -220,8 +219,8 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     <label>
                         Target:
                         <select name='target'>
-                        { 
-                            Object.keys(json[currentProject]['targets']).map((target: string) => 
+                        {
+                            Object.keys(json[currentProject]['targets']).map((target: string) =>
                                 <option key={target} value={target}>{target}</option>)
                         }
                         </select>
@@ -229,8 +228,8 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     <label>
                         Application:
                         <select name='application'>
-                        { 
-                            Object.keys(json[currentProject]['applications']).map((application: string) => 
+                        {
+                            Object.keys(json[currentProject]['applications']).map((application: string) =>
                                 <option key={application} value={application}>{application}</option>)
                         }
                         </select>
@@ -238,8 +237,8 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     <label>
                         Measurement:
                         <select name='measurement'>
-                        { 
-                            Object.keys(json[currentProject]['measurements']).map((measurement: string) => 
+                        {
+                            Object.keys(json[currentProject]['measurements']).map((measurement: string) =>
                                 <option key={measurement} value={measurement}>{measurement}</option>)
                         }
                         </select>
@@ -252,7 +251,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
             </React.Fragment>
         )
     }
-}
+};
 
 class NewDialogBody extends Widget {
     constructor(domElement: HTMLElement) {
@@ -261,24 +260,24 @@ class NewDialogBody extends Widget {
 
     getValue() {
         let response = this.node.querySelectorAll('input, select');
-	let responseDict: { [id: string] : string } = {};
+        let responseDict: { [id: string] : string } = {};
         Object.entries(response).map((resp) => {
-	    let elem = resp[1];
-	    if (resp[1].tagName == 'INPUT') {
-		let inputElem = elem as HTMLInputElement;
-		if (inputElem.type == 'text') {
-			responseDict[inputElem.name] = inputElem.value;
-		} else {
-			responseDict[inputElem.name] = inputElem.checked.toString();
-		}
-	    } else {
-		let selectElem = elem as HTMLSelectElement;
-		responseDict[selectElem.name] = selectElem.value;
-	    }
+            let elem = resp[1];
+            if (resp[1].tagName == 'INPUT') {
+                let inputElem = elem as HTMLInputElement;
+                if (inputElem.type == 'text') {
+                        responseDict[inputElem.name] = inputElem.value;
+                } else {
+                        responseDict[inputElem.name] = inputElem.checked.toString();
+                }
+            } else {
+                let selectElem = elem as HTMLSelectElement;
+                responseDict[selectElem.name] = selectElem.value;
+            }
         });
         return responseDict;
     }
-}
+};
 
 export const makeNewDialog = (model: KernelModel, form: string, currentProject: string) => {
 
@@ -300,112 +299,34 @@ export const makeNewDialog = (model: KernelModel, form: string, currentProject: 
         dialog.dispose();
 
         if (result.value) {
-	    let args;
-	    switch (form.toLowerCase()) {
-		case 'project':
-		    args = `'${result.value.name}'`;
-		    break;
+            let args;
+            switch (form.toLowerCase()) {
+                case 'project':
+                    args = `'${result.value.name}'`;
+                    break;
 
-            	case 'target': 
-		    args = `'${result.value.name}', '${result.value.hostos}', '${result.value.hostArch}', '${result.value.hostCompiler}', '${result.value.mpiCompiler}', '${result.value.shmemCompiler}'`;
-		    break;
+                case 'target':
+                    args = `'${result.value.name}', '${result.value.hostos}', '${result.value.hostArch}', '${result.value.hostCompiler}', '${result.value.mpiCompiler}', '${result.value.shmemCompiler}'`;
+                    break;
 
-	    	case 'application':
-		    args = `'${result.value.name}', '${result.value.linkage}', '${result.value.openmp}', '${result.value.cuda}', '${result.value.pthreads}', '${result.value.opencl}', '${result.value.tbb}', '${result.value.shmem}', '${result.value.mpi}', '${result.value.mpc}'`; 
-		    break;
+                case 'application':
+                    args = `'${result.value.name}', '${result.value.linkage}', '${result.value.openmp}', '${result.value.cuda}', '${result.value.pthreads}', '${result.value.opencl}', '${result.value.tbb}', '${result.value.shmem}', '${result.value.mpi}', '${result.value.mpc}'`;
+                    break;
 
-	    	case 'measurement': 
-		    args = `'${result.value.name}', '${result.value.profile}', '${result.value.trace}', '${result.value.sourceInstr}', '${result.value.compilerInstr}', '${result.value.openmp}', '${result.value.sample}', '${result.value.mpi}', '${result.value.cuda}', '${result.value.shmem}', '${result.value.io}'`;
-		    break;
+                case 'measurement':
+                    args = `'${result.value.name}', '${result.value.profile}', '${result.value.trace}', '${result.value.sourceInstr}', '${result.value.compilerInstr}', '${result.value.openmp}', '${result.value.sample}', '${result.value.mpi}', '${result.value.cuda}', '${result.value.shmem}', '${result.value.io}'`;
+                    break;
 
-	    	case 'experiment': 
-		    args = `'${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}', '${result.value.record}'`;
-		    break;
+                case 'experiment':
+                    args = `'${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}', '${result.value.record}'`;
+                    break;
 
-		default:
-		    return;
-	    }
+                default:
+                    return;
+            }
 
-	    model.execute(`TauKernel.new_${form.toLowerCase()}(${args})`); 
-	    model.execute('TauKernel.refresh()');
-	}
+            model.execute(`TauKernel.new_${form.toLowerCase()}(${args})`);
+            model.execute('TauKernel.refresh()');
+        }
     });
 };
-
-export const makeErrorDialog = (message: string) => {
-    const dialog = new Dialog({
-	title: 'Error',
-	body: message,
-	buttons: [
-	    Dialog.cancelButton({ label: 'Okay' }),
-	]
-    });
-
-    return dialog.launch().then(result => {
-	dialog.dispose();
-    });
-};
-
-class ColorDialogBody extends Widget {
-    constructor(domElement: HTMLElement) {
-	super({node : domElement});
-    }
-
-};
-
-export const makeColorDialog = () => {
-
-    let root = document.documentElement;
-    const handleColorChange = (colorPicked: any) => {
-
-	let r = colorPicked.rgb.r;
-	let g = colorPicked.rgb.g;
-	let b = colorPicked.rgb.b;
-	let a = Math.ceil(colorPicked.rgb.a * 100);
-	let rgba = 'rgb(' + r + " " + g + " " + b + ' / ' + a + '%)';
-	root.style.setProperty('--tau-table-color', rgba);
-    };
-
-
-    let colors = ['#eb14147a', '#eb14bc7a', '#4014eb7a', '#14b8eb7a', '#14eb757a', '#7aeb147a', '#ebdb147a', '#eb78147a', 
-	          '#eb141442', '#eb14bc42', '#4014eb42', '#14b8eb42', '#14eb7542', '#7aeb1442', '#ebdb1442', '#eb781442'];
-    
-    let body = document.createElement('div');
-    ReactDOM.render(<GithubPicker colors={colors} triangle='hide' onChangeComplete={ handleColorChange }/>, body);
-
-    const dialog = new Dialog({
-	title: `Color Change`,
-	body: new ColorDialogBody(body), 
-	buttons: [
-	    Dialog.cancelButton({ label: 'Revert' }),
-	    Dialog.okButton({ label: 'Okay' }),
-	]
-    });
-
-    return dialog.launch().then(result => {
-	if (result.button.label == 'Revert') {
-	    root.style.setProperty('--tau-table-color', '#E7EAEB');
-	}
-	dialog.dispose();
-    });
-};
-
-export const makeDeleteDialog = (model: KernelModel, form:string, currentForm: string) => {
-    const dialog = new Dialog({
-	title: `Delete ${form}`,
-	body: `Are you sure you want to delete ${form}: ${currentForm}?`,
-	buttons: [
-	    Dialog.cancelButton({ label: 'Cancel' }),
-	    Dialog.warnButton({ label: 'Delete' }),
-	]
-    });
-
-    return dialog.launch().then(result => {
-	if (result.button.label == 'Delete') {
-	    model.execute(`TauKernel.delete_${form.toLowerCase()}('${currentForm}')`);
-   	    model.execute('TauKernel.refresh()');
-	}
-	dialog.dispose();
-    });
-};
-

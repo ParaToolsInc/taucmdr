@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-import { makeNewDialog, makeColorDialog } from './Dialogs';
+import { makeNewDialog } from './Dialogs/NewDialog';
+import { makeColorDialog } from './Dialogs/ColorDialog';
 
 import Button from "@material-ui/core/Button";
 import Menu from '@material-ui/core/Menu';

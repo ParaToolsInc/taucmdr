@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-import { makeDeleteDialog } from './Dialogs';
+import { makeDeleteDialog } from './Dialogs/DeleteDialog';
+import { makeErrorDialog } from './Dialogs/ErrorDialog';
+import { makeCopyDialog } from './Dialogs/CopyDialog';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -13,7 +15,6 @@ import Paper from '@material-ui/core/Paper';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
-import { makeErrorDialog } from './Dialogs';
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import { ProjectList } from './interfaces';
 
@@ -111,6 +112,13 @@ export const ProjectTable = (props: any) => {
 			    props.onSetProject(activeRow);}}
 			>
 			    Select
+			</MenuItem>
+
+  			<MenuItem onClick={() => {
+			    handleClose();
+			    makeCopyDialog(props.model, 'Project', `${activeRow}`);}}
+			>
+			    Copy
 			</MenuItem>
 				
 			<MenuItem onClick={() => {

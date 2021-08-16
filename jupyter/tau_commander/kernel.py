@@ -20,6 +20,11 @@ from taucmdr.cli.commands.application.delete import COMMAND as delete_applicatio
 from taucmdr.cli.commands.measurement.delete import COMMAND as delete_measurement
 from taucmdr.cli.commands.experiment.delete import COMMAND as delete_experiment
 
+from taucmdr.cli.commands.project.copy import COMMAND as copy_project
+from taucmdr.cli.commands.target.copy import COMMAND as copy_target
+from taucmdr.cli.commands.application.copy import COMMAND as copy_application
+from taucmdr.cli.commands.measurement.copy import COMMAND as copy_measurement
+
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
 from taucmdr.cf.compiler.host import CC
@@ -132,9 +137,7 @@ class TauKernel(object):
         if len(projects) == 0:
             return {}
         if len(projects) == 1:
-            select_project.main([projects[0]['name']])
-
-        TauKernel.current_project = ctrl.selected()['name']
+            TauKernel.change_project(projects[0]['name'])
 
         project_dict = {}
         for project in projects:
@@ -153,6 +156,7 @@ class TauKernel(object):
     @staticmethod
     def change_project(project_name):
         TauKernel.current_project = project_name
+        select_project.main([TauKernel.current_project])
         return
 
     @staticmethod
@@ -243,31 +247,25 @@ class TauKernel(object):
         return json.dumps({'status': True})
 
     @staticmethod
-    def test():
-        PROJECT_STORAGE.connect_filesystem()
-        try:
-
-            print(projects)
-
-        except SystemExit as e:
-            return json.dumps({'status': False, 'message': 'Error in deletion'})
-
-
-    @staticmethod
     def delete_project(name):
-        PROJECT_STORAGE.connect_filesystem()
+        select_project.main([name])
         try:
-#            ctrl = Project.controller()
- #           projects = ctrl.all()
-  #          if len(projects) == 1:
-   #             return json.dumps({'status': False, 'message': 'There must be at least 1 project'})
-    #        for project in projects:
-     #           if project['name'] != name:
-      #              select_project.main([project['name']])
-       #             break
+            ctrl = Project.controller()
+            project = ctrl.one({'name':name})
+
+            for target in project.populate('targets'):
+                TauKernel.delete_target(target['name'])
+
+            for application in project.populate('applications'):
+                TauKernel.delete_application(application['name'])
+
+            for measurement in project.populate('measurements'):
+                TauKernel.delete_measurement(measurement['name'])
+
+            for experiment in project.populate('experiments'):
+                TauKernel.delete_experiment(experiment['name'])
 
             delete_project.main([name])
-
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in deletion'})
@@ -277,7 +275,6 @@ class TauKernel(object):
 
     @staticmethod
     def delete_target(name):
-        select_project.main([TauKernel.current_project])
         try:
             delete_target.main([name])
 
@@ -289,7 +286,6 @@ class TauKernel(object):
 
     @staticmethod
     def delete_application(name):
-        select_project.main([TauKernel.current_project])
         try:
             delete_application.main([name])
 
@@ -301,7 +297,6 @@ class TauKernel(object):
 
     @staticmethod
     def delete_measurement(name):
-        select_project.main([TauKernel.current_project])
         try:
             delete_measurement.main([name])
 
@@ -313,7 +308,6 @@ class TauKernel(object):
 
     @staticmethod
     def delete_experiment(name):
-        select_project.main([TauKernel.current_project])
         try:
             delete_experiment.main([name])
 
@@ -322,4 +316,76 @@ class TauKernel(object):
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
+
+    @staticmethod
+    def copy_project(name, new_name, suffix):
+        try:
+            TauKernel.new_project(new_name)
+            select_project.main([new_name])
+
+            ctrl = Project.controller()
+            project = ctrl.one({'name':name})
+
+            curr_targets = project['targets'].copy()
+            curr_applications = project['applications'].copy()
+            curr_measurements = project['measurements'].copy()
+
+            for target in project.populate('targets'):
+                target_name = target['name']
+                copy_target.main([target_name, target_name + suffix])
+
+            for application in project.populate('applications'):
+                application_name = application['name']
+                copy_application.main([application_name, application_name + suffix])
+
+            for measurement in project.populate('measurements'):
+                measurement_name = measurement['name']
+                copy_measurement.main([measurement_name, measurement_name + suffix])
+
+            ctrl.update({'targets': curr_targets}, {'name': name})
+            ctrl.update({'applications': curr_applications}, {'name': name})
+            ctrl.update({'measurements': curr_measurements}, {'name': name})
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in copy'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def copy_target(name, new_name):
+        select_project.main([TauKernel.current_project])
+        try:
+            copy_target.main([name, new_name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in copy'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def copy_application(name, new_name):
+        select_project.main([TauKernel.current_project])
+        try:
+            copy_application.main([name, new_name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in copy'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def copy_measurement(name, new_name):
+        select_project.main([TauKernel.current_project])
+        try:
+            copy_measurement.main([name, new_name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in copy'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
 

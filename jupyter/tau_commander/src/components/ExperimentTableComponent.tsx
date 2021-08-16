@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { makeDeleteDialog } from './Dialogs';
+import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
@@ -108,7 +108,6 @@ export const ExperimentTable = (props: any) => {
                           className='tau-option-menu'
                         >
 			    <MenuItem>Edit</MenuItem>
-			    <MenuItem>Copy</MenuItem>
 			    <MenuItem onClick={() => {handleClose(); makeDeleteDialog(props.model, 'Experiment', `${activeRow}`)}}>Delete</MenuItem>
                 	</Menu>
                     </div>
