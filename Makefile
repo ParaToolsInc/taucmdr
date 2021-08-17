@@ -128,9 +128,9 @@ else
 	endif
 endif
 
-CONDA_VERSION = latest
+CONDA_VERSION = v2.2.0
 
-CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/$(CONDA_VERSION)/download
+CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/download/$(CONDA_VERSION)
 CONDA_PKG = CommanderConda3-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = system/src/$(CONDA_PKG)
