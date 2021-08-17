@@ -226,7 +226,7 @@ class CreateTest(tests.TestCase):
         )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python ')
+        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python[23]?(\r\n?|\n| )')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 
@@ -240,7 +240,7 @@ class CreateTest(tests.TestCase):
         )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python2')
+        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python2')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 
@@ -254,6 +254,6 @@ class CreateTest(tests.TestCase):
         )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
+        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")

@@ -64,12 +64,12 @@ A list of tuples (MAJOR, MINOR) directly comparible to :any:`sys.version_info`
 if not sys.version_info[0:2] in REQUIRED_PYTHON_VERSIONS:
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
     EXPECTED = ' or '.join([(str(x) + '.' + str(y)) for (x, y) in REQUIRED_PYTHON_VERSIONS])
-    sys.stderr.write("""%s
-%s
-%s
-Your Python version is %s but Python %s is required.
-Please install the required Python version or contact %s for support.
-""" % (TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
+    sys.stderr.write("""{}
+{}
+{}
+Your Python version is {} but Python {} is required.
+Please install the required Python version or contact {} for support.
+""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
 TAUCMDR_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__',

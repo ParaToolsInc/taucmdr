@@ -115,9 +115,9 @@ To get more information on a particular message, use
 Prefer ``pylint: disable`` to the deprecated older form
 ``pylint: disable-msg``.
 
-Unused argument warnings can be suppressed by using `_` as the
+Unused argument warnings can be suppressed by using ``_`` as the
 identifier for the unused argument or prefixing the argument name with
-`unused_`. In situations where changing the argument names is
+``unused_``. In situations where changing the argument names is
 infeasible, you can mention them at the beginning of the function. For
 example:
 

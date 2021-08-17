@@ -39,15 +39,15 @@ VERBOSE = true
 DOCKER_IMG_NAME = cmdr-dev-0.1.0
 DOCKER_TAG = latest
 
+# Set this if you are a TAU Commander developer
+__TAUCMDR_DEVELOPER__?=
+
 # Shell utilities
 RM = rm -f
 MV = mv -f
 MKDIR = mkdir -p
 
 VERSION = $(shell cat VERSION 2>/dev/null || ./.version.sh || echo "0.0.0")
-
-# Override this with 2 to test with Python 2.7
-PY_MAJ_VERSION ?= 3
 
 # Allow INSTALL_DIR too
 ifneq ($(INSTALL_DIR),)
@@ -127,13 +127,11 @@ else
 		endif
 	endif
 endif
-ifeq ($(PY_MAJ_VERSION),2)
-	CONDA_VERSION = v1.2.0 # Last release of CommanderConda supporting python2
-else
-	CONDA_VERSION = latest
-endif
-CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/$(CONDA_VERSION)/download
-CONDA_PKG = CommanderConda$(PY_MAJ_VERSION)-$(CONDA_OS)-$(CONDA_ARCH).sh
+
+CONDA_VERSION = v2.2.0
+
+CONDA_REPO = https://github.com/ParaToolsInc/CommanderConda/releases/download/$(CONDA_VERSION)
+CONDA_PKG = CommanderConda3-$(CONDA_OS)-$(CONDA_ARCH).sh
 CONDA_URL = $(CONDA_REPO)/$(CONDA_PKG)
 CONDA_SRC = system/src/$(CONDA_PKG)
 CONDA_DEST = $(INSTALLDIR)/conda
@@ -153,9 +151,7 @@ else
 		$(warning WARNING: Trying to use '$(PYTHON_EXE)' instead.)
 	endif
 endif
-ifeq ($(PY_MAJ_VERSION),2)
-	PYTHON_FLAGS := $(PYTHON_FLAGS)3
-endif
+
 PYTHON = $(PYTHON_EXE) $(PYTHON_FLAGS)
 
 .PHONY: help build install clean python_check python_download dev-container run-container
@@ -169,8 +165,12 @@ help:
 	@echo "Usage: make install [INSTALLDIR=$(INSTALLDIR)] [TAU=(minimal|full|<path>)]"
 	@echo "-------------------------------------------------------------------------------"
 
+ifneq ($(__TAUCMDR_DEVELOPER__),)
+    INSTALL_DEV_REQS=$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
+endif
+
 build: python_check
-	$(ECHO)$(PYTHON) -m pip install -U -r requirements-dev.txt
+	$(INSTALL_DEV_REQS)
 	$(ECHO)$(PYTHON) setup.py build_scripts --executable "$(PYTHON)"
 	$(ECHO)$(PYTHON) setup.py build
 

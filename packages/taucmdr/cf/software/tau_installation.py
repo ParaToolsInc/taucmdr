@@ -422,8 +422,8 @@ class TauInstallation(Installation):
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and (self.target_arch is not NEC_SX) and 'libunwind' in sources
-        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and (self.target_arch is not NEC_SX) and 'libdwarf' in sources 
-        self.uses_libelf = not minimal and (self.target_os is not DARWIN) and (self.target_arch is not NEC_SX) and 'libelf' in sources 
+        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and (self.target_arch is not NEC_SX) and 'libdwarf' in sources
+        self.uses_libelf = not minimal and (self.target_os is not DARWIN) and (self.target_arch is not NEC_SX) and 'libelf' in sources
         self.uses_papi = not minimal and (self.target_arch is not NEC_SX) and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
@@ -917,7 +917,6 @@ class TauInstallation(Installation):
         if self.uses_python:
             flags.append('-python')
         if self.mpit:
-            print('append mpit')
             flags.append('-mpit')
 
         # Use -useropt for hacks and workarounds.

@@ -346,7 +346,8 @@ class Installation:
         archive = self.acquire_source(reuse_archive)
         LOGGER.info("Using %s source archive '%s'", self.title, archive)
         try:
-            return util.extract_archive(archive, util.tmpfs_prefix().name)
+            files = util.extract_archive(archive, util.tmpfs_prefix().name)
+            return files
         except OSError as err:
             if reuse_archive:
                 LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)

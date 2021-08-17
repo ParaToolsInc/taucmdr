@@ -108,15 +108,12 @@ from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 from setuptools.command.install_lib import install_lib as InstallLibCommand
 from setuptools.command.sdist import sdist as SDistCommand
-from pyannotate_runtime import collect_types
 
 # Don't show `setup.py` as the root command
 os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
 
 PACKAGE_TOPDIR = os.path.realpath(os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.join(PACKAGE_TOPDIR, 'packages'))
-
-collect_types.init_types_collection()
 
 # Customize the BuildSphinx command depending on if Sphinx is installed
 try:
@@ -562,7 +559,7 @@ def _version():
     # type: () -> str
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
     if os.path.exists(version_file):
-        with open(version_file, mode="rt", encoding="utf-8") as fin:
+        with open(version_file, encoding="utf-8") as fin:
             version = fin.readline()
     else:
         try:
@@ -607,34 +604,32 @@ def _data_files():
     return data_files
 
 
-with collect_types.collect():
-    setuptools.setup(
-        # Package metadata
-        name=NAME,
-        version=_version(),
-        author=AUTHOR,
-        author_email=AUTHOR_EMAIL,
-        description=DESCRIPTION,
-        long_description=LONG_DESCRIPTION,
-        license=LICENSE,
-        keywords=KEYWORDS,
-        url=HOMEPAGE,
-        classifiers=CLASSIFIERS,
-        # Package configuration
-        packages=setuptools.find_packages("packages"),
-        package_dir={"": "packages"},
-        scripts=['scripts/tau', 'scripts/system_configure'],
-        zip_safe=False,
-        data_files=_data_files(),
-        # Testing
-        test_suite='taucmdr',
-        tests_require=['backports.functools_lru_cache'],
-        # Custom commands
-        cmdclass={'install': Install,
-                  'install_lib': InstallLib,
-                  'test': Test,
-                  'build_sphinx': BuildSphinx,
-                  'release': Release,
-                  'build_markdown': BuildMarkdown}
-    )
-collect_types.dump_stats('type_info.json')
+setuptools.setup(
+    # Package metadata
+    name=NAME,
+    version=_version(),
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    description=DESCRIPTION,
+    long_description=LONG_DESCRIPTION,
+    license=LICENSE,
+    keywords=KEYWORDS,
+    url=HOMEPAGE,
+    classifiers=CLASSIFIERS,
+    # Package configuration
+    packages=setuptools.find_packages("packages"),
+    package_dir={"": "packages"},
+    scripts=['scripts/tau', 'scripts/system_configure'],
+    zip_safe=False,
+    data_files=_data_files(),
+    # Testing
+    test_suite='taucmdr',
+    tests_require=['backports.functools_lru_cache'],
+    # Custom commands
+    cmdclass={'install': Install,
+              'install_lib': InstallLib,
+              'test': Test,
+              'build_sphinx': BuildSphinx,
+              'release': Release,
+              'build_markdown': BuildMarkdown}
+)
