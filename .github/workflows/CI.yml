@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-16.04]
+        os: [ubuntu-18.04] #, ubuntu-20.04
         backend: ['tinydb', 'sqlite']
         python_version: ['3.7']
     env:
@@ -145,11 +145,11 @@ jobs:
 
       - name: Pylint PR Comment
         if: matrix.os == 'ubuntu-18.04'
-        uses: marocchino/sticky-pull-request-comment@v1
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: pylint-comment
           path: ./pylint.md
+          recreate: true
 
       - name: Upload Coverage info
         if: always()
