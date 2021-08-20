@@ -22,6 +22,8 @@ export const OptionToolbar = (props: any) => {
         setAnchorEl(null);
     };
 
+    let pythonImport = 'import os; import sys; parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../..")); sys.path.insert(0, os.path.join(parent_dir, "packages")); from taucmdr.kernel.kernel import TauKernel; TauKernel.refresh()';
+
     return (
         <div className='tau-option-header'>
             <div>
@@ -38,7 +40,7 @@ export const OptionToolbar = (props: any) => {
                     className='tau-option-button' 
                     size='small' 
                     onClick={() => { 
-                        props.model.execute('from kernel import TauKernel\nTauKernel.refresh()'); 
+                        props.model.execute(pythonImport); 
                         props.onSetProject(null); 
                     }}
                 >

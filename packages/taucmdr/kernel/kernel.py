@@ -2,7 +2,7 @@ import os
 import sys
 import json
 
-parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../.."))
+parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../../.."))
 sys.path.insert(0, os.path.join(parent_dir, 'packages'))
 
 from taucmdr.model.project import Project
@@ -24,6 +24,12 @@ from taucmdr.cli.commands.project.copy import COMMAND as copy_project
 from taucmdr.cli.commands.target.copy import COMMAND as copy_target
 from taucmdr.cli.commands.application.copy import COMMAND as copy_application
 from taucmdr.cli.commands.measurement.copy import COMMAND as copy_measurement
+
+from taucmdr.cli.commands.project.edit import COMMAND as edit_project
+from taucmdr.cli.commands.target.edit import COMMAND as edit_target
+from taucmdr.cli.commands.application.edit import COMMAND as edit_application
+from taucmdr.cli.commands.measurement.edit import COMMAND as edit_measurement
+from taucmdr.cli.commands.experiment.edit import COMMAND as edit_experiment
 
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 
@@ -79,6 +85,7 @@ experiment_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Target', 'function': lambda x: x['target']['name']},
                      {'header': 'Application', 'function': lambda x: x['application']['name']},
                      {'header': 'Measurement', 'function': lambda x: x['measurement']['name']},
+                     {'header': 'Record Output', 'value': 'record_output'},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
 class TauKernel(object):
@@ -231,14 +238,13 @@ class TauKernel(object):
         return json.dumps({'status': True})
 
     @staticmethod
-    def new_experiment(name, target, application, measurement, record):
+    def new_experiment(name, target, application, measurement):
         select_project.main([TauKernel.current_project])
         try:
             create_experiment.main([name,
                        '--target', target,
                        '--application', application,
-                       '--measurement', measurement,
-                       '--record-output', record])
+                       '--measurement', measurement])
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in creation'})
@@ -388,4 +394,95 @@ class TauKernel(object):
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
+
+    @staticmethod
+    def edit_project(name, new_name):
+        PROJECT_STORAGE.connect_filesystem()
+        try:
+            edit_project.main([name,
+                         '--new-name', new_name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True, 'nameName': new_name})
+
+    @staticmethod
+    def edit_target(name, new_name, host_os, host_arch, host_compiler, mpi_compiler, shmem_compiler):
+        select_project.main([TauKernel.current_project])
+        try:
+            edit_target.main([name, 
+                        '--new-name', new_name,
+                        '--os', host_os, 
+                        '--arch', host_arch, 
+                        '--compilers', host_compiler, 
+                        '--mpi-wrappers', mpi_compiler, 
+                        '--shmem-compilers', shmem_compiler])
+        
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def edit_application(name, new_name, linkage, openmp, cuda, pthreads, opencl, tbb, shmem, mpi, mpc):
+        select_project.main([TauKernel.current_project])
+        try:
+            edit_application.main([name,
+                        '--new-name', new_name,
+                        '--linkage', linkage,
+                        '--openmp', openmp,
+                        '--cuda', cuda,
+                        '--pthreads', pthreads,
+                        '--opencl', opencl,
+                        '--tbb', tbb,
+                        '--shmem', shmem,
+                        '--mpi', mpc])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def edit_measurement(name, new_name, profile, trace, source_inst, compiler_inst, openmp, sample, mpi, cuda, shmem, io):
+        select_project.main([TauKernel.current_project])
+        try:
+            edit_measurement.main([name,
+                        '--new-name', new_name,
+                        '--profile', profile,
+                        '--trace', trace,
+                        '--source-inst', source_inst,
+                        '--compiler-inst', compiler_inst,
+                        '--openmp', openmp,
+                        '--sample', sample,
+                        '--mpi', mpi,
+                        '--cuda', cuda,
+                        '--shmem', shmem,
+                        '--io', io])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def edit_experiment(name, new_name, target, application, measurement):
+        select_project.main([TauKernel.current_project])
+        try:
+            edit_experiment.main([name,
+                       '--new-name', new_name,
+                       '--target', target,
+                       '--application', application,
+                       '--measurement', measurement])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
 

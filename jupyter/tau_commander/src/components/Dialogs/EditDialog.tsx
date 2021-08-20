@@ -9,20 +9,21 @@ import { Widget } from '@lumino/widgets';
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import { ProjectList } from '../interfaces';
 
-const writeNewBody = (model: KernelModel, form: string, currentProject: string) => {
+const writeEditBody = (model: KernelModel, form: string, currentRow: any, currentProject: any) => {
 
     let bundle = model.output['data'] as IMimeBundle;
     let string_output = bundle['text/plain'] as string;
     let json = JSON.parse(string_output.replace(/\'/g, '')) as ProjectList;
 
     if (form == 'Project') {
+
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
                     <label>
-                        Name:
+                        Edit name:
                         <br/>
-                        <input className='tau-dialog-name' type='text' name='name' />
+                        <input className='tau-dialog-name' type='text' name='name' defaultValue={currentRow.name}/>
                     </label>
                 </form>
             </React.Fragment>
@@ -30,18 +31,19 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
     }
 
     if (form == 'Target') {
+	
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
                     <label>
                         Name:
                         <br/>
-                        <input className='tau-dialog-name' type='text' name='name' />
+                        <input className='tau-dialog-name' type='text' name='name' defaultValue={currentRow.name} />
                     </label>
                     <br/><br/>
                     <label>
                       Host OS:
-                      <select defaultValue='Linux' name='hostos'>
+                      <select defaultValue={currentRow.hostOS} name='hostos'>
                         <option value='Darwin'>Darwin</option>
                         <option value='Linux'>Linux</option>
                         <option value='CNK'>CNK</option>
@@ -51,7 +53,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       Host Arch:
-                      <select defaultValue='x86_64' name='hostArch'>
+                      <select defaultValue={currentRow.hostArch} name='hostArch'>
                         <option value='x86_64'>x86_64</option>
                         <option value='KNC'>KNC</option>
                         <option value='KNL'>KNL</option>
@@ -67,7 +69,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       Host Compilers:
-                      <select defaultValue='GNU' name='hostCompiler'>
+                      <select defaultValue={currentRow.hostCompilers} name='hostCompiler'>
                         <option value='Apple'>Apple</option>
                         <option value='Arm'>Arm</option>
                         <option value='bluegene'>BlueGene</option>
@@ -81,7 +83,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       MPI Compilers:
-                      <select defaultValue='System' name='mpiCompiler'>
+                      <select defaultValue={currentRow.mpiCompilers} name='mpiCompiler'>
                         <option value='Cray'>Cray</option>
                         <option value='IBM'>IBM</option>
                         <option value='Intel'>Intel</option>
@@ -90,7 +92,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       SHMEM Compilers:
-                      <select defaultValue='OpenSHMEM' name='shmemCompiler'>
+                      <select defaultValue={currentRow.shmemCompilers} name='shmemCompiler'>
                         <option value='Cray'>Cray</option>
                         <option value='OpenSHMEM'>OpenSHMEM</option>
                         <option value='SOS'>SOS</option>
@@ -102,18 +104,28 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
     }
 
     if (form == 'Application') {
+
+	let openmp = (currentRow.OpenMP == 'Yes') ? true : false;
+	let pthreads = (currentRow.pThreads == 'Yes') ? true : false;	
+	let tbb = (currentRow.tbb == 'Yes') ? true : false;
+	let mpi = (currentRow.mpi == 'Yes') ? true : false;	
+	let cuda = (currentRow.cuda == 'Yes') ? true : false;
+	let opencl = (currentRow.openCL == 'Yes') ? true : false;	
+	let shmem = (currentRow.shmem == 'Yes') ? true : false;
+	let mpc = (currentRow.mpc == 'Yes') ? true : false;	
+
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
                     <label>
                         Name:
                         <br/>
-                        <input className='tau-dialog-name' type='text' name='name' />
+                        <input className='tau-dialog-name' type='text' name='name' defaultValue={currentRow.name}/>
                     </label>
                     <br/><br/>
                     <label>
                       Linkage:
-                      <select defaultValue='static' name='linkage'>
+                      <select defaultValue={currentRow.linkage} name='linkage'>
                         <option value='static'>Static</option>
                         <option value='dynamic'>Dynamic</option>
                       </select>
@@ -121,16 +133,16 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
 
                     <div className='tau-dialog-checkbox-container'>
                         <div className='tau-dialog-checkbox'>
-                            <Checkbox label='OpenMP' name='openmp'/>
-                            <Checkbox label='PThreads' name='pthreads'/>
-                            <Checkbox label='TBB' name='tbb'/>
-                            <Checkbox label='MPI' name='mpi'/>
+                            <Checkbox defaultChecked={openmp} label='OpenMP' name='openmp'/>
+                            <Checkbox defaultChecked={pthreads} label='PThreads' name='pthreads'/>
+                            <Checkbox defaultChecked={tbb} label='TBB' name='tbb'/>
+                            <Checkbox defaultChecked={mpi} label='MPI' name='mpi'/>
                         </div>
                         <div>
-                            <Checkbox label='CUDA' name='cuda'/>
-                            <Checkbox label='OpenCL' name='opencl'/>
-                            <Checkbox label='SHMEM' name='shmem'/>
-                            <Checkbox label='MPC' name='mpc'/>
+                            <Checkbox defaultChecked={cuda} label='CUDA' name='cuda'/>
+                            <Checkbox defaultChecked={opencl} label='OpenCL' name='opencl'/>
+                            <Checkbox defaultChecked={shmem} label='SHMEM' name='shmem'/>
+                            <Checkbox defaultChecked={mpc} label='MPC' name='mpc'/>
                         </div>
                     </div>
                 </form>
@@ -139,18 +151,25 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
     }
 
     if (form == 'Measurement') {
+
+	let sample = (currentRow.sample == 'Yes') ? true : false;
+	let cuda = (currentRow.cuda == 'Yes') ? true : false;
+	let io = (currentRow.io == 'Yes') ? true : false;
+	let mpi = (currentRow.mpi == 'Yes') ? true : false;
+	let shmem = (currentRow.shmem == 'Yes') ? true : false;
+
         return (
             <React.Fragment>
                 <form className='tau-dialog-form'>
                     <label>
                         Name:
                         <br/>
-                        <input className='tau-dialog-name' type='text' name='name' />
+                        <input className='tau-dialog-name' type='text' name='name' defaultValue={currentRow.name}/>
                     </label>
                     <br/><br/>
                     <label>
                       Profile:
-                      <select defaultValue='tau' name='profile'>
+                      <select defaultValue={currentRow.profile} name='profile'>
                         <option value='tau'>Tau</option>
                         <option value='merged'>Merged</option>
                         <option value='cubex'>Cubex</option>
@@ -160,7 +179,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       Trace:
-                      <select defaultValue='none' name='trace'>
+                      <select defaultValue={currentRow.trace} name='trace'>
                         <option value='slog2'>Slog2</option>
                         <option value='otf2'>OTF2</option>
                         <option value='none'>None</option>
@@ -168,7 +187,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       Source Instrumentation:
-                      <select defaultValue='never' name='sourceInstr'>
+                      <select defaultValue={currentRow.srcInst} name='sourceInstr'>
                         <option value='automatic'>Automatic</option>
                         <option value='manual'>Manual</option>
                         <option value='never'>Never</option>
@@ -176,7 +195,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       Compiler Instrumentation:
-                      <select defaultValue='never' name='compilerInstr'>
+                      <select defaultValue={currentRow.compInst} name='compilerInstr'>
                         <option value='always'>Always</option>
                         <option value='fallback'>Fallback</option>
                         <option value='never'>Never</option>
@@ -184,7 +203,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                       OpenMP:
-                      <select defaultValue='ignore' name='openmp'>
+                      <select defaultValue={currentRow.openMP} name='openmp'>
                         <option value='ignore'>Ignore</option>
                         <option value='opari'>OPARI</option>
                         <option value='ompt'>OMPT</option>
@@ -192,13 +211,13 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <div className='tau-dialog-checkbox-container'>
                         <div className='tau-dialog-checkbox'>
-                          <Checkbox label='Sample' name='sample'/>
-                          <Checkbox label='CUDA' name='cuda'/>
-                          <Checkbox label='I/O' name='io'/>
+                          <Checkbox defaultChecked={sample} label='Sample' name='sample'/>
+                          <Checkbox defaultChecked={cuda} label='CUDA' name='cuda'/>
+                          <Checkbox defaultChecked={io} label='I/O' name='io'/>
                         </div>
                         <div>
-                          <Checkbox label='MPI' name='mpi'/>
-                          <Checkbox label='SHMEM' name='shmem'/>
+                          <Checkbox defaultChecked={mpi} label='MPI' name='mpi'/>
+                          <Checkbox defaultChecked={shmem} label='SHMEM' name='shmem'/>
                         </div>
                     </div>
                 </form>
@@ -214,12 +233,12 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     <label>
                         Name:
                         <br/>
-                        <input className='tau-dialog-name' type='text' name='name' />
+                        <input className='tau-dialog-name' type='text' name='name' defaultValue={currentRow.name}/>
                     </label>
 		    <br/><br/>
                     <label>
                         Target:
-                        <select name='target'>
+                        <select name='target' defaultValue={currentRow.target}>
                         {
                             Object.keys(json[currentProject]['targets']).map((target: string) =>
                                 <option key={target} value={target}>{target}</option>)
@@ -228,7 +247,7 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                         Application:
-                        <select name='application'>
+                        <select name='application' defaultValue={currentRow.application}>
                         {
                             Object.keys(json[currentProject]['applications']).map((application: string) =>
                                 <option key={application} value={application}>{application}</option>)
@@ -237,20 +256,24 @@ const writeNewBody = (model: KernelModel, form: string, currentProject: string) 
                     </label>
                     <label>
                         Measurement:
-                        <select name='measurement'>
+                        <select name='measurement' defaultValue={currentRow.measurement}>
                         {
                             Object.keys(json[currentProject]['measurements']).map((measurement: string) =>
                                 <option key={measurement} value={measurement}>{measurement}</option>)
                         }
                         </select>
                     </label>
+                    <div className='tau-dialog-checkbox-container'>
+                        <Checkbox label='Record Output' name='record'/>
+                    </div>
+
                 </form>
             </React.Fragment>
         )
     }
 };
 
-class NewDialogBody extends Widget {
+class EditDialogBody extends Widget {
     constructor(domElement: HTMLElement) {
         super({node : domElement});
     }
@@ -276,14 +299,14 @@ class NewDialogBody extends Widget {
     }
 };
 
-export const makeNewDialog = (model: KernelModel, form: string, currentProject: string) => {
+export const makeEditDialog = (model: KernelModel, form: string, currentRow: any, currentProject?: string) => {
 
     let body = document.createElement('div');
-    ReactDOM.render(writeNewBody(model, form, currentProject), body);
+    ReactDOM.render(writeEditBody(model, form, currentRow, currentProject), body);
 
     const dialog = new Dialog({
-      title: `New ${form}`,
-      body: new NewDialogBody(body),
+      title: `Edit ${form}`,
+      body: new EditDialogBody(body),
       buttons: [
         Dialog.cancelButton({ label: 'Cancel' }),
         Dialog.okButton({ label: 'Submit' })
@@ -299,30 +322,30 @@ export const makeNewDialog = (model: KernelModel, form: string, currentProject: 
             let args;
             switch (form.toLowerCase()) {
                 case 'project':
-                    args = `'${result.value.name}'`;
+                    args = `'${currentRow.name}', '${result.value.name}'`;
                     break;
 
                 case 'target':
-                    args = `'${result.value.name}', '${result.value.hostos}', '${result.value.hostArch}', '${result.value.hostCompiler}', '${result.value.mpiCompiler}', '${result.value.shmemCompiler}'`;
+                    args = `'${currentRow.name}', '${result.value.name}', '${result.value.hostos}', '${result.value.hostArch}', '${result.value.hostCompiler}', '${result.value.mpiCompiler}', '${result.value.shmemCompiler}'`;
                     break;
 
                 case 'application':
-                    args = `'${result.value.name}', '${result.value.linkage}', '${result.value.openmp}', '${result.value.cuda}', '${result.value.pthreads}', '${result.value.opencl}', '${result.value.tbb}', '${result.value.shmem}', '${result.value.mpi}', '${result.value.mpc}'`;
+                    args = `'${currentRow.name}', '${result.value.name}', '${result.value.linkage}', '${result.value.openmp}', '${result.value.cuda}', '${result.value.pthreads}', '${result.value.opencl}', '${result.value.tbb}', '${result.value.shmem}', '${result.value.mpi}', '${result.value.mpc}'`;
                     break;
 
                 case 'measurement':
-                    args = `'${result.value.name}', '${result.value.profile}', '${result.value.trace}', '${result.value.sourceInstr}', '${result.value.compilerInstr}', '${result.value.openmp}', '${result.value.sample}', '${result.value.mpi}', '${result.value.cuda}', '${result.value.shmem}', '${result.value.io}'`;
+                    args = `'${currentRow.name}', '${result.value.name}', '${result.value.profile}', '${result.value.trace}', '${result.value.sourceInstr}', '${result.value.compilerInstr}', '${result.value.openmp}', '${result.value.sample}', '${result.value.mpi}', '${result.value.cuda}', '${result.value.shmem}', '${result.value.io}'`;
                     break;
 
                 case 'experiment':
-                    args = `'${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}'`;
+                    args = `'${currentRow.name}', '${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}'`;
                     break;
 
                 default:
                     return;
             }
 
-            model.execute(`TauKernel.new_${form.toLowerCase()}(${args})`);
+            model.execute(`TauKernel.edit_${form.toLowerCase()}(${args})`);
             model.execute('TauKernel.refresh()');
         }
     });

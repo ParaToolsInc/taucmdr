@@ -69,10 +69,8 @@ export const makeCopyDialog = (model: KernelModel, form: string, currentForm: st
 
         if (result.value) {
 	    if (form != 'Project') {
-		console.log(result.value);
 	        model.execute(`TauKernel.copy_${form.toLowerCase()}('${currentForm}', '${result.value[0].value}')`);
 	    } else {
-		console.log(result.value);
 	        model.execute(`TauKernel.copy_${form.toLowerCase()}('${currentForm}', '${result.value[0].value}', '${result.value[1].value}')`);
 	    }
             model.execute('TauKernel.refresh()');

@@ -15,7 +15,6 @@ export class WidgetApp extends StackedPanel {
     constructor(manager: ServiceManager.IManager) {
         super();
 
-
         let root = document.documentElement;
 	root.style.setProperty('--tau-table-color', '#E7EAEB');
         

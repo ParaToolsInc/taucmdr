@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 import { makeErrorDialog } from './Dialogs/ErrorDialog';
 import { makeCopyDialog } from './Dialogs/CopyDialog';
+import { makeEditDialog } from './Dialogs/EditDialog';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -23,16 +24,16 @@ export const ProjectTable = (props: any) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
-    const [activeRow, setActiveRow] = useState<string | null>(null);
+    const [activeRow, setActiveRow] = useState<any>({});
     var json:any = null;
     let rowData:any[];
 
     let root = document.documentElement;
-    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, rowName: string) => {
+    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, currentRow: any) => {
 	let offset = document.getElementById('project-title').getBoundingClientRect().x
 	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
         setAnchorEl(event.currentTarget);
-	setActiveRow(rowName);
+	setActiveRow(currentRow);
     };
 
     const handleClose = () => {
@@ -87,7 +88,7 @@ export const ProjectTable = (props: any) => {
                             </TableHead>
                             <TableBody>
                                 {rows.map((row: any) => (
-				    <TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row.name)}}>
+				    <TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row)}}>
 					<TableCell component='th' scope='row'>{row.name}</TableCell>
 					<TableCell align='right'>{row.targets}</TableCell>
 					<TableCell align='right'>{row.applications}</TableCell>
@@ -108,22 +109,30 @@ export const ProjectTable = (props: any) => {
                     >
 			<MenuItem onClick={() => {
 			    handleClose(); 
-			    props.model.execute(`TauKernel.change_project('${activeRow}')`); 
-			    props.onSetProject(activeRow);}}
+			    props.model.execute(`TauKernel.change_project('${activeRow.name}')`); 
+			    props.onSetProject(activeRow.name);}}
 			>
 			    Select
 			</MenuItem>
 
   			<MenuItem onClick={() => {
 			    handleClose();
-			    makeCopyDialog(props.model, 'Project', `${activeRow}`);}}
+			    props.onSetProject(null);
+			    makeEditDialog(props.model, 'Project', activeRow);}}
+			>
+			    Edit
+			</MenuItem>
+
+  			<MenuItem onClick={() => {
+			    handleClose();
+			    makeCopyDialog(props.model, 'Project', `${activeRow.name}`);}}
 			>
 			    Copy
 			</MenuItem>
 				
 			<MenuItem onClick={() => {
 			    handleClose();
-			    makeDeleteDialog(props.model, 'Project', `${activeRow}`);
+			    makeDeleteDialog(props.model, 'Project', `${activeRow.name}`);
 			    props.onSetProject(null);}}
 			>
 			    Delete

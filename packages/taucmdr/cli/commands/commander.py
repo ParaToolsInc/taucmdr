@@ -28,6 +28,7 @@
 """``commander`` subcommand."""
 
 import os
+import sys
 
 from taucmdr import TAUCMDR_HOME
 from taucmdr.cli import arguments
@@ -50,6 +51,10 @@ class CommanderCommand(AbstractCommand):
             # the taucmdr package
             os.environ['PYTHONPATH'] = os.path.join(TAUCMDR_HOME, 'packages') \
                                        + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
+
+            # Add Tau Commander JupyterLab Extension
+            os.environ['JUPYTERLAB_DIR'] = os.path.join(sys.prefix, 'share', 'jupyter', 'tau_commander')
+            jupyterlab.labapp.LabApp.app_dir.default_value = os.environ['JUPYTERLAB_DIR']
 
             # Prevent Bokeh from printing debug or info level warnings, which otherwise show up in
             # the output cell along with the chart

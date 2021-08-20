@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 import { makeCopyDialog } from './Dialogs/CopyDialog';
+import { makeEditDialog } from './Dialogs/EditDialog';
 
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
@@ -22,16 +23,16 @@ export const ApplicationTable = (props: any) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
-    const [activeRow, setActiveRow] = useState<string | null>(null);
+    const [activeRow, setActiveRow] = useState<any | null>(null);
     var json:any = null;
     let rowData:any[];
 
     let root = document.documentElement;
-    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, rowName: string) => {
+    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
 	let offset = document.getElementById('application-title').getBoundingClientRect().x
 	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
         setAnchorEl(event.currentTarget);
-	setActiveRow(rowName);
+	setActiveRow(row);
     };
 
     const handleClose = () => {
@@ -93,7 +94,7 @@ export const ApplicationTable = (props: any) => {
                                 </TableHead>
                                 <TableBody>
                                     {rows.map((row: any) => (
-					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row.name)}}>
+					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row)}}>
                                             <TableCell component="th" scope="row">{row.name}</TableCell>
                                             <TableCell align="right">{row.linkage}</TableCell>
                                             <TableCell align="right">{row.openMP}</TableCell>
@@ -117,15 +118,26 @@ export const ApplicationTable = (props: any) => {
                           onClose={handleClose}
                           className='tau-option-menu'
                         >
-			    <MenuItem>Edit</MenuItem>
 			    <MenuItem onClick={() => {
 				handleClose();
-				makeCopyDialog(props.model, 'Application', `${activeRow}`);}}
+				makeEditDialog(props.model, 'Application', activeRow);}}
+			    >
+				Edit
+			    </MenuItem>
+
+			    <MenuItem onClick={() => {
+				handleClose();
+				makeCopyDialog(props.model, 'Application', `${activeRow.name}`);}}
 			    >
 				Copy
 			    </MenuItem>
 
-			    <MenuItem onClick={() => {handleClose(); makeDeleteDialog(props.model, 'Application', `${activeRow}`)}}>Delete</MenuItem>
+			    <MenuItem onClick={() => {
+				handleClose(); 
+				makeDeleteDialog(props.model, 'Application', `${activeRow.name}`);}}
+			    >
+				Delete
+			    </MenuItem>
                 	</Menu>
                     </div>
                 ) : (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 import { makeCopyDialog } from './Dialogs/CopyDialog';
+import { makeEditDialog } from './Dialogs/EditDialog';
 
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
@@ -22,24 +23,24 @@ export const MeasurementTable = (props: any) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
     const [rows, setRows] = useState<any[]>([]);
-    const [activeRow, setActiveRow] = useState<string | null>(null);
+    const [activeRow, setActiveRow] = useState<any | null>(null);
     var json:any = null;
     let rowData:any[];
 
     let root = document.documentElement;
-    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, rowName: string) => {
+    const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
 	let offset = document.getElementById('measurement-title').getBoundingClientRect().x
 	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
         setAnchorEl(event.currentTarget);
-	setActiveRow(rowName);
+	setActiveRow(row);
     };
 
     const handleClose = () => {
-        setAnchorEl(null);
+       	setAnchorEl(null);
     };
 
     useEffect(() => {
-	    setOutputHandle(true);
+	setOutputHandle(true);
     }, [props.output, props.project]);
 
     if (outputHandle) {
@@ -95,7 +96,7 @@ export const MeasurementTable = (props: any) => {
                                 </TableHead>
                                 <TableBody>
                                     {rows.map((row: any) => (
-					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row.name)}}>
+					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row)}}>
                                             <TableCell component="th" scope="row">{row.name}</TableCell>
                                             <TableCell align="right">{row.profile}</TableCell>
                                             <TableCell align="right">{row.trace}</TableCell>
@@ -120,16 +121,26 @@ export const MeasurementTable = (props: any) => {
                           onClose={handleClose}
                           className='tau-option-menu'
                         >
-			    <MenuItem>Edit</MenuItem>
 			    <MenuItem onClick={() => {
 				handleClose();
-				makeCopyDialog(props.model, 'Measurement', `${activeRow}`);}}
+				makeEditDialog(props.model, 'Measurement', activeRow);}}
+			    >
+				Edit
+			    </MenuItem>
+
+			    <MenuItem onClick={() => {
+				handleClose();
+				makeCopyDialog(props.model, 'Measurement', `${activeRow.name}`);}}
 			    >
 				Copy
 			    </MenuItem>
 
-
-			    <MenuItem onClick={() => {handleClose(); makeDeleteDialog(props.model, 'Measurement', `${activeRow}`)}}>Delete</MenuItem>
+			    <MenuItem onClick={() => {
+				handleClose(); 
+				makeDeleteDialog(props.model, 'Measurement', `${activeRow.name}`);}}
+			    >
+				Delete
+			    </MenuItem>
                 	</Menu>
                     </div>
                 ) : ( 
