@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.join(parent_dir, 'packages'))
 
 from taucmdr.model.project import Project
 from taucmdr.cli.commands.project.select import COMMAND as select_project
+from taucmdr.cli.commands.experiment.select import COMMAND as select_experiment
 
 from taucmdr.cli.commands.project.create import COMMAND as create_project
 from taucmdr.cli.commands.target.create import COMMAND as create_target
@@ -85,7 +86,6 @@ experiment_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Target', 'function': lambda x: x['target']['name']},
                      {'header': 'Application', 'function': lambda x: x['application']['name']},
                      {'header': 'Measurement', 'function': lambda x: x['measurement']['name']},
-                     {'header': 'Record Output', 'value': 'record_output'},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
 class TauKernel(object):
@@ -167,6 +167,18 @@ class TauKernel(object):
         return
 
     @staticmethod
+    def select_experiment(experiment_name):
+        select_project.main([TauKernel.current_project])
+        try:
+            select_experiment.main([experiment_name])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in selection'})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
     def new_project(name):
         PROJECT_STORAGE.connect_filesystem()
         try:
@@ -191,6 +203,9 @@ class TauKernel(object):
         
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in creation'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})

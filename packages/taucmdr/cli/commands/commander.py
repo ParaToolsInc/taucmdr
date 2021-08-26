@@ -53,8 +53,9 @@ class CommanderCommand(AbstractCommand):
                                        + ((':' + os.environ['PYTHONPATH']) if 'PYTHONPATH' in os.environ else '')
 
             # Add Tau Commander JupyterLab Extension
-            os.environ['JUPYTERLAB_DIR'] = os.path.join(sys.prefix, 'share', 'jupyter', 'tau_commander')
-            jupyterlab.labapp.LabApp.app_dir.default_value = os.environ['JUPYTERLAB_DIR']
+            if os.path.isdir(os.path.join(sys.prefix, 'share', 'jupyter', 'tau_commander')):
+                os.environ['JUPYTERLAB_DIR'] = os.path.join(sys.prefix, 'share', 'jupyter', 'tau_commander')
+                jupyterlab.labapp.LabApp.app_dir.default_value = os.environ['JUPYTERLAB_DIR']
 
             # Prevent Bokeh from printing debug or info level warnings, which otherwise show up in
             # the output cell along with the chart

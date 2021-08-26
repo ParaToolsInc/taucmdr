@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 import { makeEditDialog } from './Dialogs/EditDialog';
+import { makeSelectDialog } from './Dialogs/SelectDialog';
 
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
@@ -108,6 +109,13 @@ export const ExperimentTable = (props: any) => {
                           onClose={handleClose}
                           className='tau-option-menu'
                         >
+			    <MenuItem onClick={() => {
+				handleClose();
+				makeSelectDialog(props.model, 'Experiment', `${activeRow.name}`)}}
+			    >
+				Select
+			    </MenuItem>
+
 			    <MenuItem onClick={() => {
 				handleClose();
 				makeEditDialog(props.model, 'Experiment', activeRow, props.project)}}
