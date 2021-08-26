@@ -53,8 +53,81 @@ Add TAU Commander to your PATH:
 
 Initialize a new TAU project:
 
-  - cd `/path/to/your/code`
+  - `cd /path/to/your/code`
   - `tau initialize`
+
+Building Tau Commander JupyterLab Extension
+===========================================
+
+Build the Docker image:
+
+  - `make dev-container`
+
+Run the newly created Docker image:
+
+  - `make run-container`
+
+Change directories to where the extension resides:
+
+  - `cd $HOME/src/jupyter/tau_commander`
+
+Install the node packages:
+
+  - `jlpm`
+
+Build the extension:
+
+  - `jlpm run build`
+
+Installing Tau Commander JupyterLab Extension
+=============================================
+
+Install the extension:
+
+  - `jupyter labextension install $HOME/src/jupyter/tau_commander`
+
+Launch the extension:
+
+  - `tau commander`
+
+Building conda package of Jupyterlab with Tau Commander prepackaged
+===================================================================
+
+Change directories to where jupyterlab delux resides:
+
+  - `cd $HOME/src/jupyter`
+
+Install the jupyterlab delux dependencies:
+
+  - `./install_delux_dep.sh`
+
+Use cookiecutter to create a new recipe:
+
+  - `cookiecutter jupyterlab_delux`
+
+Change directories to the newly created recipe:
+
+  - `cd jupyterlab_{{ cookiecutter.project_slug }}`
+
+Add the JupyterLab extension installation commands in `recipe/bld.bat` and `recipe/build.sh`. They will have the structure:
+  
+  - `jupyter labextension install $HOME/src/jupyter/tau_commander --no-build`
+
+Generate the conda package:
+
+  - `conda build -c conda-forge recipe`
+
+The newly generated conda package is located in:
+
+  - `$HOME/taucmdr/conda/conda-bld/noarch/jupyter_lab{{ cookiecutter.project_slug }}.tar.bz2`
+
+Install the extension with:
+
+  - `conda install jupyter_lab{{ cookiecutter.project_slug }}.tar.bz2`
+
+Launch the extension with:
+
+  - `tau commander`
 
 Need help?
 ==========
