@@ -7,7 +7,7 @@ export const makeSelectDialog = (model: KernelModel, form:string, currentForm: s
 	body: `Are you sure you want to select ${form}: ${currentForm}?`,
 	buttons: [
 	    Dialog.cancelButton({ label: 'Cancel' }),
-	    Dialog.warnButton({ label: 'Select' }),
+	    Dialog.okButton({ label: 'Select' }),
 	]
     });
 

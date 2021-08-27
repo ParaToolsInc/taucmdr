@@ -263,10 +263,6 @@ const writeEditBody = (model: KernelModel, form: string, currentRow: any, curren
                         }
                         </select>
                     </label>
-                    <div className='tau-dialog-checkbox-container'>
-                        <Checkbox label='Record Output' name='record'/>
-                    </div>
-
                 </form>
             </React.Fragment>
         )
@@ -344,6 +340,8 @@ export const makeEditDialog = (model: KernelModel, form: string, currentRow: any
                 default:
                     return;
             }
+
+	    console.log(args);
 
             model.execute(`TauKernel.edit_${form.toLowerCase()}(${args})`);
             model.execute('TauKernel.refresh()');

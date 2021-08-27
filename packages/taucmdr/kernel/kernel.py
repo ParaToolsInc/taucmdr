@@ -175,6 +175,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in selection'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -186,6 +189,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in creation'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -227,6 +233,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in creation'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -249,6 +258,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in creation'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -263,6 +275,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in creation'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -291,6 +306,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in deletion'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -301,6 +319,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -313,6 +334,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in deletion'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -324,6 +348,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in deletion'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -334,6 +361,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -370,6 +400,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in copy'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -381,6 +414,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in copy'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -394,6 +430,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in copy'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -405,6 +444,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in copy'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -419,6 +461,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True, 'nameName': new_name})
@@ -437,6 +482,9 @@ class TauKernel(object):
         
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -458,6 +506,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message.replace('\'', '`')})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
@@ -482,6 +533,9 @@ class TauKernel(object):
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in edit'})
 
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})
 
@@ -497,6 +551,9 @@ class TauKernel(object):
 
         except SystemExit as e:
             return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()
         return json.dumps({'status': True})

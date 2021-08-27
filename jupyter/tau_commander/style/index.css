@@ -45,6 +45,12 @@
     cursor: pointer;
 }
 
+.tau-error-dialog {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .tau-dialog-form {
     overflow: hidden;
 }
