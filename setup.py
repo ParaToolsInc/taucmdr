@@ -550,7 +550,7 @@ class BuildMarkdown(Command):
                          cmd_obj.usage]
                 filename = os.path.join(self.dest, cmd_name.replace('.', '_')+'.md')
                 with open(filename, 'w') as fout:
-                    fout.write(unidecode('\n'.join(parts).decode('utf-8')))
+                    fout.write(unidecode('\n'.join(parts)))
                 print('wrote %s' % filename)
                 indentspace = ''
 
