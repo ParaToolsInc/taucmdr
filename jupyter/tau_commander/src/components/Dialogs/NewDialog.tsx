@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { makeLoadingDialog } from './LoadingDialog';
+
 import { KernelModel } from '../../KernelModel';
 import { Dialog } from '@jupyterlab/apputils';
 import { Checkbox } from '@jupyterlab/ui-components';
@@ -324,6 +326,7 @@ export const makeNewDialog = (model: KernelModel, form: string, currentProject: 
 
             model.execute(`TauKernel.new_${form.toLowerCase()}(${args})`);
             model.execute('TauKernel.refresh()');
+	    makeLoadingDialog();
         }
     });
 };

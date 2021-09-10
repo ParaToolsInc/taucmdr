@@ -29,6 +29,7 @@ export const makeColorDialog = () => {
 	          '#eb141442', '#eb14bc42', '#4014eb42', '#14b8eb42', '#14eb7542', '#7aeb1442', '#ebdb1442', '#eb781442'];
     
     let body = document.createElement('div');
+    body.classList.add('tau-center-dialog');
     ReactDOM.render(<GithubPicker colors={colors} triangle='hide' onChangeComplete={ handleColorChange }/>, body);
 
     const dialog = new Dialog({

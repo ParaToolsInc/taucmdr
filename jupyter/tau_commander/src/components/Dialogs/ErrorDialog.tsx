@@ -7,11 +7,15 @@ import { Widget } from '@lumino/widgets';
 const writeErrorBody = (message:string) => {
 
     let newMessage = message.split('\\n');
-    console.log(newMessage);
+
     return (
-	<div className='tau-error-dialog'>
-	    {newMessage.map((val) => (<p>{val}</p>))}
-	</div> 
+	<pre className='tau-error-dialog'>
+	    { newMessage.map(function(val) {
+		    return (val == "") 
+			? (<React.Fragment><br/></React.Fragment>) 
+			: (<React.Fragment><code>{val}</code><br/></React.Fragment>) 
+	    })}
+	</pre> 
     )
 };
 

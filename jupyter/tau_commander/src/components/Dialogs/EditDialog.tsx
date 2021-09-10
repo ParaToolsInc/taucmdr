@@ -341,8 +341,6 @@ export const makeEditDialog = (model: KernelModel, form: string, currentRow: any
                     return;
             }
 
-	    console.log(args);
-
             model.execute(`TauKernel.edit_${form.toLowerCase()}(${args})`);
             model.execute('TauKernel.refresh()');
         }

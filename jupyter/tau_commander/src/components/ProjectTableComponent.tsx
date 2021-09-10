@@ -4,6 +4,7 @@ import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 import { makeErrorDialog } from './Dialogs/ErrorDialog';
 import { makeCopyDialog } from './Dialogs/CopyDialog';
 import { makeEditDialog } from './Dialogs/EditDialog';
+import { LoadingDialog } from './Dialogs/LoadingDialog';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -50,10 +51,15 @@ export const ProjectTable = (props: any) => {
             let string_output = bundle['text/plain'] as string;
             json = JSON.parse(string_output.replace(/\'/g, '')) as ProjectList;
 
+	    let loadingDialog: HTMLElement = document.getElementById('loading-dialog');
+	    if (loadingDialog) {
+		LoadingDialog.terminate();
+	    }
+
 	    if ('status' in json) {
 		if (json['status'] == false) {
 		    makeErrorDialog(json['message']);
-		}
+		} 
 					
 	    } else {
                 rowData = [];
@@ -102,7 +108,6 @@ export const ProjectTable = (props: any) => {
                     <Menu
                       id="simple-menu"
                       anchorEl={anchorEl}
-                      keepMounted
                       open={Boolean(anchorEl)}
                       onClose={handleClose}
                       className='tau-option-menu'

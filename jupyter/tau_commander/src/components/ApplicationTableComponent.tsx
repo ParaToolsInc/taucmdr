@@ -113,7 +113,6 @@ export const ApplicationTable = (props: any) => {
                     	<Menu
                           id="simple-menu"
                   	  anchorEl={anchorEl}
-                          keepMounted
                           open={Boolean(anchorEl)}
                           onClose={handleClose}
                           className='tau-option-menu'

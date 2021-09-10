@@ -6,6 +6,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../../.."))
 sys.path.insert(0, os.path.join(parent_dir, 'packages'))
 
 from taucmdr.model.project import Project
+from taucmdr.cli.commands.initialize import COMMAND as tau_init
 from taucmdr.cli.commands.project.select import COMMAND as select_project
 from taucmdr.cli.commands.experiment.select import COMMAND as select_experiment
 
@@ -33,6 +34,7 @@ from taucmdr.cli.commands.measurement.edit import COMMAND as edit_measurement
 from taucmdr.cli.commands.experiment.edit import COMMAND as edit_experiment
 
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cf.storage.project import ProjectStorageError 
 
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
@@ -138,9 +140,22 @@ class TauKernel(object):
 
     @staticmethod
     def get_all_projects():
-        ctrl = Project.controller()
 
-        projects = ctrl.all()
+        try:
+            ctrl = Project.controller()
+            projects = ctrl.all()
+        except ProjectStorageError as e:
+            try:
+                tau_init.main([])
+                ctrl = Project.controller()
+                projects = ctrl.all()
+
+            except SystemExit as e:
+                return json.dumps({'status': False, 'message': 'Error in creation'})
+
+            except Exception as e:
+                return json.dumps({'status': False, 'message': e.message})
+
         if len(projects) == 0:
             return {}
         if len(projects) == 1:

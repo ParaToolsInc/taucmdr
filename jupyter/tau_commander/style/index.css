@@ -46,9 +46,17 @@
 }
 
 .tau-error-dialog {
-    display: flex;
-    flex-direction: column;
+    background-color: #f7f7f7;
+    border: 1px #909090 solid;
+    border-radius: 4px;
+    padding: 20.5px !important;
+    line-height: 1.5;
+    white-space: normal;
+}
+
+.tau-center-dialog {
     align-items: center;
+    overflow: hidden;
 }
 
 .tau-dialog-form {
@@ -69,6 +77,18 @@
     padding: 0 20% 0 0;
 }
 
+#loading-dialog .jp-Dialog-body {
+    padding-top: 20px;
+    padding-left: 12px;
+}
+
+#loading-dialog .jp-Dialog-header {
+    display: none;
+}
+
+#loading-dialog .jp-Dialog-footer {
+    display: none;
+}
 .tau-dialog-body div:nth-child(1) {
     max-height: fit-content;
 }
@@ -95,6 +115,15 @@
     padding: 2px 8px !important;
     text-transform: none !important;
     min-width: 20px !important;
+    height: 28px;
+}
+
+.tau-option-button-border-left {
+    border-left: 1px rgba(0, 0, 0, 0.3) solid !important;
+}
+
+.tau-option-button-border-right {
+    border-right: 1px rgba(0, 0, 0, 0.3) solid !important;
 }
 
 .tau-option-current {
@@ -105,9 +134,12 @@
     padding: 0% 0% 0% 0%;
 }
 
+.tau-option-menu .MuiMenuItem-root {
+    border-bottom: 1px rgba(0, 0, 0, 0.05) solid;
+}
+
 .tau-option-menu .MuiPaper-rounded {
     margin-left: var(--tau-menu-margin);
     border-radius: 0px;
     transform: none !important;
-    border: 1px var(--tau-table-color) solid;
 }

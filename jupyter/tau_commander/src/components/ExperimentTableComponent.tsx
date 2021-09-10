@@ -104,7 +104,6 @@ export const ExperimentTable = (props: any) => {
                     	<Menu
                           id="simple-menu"
                   	  anchorEl={anchorEl}
-                          keepMounted
                           open={Boolean(anchorEl)}
                           onClose={handleClose}
                           className='tau-option-menu'

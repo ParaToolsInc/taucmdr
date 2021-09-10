@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { makeNewDialog } from './Dialogs/NewDialog';
 import { makeColorDialog } from './Dialogs/ColorDialog';
+import { makeLoadingDialog } from './Dialogs/LoadingDialog';
 
 import Button from "@material-ui/core/Button";
 import Menu from '@material-ui/core/Menu';
@@ -28,7 +29,7 @@ export const OptionToolbar = (props: any) => {
         <div className='tau-option-header'>
             <div>
 		<Button
-		    className='tau-option-button'
+		    className='tau-option-button tau-option-button-border-left'
 		    size='small'
 		    target='_blank'
 		    href='https://github.com/ParaToolsInc'
@@ -37,11 +38,14 @@ export const OptionToolbar = (props: any) => {
 		</Button>
 
                 <Button 
-                    className='tau-option-button' 
+                    className={'tau-option-button tau-option-button-border-left ' + (props.output ? '' : 'tau-option-button-border-right')} 
                     size='small' 
                     onClick={() => { 
                         props.model.execute(pythonImport); 
                         props.onSetProject(null); 
+			if (!(props.output)) {
+			    makeLoadingDialog();
+			}
                     }}
                 >
                     { props.output ? 'Refresh' : 'Connect to Tau' }
@@ -49,7 +53,7 @@ export const OptionToolbar = (props: any) => {
 
                 { props.output ? (
                     <Button 
-                      className='tau-option-button' 
+                      className='tau-option-button tau-option-button-border-left tau-option-button-border-right' 
 		      id='new-button'
                       size='small'
                       aria-controls="simple-menu" 
@@ -75,7 +79,7 @@ export const OptionToolbar = (props: any) => {
 
                 { props.output ? (
 	 	    <Button
-		        className='tau-option-button'
+		        className='tau-option-button tau-option-button-border-left tau-option-button-border-right'
 		        size='small'
 		        onClick={() => {makeColorDialog();}}
 		    >
@@ -89,12 +93,11 @@ export const OptionToolbar = (props: any) => {
 	    <Menu
               id="simple-menu"
               anchorEl={anchorEl}
-              keepMounted
               open={Boolean(anchorEl)}
               onClose={handleClose}
               className='tau-option-menu'
             >
-                <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Project', props.project);}}>New Project</MenuItem>
+                <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Project', props.project); }}>New Project</MenuItem>
                 { props.project ? (
                     <div>
                         <MenuItem onClick={() => {handleClose(); makeNewDialog(props.model, 'Target', props.project);}}>New Target</MenuItem>
