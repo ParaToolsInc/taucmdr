@@ -115,7 +115,8 @@ export const ProjectTable = (props: any) => {
 			<MenuItem onClick={() => {
 			    handleClose(); 
 			    props.model.execute(`TauKernel.change_project('${activeRow.name}')`); 
-			    props.onSetProject(activeRow.name);}}
+			    props.onSetProject(activeRow.name);
+			    props.onSetExperiment(null);}}
 			>
 			    Select
 			</MenuItem>

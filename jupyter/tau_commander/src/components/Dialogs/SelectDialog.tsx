@@ -3,7 +3,7 @@ import { KernelModel } from '../../KernelModel';
 
 import { makeLoadingDialog } from './LoadingDialog';
 
-export const makeSelectDialog = (model: KernelModel, form:string, currentForm: string) => {
+export const makeSelectDialog = (model: KernelModel, form:string, currentForm: string, onSetExperiment: any) => {
     const dialog = new Dialog({
 	title: `Select ${form}`,
 	body: `Are you sure you want to select ${form}: ${currentForm}?`,
@@ -18,6 +18,7 @@ export const makeSelectDialog = (model: KernelModel, form:string, currentForm: s
 	    model.execute(`TauKernel.select_${form.toLowerCase()}('${currentForm}')`);
    	    model.execute('TauKernel.refresh()');
 	    makeLoadingDialog(); 
+	    onSetExperiment(currentForm);
 	}
 	dialog.dispose();
     });

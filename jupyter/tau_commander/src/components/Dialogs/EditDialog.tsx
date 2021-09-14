@@ -267,6 +267,29 @@ const writeEditBody = (model: KernelModel, form: string, currentRow: any, curren
             </React.Fragment>
         )
     }
+
+
+    if (form == 'Trial') {
+
+        return (
+            <React.Fragment>
+                <form className='tau-dialog-form'>
+                    <label>
+                        Number:
+                        <br/>
+                        <input className='tau-dialog-name' type='text' name='number' defaultValue={currentRow.number}/>
+                    </label>
+		    <br/><br/>
+                    <label>
+                        Description:
+                        <br/>
+                        <input className='tau-dialog-name' type='text' name='description' defaultValue={currentRow.description}/>
+                    </label>
+                </form>
+            </React.Fragment>
+        )
+    }
+
 };
 
 class EditDialogBody extends Widget {
@@ -336,6 +359,10 @@ export const makeEditDialog = (model: KernelModel, form: string, currentRow: any
                 case 'experiment':
                     args = `'${currentRow.name}', '${result.value.name}', '${result.value.target}', '${result.value.application}', '${result.value.measurement}'`;
                     break;
+
+		case 'trial':
+		    args = `'${currentRow.number}', '${result.value.number}', '${result.value.description}'`;
+		    break;
 
                 default:
                     return;

@@ -6,6 +6,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../../.."))
 sys.path.insert(0, os.path.join(parent_dir, 'packages'))
 
 from taucmdr.model.project import Project
+from taucmdr.model.experiment import Experiment
 from taucmdr.cli.commands.initialize import COMMAND as tau_init
 from taucmdr.cli.commands.project.select import COMMAND as select_project
 from taucmdr.cli.commands.experiment.select import COMMAND as select_experiment
@@ -21,6 +22,7 @@ from taucmdr.cli.commands.target.delete import COMMAND as delete_target
 from taucmdr.cli.commands.application.delete import COMMAND as delete_application
 from taucmdr.cli.commands.measurement.delete import COMMAND as delete_measurement
 from taucmdr.cli.commands.experiment.delete import COMMAND as delete_experiment
+from taucmdr.cli.commands.trial.delete import COMMAND as delete_trial
 
 from taucmdr.cli.commands.project.copy import COMMAND as copy_project
 from taucmdr.cli.commands.target.copy import COMMAND as copy_target
@@ -32,9 +34,13 @@ from taucmdr.cli.commands.target.edit import COMMAND as edit_target
 from taucmdr.cli.commands.application.edit import COMMAND as edit_application
 from taucmdr.cli.commands.measurement.edit import COMMAND as edit_measurement
 from taucmdr.cli.commands.experiment.edit import COMMAND as edit_experiment
+from taucmdr.cli.commands.trial.edit import COMMAND as edit_trial
+from taucmdr.cli.commands.trial.renumber import COMMAND as renumber_trial
 
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cf.storage.project import ProjectStorageError 
+
+from taucmdr.error import ConfigurationError
 
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
@@ -47,7 +53,6 @@ from taucmdr import util
 def data_size(expr):
     return util.human_size(sum(int(trial.get('data_size', 0)) for trial in expr['trials']))
 
-
 target_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Host OS', 'value': 'host_os'},
                      {'header': 'Host Arch', 'value': 'host_arch'},
@@ -57,7 +62,6 @@ target_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                       lambda data: data.get(MPI_CC.keyword, {'family': 'None'})['family']},
                      {'header': 'SHMEM Compilers', 'function':
                       lambda data: data.get(SHMEM_CC.keyword, {'family': 'None'})['family']}]
-
 
 application_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Linkage', 'value': 'linkage'},
@@ -90,12 +94,20 @@ experiment_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'Measurement', 'function': lambda x: x['measurement']['name']},
                      {'header': 'TAU Makefile', 'value': 'tau_makefile'}]
 
+trial_columns = [{'header': 'Number', 'value': 'number'},
+                {'header': 'Data Size', 'function': lambda x: util.human_size(x.get('data_size', None))},
+                {'header': 'Command', 'value': 'command'},
+                {'header': 'Description', 'value': 'description'},
+                {'header': 'Status', 'value': 'phase'},
+                {'header': 'Elapsed Seconds', 'value': 'elapsed'}]
+
+
 class TauKernel(object):
 
     current_project = None
     
     @staticmethod
-    def read_column(source, dashboard_columns):
+    def read_column(source, dashboard_columns, is_trial=False):
         header_row = [col['header'] for col in dashboard_columns]
         rows = [header_row]
         for record in source:
@@ -117,8 +129,12 @@ class TauKernel(object):
             rows.append(row)
         keys = rows[0]
         ret_val = {}
+
         for meas in [dict(zip(keys, values)) for values in rows[1:]]:
-            name = meas.pop('Name')
+            if is_trial:
+                name = meas.pop('Number')
+            else:
+                name = meas.pop('Name')
             ret_val[name] = meas
 
         return ret_val
@@ -130,20 +146,30 @@ class TauKernel(object):
         application = proj.populate('applications')
         measurement = proj.populate('measurements')
         experiment = proj.populate('experiments')
-
+        
         project['name'] = proj['name']
         project['targets'] = TauKernel.read_column(target, target_columns)
         project['applications'] = TauKernel.read_column(application, application_columns)
         project['measurements'] = TauKernel.read_column(measurement, measurement_columns)
         project['experiments'] = TauKernel.read_column(experiment, experiment_columns)
+
+        for experiment_name, _ in project['experiments'].items():
+            ctrl = Experiment.controller()
+            expr = ctrl.one({'name': experiment_name})
+            trial = expr.populate('trials')
+            project['experiments'][experiment_name]['Trial Data'] = TauKernel.read_column(trial, trial_columns, True)
+
         return project
 
     @staticmethod
     def get_all_projects():
 
+        current = TauKernel.current_project
+
         try:
             ctrl = Project.controller()
             projects = ctrl.all()
+
         except ProjectStorageError as e:
             try:
                 tau_init.main([])
@@ -151,13 +177,14 @@ class TauKernel(object):
                 projects = ctrl.all()
 
             except SystemExit as e:
-                return json.dumps({'status': False, 'message': 'Error in creation'})
+                return json.dumps({'status': False, 'message': 'Error in initialization'})
 
             except Exception as e:
                 return json.dumps({'status': False, 'message': e.message})
 
         if len(projects) == 0:
             return {}
+
         if len(projects) == 1:
             TauKernel.change_project(projects[0]['name'])
 
@@ -165,6 +192,9 @@ class TauKernel(object):
         for project in projects:
             select_project.main([project['name']])
             project_dict[project['name']] = TauKernel.get_project(project)
+
+        if current:
+            TauKernel.change_project(current)
 
         return project_dict
 
@@ -384,6 +414,20 @@ class TauKernel(object):
         return json.dumps({'status': True})
 
     @staticmethod
+    def delete_trial(number):
+        try:
+            delete_trial.main([number])
+
+        except SystemExit as e:
+            return json.dumps({'status': False, 'message': 'Error in deletion'})
+
+        except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
     def copy_project(name, new_name, suffix):
         try:
             TauKernel.new_project(new_name)
@@ -568,6 +612,24 @@ class TauKernel(object):
             return json.dumps({'status': False, 'message': 'Error in edit'})
 
         except Exception as e:
+            return json.dumps({'status': False, 'message': e.message})
+
+        PROJECT_STORAGE.disconnect_filesystem()
+        return json.dumps({'status': True})
+
+    @staticmethod
+    def edit_trial(number, new_number, description):
+        select_project.main([TauKernel.current_project])
+        try:
+            edit_trial.main([number, '--description', description])
+            renumber_trial.main([number, '--to', new_number])
+
+        except SystemExit as e:
+            renumber_trial.main([new_number, '--to', number])
+            return json.dumps({'status': False, 'message': 'Error in edit'})
+
+        except Exception as e:
+            renumber_trial.main([new_number, '--to', number])
             return json.dumps({'status': False, 'message': e.message})
 
         PROJECT_STORAGE.disconnect_filesystem()

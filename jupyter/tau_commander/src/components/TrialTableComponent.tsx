@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 import { makeEditDialog } from './Dialogs/EditDialog';
-import { makeSelectDialog } from './Dialogs/SelectDialog';
+import { makeDeleteDialog } from './Dialogs/DeleteDialog';
 
 import { IMimeBundle } from '@jupyterlab/nbformat'; 
 import Table from '@material-ui/core/Table';
@@ -18,7 +17,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import { ProjectList } from './interfaces';
 
-export const ExperimentTable = (props: any) => {
+export const TrialTable = (props: any) => {
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [outputHandle, setOutputHandle] = useState<boolean>(false); 
@@ -29,7 +28,7 @@ export const ExperimentTable = (props: any) => {
 
     let root = document.documentElement;
     const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
-	let offset = document.getElementById('experiment-title').getBoundingClientRect().x
+	let offset = document.getElementById('trial-title').getBoundingClientRect().x
 	root.style.setProperty('--tau-menu-margin', `${event.nativeEvent.clientX - offset}px`);
         setAnchorEl(event.currentTarget);
 	setActiveRow(row);
@@ -51,15 +50,14 @@ export const ExperimentTable = (props: any) => {
 
 	    if (!('status' in json)) {
                 rowData = [];
-                Object.entries(json[props.project]['experiments']).map((experiment: any) => {
-                    let name = experiment[0];
-                    let numTrials = experiment[1]['Trials'];
-                    let dataSize = experiment[1]['Data Size'];
-                    let target = experiment[1]['Target'];
-                    let application = experiment[1]['Application'];
-                    let measurement = experiment[1]['Measurement'];
-                    let tauMakefile = experiment[1]['TAU Makefile'];
-                    rowData.push({ name, numTrials, dataSize, target, application, measurement, tauMakefile });
+                Object.entries(json[props.project]['experiments'][props.experiment]['Trial Data']).map((trial: any) => {
+                    let number = trial[0];
+                    let dataSize = trial[1]['Data Size'];
+                    let command = trial[1]['Command'];
+                    let description = trial[1]['Description'];
+                    let status = trial[1]['Status'];
+                    let elapsedSeconds = trial[1]['Elapsed Seconds'];
+                    rowData.push({ number, dataSize, command, description, status, elapsedSeconds });
                 });
                 
                 setRows(rowData);
@@ -72,30 +70,28 @@ export const ExperimentTable = (props: any) => {
             <React.Fragment>
                 { props.output ? (
                     <div>
-                        <h2 id='experiment-title'>Experiments</h2>
+                        <h2 id='trial-title'>Trials</h2>
                         <TableContainer component={Paper}>
                             <Table size="small" className='tau-table' aria-label="simple table">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell className='tau-table-column'>Name</TableCell>
-                                        <TableCell className='tau-table-column' align="right"># Trials</TableCell>
+                                        <TableCell className='tau-table-column'>Number</TableCell>
                                         <TableCell className='tau-table-column' align="right">Data Size</TableCell>
-                                        <TableCell className='tau-table-column' align="right">Target</TableCell>
-                                        <TableCell className='tau-table-column' align="right">Application</TableCell>
-                                        <TableCell className='tau-table-column' align="right">Measurement</TableCell>
-                                        <TableCell className='tau-table-column' align="right">TAU Makefile</TableCell>
+                                        <TableCell className='tau-table-column' align="right">Command</TableCell>
+                                        <TableCell className='tau-table-column' align="right">Description</TableCell>
+                                        <TableCell className='tau-table-column' align="right">Status</TableCell>
+                                        <TableCell className='tau-table-column' align="right">Elapsed Seconds</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {rows.map((row: any) => (
-					<TableRow className='tau-table-row tau-table-row-clickable' key={row.name} onClick={(e) => {handleClick(e, row)}}>
-                                            <TableCell component="th" scope="row">{row.name}</TableCell>
-                                            <TableCell align="right">{row.numTrials}</TableCell>
+					<TableRow className='tau-table-row tau-table-row-clickable' key={row.number} onClick={(e) => {handleClick(e, row)}}>
+                                            <TableCell component="th" scope="row">{row.number}</TableCell>
                                             <TableCell align="right">{row.dataSize}</TableCell>
-                                            <TableCell align="right">{row.target}</TableCell>
-                                            <TableCell align="right">{row.application}</TableCell>
-                                            <TableCell align="right">{row.measurement}</TableCell>
-                                            <TableCell align="right">{row.tauMakefile}</TableCell>
+                                            <TableCell align="right">{row.command}</TableCell>
+                                            <TableCell align="right">{row.description}</TableCell>
+                                            <TableCell align="right">{row.status}</TableCell>
+                                            <TableCell align="right">{row.elapsedSeconds}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -110,21 +106,14 @@ export const ExperimentTable = (props: any) => {
                         >
 			    <MenuItem onClick={() => {
 				handleClose();
-				makeSelectDialog(props.model, 'Experiment', `${activeRow.name}`, props.onSetExperiment)}}
-			    >
-				Select
-			    </MenuItem>
-
-			    <MenuItem onClick={() => {
-				handleClose();
-				makeEditDialog(props.model, 'Experiment', activeRow, props.project)}}
+				makeEditDialog(props.model, 'Trial', activeRow);}}
 			    >
 				Edit
 			    </MenuItem>
 
 			    <MenuItem onClick={() => {
 				handleClose();
-				makeDeleteDialog(props.model, 'Experiment', `${activeRow.name}`)}}
+				makeDeleteDialog(props.model, 'Trial', `${activeRow.number}`);}}
 			    >
 				Delete
 			    </MenuItem>

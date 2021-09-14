@@ -23,7 +23,7 @@ export const OptionToolbar = (props: any) => {
         setAnchorEl(null);
     };
 
-    let pythonImport = 'import os; import sys; parent_dir = os.path.abspath(os.path.join(os.path.abspath("."), "../..")); sys.path.insert(0, os.path.join(parent_dir, "packages")); from taucmdr.kernel.kernel import TauKernel; TauKernel.refresh()';
+    let pythonImport = 'import os; import sys; parent_dir = os.path.join(os.environ.get("HOME"), "src/packages"); sys.path.insert(0, parent_dir); from taucmdr.kernel.kernel import TauKernel; TauKernel.refresh()';
 
     return (
         <div className='tau-option-header'>
@@ -43,6 +43,7 @@ export const OptionToolbar = (props: any) => {
                     onClick={() => { 
                         props.model.execute(pythonImport); 
                         props.onSetProject(null); 
+			props.onSetExperiment(null);
 			if (!(props.output)) {
 			    makeLoadingDialog();
 			}
@@ -72,6 +73,15 @@ export const OptionToolbar = (props: any) => {
                     <p className='tau-option-current'>
                         <b>Current project: </b>
                         {props.project}
+                    </p>
+                ) : (
+                    <React.Fragment></React.Fragment>
+                )}
+
+                { props.experiment ? (
+                    <p className='tau-option-current tau-option-button-border-left'>
+                        <b>Current experiment: </b>
+                        {props.experiment}
                     </p>
                 ) : (
                     <React.Fragment></React.Fragment>
