@@ -87,7 +87,7 @@ measurement_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
                      {'header': 'SHMEM', 'yesno': 'shmem'}]
 
 experiment_columns = [{'header': 'Name', 'value': 'name', 'align': 'r'},
-                     {'header': 'Trials', 'function': lambda x: len(x['trials'])},
+                     {'header': 'Trials', 'function': lambda x, y: len([i for i in x['trials'] if i['number'] in y])},
                      {'header': 'Data Size', 'function': data_size},
                      {'header': 'Target', 'function': lambda x: x['target']['name']},
                      {'header': 'Application', 'function': lambda x: x['application']['name']},
@@ -105,9 +105,10 @@ trial_columns = [{'header': 'Number', 'value': 'number'},
 class TauKernel(object):
 
     current_project = None
+    current_experiment = None
     
     @staticmethod
-    def read_column(source, dashboard_columns, is_trial=False):
+    def read_column(source, dashboard_columns, is_experiment=False, is_trial=False):
         header_row = [col['header'] for col in dashboard_columns]
         rows = [header_row]
         for record in source:
@@ -122,7 +123,13 @@ class TauKernel(object):
                 elif 'yesno' in col:
                     cell = 'Yes' if populated.get(col['yesno'], False) else 'No'
                 elif 'function' in col:
-                    cell = col['function'](populated)
+                    if (is_experiment and col['header'] == 'Trials'):
+                        ctrl = Experiment.controller()
+                        expr = ctrl.one({'name': record['name']})
+                        trials = [trial['number'] for trial in expr.populate('trials') if trial.populate('experiment')['name'] == record['name']]
+                        cell = col['function'](populated, trials)
+                    else:
+                        cell = col['function'](populated)
                 else:
                     raise InternalError("Invalid column definition: %s" % col)
                 row.append(cell)
@@ -151,13 +158,14 @@ class TauKernel(object):
         project['targets'] = TauKernel.read_column(target, target_columns)
         project['applications'] = TauKernel.read_column(application, application_columns)
         project['measurements'] = TauKernel.read_column(measurement, measurement_columns)
-        project['experiments'] = TauKernel.read_column(experiment, experiment_columns)
+        project['experiments'] = TauKernel.read_column(experiment, experiment_columns, is_experiment=True)
 
         for experiment_name, _ in project['experiments'].items():
             ctrl = Experiment.controller()
             expr = ctrl.one({'name': experiment_name})
-            trial = expr.populate('trials')
-            project['experiments'][experiment_name]['Trial Data'] = TauKernel.read_column(trial, trial_columns, True)
+            trials = expr.populate('trials')
+            exp_trials = [trial for trial in trials if trial.populate('experiment')['name'] == experiment_name]
+            project['experiments'][experiment_name]['Trial Data'] = TauKernel.read_column(exp_trials, trial_columns, is_trial=True)
 
         return project
 
@@ -215,6 +223,7 @@ class TauKernel(object):
     def select_experiment(experiment_name):
         select_project.main([TauKernel.current_project])
         try:
+            TauKernel.current_experiment = experiment_name
             select_experiment.main([experiment_name])
 
         except SystemExit as e:
