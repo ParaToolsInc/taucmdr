@@ -209,6 +209,7 @@ class TauInstallation(Installation):
                  measure_openmp="ignore",
                  measure_opencl=False,
                  measure_cuda=False,
+                 measure_level_zero=False,
                  measure_shmem=False,
                  measure_heap_usage=False,
                  measure_system_load=False,
@@ -273,6 +274,7 @@ class TauInstallation(Installation):
             measure_mpi (bool): If True then measure time spent in MPI calls.
             measure_openmp (str): String specifying OpenMP measurement method, one of "ignore", "ompt", or "opari".
             measure_cuda (bool): If True then measure time spent in CUDA calls.
+            meaure_level_zero (bool): If True then use Intel oneAPI level 0 tool iterface
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
             measure_heap_usage (bool): If True then measure memory usage.
             measure_system_load (bool): If True then measure the system load.
@@ -328,6 +330,7 @@ class TauInstallation(Installation):
         assert measure_openmp in ("ignore", "ompt", "opari")
         assert measure_opencl in (True, False)
         assert measure_cuda in (True, False)
+        assert measure_level_zero in (True, False)
         assert measure_shmem in (True, False)
         assert measure_heap_usage in (True, False)
         assert measure_system_load in (True, False)
@@ -392,6 +395,7 @@ class TauInstallation(Installation):
         self.measure_openmp = measure_openmp
         self.measure_opencl = measure_opencl
         self.measure_cuda = measure_cuda
+        self.measure_level_zero = measure_level_zero
         self.measure_shmem = measure_shmem
         self.measure_heap_usage = measure_heap_usage
         self.measure_system_load = measure_system_load
@@ -903,6 +907,8 @@ class TauInstallation(Installation):
             flags.append('-python')
         if self.mpit:
             flags.append('-mpit')
+        if self.measure_level_zero:
+            flags.append('-level_zero')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
@@ -1088,6 +1094,8 @@ class TauInstallation(Installation):
             tags.add('python')
         if self.mpit:
             tags.add('mpit')
+        if self.measure_level_zero:
+            tags.add('level_zero')
         if self.tags:
             for tag in self.tags:
                 tags.add(tag)
@@ -1370,6 +1378,8 @@ class TauInstallation(Installation):
             opts.append('-ebs')
         if self.measure_cuda:
             opts.append('-cupti')
+        if self.measure_level_zero:
+            opts.append('-l0')
         if self.measure_opencl:
             opts.append('-opencl')
         if self.measure_openmp == 'ompt':

@@ -481,6 +481,12 @@ def attributes():
             'description': 'MPI-T profiling interface',
             'argparse': {'flags': ('--mpit',)},
         },
+        'level_zero': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'Level zero ',
+            'argparse': {'flags': ('--level_zero',)},
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
