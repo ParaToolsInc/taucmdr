@@ -496,6 +496,16 @@ def attributes():
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
+        'level_zero_source': {
+            'type': 'string',
+            'description': 'path to Intel Level Zero',
+            'default': 'download',
+            'argparse': {'flags': ('--level_zero_source',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',

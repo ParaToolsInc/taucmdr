@@ -437,6 +437,7 @@ class TauInstallation(Installation):
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_sqlite3 = not minimal and (self.profile == 'sqlite')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
+        self.uses_level_zero = not minimal and self.measure_level_zero
         if 'TIME' not in self.metrics[0]:
             # TAU assumes the first metric is always some kind of wallclock timer
             # so move the first wallclock metric to the front of the list
@@ -452,7 +453,7 @@ class TauInstallation(Installation):
             mets.extend(met.split(','))
         self.metrics = mets
         uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3':
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3', 'level_zero':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -504,7 +505,7 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.values()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3':
+        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3', 'level_zero':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
@@ -645,6 +646,17 @@ class TauInstallation(Installation):
                             raise SoftwarePackageError("DWARFINC in '%s' is not '%s'" %
                                                        (tau_makefile, libdwarf.include_path))
 
+                elif 'TAU_L0_LIB_DIR=' in line:
+                    if self.uses_level_zero:
+                        level_zero = self.dependencies['level_zero']
+                        level_zero_dir = line.split('=')[1].strip().strip("-I")
+                        if not os.path.isdir(level_zero_dir):
+                            raise SoftwarePackageError("DWARFINC in '%s' is not a directory" % tau_makefile)
+                        if level_zero.lib_path != level_zero_dir:
+                            LOGGER.debug("TAU_L0_LIB_DIR='%s' != '%s'", level_zero_dir, level_zero.lib_path)
+                            raise SoftwarePackageError("TAU_L0_LIB_DIR in '%s' is not '%s'" %
+                                                       (tau_makefile, level_zero.lib_path))
+
 
     @staticmethod
     def get_shared_dir(tau_makefile):
@@ -758,6 +770,7 @@ class TauInstallation(Installation):
         ompt = self.dependencies.get('ompt')
         libotf2 = self.dependencies.get('libotf2')
         sqlite3 = self.dependencies.get('sqlite3')
+        level_zero = self.dependencies.get('level_zero')
 
         if self.minimal:
             LOGGER.info("Configuring minimal TAU...")
@@ -869,6 +882,7 @@ class TauInstallation(Installation):
                   '-pythonlib=%s' % pythonlib if self.uses_python else None,
                   '-otf=%s' % libotf2.install_prefix if libotf2 else None,
                   '-sqlite3=%s' % sqlite3.install_prefix if sqlite3 else None,
+                  '-level_zero=%s' %level_zero.install_prefix if level_zero else None,
                   ] if flag]
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
@@ -907,8 +921,8 @@ class TauInstallation(Installation):
             flags.append('-python')
         if self.mpit:
             flags.append('-mpit')
-        if self.measure_level_zero:
-            flags.append('-level_zero')
+        #if self.measure_level_zero:
+        #    flags.append('-level_zero')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']
