@@ -437,7 +437,7 @@ class TauInstallation(Installation):
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_sqlite3 = not minimal and (self.profile == 'sqlite')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
-        self.uses_level_zero = not minimal and self.measure_level_zero
+        self.uses_level_zero = not minimal and self.measure_level_zero and 'level_zero' in sources
         if 'TIME' not in self.metrics[0]:
             # TAU assumes the first metric is always some kind of wallclock timer
             # so move the first wallclock metric to the front of the list
@@ -921,8 +921,8 @@ class TauInstallation(Installation):
             flags.append('-python')
         if self.mpit:
             flags.append('-mpit')
-        #if self.measure_level_zero:
-        #    flags.append('-level_zero')
+        if self.measure_level_zero and not level_zero:
+            flags.append('-level_zero')
 
         # Use -useropt for hacks and workarounds.
         useropts = ['-O2', '-g']

@@ -119,6 +119,13 @@ def papi_source_default():
                 return path
     return 'download'
 
+def level_zero_source_default():
+    print('checking default')
+    ld_lib_paths = os.environ['LD_LIBRARY_PATH'].split(':')
+    for path in ld_lib_paths:
+        if os.path.isfile(path+'/libze_loader.so'):
+            return path
+    return 'download'
 
 def cuda_toolkit_default():
     for path in sorted(glob.glob('/usr/local/cuda*')):
@@ -499,7 +506,7 @@ def attributes():
         'level_zero_source': {
             'type': 'string',
             'description': 'path to Intel Level Zero',
-            'default': 'download',
+            'default': level_zero_source_default(),
             'argparse': {'flags': ('--level_zero_source',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
