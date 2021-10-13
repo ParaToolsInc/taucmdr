@@ -45,7 +45,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem
-from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
+from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL, PPC64LE
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
@@ -87,8 +87,12 @@ def _require_compiler_family(family, *hints):
         except KeyError:
             raise ConfigurationError("%s but it is undefined" % msg)
         given_family_name = compiler_record['family']
-        if given_family_name != family.name:
-            raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        if isinstance(family, list):
+            if given_family_name not in [fam.name for fam in family]:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        else:
+            if given_family_name != family.name:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
     return callback
 
 def knc_require_k1om(*_):
@@ -163,7 +167,7 @@ def attributes():
     """
     from taucmdr.model.project import Project
     from taucmdr.cli.arguments import ParsePackagePathAction
-    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
+    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, GNU
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
@@ -176,6 +180,9 @@ def attributes():
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
+    gnu_only = _require_compiler_family([PGI, GNU],
+                                              "You must use GNU compilers to use the backtrace unwinder",
+                                              "Try adding `--compilers=GNU` to the command line")
 
     return {
         'projects': {
@@ -404,6 +411,19 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
+            'rebuild_required': True
+        },
+        'unwinder': {
+            'type': 'string',
+            'description': 'name of unwinder to be used',
+            'default': 'backtrace' if HOST_ARCH is PPC64LE else 'libunwind',
+            'argparse': {'flags': ('--unwinder',),
+                          'group': 'software package',
+                          'metavar': '(libunwind|backtrace|None)'},
+            'compat': {'libunwind': Target.exclude('host_arch', PPC64LE),
+                       'backtrace': (Target.require(CC.keyword, gnu_only),
+                                     Target.require(CXX.keyword, gnu_only),
+                                     Target.require(FC.keyword, gnu_only))},
             'rebuild_required': True
         },
         'libunwind_source': {
