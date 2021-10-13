@@ -448,7 +448,7 @@ class TauInstallation(Installation):
         for met in self.metrics:
             mets.extend(met.split(','))
         self.metrics = mets
-        uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
+        uses = lambda pkg: sources.get(pkg, False) if forced_makefile else getattr(self, 'uses_'+pkg)
         for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3', 'zlib':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
