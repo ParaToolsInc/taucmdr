@@ -114,14 +114,14 @@ class CreateTest(tests.TestCase):
         cxx_cmd = self.assertCompiler(CXX)
         self.assertRaises(ConfigurationError, self.exec_command, create_cmd, ['test_targ', '--cc', cxx_cmd])
 
-    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
-    def test_python_init(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
+#    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
+#    def test_python_init(self):
+#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
 
-    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
-    def test_python2_init(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
+#    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
+#    def test_python2_init(self):
+#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
 
-    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
-    def test_python3_init(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])
+#    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
+#    def test_python3_init(self):
+#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])
