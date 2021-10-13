@@ -153,8 +153,9 @@ jobs:
 
       - name: Upload Coverage info
         if: always()
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests,CI
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: true # optional (default = false)
