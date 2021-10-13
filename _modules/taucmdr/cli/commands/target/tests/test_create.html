@@ -159,19 +159,19 @@
 <div class="viewcode-block" id="CreateTest.test_cxx_as_cc_flag"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_cxx_as_cc_flag">[docs]</a>    <span class="k">def</span> <span class="nf">test_cxx_as_cc_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">()</span>
         <span class="n">cxx_cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertCompiler</span><span class="p">(</span><span class="n">CXX</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test_targ&#39;</span><span class="p">,</span> <span class="s1">&#39;--cc&#39;</span><span class="p">,</span> <span class="n">cxx_cmd</span><span class="p">])</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ConfigurationError</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_command</span><span class="p">,</span> <span class="n">create_cmd</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;test_targ&#39;</span><span class="p">,</span> <span class="s1">&#39;--cc&#39;</span><span class="p">,</span> <span class="n">cxx_cmd</span><span class="p">])</span></div></div>
 
-    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 or 3 required for this test&quot;</span><span class="p">)</span>
-<div class="viewcode-block" id="CreateTest.test_python_init"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_python_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_python_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">])</span></div>
+<span class="c1">#    @tests.skipUnless(util.which(&#39;python&#39;), &quot;Python 2 or 3 required for this test&quot;)</span>
+<span class="c1">#    def test_python_init(self):</span>
+<span class="c1">#        self.reset_project_storage([&#39;--python&#39;, &#39;T&#39;, &#39;--python-interpreter&#39;, &#39;python&#39;])</span>
 
-    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python2&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 2 required for this test&quot;</span><span class="p">)</span>
-<div class="viewcode-block" id="CreateTest.test_python2_init"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_python2_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_python2_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span> <span class="s1">&#39;python2&#39;</span><span class="p">])</span></div>
+<span class="c1">#    @tests.skipUnless(util.which(&#39;python2&#39;), &quot;Python 2 required for this test&quot;)</span>
+<span class="c1">#    def test_python2_init(self):</span>
+<span class="c1">#        self.reset_project_storage([&#39;--python&#39;, &#39;T&#39;, &#39;--python-interpreter&#39;, &#39;python2&#39;])</span>
 
-    <span class="nd">@tests</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;python3&#39;</span><span class="p">),</span> <span class="s2">&quot;Python 3 required for this test&quot;</span><span class="p">)</span>
-<div class="viewcode-block" id="CreateTest.test_python3_init"><a class="viewcode-back" href="../../../../../../taucmdr.cli.commands.target.tests.test_create.html#taucmdr.cli.commands.target.tests.test_create.CreateTest.test_python3_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_python3_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_project_storage</span><span class="p">([</span><span class="s1">&#39;--python&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;--python-interpreter&#39;</span><span class="p">,</span> <span class="s1">&#39;python3&#39;</span><span class="p">])</span></div></div>
+<span class="c1">#    @tests.skipUnless(util.which(&#39;python3&#39;), &quot;Python 3 required for this test&quot;)</span>
+<span class="c1">#    def test_python3_init(self):</span>
+<span class="c1">#        self.reset_project_storage([&#39;--python&#39;, &#39;T&#39;, &#39;--python-interpreter&#39;, &#39;python3&#39;])</span>
 </pre></div>
 
       </div>
@@ -185,7 +185,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 27, 2021 at 01:41:15 UTC.
+      Last updated on Oct 13, 2021 at 21:45:02 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

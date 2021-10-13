@@ -115,7 +115,7 @@ change from system to system.</p>
 <dl class="class">
 <dt id="taucmdr.cf.compiler.InstalledCompiler">
 <em class="property">class </em><code class="descclassname">taucmdr.cf.compiler.</code><code class="descname">InstalledCompiler</code><span class="sig-paren">(</span><em>absolute_path</em>, <em>info</em>, <em>uid=None</em>, <em>wrapped=None</em>, <em>include_path=None</em>, <em>library_path=None</em>, <em>compiler_flags=None</em>, <em>libraries=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompiler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Information about an installed compiler command.</p>
 <p>There are relatively few well known compilers, but a potentially infinite
 number of commands that can invoke those compilers.  Additionally, an installed
@@ -204,7 +204,7 @@ command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.<
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; Path to a directory in which the wrapper script will be created.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Path to a directory in which the wrapper script will be created.</td>
 </tr>
 </tbody>
 </table>
@@ -219,7 +219,7 @@ command (e.g. icc, gcc-4.2, etc.) with a compiler command in the knowledgebase.<
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; Absolute or relative path to an installed compiler command.</li>
+<li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Absolute or relative path to an installed compiler command.</li>
 <li><strong>family</strong> (<a class="reference internal" href="#taucmdr.cf.compiler._CompilerFamily" title="taucmdr.cf.compiler._CompilerFamily"><em>_CompilerFamily</em></a>) &#8211; Installed compiler&#8217;s family if known, None otherwise.</li>
 <li><strong>role</strong> (<a class="reference internal" href="#taucmdr.cf.compiler._CompilerRole" title="taucmdr.cf.compiler._CompilerRole"><em>_CompilerRole</em></a>) &#8211; Installed compiler&#8217;s role if known, None otherwise.</li>
 </ul>
@@ -266,7 +266,7 @@ Unknown compiler command or not enough information given to perform the probe.</
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The compilers&#8217; version (usually) in the format (maj, min, build).</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.9)">tuple</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a></td>
 </tr>
 </tbody>
 </table>
@@ -283,7 +283,7 @@ Unknown compiler command or not enough information given to perform the probe.</
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The compilers&#8217; version string.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)">str</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -294,7 +294,7 @@ Unknown compiler command or not enough information given to perform the probe.</
 <dl class="class">
 <dt id="taucmdr.cf.compiler.InstalledCompilerCreator">
 <em class="property">class </em><code class="descclassname">taucmdr.cf.compiler.</code><code class="descname">InstalledCompilerCreator</code><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerCreator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerCreator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.9)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.10)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
 <p>Cache compiler probe results.</p>
 <p>InstalledCompiler invokes a compiler command to discover system-specific compiler characteristics.
 This can be very expensive, so this metaclass changes the instance creation procedure to only
@@ -311,7 +311,7 @@ and <cite>icc</cite> would be probed twice. With this metaclass, <code class="do
 <dl class="class">
 <dt id="taucmdr.cf.compiler.InstalledCompilerFamily">
 <em class="property">class </em><code class="descclassname">taucmdr.cf.compiler.</code><code class="descname">InstalledCompilerFamily</code><span class="sig-paren">(</span><em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#InstalledCompilerFamily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.InstalledCompilerFamily" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Information about an installed compiler family.</p>
 <p>Compiler families are usually installed at a common prefix but there is no
 guarantee that all members of the family will be installed.  For example,
@@ -359,9 +359,9 @@ preferred over <cite>icpc</cite> for the CC role.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/library/exceptions.html#KeyError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code></a> &#8211;
+<li><a class="reference external" href="https://docs.python.org/library/exceptions.html#KeyError" title="(in Python v3.10)"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code></a> &#8211;
 This family has no compiler in the given role.</li>
-<li><a class="reference external" href="https://docs.python.org/library/exceptions.html#IndexError" title="(in Python v3.9)"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code></a> &#8211;
+<li><a class="reference external" href="https://docs.python.org/library/exceptions.html#IndexError" title="(in Python v3.10)"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code></a> &#8211;
 No installed compiler fills the given role.</li>
 </ul>
 </td>
@@ -428,7 +428,7 @@ one compiler in each required compiler role.</p>
 <dl class="class">
 <dt id="taucmdr.cf.compiler.Knowledgebase">
 <em class="property">class </em><code class="descclassname">taucmdr.cf.compiler.</code><code class="descname">Knowledgebase</code><span class="sig-paren">(</span><em>keyword</em>, <em>description</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/compiler.html#Knowledgebase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.compiler.Knowledgebase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>TAU compiler knowledgebase front-end.</p>
 <dl class="method">
 <dt id="taucmdr.cf.compiler.Knowledgebase.add">
@@ -443,7 +443,7 @@ collection of strings specifying compiler commands, e.g. &#8216;gcc&#8217; or (&
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; The compiler family name.</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; The compiler family name.</li>
 <li><strong>*args</strong> &#8211; Positional arguments passed to the <a class="reference internal" href="#taucmdr.cf.compiler._CompilerFamily" title="taucmdr.cf.compiler._CompilerFamily"><code class="xref any py py-class docutils literal"><span class="pre">_CompilerFamily</span></code></a> constructor.</li>
 <li><strong>**kwargs</strong> &#8211; Keyword arguments passed to the <a class="reference internal" href="#taucmdr.cf.compiler._CompilerFamily" title="taucmdr.cf.compiler._CompilerFamily"><code class="xref any py py-class docutils literal"><span class="pre">_CompilerFamily</span></code></a> constructor, after
 any keyword arguments specifying compiler commands are removed.</li>
@@ -595,7 +595,7 @@ and compares the output against <a class="reference internal" href="#taucmdr.cf.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>absolute_path</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; Absolute path to a compiler command.</li>
+<li><strong>absolute_path</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Absolute path to a compiler command.</li>
 <li><strong>candidates</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; If present, a list of families that are most likely.</li>
 </ul>
 </td>
@@ -660,7 +660,7 @@ The compiler might not be installed.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) &#8211; A compiler command without path.</li>
+<li><strong>command</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; A compiler command without path.</li>
 <li><strong>family</strong> (<a class="reference internal" href="#taucmdr.cf.compiler._CompilerFamily" title="taucmdr.cf.compiler._CompilerFamily"><em>_CompilerFamily</em></a>) &#8211; Compiler family to search for.</li>
 <li><strong>role</strong> (<a class="reference internal" href="#taucmdr.cf.compiler._CompilerRole" title="taucmdr.cf.compiler._CompilerRole"><em>_CompilerRole</em></a>) &#8211; Compiler role to search for.</li>
 </ul>
@@ -736,7 +736,7 @@ or even a linker.  TAU Commander must identify a compiler&#8217;s role so it can
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 27, 2021 at 01:41:15 UTC.
+      Last updated on Oct 13, 2021 at 21:45:02 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
