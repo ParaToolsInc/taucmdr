@@ -120,7 +120,10 @@ def papi_source_default():
     return 'download'
 
 def level_zero_source_default():
-    ld_lib_paths = os.environ['LD_LIBRARY_PATH'].split(':')
+    try:
+        ld_lib_paths = os.environ['LD_LIBRARY_PATH'].split(':')
+    except KeyError:
+        return 'download'
     for path in ld_lib_paths:
         if os.path.isfile(path+'/libze_loader.so'):
             return path
