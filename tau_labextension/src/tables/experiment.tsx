@@ -9,6 +9,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import {
+  selectExperimentDialog,
   editExperimentDialog, 
   deleteExperimentDialog,
 } from '../dialogs';
@@ -77,6 +78,13 @@ export const ExperimentTable = (props: Tables.Experiment) => {
       >   
         <MenuItem onClick={() => {
           handleClose();
+          selectExperimentDialog(activeRow['Name'], props);
+        }}>
+          Select
+        </MenuItem>
+
+        <MenuItem onClick={() => {
+          handleClose();
           editExperimentDialog(activeRow, props);
         }}> 
           Edit
@@ -85,8 +93,7 @@ export const ExperimentTable = (props: Tables.Experiment) => {
         <MenuItem onClick={() => {
           handleClose(); 
           deleteExperimentDialog(activeRow['Name'], props);
-          }}  
-        >   
+        }}>   
           Delete
         </MenuItem>
       </Menu>
@@ -100,6 +107,7 @@ namespace Tables {
     projectName: string;
     kernelExecute: (code: string) => Promise<string>;
     updateProject: (projectName: string) => void;
+    setSelectedExperiment: (experimentName: string | null) => void;
     experiments: {[key: string]: any};
   }
 }

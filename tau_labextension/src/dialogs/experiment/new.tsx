@@ -72,10 +72,9 @@ class DialogBody extends Widget {
   }
 };
 
-export const newExperimentDialog = (project: any) => {
-
+export const newExperimentDialog = (props: Dashboard.Experiment) => {
   let body = document.createElement('div');
-  ReactDOM.render(writeNewBody(project), body);
+  ReactDOM.render(writeNewBody(props.project), body);
 
   const dialog = new Dialog({
     title: `New Experiment`,
@@ -87,7 +86,30 @@ export const newExperimentDialog = (project: any) => {
   }); 
 
   dialog.addClass('tau-Dialog-body');
+  dialog.launch()
+    .then(response => {
+      if (response.button.label == 'Submit') {
+        let name = response.value!.name;
+        let target = response.value!.target;
+        let application = response.value!.application;
+        let measurement = response.value!.measurement;
+        props.kernelExecute(`new_experiment('${props.projectName}', '${name}', '${target}', '${application}', '${measurement}')`)
+          .then((result) => {
+            if (result) {
+              props.updateProject(props.projectName);
+            }
+          });
+      }
+      dialog.dispose(); 
+    });
 
-  return dialog;
+}
 
+namespace Dashboard {
+  export interface Experiment {
+    project: any
+    projectName: string;
+    kernelExecute: (code: string) => Promise<any>;
+    updateProject: (project: string) => void; 
+  }
 }

@@ -32,8 +32,7 @@ const writeNewBody = () => {
   )
 }
 
-export const newProjectDialog = () => {
-
+export const newProjectDialog = (props: Sidebar.Project) => {
   let body = document.createElement('div');
   ReactDOM.render(writeNewBody(), body);
 
@@ -47,6 +46,23 @@ export const newProjectDialog = () => {
   });
 
   dialog.addClass('tau-Dialog-body');
+  dialog.launch()
+    .then(response => {
+      if (response.button.label == 'Submit') {
+        props.kernelExecute(`new_project('${response.value}')`)
+          .then((result) => { 
+            if (result) {
+              props.updateProjects();
+            }
+          });
+      }
+      dialog.dispose(); 
+    });
+}
 
-  return dialog
+namespace Sidebar {
+  export interface Project {
+    kernelExecute: (code: string) => Promise<any>;
+    updateProjects: () => void; 
+  }
 }

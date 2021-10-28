@@ -69,8 +69,7 @@ class DialogBody extends Widget {
   }
 };
 
-export const newApplicationDialog = () => {
-
+export const newApplicationDialog = (props: Dashboard.Application) => {
   let body = document.createElement('div');
   ReactDOM.render(writeNewBody(), body);
 
@@ -84,7 +83,34 @@ export const newApplicationDialog = () => {
   }); 
 
   dialog.addClass('tau-Dialog-body');
+  dialog.launch()
+    .then(response => {
+      if (response.button.label == 'Submit') {
+        let name = response.value!.name;
+        let linkage = response.value!.linkage;
+        let openMP = response.value!.openMP;
+        let pThreads = response.value!.pThreads;
+        let tbb = response.value!.tbb;
+        let mpi = response.value!.mpi;
+        let cuda = response.value!.cuda;
+        let openCL = response.value!.openCL;
+        let shmem = response.value!.shmem;
+        let mpc = response.value!.mpc;
+        props.kernelExecute(`new_application('${props.projectName}', '${name}', '${linkage}', '${openMP}', '${pThreads}', '${tbb}', '${mpi}', '${cuda}', '${openCL}', '${shmem}', '${mpc}')`)
+          .then((result) => {
+            if (result) {
+              props.updateProject(props.projectName);
+            }
+          });
+      }
+      dialog.dispose(); 
+    });
+}
 
-  return dialog;
-
+namespace Dashboard {
+  export interface Application {
+    projectName: string;
+    kernelExecute: (code: string) => Promise<any>;
+    updateProject: (project: string) => void; 
+  }
 }

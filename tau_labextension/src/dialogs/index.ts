@@ -19,7 +19,10 @@ export { copyMeasurementDialog } from './measurement/copy';
 export { deleteMeasurementDialog } from './measurement/delete';
 
 export { newExperimentDialog } from './experiment/new';
+export { selectExperimentDialog } from './experiment/select';
 export { editExperimentDialog } from './experiment/edit';
 export { deleteExperimentDialog } from './experiment/delete';
+
+export { deleteTrialDialog } from './trial/delete';
 
 export { errorDialog } from './error';

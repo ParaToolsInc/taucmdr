@@ -61,21 +61,22 @@ async function activate(
   let kernelSession: Session.ISessionConnection | null | undefined;
   kernelSession = await Private.initKernel(serviceManager);
 
+  const tracker = new WidgetTracker({
+    namespace: 'dashboards'
+  });
+
   // Create the Tau sidebar
   const sidebar = new Sidebar({
       openDashboardCommand: (project: IDashboardItem) => {
         app.commands.execute(CommandIDs.launchDashboard, project);
       },
-      kernelSession: kernelSession
+      kernelSession: kernelSession,
+      tracker: tracker
   });
   sidebar.id = 'tau-sidebar';
   sidebar.title.iconClass = 'tau-TauLogo'; 
   sidebar.title.caption = 'Tau';
   shell.add(sidebar, 'left', { rank: 300 });
-
-  const tracker = new WidgetTracker({
-    namespace: 'dashboards'
-  });
 
   // Add an application command
   app.commands.addCommand(CommandIDs.launchDashboard, {

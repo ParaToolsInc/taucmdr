@@ -62,30 +62,29 @@ export class Dashboard extends Widget {
 
     let toolbar = options.toolbar;
     toolbar.addItem(
+      'refresh',
+      new ToolbarButton({
+        label: 'Refresh',
+        className: 'tau-dashboardToolbar-button',
+        onClick: () => {
+          this._updateProject(this._projectName);
+        },
+        tooltip: 'New Target'
+      })
+    );
+
+    toolbar.addItem(
       'new target',
       new ToolbarButton({
         label: 'New Target',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          const dialog = newTargetDialog();
-          dialog.launch()
-            .then(response => {
-              if (response.button.label == 'Submit') {
-                let name = response.value!.name;
-                let hostOS = response.value!.hostOS;
-                let hostArch = response.value!.hostArch;
-                let hostCompiler = response.value!.hostCompiler;
-                let mpiCompiler = response.value!.mpiCompiler;
-                let shmemCompiler = response.value!.shmemCompiler;
-                this._kernelExecute(`new_target('${this._projectName}', '${name}', '${hostOS}', '${hostArch}', '${hostCompiler}', '${mpiCompiler}', '${shmemCompiler}')`)
-                  .then((result) => {
-                    if (result) {
-                      this._updateProject(this._projectName);
-                    }
-                  });
-              }
-              dialog.dispose(); 
-            });
+          let props = {
+            projectName: this._projectName, 
+            kernelExecute: this._kernelExecute, 
+            updateProject: this._updateProject 
+          };
+          newTargetDialog(props);
         },
         tooltip: 'New Target'
       })
@@ -97,29 +96,12 @@ export class Dashboard extends Widget {
         label: 'New Application',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          const dialog = newApplicationDialog();
-          dialog.launch()
-            .then(response => {
-              if (response.button.label == 'Submit') {
-                let name = response.value!.name;
-                let linkage = response.value!.linkage;
-                let openMP = response.value!.openMP;
-                let pThreads = response.value!.pThreads;
-                let tbb = response.value!.tbb;
-                let mpi = response.value!.mpi;
-                let cuda = response.value!.cuda;
-                let openCL = response.value!.openCL;
-                let shmem = response.value!.shmem;
-                let mpc = response.value!.mpc;
-                this._kernelExecute(`new_application('${this._projectName}', '${name}', '${linkage}', '${openMP}', '${pThreads}', '${tbb}', '${mpi}', '${cuda}', '${openCL}', '${shmem}', '${mpc}')`)
-                  .then((result) => {
-                    if (result) {
-                      this._updateProject(this._projectName);
-                    }
-                  });
-              }
-              dialog.dispose(); 
-            });
+          let props = {
+            projectName: this._projectName, 
+            kernelExecute: this._kernelExecute, 
+            updateProject: this._updateProject 
+          };
+          newApplicationDialog(props);
         },
         tooltip: 'New Application'
       })
@@ -131,30 +113,12 @@ export class Dashboard extends Widget {
         label: 'New Measurement',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          const dialog = newMeasurementDialog();
-          dialog.launch()
-            .then(response => {
-              if (response.button.label == 'Submit') {
-                let name = response.value!.name;
-                let profile = response.value!.profile;
-                let trace = response.value!.trace;
-                let sample = response.value!.sample;
-                let sourceInst = response.value!.sourceInst;
-                let compilerInst = response.value!.compilerInst;
-                let openMP = response.value!.openMP;
-                let cuda = response.value!.cuda;
-                let io = response.value!.io;
-                let mpi = response.value!.mpi;
-                let shmem = response.value!.shmem;
-                this._kernelExecute(`new_measurement('${this._projectName}', '${name}', '${profile}', '${trace}', '${sample}', '${sourceInst}', '${compilerInst}', '${openMP}', '${cuda}', '${io}', '${mpi}', '${shmem}')`)
-                  .then((result) => {
-                    if (result) {
-                      this._updateProject(this._projectName);
-                    }
-                  });
-              }
-              dialog.dispose(); 
-            });
+          let props = {
+            projectName: this._projectName, 
+            kernelExecute: this._kernelExecute, 
+            updateProject: this._updateProject 
+          };
+          newMeasurementDialog(props);
         },
         tooltip: 'New Measurement'
       })
@@ -166,27 +130,21 @@ export class Dashboard extends Widget {
         label: 'New Experiment',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          const dialog = newExperimentDialog(this._project);
-          dialog.launch()
-            .then(response => {
-              if (response.button.label == 'Submit') {
-                let name = response.value!.name;
-                let target = response.value!.target;
-                let application = response.value!.application;
-                let measurement = response.value!.measurement;
-                this._kernelExecute(`new_experiment('${this._projectName}', '${name}', '${target}', '${application}', '${measurement}')`)
-                  .then((result) => {
-                    if (result) {
-                      this._updateProject(this._projectName);
-                    }
-                  });
-              }
-              dialog.dispose(); 
-            });
+          let props = {
+            project: this._project, 
+            projectName: this._projectName, 
+            kernelExecute: this._kernelExecute, 
+            updateProject: this._updateProject 
+          };
+          newExperimentDialog(props);
         },
         tooltip: 'New Experiment'
       })
     );
+
+    this._setExperiment = (experimentName: string | null) => {
+      this._selectedExperiment = experimentName;
+    }
 
     /**
      * Execute kernel commands (python3)
@@ -271,7 +229,6 @@ export class Dashboard extends Widget {
     if (!this.isVisible) {
       return;
     }
-
     
     ReactDOM.render(
       <TargetTable
@@ -309,21 +266,23 @@ export class Dashboard extends Widget {
         projectName={this._projectName}
         kernelExecute={this._kernelExecute}
         updateProject={this._updateProject}
+        setSelectedExperiment={this._setExperiment}
         experiments={this._project.experiments}
       />,
       this._experimentDisplay.node
     );
- 
+
     ReactDOM.render(
       <TrialTable
         projectName={this._projectName}
-        trials={this._project.experiments}  
+        kernelExecute={this._kernelExecute}
+        updateProject={this._updateProject}
+        experiment={this._project.experiments[this._selectedExperiment]}  
+        setSelectedExperiment={this._setExperiment}
+        selectedExperiment={this._selectedExperiment}
       />,
       this._trialDisplay.node
     );
-  
-    console.log(this._project);
-    console.log(this._selectedExperiment);
   }
 
   /**
@@ -341,6 +300,7 @@ export class Dashboard extends Widget {
   private _experimentDisplay: Widget;
   private _trialDisplay: Widget;
   private _projectName: string;
+  private _setExperiment: (experimentName: string | null) => void;
   private _selectedExperiment: any = null;
   private _project: any;
   private _kernelSession: Session.ISessionConnection | null | undefined;
@@ -348,7 +308,6 @@ export class Dashboard extends Widget {
 }
 
 export namespace Dashboard {
-  
   export interface IOptions {
     project: IDashboardItem;
     kernelSession: Session.ISessionConnection | null | undefined;
@@ -356,5 +315,3 @@ export namespace Dashboard {
     toolbar: Toolbar;
   }
 }
-
-

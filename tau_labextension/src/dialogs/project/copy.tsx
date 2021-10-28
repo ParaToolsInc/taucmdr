@@ -33,10 +33,9 @@ class DialogBody extends Widget {
   }
 };
 
-export const copyProjectDialog = (name: string) => {
-
+export const copyProjectDialog = (props: Sidebar.Project) => {
   let body = document.createElement('div');
-  ReactDOM.render(writeCopyBody(name), body);
+  ReactDOM.render(writeCopyBody(props.projectName), body);
 
   const dialog = new Dialog({
     title: `Copy ${name}`,
@@ -48,6 +47,28 @@ export const copyProjectDialog = (name: string) => {
   });
 
   dialog.addClass('tau-Dialog-body');
+  dialog.launch()
+    .then(response => {
+      if (response.button.label == 'Submit') {
+        let copyProject = response.value![0].value;
+        let tamSuffix = response.value![1].value;
+        props.kernelExecute(`copy_project('${props.projectName}', '${copyProject}', '${tamSuffix}')`)
+          .then((result) => {
+            if (result) {
+              props.updateProjects();
+            }
+          });
+      }
+      dialog.dispose();
+    });
 
-  return dialog;
-};
+
+}
+
+namespace Sidebar {
+  export interface Project {
+    projectName: string;
+    kernelExecute: (code: string) => Promise<any>;
+    updateProjects: () => void; 
+  }
+}

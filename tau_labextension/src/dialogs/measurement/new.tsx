@@ -86,9 +86,9 @@ class DialogBody extends Widget {
       if (resp[1].tagName == 'INPUT') {
         let inputElem = elem as HTMLInputElement;
         if (inputElem.type == 'text') {
-            responseDict[inputElem.name] = inputElem.value;
+          responseDict[inputElem.name] = inputElem.value;
         } else {
-            responseDict[inputElem.name] = inputElem.checked.toString();
+          responseDict[inputElem.name] = inputElem.checked.toString();
         }
       } else {
         let selectElem = elem as HTMLSelectElement;
@@ -99,8 +99,7 @@ class DialogBody extends Widget {
   }
 };
 
-export const newMeasurementDialog = () => {
-
+export const newMeasurementDialog = (props: Dashboard.Measurement) => {
   let body = document.createElement('div');
   ReactDOM.render(writeNewBody(), body);
 
@@ -114,7 +113,35 @@ export const newMeasurementDialog = () => {
   }); 
 
   dialog.addClass('tau-Dialog-body');
+  dialog.launch()
+    .then(response => {
+      if (response.button.label == 'Submit') {
+        let name = response.value!.name;
+        let profile = response.value!.profile;
+        let trace = response.value!.trace;
+        let sample = response.value!.sample;
+        let sourceInst = response.value!.sourceInst;
+        let compilerInst = response.value!.compilerInst;
+        let openMP = response.value!.openMP;
+        let cuda = response.value!.cuda;
+        let io = response.value!.io;
+        let mpi = response.value!.mpi;
+        let shmem = response.value!.shmem;
+        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', '${profile}', '${trace}', '${sample}', '${sourceInst}', '${compilerInst}', '${openMP}', '${cuda}', '${io}', '${mpi}', '${shmem}')`)
+          .then((result) => {
+            if (result) {
+              props.updateProject(props.projectName);
+            }
+          });
+      }
+      dialog.dispose(); 
+    });
+}
 
-  return dialog;
-
+namespace Dashboard {
+  export interface Measurement {
+    projectName: string;
+    kernelExecute: (code: string) => Promise<any>;
+    updateProject: (project: string) => void; 
+  }
 }

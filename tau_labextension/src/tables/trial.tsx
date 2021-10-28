@@ -10,6 +10,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import * as React from 'react';
 
+import {
+/*  editTrialDialog, */
+  deleteTrialDialog
+} from '../dialogs';
+
 export const TrialTable = (props: Tables.Trial) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const [activeRow, setActiveRow] = React.useState<any | null>(null);
@@ -27,21 +32,32 @@ export const TrialTable = (props: Tables.Trial) => {
     setActiveRow(null);
   };  
 
- 
-  let rows = Object.entries(props.trials).map(([name, row]) => {
-    let rowItem = {...row, 'Name': name};
-    console.log(rowItem);
+  if (!(props.experiment)) {
     return (
-      <TableRow className='tau-Table-row tau-Table-row-clickable' key={row.number} onClick={(e) => {handleClick(e, rowItem)}}>
-        <TableCell component='th' scope='row'>{row.number}</TableCell>
-        <TableCell align='right'>{row.dataSize}</TableCell>
-        <TableCell align='right'>{row.command}</TableCell>
-        <TableCell align='right'>{row.description}</TableCell>
-        <TableCell align='right'>{row.status}</TableCell>
-        <TableCell align='right'>{row.elapsedSeconds}</TableCell>
+      <React.Fragment></React.Fragment>
+    )
+  }
+
+  let rows = Object.entries(props.experiment['Trial Data']).map(([name, row]) => {
+    let rowItem = {...row, 'Name': name};
+    return (
+      <TableRow className='tau-Table-row tau-Table-row-clickable' key={name} onClick={(e) => {handleClick(e, rowItem)}}>
+        <TableCell component='th' scope='row'>{name}</TableCell>
+        <TableCell align='right'>{row['Data Size']}</TableCell>
+        <TableCell align='right'>{row['Command']}</TableCell>
+        <TableCell align='right'>{row['Description']}</TableCell>
+        <TableCell align='right'>{row['Status']}</TableCell>
+        <TableCell align='right'>{row['Elapsed Seconds'].toFixed(5)}</TableCell>
       </TableRow>
     )   
   }); 
+
+  if (!(rows.length)) {
+    props.setSelectedExperiment(null);
+    return (
+      <React.Fragment></React.Fragment>
+    )
+  }
 
   return (
     <div>
@@ -70,19 +86,23 @@ export const TrialTable = (props: Tables.Trial) => {
         onClose={handleClose}
         className='tau-Option-menu'
       >   
+
         <MenuItem onClick={() => {
           handleClose();
-          console.log(activeRow);
-    
-          }}  
-        >   
+        }}>   
+          Display
+        </MenuItem>
+
+        <MenuItem onClick={() => {
+          handleClose();
+        }}>   
           Edit
         </MenuItem>
 
         <MenuItem onClick={() => {
           handleClose(); 
-          }}  
-        >   
+          deleteTrialDialog(activeRow['Name'], props);
+        }}>   
           Delete
         </MenuItem>
       </Menu>
@@ -93,6 +113,10 @@ export const TrialTable = (props: Tables.Trial) => {
 namespace Tables {
   export interface Trial {
     projectName: string;
-    trials: {[key: string]: any}
+    kernelExecute: (code: string) => Promise<string>;
+    updateProject: (projectName: string) => void;
+    experiment: {[key: string]: {[key: string]: any}}
+    setSelectedExperiment: (experiment: string | null) => void;
+    selectedExperiment: string;
   }
 }

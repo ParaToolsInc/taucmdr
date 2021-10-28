@@ -1,6 +1,7 @@
 import {
   Toolbar,
   ToolbarButton,
+  WidgetTracker,
 } from '@jupyterlab/apputils';
 
 import { 
@@ -16,6 +17,7 @@ import {
 import { 
   Button,
   addIcon,
+  clearIcon,
   refreshIcon,
   tableRowsIcon
 } from '@jupyterlab/ui-components';
@@ -48,7 +50,7 @@ export class Sidebar extends Widget {
 
     this._openDashboardCommand = options.openDashboardCommand;
     this._kernelSession = options.kernelSession;
-
+    
     const layout = (this.layout = new PanelLayout()); 
 
     // A function to initialize the ipython kernel
@@ -85,72 +87,43 @@ export class Sidebar extends Widget {
   
     // A function to create a project
     this._createProject = () => {
-      const dialog = newProjectDialog();
-      return dialog.launch()
-        .then(response => {
-          if (response.button.label == 'Submit') {
-            this._kernelExecute(`new_project('${response.value}')`)
-              .then((result) => { 
-                if (result) {
-                  this._updateProjects();
-                }
-              });
-          }
-          dialog.dispose(); 
-        });
+      let props = {
+        kernelExecute: this._kernelExecute, 
+        updateProjects: this._updateProjects
+      };
+      newProjectDialog(props);
     }
-  
-    // A function to copy a project
-    this._copyProject = (project: string) => {
-      const dialog = copyProjectDialog(project);
-      return dialog.launch()
-        .then(response => {
-          if (response.button.label == 'Submit') {
-            let copyProject = response.value![0].value;
-            let tamSuffix = response.value![1].value;
-            this._kernelExecute(`copy_project('${project}', '${copyProject}', '${tamSuffix}')`)
-              .then((result) => {
-                if (result) {
-                  this._updateProjects();
-                }
-              });
-          }
-          dialog.dispose();
-        });
-    }
-  
+
     // A function to edit a project
-    this._editProject = (project: string) => {
-      const dialog = editProjectDialog(project);
-      return dialog.launch()
-        .then(response => {
-          if (response.button.label == 'Submit') {
-            this._kernelExecute(`edit_project('${project}', '${response.value}')`)
-              .then((result) => {
-                if (result) {
-                  this._updateProjects();
-                }
-             });
-          }
-          dialog.dispose();
-        });
+    this._editProject = (projectName: string) => {
+      let props = {
+        projectName: projectName,
+        kernelExecute: this._kernelExecute, 
+        updateProjects: this._updateProjects,
+        tracker: options.tracker
+      };
+      editProjectDialog(props);
     }
-    
+ 
+    // A function to copy a project
+    this._copyProject = (projectName: string) => {
+      let props = {
+        projectName: projectName,
+        kernelExecute: this._kernelExecute, 
+        updateProjects: this._updateProjects
+      };
+      copyProjectDialog(props);
+    }
+   
     // A function to delete a project
-    this._deleteProject = (project: string) => {
-      const dialog = deleteProjectDialog(project);
-      return dialog.launch()
-        .then(response => {
-          if (response.button.label == 'Delete') {
-            this._kernelExecute(`delete_project('${project}')`)
-              .then((result) => {
-                if (result) {
-                  this._updateProjects();
-                }
-              });
-          }
-          dialog.dispose();
-        });
+    this._deleteProject = (projectName: string) => {
+      let props = {
+        projectName: projectName,
+        kernelExecute: this._kernelExecute, 
+        updateProjects: this._updateProjects,
+        tracker: options.tracker,
+      };
+      deleteProjectDialog(props);
     }
   
     /**
@@ -245,12 +218,29 @@ export class Sidebar extends Widget {
         onClick: () => {
           if (this._console.isHidden) {
             this._console.show()
+            this._consoleClearButton.show();
           } else {
             this._console.hide();
+            this._consoleClearButton.hide();
           }
         },
-        tooltip: 'Create New Project'
+        tooltip: 'Toggle Console'
       })
+    );
+
+    this._consoleClearButton = new ToolbarButton({
+      icon: clearIcon,
+      onClick: () => {
+        this._consoleStream = [];
+        this.update();
+      },
+      tooltip: 'Clear Console'
+    });
+    this._consoleClearButton.hide();
+
+    this._toolbar.addItem(
+      'clear console',
+      this._consoleClearButton
     );
 
     this._toolbar.hide();
@@ -344,6 +334,7 @@ export class Sidebar extends Widget {
   private _consoleStream: string[] = [];
   private _kernelSession: Session.ISessionConnection | null | undefined;
   private _toolbar: Toolbar<Widget>;
+  private _consoleClearButton: ToolbarButton;
   private _display: Widget;
   private _console: Widget;
   private _openDashboardCommand: (project: IDashboardItem) => void;
@@ -354,6 +345,7 @@ export namespace Sidebar {
   export interface IOptions {
     openDashboardCommand: (project: IDashboardItem) => void;
     kernelSession: Session.ISessionConnection | null | undefined;
+    tracker: WidgetTracker;
   }
 
   interface Property {
