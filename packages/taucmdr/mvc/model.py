@@ -49,8 +49,8 @@ class ModelMeta(type):
             # We make the callable a staticmethod to prevent method binding.
             try:
                 dct['__attributes__'] = staticmethod(dct['__attributes__'])
-            except KeyError:
-                raise InternalError("Model class %s does not define '__attributes__'" % name)
+            except KeyError as err:
+                raise InternalError("Model class %s does not define '__attributes__'" % name) from err
             # Replace attributes with a callable property (defined below).  This is to guarantee
             # that model attributes won't be constructed until all Model subclasses have been constructed.
             dct['attributes'] = ModelMeta.attributes
@@ -74,14 +74,14 @@ class ModelMeta(type):
         # pylint: disable=attribute-defined-outside-init
         try:
             return cls._key_attribute
-        except AttributeError:
+        except AttributeError as err:
             # pylint: disable=no-member
             for attr, props in cls.attributes.items():
                 if 'primary_key' in props:
                     cls._key_attribute = attr
                     break
             else:
-                raise ModelError(cls, "No attribute has the 'primary_key' property set to 'True'")
+                raise ModelError(cls, "No attribute has the 'primary_key' property set to 'True'") from err
             return cls._key_attribute
 
 
@@ -209,8 +209,8 @@ class Model(StorageRecord, metaclass=ModelMeta):
             try:
                 if not issubclass(foreign_cls, Model):
                     raise TypeError
-            except TypeError:
-                raise ModelError(cls, f"{model_attr_name}: Invalid foreign model controller: {foreign_cls!r}")
+            except TypeError as err:
+                raise ModelError(cls, f"{model_attr_name}: Invalid foreign model controller: {foreign_cls!r}") from err
 
             forward = (foreign_cls, via)
             reverse = (cls, attr)
@@ -221,9 +221,9 @@ class Model(StorageRecord, metaclass=ModelMeta):
                 foreign_model_attr_name = foreign_cls.name + "." + via
                 try:
                     via_props = foreign_cls.attributes[via]
-                except KeyError:
+                except KeyError as err:
                     raise ModelError(cls, "%s: 'via' references undefined attribute '%s'" %
-                                     (model_attr_name, foreign_model_attr_name))
+                                     (model_attr_name, foreign_model_attr_name)) from err
                 via_attr_model = via_props.get('model', via_props.get('collection', None))
                 if not via_attr_model:
                     raise ModelError(cls, "%s: 'via' on non-model attribute '%s'" %
@@ -266,10 +266,10 @@ class Model(StorageRecord, metaclass=ModelMeta):
             # Check required fields and defaults
             try:
                 validated[attr] = data[attr]
-            except KeyError:
+            except KeyError as err:
                 if 'required' in props:
                     if props['required']:
-                        raise ModelError(cls, "'%s' is required but was not defined" % attr)
+                        raise ModelError(cls, "'%s' is required but was not defined" % attr) from err
                 elif 'default' in props:
                     validated[attr] = props['default']
             # Check collections
@@ -283,8 +283,8 @@ class Model(StorageRecord, metaclass=ModelMeta):
                     for eid in value:
                         try:
                             int(eid)
-                        except ValueError:
-                            raise ModelError(cls, f"Invalid non-integer ID '{eid}' in '{attr}'")
+                        except ValueError as err:
+                            raise ModelError(cls, f"Invalid non-integer ID '{eid}' in '{attr}'") from err
                 validated[attr] = value
             # Check model associations
             elif 'model' in props:
@@ -293,8 +293,8 @@ class Model(StorageRecord, metaclass=ModelMeta):
                     try:
                         if int(value) != value:
                             raise ValueError
-                    except ValueError:
-                        raise ModelError(cls, f"Invalid non-integer ID '{value}' in '{attr}'")
+                    except ValueError as err:
+                        raise ModelError(cls, f"Invalid non-integer ID '{value}' in '{attr}'") from err
                     validated[attr] = value
         return validated
 

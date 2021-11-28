@@ -68,7 +68,7 @@ class RewriteCommand(AbstractCommand):
             raise ConfigurationError(
                 'Instrumentation package not specified.', 'Specify one of --dyninst, --maqao, or --pebil.'
             )
-        elif len(rewrite_packages) > 1:
+        if len(rewrite_packages) > 1:
             raise ConfigurationError('Only one instrumentation paclages should be specified.')
         expr = Project.selected().experiment()
         return expr.managed_rewrite(rewrite_packages[0], args.executable, args.inst_file)

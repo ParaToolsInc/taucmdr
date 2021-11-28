@@ -474,8 +474,8 @@ class TauInstallation(Installation):
         target_family = APPLE_LLVM if HOST_OS is DARWIN else GNU
         try:
             target_compilers = target_family.installation()
-        except ConfigurationError:
-            raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family)
+        except ConfigurationError as err:
+            raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family) from err
         for role in TAU_MINIMAL_COMPILERS:
             if role not in target_compilers:
                 raise SoftwarePackageError("A %s compiler (required to build TAU) could not be found." % role.language)
@@ -518,15 +518,14 @@ class TauInstallation(Installation):
     def _get_max_threads(self):
         if self.max_threads:
             return self.max_threads
-        else:
-            if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
-                if self.target_arch in (INTEL_KNC, INTEL_KNL):
-                    nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
-                    return nprocs
-                nprocs = multiprocessing.cpu_count()
-                # Assume 2 HTs/core
-                return max(64, 2*nprocs)
-            return 25 # This is currently TAU's default.
+        if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
+            if self.target_arch in (INTEL_KNC, INTEL_KNL):
+                nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
+                return nprocs
+            nprocs = multiprocessing.cpu_count()
+            # Assume 2 HTs/core
+            return max(64, 2*nprocs)
+        return 25 # This is currently TAU's default.
 
     def _get_max_metrics(self):
         return len(self.metrics)
@@ -573,7 +572,7 @@ class TauInstallation(Installation):
             for line in fin:
                 if line.startswith('#'):
                     continue
-                elif 'BFDINCLUDE=' in line:
+                if 'BFDINCLUDE=' in line:
                     if self.uses_binutils:
                         binutils = self.dependencies['binutils']
                         bfd_inc = shlex.split(line.split('=')[1])[0].strip('-I')
@@ -809,9 +808,9 @@ class TauInstallation(Installation):
                 fortran_magic = fc_magic_map[fc_family]
                 if self.caf_support:
                     fortran_magic = self.compilers[CAF_FC].info.command
-            except KeyError:
+            except KeyError as err:
                 LOGGER.warning("Can't determine TAU magic word for %s %s", fc_comp.info.short_descr, fc_comp)
-                raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family)
+                raise InternalError("Unknown compiler family for Fortran: '%s'" % fc_family) from err
 
         # Set up MPI paths and libraries
         mpiinc, mpilib, mpilibrary = None, None, None
@@ -992,8 +991,8 @@ class TauInstallation(Installation):
                 if self.unmanaged:
                     raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
                                                "is invalid:\n\n    %s" % (self.title, self.install_prefix, err),
-                                               *unmanaged_hints)
-                elif not force_reinstall:
+                                               *unmanaged_hints) from err
+                if not force_reinstall:
                     LOGGER.info("TAU must be reconfigured: %s", err)
         if self.unmanaged and not util.path_accessible(self.src, 'w'):
             raise SoftwarePackageError("Unable to configure TAU: '%s' is not writable." % self.install_prefix,
@@ -1018,8 +1017,7 @@ class TauInstallation(Installation):
                         if not all([os.path.exists(path[1]) for path in err.args[0]]):
                             LOGGER.info("Unrecoverable exception: %s", err)
                             raise
-                        else:
-                            LOGGER.debug("All files appear to exist, continuing.")
+                        LOGGER.debug("All files appear to exist, continuing.")
                 self._src_prefix = self.install_prefix
                 self.installation_sequence()
                 self.set_group()
@@ -1160,7 +1158,7 @@ class TauInstallation(Installation):
                 if tags <= config_tags:
                     LOGGER.debug("Found TAU makefile %s", makefile)
                     return makefile
-                elif not tags.intersection(dangerous_tags):
+                if not tags.intersection(dangerous_tags):
                     if not approx_tags or tags < approx_tags:
                         approx_makefile = makefile
                         approx_tags = tags
@@ -1484,8 +1482,8 @@ class TauInstallation(Installation):
                 try:
                     appfile = cmd[i+1]
                     with_equals = False
-                except IndexError:
-                    raise InternalError("Unable to parse application configuration file in '%s'" % cmd)
+                except IndexError as err:
+                    raise InternalError("Unable to parse application configuration file in '%s'" % cmd) from err
             if flag in appfile_flags:
                 appfile_arg_idx = i
                 appfile_flag = flag
@@ -1606,7 +1604,7 @@ class TauInstallation(Installation):
         try:
             stdout = util.get_command_output([abspath, '-version'])
         except (CalledProcessError, OSError) as err:
-            raise ConfigurationError("Failed to get Java version: %s" % err)
+            raise ConfigurationError("Failed to get Java version: %s" % err) from err
         if 'Java(TM)' not in stdout:
             LOGGER.warning("'%s' does not appear to be Oracle Java.  Visual performance may be poor.", abspath)
 
@@ -1614,9 +1612,9 @@ class TauInstallation(Installation):
         _, env = self.runtime_config()
         try:
             display = env['DISPLAY']
-        except KeyError:
+        except KeyError as err:
             raise ConfigurationError("X11 display not configured.",
-                                     "Try setting the DISPLAY environment variable.")
+                                     "Try setting the DISPLAY environment variable.") from err
         try:
             host, _ = display.split(':')
         except ValueError:
@@ -1642,21 +1640,21 @@ class TauInstallation(Installation):
         root, ext = os.path.splitext(path)
         if os.path.isdir(path) or root == 'profile':
             return 'tau'
-        elif ext == '.ppk':
+        if ext == '.ppk':
             return 'ppk'
-        elif ext == '.xml':
+        if ext == '.xml':
             return 'merged'
-        elif ext == '.cubex':
+        if ext == '.cubex':
             return 'cubex'
-        elif ext == '.slog2':
+        if ext == '.slog2':
             return 'slog2'
-        elif ext == '.otf2':
+        if ext == '.otf2':
             return 'otf2'
-        elif ext == '.gz':
+        if ext == '.gz':
             root, ext = os.path.splitext(root)
             if ext == '.xml':
                 return 'merged'
-        elif ext == '.db':
+        if ext == '.db':
             return 'sqlite'
         raise ConfigurationError("Cannot determine data format of '%s'" % path)
 
@@ -1677,7 +1675,7 @@ class TauInstallation(Installation):
             try:
                 return util.create_subprocess(cmd, env=env)
             except (CalledProcessError, OSError) as err:
-                raise ConfigurationError(f"'{tool}' failed: {err}")
+                raise ConfigurationError(f"'{tool}' failed: {err}") from err
         return launcher
 
     def _show_paraprof(self, fmt, paths, env):
@@ -1925,6 +1923,6 @@ class TauInstallation(Installation):
     def get_python_version(self, python_path):
         cmd = [python_path, '--version']
         out = util.get_command_output(cmd)
-        p = re.compile(r'\d+\.\d+\.\d+')
-        m = p.search(out)
-        return m.group()
+        pattern = re.compile(r'\d+\.\d+\.\d+')
+        match = pattern.search(out)
+        return match.group()

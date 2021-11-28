@@ -546,10 +546,10 @@ class Measurement(Model):
         """Check for TIME in metrics, add it if missing, ensure it is first"""
         try:
             self['metrics'].remove('TIME')
-        except KeyError:
+        except KeyError as err:
             raise ConfigurationError(
-                "The metrics attribute should always exist with at least TIME present!")
-        except ValueError:
+                "The metrics attribute should always exist with at least TIME present!") from err
+        except ValueError as err:
             LOGGER.warning("'TIME' must always be present as the first metric!")
         finally:
             self['metrics'].insert(0, 'TIME')
@@ -573,7 +573,7 @@ class Measurement(Model):
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
-                                         "Delete experiment '%s' and try again." % expr['name'])
+                                         "Delete experiment '%s' and try again." % expr['name']) from err
         self._check_select_file()
         self._check_metrics()
         if self.is_selected():

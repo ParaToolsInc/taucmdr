@@ -175,7 +175,7 @@ class ScorepInstallation(AutotoolsInstallation):
         try:
             stdout = util.get_command_output(cmd)
         except CalledProcessError as err:
-            raise SoftwarePackageError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output))
+            raise SoftwarePackageError("%s failed with return code %d: %s" % (cmd, err.returncode, err.output)) from err
         flags = self._get_flags()
         found_flags = set()
         extra_flags = set()
@@ -184,7 +184,7 @@ class ScorepInstallation(AutotoolsInstallation):
             if line.startswith('Configure command:'):
                 in_section = True
                 continue
-            elif in_section:
+            if in_section:
                 line = line.replace('./configure', '')
                 if not line.startswith(' '):
                     break

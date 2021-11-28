@@ -317,8 +317,7 @@ class _CompilerFamily(TrackedInstance):
                                 LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
                                 cls._probe_cache[absolute_path] = family
                                 return family
-                            else:
-                                LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
+                            LOGGER.debug("'%s' is not a %s compiler", absolute_path, family.name)
                     else:
                         LOGGER.debug("'%s' is a %s compiler", absolute_path, family.name)
                         cls._probe_cache[absolute_path] = family
@@ -367,19 +366,19 @@ class _CompilerInfo(TrackedInstance):
     def _find(cls, command, family, role):
         if command and family and role:
             return [info for info in family.members.get(role, []) if info.command == command]
-        elif command and family:
+        if command and family:
             return [
                 info for info_list in family.members.values() for info in info_list if info.command == command
             ]
-        elif command and role:
+        if command and role:
             return [info for info in cls.all() if info.role is role and info.command == command]
-        elif family and role:
+        if family and role:
             return family.members.get(role, [])
-        elif command:
+        if command:
             return [info for info in cls.all() if info.command == command]
-        elif family:
+        if family:
             return [info for info_list in family.members.values() for info in info_list]
-        elif role:
+        if role:
             return [info for info in cls.all() if info.role is role]
         return []
 
@@ -546,11 +545,11 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         cmd = [self.absolute_path] + self.info.family.show_wrapper_flags
         try:
             stdout = util.get_command_output(cmd)
-        except CalledProcessError:
+        except CalledProcessError as err:
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
-                                     (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags))
+                                     (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags)) from err
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
         known_commands = {info.command for info in _CompilerInfo.all()}
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
@@ -596,7 +595,7 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
                 if arg == flag:
                     acc.append(args[idx+1])
                     return 2
-                elif arg.startswith(flag):
+                if arg.startswith(flag):
                     acc.append(arg[len(flag):])
                     return 1
             return 0
@@ -693,14 +692,14 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
             cmd = [self.absolute_path] + self.info.family.version_flags
             try:
                 self._version_string = util.get_command_output(cmd)
-            except CalledProcessError:
+            except CalledProcessError as err:
                 raise ConfigurationError("Compiler command '%s' failed." % ' '.join(cmd),
                                          "Check that this command works outside of TAU.",
                                          "Check loaded modules and environment variables.",
-                                         "Verify that the compiler's license is valid.")
-            except OSError:
+                                         "Verify that the compiler's license is valid.") from err
+            except OSError as err:
                 raise ConfigurationError("Compiler '%s' no longer exists or is not executable" %
-                                         self.absolute_path)
+                                         self.absolute_path) from err
         return self._version_string
 
     @property
@@ -800,8 +799,8 @@ class InstalledCompilerFamily:
         """
         try:
             return self.members[role][0]
-        except IndexError:
-            raise KeyError
+        except IndexError as err:
+            raise KeyError from err
 
     def __iter__(self):
         """Yield one InstalledCompiler for each role filled by any compiler in this installation."""

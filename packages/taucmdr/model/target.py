@@ -84,8 +84,8 @@ def _require_compiler_family(family, *hints):
                (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name, family))
         try:
             compiler_record = rhs.populate(rhs_attr)
-        except KeyError:
-            raise ConfigurationError("%s but it is undefined" % msg)
+        except KeyError as err:
+            raise ConfigurationError("%s but it is undefined" % msg) from err
         given_family_name = compiler_record['family']
         if given_family_name != family.name:
             raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
@@ -113,7 +113,7 @@ def papi_source_default():
     """Choose the best default PAPI source."""
     if HOST_OS is DARWIN:
         return None
-    elif HOST_OS is CRAY_CNL:
+    if HOST_OS is CRAY_CNL:
         for path in ('/opt/cray/papi/default', '/opt/cray/pe/papi/default'):
             if os.path.isdir(path):
                 return path
@@ -572,7 +572,7 @@ class Target(Model):
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
-                                         "Delete experiment '%s' and try again." % expr['name'])
+                                         "Delete experiment '%s' and try again." % expr['name']) from err
         if self.is_selected():
             for attr, change in changes.items():
                 props = self.attributes[attr]

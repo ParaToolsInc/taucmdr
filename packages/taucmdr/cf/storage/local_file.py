@@ -79,8 +79,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
     def write(self, *args, **kwargs):
         if self.readonly:
             raise ConfigurationError("Cannot write to '%s'" % self.path, "Check that you have `write` access.")
-        else:
-            super().write(*args, **kwargs)
+        super().write(*args, **kwargs)
 
 
 class LocalFileStorage(AbstractStorage):
@@ -167,7 +166,7 @@ class LocalFileStorage(AbstractStorage):
             except Exception as err:
                 raise StorageError(
                     f"Failed to access {self.name} filesystem prefix '{self._prefix}': {err}"
-                )
+                ) from err
             LOGGER.debug("Initialized %s filesystem prefix '%s'", self.name, self._prefix)
 
     def disconnect_filesystem(self, *args, **kwargs):
@@ -184,7 +183,7 @@ class LocalFileStorage(AbstractStorage):
                 self._database = tinydb.TinyDB(self.dbfile, storage=storage)
             except OSError as err:
                 raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
-                                   "Check that you have `write` access")
+                                   "Check that you have `write` access") from err
             if not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
@@ -293,7 +292,7 @@ class LocalFileStorage(AbstractStorage):
         table = self.table(table_name)
         if keys is None:
             return None
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             #LOGGER.debug("%s: get(eid=%r)", table_name, keys)
             element = table.get(eid=keys)
         elif isinstance(keys, dict) and keys:
@@ -334,21 +333,20 @@ class LocalFileStorage(AbstractStorage):
         if keys is None:
             #LOGGER.debug("%s: all()", table_name)
             return [self.Record(self, element=element) for element in table.all()]
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             #LOGGER.debug("%s: search(eid=%r)", table_name, keys)
             element = table.get(eid=keys)
             return [self.Record(self, element=element)] if element else []
-        elif isinstance(keys, dict) and keys:
+        if isinstance(keys, dict) and keys:
             #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
             return [self.Record(self, element=element) for element in table.search(self._query(keys, match_any))]
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             #LOGGER.debug("%s: search(keys=%r)", table_name, keys)
             result = []
             for key in keys:
                 result.extend(self.search(keys=key, table_name=table_name, match_any=match_any))
             return result
-        else:
-            raise ValueError(keys)
+        raise ValueError(keys)
 
     def match(self, field, table_name=None, regex=None, test=None):
         """Find records where `field` matches `regex` or `test`.
@@ -374,7 +372,7 @@ class LocalFileStorage(AbstractStorage):
         if test is not None:
             #LOGGER.debug('%s: search(where(%s).test(%r))', table_name, field, test)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).test(test))]
-        elif regex is not None:
+        if regex is not None:
             #LOGGER.debug('%s: search(where(%s).matches(%r))', table_name, field, regex)
             return [self.Record(self, element=elem) for elem in table.search(tinydb.where(field).matches(regex))]
         #else:
@@ -405,16 +403,15 @@ class LocalFileStorage(AbstractStorage):
         table = self.table(table_name)
         if keys is None:
             return False
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             #LOGGER.debug("%s: contains(eid=%r)", table_name, keys)
             return table.contains(eid=keys)
-        elif isinstance(keys, dict) and keys:
+        if isinstance(keys, dict) and keys:
             #LOGGER.debug("%s: contains(keys=%r)", table_name, keys)
             return table.contains(self._query(keys, match_any))
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
-        else:
-            raise ValueError(keys)
+        raise ValueError(keys)
 
     def insert(self, data, table_name=None):
         """Create a new record.
