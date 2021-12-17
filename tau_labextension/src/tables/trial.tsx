@@ -11,7 +11,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import * as React from 'react';
 
 import {
-/*  editTrialDialog, */
+  editTrialDialog, 
   deleteTrialDialog
 } from '../dialogs';
 
@@ -39,7 +39,7 @@ export const TrialTable = (props: Tables.Trial) => {
   }
 
   let rows = Object.entries(props.experiment['Trial Data']).map(([name, row]) => {
-    let rowItem = {...row, 'Name': name};
+    let rowItem = {...row, 'Number': name};
     return (
       <TableRow className='tau-Table-row tau-Table-row-clickable' key={name} onClick={(e) => {handleClick(e, rowItem)}}>
         <TableCell component='th' scope='row'>{name}</TableCell>
@@ -89,25 +89,35 @@ export const TrialTable = (props: Tables.Trial) => {
 
         <MenuItem onClick={() => {
           handleClose();
+          props.openDisplayCommand({
+              project: props.projectName, 
+              experiment: props.selectedExperiment, 
+              trial: activeRow['Number']
+          });
         }}>   
           Display
         </MenuItem>
 
         <MenuItem onClick={() => {
           handleClose();
+          editTrialDialog(activeRow, props);
         }}>   
           Edit
         </MenuItem>
 
         <MenuItem onClick={() => {
           handleClose(); 
-          deleteTrialDialog(activeRow['Name'], props);
+          deleteTrialDialog(activeRow['Number'], props);
         }}>   
           Delete
         </MenuItem>
       </Menu>
     </div>
   );  
+}
+
+export interface IPlotlyDisplayItem {
+  [key: string]: any
 }
 
 namespace Tables {
@@ -118,5 +128,6 @@ namespace Tables {
     experiment: {[key: string]: {[key: string]: any}}
     setSelectedExperiment: (experiment: string | null) => void;
     selectedExperiment: string;
+    openDisplayCommand: (trialPath: IPlotlyDisplayItem) => void
   }
 }

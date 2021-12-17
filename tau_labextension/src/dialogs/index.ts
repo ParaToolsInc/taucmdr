@@ -23,6 +23,7 @@ export { selectExperimentDialog } from './experiment/select';
 export { editExperimentDialog } from './experiment/edit';
 export { deleteExperimentDialog } from './experiment/delete';
 
+export { editTrialDialog } from './trial/edit';
 export { deleteTrialDialog } from './trial/delete';
 
 export { errorDialog } from './error';

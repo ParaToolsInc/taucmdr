@@ -8,15 +8,13 @@ from taucmdr.cli.commands.trial.delete import COMMAND as delete_trial_cmd
 def edit_trial(project, number, new_number, description):
     select_project_cmd.main([project])
     try:
-        edit_trial_cmd.main([number, '--description', description])
         renumber_trial_cmd.main([number, '--to', new_number])
+        edit_trial_cmd.main([new_number, '--description', description])
 
     except SystemExit as e:
-        renumber_trial_cmd.main([new_number, '--to', number])
         return json.dumps({'status': 'failure', 'message': 'Error in edit'})
 
     except Exception as e:
-        renumber_trial_cmd.main([new_number, '--to', number])
         return json.dumps({'status': 'failure', 'message': e.message})
 
     PROJECT_STORAGE.disconnect_filesystem()

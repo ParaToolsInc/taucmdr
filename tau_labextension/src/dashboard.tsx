@@ -23,7 +23,8 @@ import {
   ApplicationTable,
   MeasurementTable,
   ExperimentTable,
-  TrialTable
+  TrialTable,
+  IPlotlyDisplayItem
 } from './tables';
 
 import {
@@ -31,7 +32,6 @@ import {
   newApplicationDialog,
   newMeasurementDialog,
   newExperimentDialog,
-  
   errorDialog
 } from './dialogs';
 
@@ -46,6 +46,7 @@ export class Dashboard extends Widget {
     this._project = options.project.data
     this._kernelSession = options.kernelSession;
     this._sidebar = options.sidebar;
+    this._openDisplayCommand = options.openDisplayCommand;
 
     const layout = (this.layout = new PanelLayout());
 
@@ -168,6 +169,7 @@ export class Dashboard extends Widget {
           if (msg.header.msg_type == 'stream') {
             let content = (msg as KernelMessage.IStreamMsg).content;
             let output = content.text;
+            this._sidebar.console.show();
             this._sidebar.consoleStream.push(output);
             this._sidebar.update();
           }
@@ -280,6 +282,7 @@ export class Dashboard extends Widget {
         experiment={this._project.experiments[this._selectedExperiment]}  
         setSelectedExperiment={this._setExperiment}
         selectedExperiment={this._selectedExperiment}
+        openDisplayCommand={this._openDisplayCommand}
       />,
       this._trialDisplay.node
     );
@@ -305,6 +308,7 @@ export class Dashboard extends Widget {
   private _project: any;
   private _kernelSession: Session.ISessionConnection | null | undefined;
   private _sidebar: Sidebar;
+  private _openDisplayCommand: (trialPath: IPlotlyDisplayItem) => void;
 }
 
 export namespace Dashboard {
@@ -313,5 +317,6 @@ export namespace Dashboard {
     kernelSession: Session.ISessionConnection | null | undefined;
     sidebar: Sidebar;
     toolbar: Toolbar;
+    openDisplayCommand: (trialPath: IPlotlyDisplayItem) => void;
   }
 }

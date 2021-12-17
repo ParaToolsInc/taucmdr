@@ -29,10 +29,14 @@
 
 import os
 import sys
+import atexit
+import requests
 
 from taucmdr import TAUCMDR_HOME
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
+from taucmdr.cf.storage.project import ProjectStorage
+from taucmdr.kernel.server.run import start
 from taucmdr.error import ConfigurationError
 
 
@@ -65,11 +69,23 @@ class CommanderCommand(AbstractCommand):
             # ANSI escape sequences aren't supported by Jupyter OutputCells
             os.environ['ANSI_COLORS_DISABLED'] = "1"
 
+
             argv.extend(['--ip=0.0.0.0', '--port=8888'])
 
-            return jupyterlab.labapp.main(argv)
+            os.environ['PROJECT_DIR'] = ProjectStorage().prefix
+
+            pid = os.fork()
+            if pid == 0:
+                atexit.register(requests.get, 'http://0.0.0.0:8889/shutdown')
+                start()
+            else:
+                return jupyterlab.labapp.main(argv) 
+
+
         except ImportError:
             raise ConfigurationError("JupyterLab was not found in your Python environment.")
+
+
 
 
 COMMAND = CommanderCommand(__name__, summary_fmt="Launch the TAU Commander computational environment.")

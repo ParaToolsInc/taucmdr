@@ -314,6 +314,10 @@ export class Sidebar extends Widget {
     return this._projects;
   }
 
+  get console(): Widget {
+    return this._console;
+  }
+
   /**
    * Rerender after showing.
    */

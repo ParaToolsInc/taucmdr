@@ -10,4 +10,4 @@ from .commands.target import new_target, edit_target, copy_target, delete_target
 from .commands.application import new_application, edit_application, copy_application, delete_application
 from .commands.measurement import new_measurement, edit_measurement, copy_measurement, delete_measurement
 from .commands.experiment import new_experiment, select_experiment, edit_experiment, delete_experiment
-from .commands.trial import delete_trial
+from .commands.trial import edit_trial, delete_trial

@@ -233,7 +233,7 @@ dev-container:
 	$(ECHO)docker build --pull -t $(DOCKER_IMG_NAME) .
 
 run-container:
-	$(ECHO)docker run -p 8888:8888 -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
+	$(ECHO)docker run -p 8888:8888 -p 8889:8889 -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
 	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) $(ARGS)
 
 test-container:

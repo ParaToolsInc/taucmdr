@@ -29,14 +29,20 @@ import {
   Dashboard
 } from './dashboard';
 
-const PLUGIN_ID = 'tau-labextension:plugin';
+import {
+  IPlotlyDisplayItem
+} from './tables';
 
+import {
+  PlotlyDisplay
+} from './display';
+
+const PLUGIN_ID = 'tau-labextension:plugin';
 const TAU_KERNEL_PATH = 'TAUKernel';
 
 namespace CommandIDs {
-  
   export const launchDashboard = 'tau:launch-dashboard';
-
+  export const launchDisplay = 'tau:launch-display';
 }
 
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -78,7 +84,7 @@ async function activate(
   sidebar.title.caption = 'Tau';
   shell.add(sidebar, 'left', { rank: 300 });
 
-  // Add an application command
+  // Add Dashboard Launch command
   app.commands.addCommand(CommandIDs.launchDashboard, {
     label: (project) => `Run ${project['label']} Dashboard`,
     execute: (project) => {
@@ -98,7 +104,10 @@ async function activate(
         project: project as IDashboardItem,
         kernelSession: kernelSession,
         sidebar: sidebar,
-        toolbar: toolbar
+        toolbar: toolbar,
+        openDisplayCommand: (trialPath: IPlotlyDisplayItem) => {
+          app.commands.execute(CommandIDs.launchDisplay, trialPath);
+        }
       });
 
       const widget = new MainAreaWidget({ 
@@ -120,7 +129,44 @@ async function activate(
       shell.activateById(widget.id);
     }
   });
-    
+
+
+  app.commands.addCommand(CommandIDs.launchDisplay, {
+    label: (trialPath) => `Run ${trialPath['project']} Display`,
+    execute: (trialPath) => {
+
+      console.log(trialPath);
+
+      let exists = tracker.find((widget) => {
+        return widget.id == `project-${trialPath['project']}-${trialPath['experiment']}-${trialPath['trial']}`;
+      });
+
+      if (exists) {
+        shell.activateById(exists.id);
+        return;
+      }
+
+      const content = new PlotlyDisplay({
+        trialPath: trialPath
+      });
+      const widget = new MainAreaWidget({ 
+        content: content,
+      });
+
+      widget.id = `project-${trialPath['project']}-${trialPath['experiment']}-${trialPath['trial']}`;
+      widget.title.icon = fileIcon; 
+      widget.title.label = `Trial ${trialPath['trial']} Display`;
+      widget.title.closable = true;
+      tracker.add(widget);
+
+      if (!widget.isAttached) {
+        // Attach the widget to the main work area if it's not there
+        shell.add(widget, 'main');
+      }
+      // Activate the widget
+      shell.activateById(widget.id);
+    }
+  });
 }
 
 
