@@ -30,7 +30,7 @@ Functions used for unit tests of copy.py.
 """
 
 
-from taucmdr import tests
+from taucmdr import tests, util
 from taucmdr.cli.commands.target import copy
 
 class CopyTest(tests.TestCase):
@@ -76,3 +76,36 @@ class CopyTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
         self.assertIn('Added target \'targ2\' to project configuration', stdout)
         self.assertFalse(stderr)
+
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi(self):
+        self.reset_project_storage()
+        argv = ['targ1', 'targ2', '--mpi-wrappers', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        for role, expected in (MPI_CC, ''), (MPI_CXX, ''), (MPI_FC, ''):
+            path = targ2.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
+
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi_cc(self):
+        self.reset_project_storage()
+        argv = ['targ1', 'targ2', '--mpi-wrappers', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        path = targ2.populate(MPI_CC.keyword)['path']
+        self.assertEqual(path, '', f"Target[MPI_CC] is '{path}', not ''")
+
