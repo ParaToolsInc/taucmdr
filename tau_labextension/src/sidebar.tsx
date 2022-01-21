@@ -211,6 +211,16 @@ export class Sidebar extends Widget {
       })
     );
 
+    this._consoleClearButton = new ToolbarButton({
+      icon: clearIcon,
+      onClick: () => {
+        this._consoleStream = [];
+        this.update();
+      },
+      tooltip: 'Clear Console'
+    });
+    this._consoleClearButton.hide();
+
     this._toolbar.addItem(
       'toggle console',
       new ToolbarButton({
@@ -227,16 +237,6 @@ export class Sidebar extends Widget {
         tooltip: 'Toggle Console'
       })
     );
-
-    this._consoleClearButton = new ToolbarButton({
-      icon: clearIcon,
-      onClick: () => {
-        this._consoleStream = [];
-        this.update();
-      },
-      tooltip: 'Clear Console'
-    });
-    this._consoleClearButton.hide();
 
     this._toolbar.addItem(
       'clear console',

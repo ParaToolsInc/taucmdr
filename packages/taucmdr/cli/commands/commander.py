@@ -76,9 +76,10 @@ class CommanderCommand(AbstractCommand):
 
             pid = os.fork()
             if pid == 0:
-                atexit.register(requests.get, 'http://0.0.0.0:8889/shutdown')
+                atexit.register(print, '\nPlotly Dash Server has exited.')
                 start()
             else:
+                atexit.register(print, 'Jupyter Server has exited.')
                 return jupyterlab.labapp.main(argv) 
 
 

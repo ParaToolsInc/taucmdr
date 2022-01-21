@@ -214,6 +214,19 @@ class Experiment(Model):
                     parts.append(f"  - {attr} changed from {old} to {new}")
         return '\n'.join(parts)
 
+    def on_update(self, changes):
+        try:
+            old_name, new_name = changes['name']
+            new_path = self.prefix.split('/')[:-1]
+            new_path.append(new_name)
+            new_path = '/'.join(new_path)
+            util.mvtree(self.prefix, new_path)
+        except FileNotFoundError:
+            del old_name, new_name
+        except KeyError as e:
+            pass
+        return
+
     @property
     def prefix(self):
         with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):

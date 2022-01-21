@@ -33,8 +33,8 @@ some performance data (profiles, traces, etc.).
 """
 
 import os
-from taucmdr import logger
-from taucmdr.error import InternalError, ProjectSelectionError, ExperimentSelectionError
+from taucmdr import logger, util
+from taucmdr.error import ConfigurationError, InternalError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
 from taucmdr.mvc.controller import Controller
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
@@ -142,6 +142,16 @@ class Project(Model):
         from taucmdr.model.experiment import Experiment
         from taucmdr.model.compiler import Compiler
         try:
+            old_name, new_name = changes['name']
+            new_path = self.prefix.split('/')[:-1]
+            new_path.append(new_name)
+            new_path = '/'.join(new_path)
+            util.mvtree(self.prefix, new_path)
+        except FileNotFoundError:
+            del old_name, new_name
+        except KeyError as e:
+            pass
+        try:
             old_value, new_value = changes['experiment']
         except KeyError:
             # We only care about changes to experiment
@@ -175,6 +185,7 @@ class Project(Model):
                                     message = {attr: (old_value, new_value)}
                                     self.controller(self.storage).push_to_topic('rebuild_required', message)
 
+
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):
         return cls.__controller__(cls, storage)
@@ -189,6 +200,20 @@ class Project(Model):
     @property
     def prefix(self):
         return os.path.join(self.storage.prefix, self['name'])
+
+    def on_create(self):
+        try:
+            util.mkdirp(self.prefix)
+        except:
+            raise ConfigurationError('Cannot create directory %r' % self.prefix,
+                                     'Check that you have `write` access')
+
+    def on_delete(self):
+        try:
+            util.rmtree(self.prefix)
+        except Exception as err:  # pylint: disable=broad-except
+            if os.path.exists(self.prefix):
+                LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
 
     def experiment(self):
         """Gets the currently selected experiment configuration.

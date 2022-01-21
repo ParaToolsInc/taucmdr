@@ -138,6 +138,12 @@ def mkdirp(*args):
                 if not (exc.errno == errno.EEXIST and os.path.isdir(path)):
                     raise
 
+def mvtree(src, dest):
+    try:
+        shutil.move(src, dest)
+    except FileNotFoundError:
+        pass
+
 def add_error_stack(path):
     _DTEMP_ERROR_STACK.append(str(path))
 

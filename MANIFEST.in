@@ -3,5 +3,6 @@
 #
 include README.md LICENSE Makefile MANIFEST.in VERSION
 recursive-include examples *
+recursive-include packages/taucmdr/kernel * 
 recursive-include system/src *
 global-exclude .*ptp*
