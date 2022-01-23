@@ -581,7 +581,10 @@ class Target(Model):
                     if props.get('model', None) == Compiler:
                         old_comp = Compiler.controller(self.storage).one(change[0])
                         new_comp = Compiler.controller(self.storage).one(change[1])
-                        message = {attr: (old_comp['path'], new_comp['path'])}
+                        if old_comp is None:
+                            message = {attr: (, new_comp['path'])}
+                        else:
+                            message = {attr: (old_comp['path'], new_comp['path'])}
                     else:
                         message = {attr: change}
                     self.controller(self.storage).push_to_topic('rebuild_required', message)
