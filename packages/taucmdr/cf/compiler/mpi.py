@@ -65,13 +65,9 @@ CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                          version_flags=['-craype-verbose', '--version', '-E'],
                          show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                          CC='cc', CXX='CC', FC='ftn')
+
 NONE = MPI_COMPILERS.add('None', #family_regex='',
-                         #version_flags=[]
-                         #show_wrapper_flags=[],
-                         #CC='None', CXX='None',  FC='None'
-                         #CC=':', CXX=':',  FC=':'
-                         CC='', CXX='', FC=''
-                         )
+                         CC='', CXX='', FC='')
 
 
 MPI_CC = MPI_COMPILERS.roles['CC']
