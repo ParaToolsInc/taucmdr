@@ -97,7 +97,7 @@ class CopyTest(tests.TestCase):
     @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
     def test_no_mpi_cc(self):
         self.reset_project_storage()
-        argv = ['targ1', 'targ2', '--mpi-wrappers', 'None']
+        argv = ['targ1', 'targ2', '--mpi-cc', 'None']
         stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
         self.assertIn("Added target \'targ2\' to project configuration", stdout)
         self.assertFalse(stderr)
@@ -109,3 +109,36 @@ class CopyTest(tests.TestCase):
         path = targ2.populate(MPI_CC.keyword)['path']
         self.assertEqual(path, '', f"Target[MPI_CC] is '{path}', not ''")
 
+    @tests.skipUnless(util.which('nvcc'), "CUDA compilers required for this test")
+    def test_no_cuda_cxx(self):
+        self.reset_project_storage()
+        argv = ['targ1', 'targ2', '--cuda-cxx', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        role = CUDA_CXX
+        expected = ''
+        path = targ2.populate(role.keyword)['path']
+        self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
+    @tests.skipUnless(util.which('xlcuf'), "CUDA compilers required for this test")
+    def test_no_cuda_fc(self):
+        self.reset_project_storage()
+        argv = ['targ1', 'targ2', '--cuda-fc', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        role = CUDA_FC
+        expected = ''
+        path = targ2.populate(role.keyword)['path']
+        self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")

@@ -146,6 +146,22 @@ class CreateTest(tests.TestCase):
         path = test_targ.populate(MPI_CC.keyword)['path']
         self.assertEqual(path, '', f"Target[{MPI_CC}] is '{path}', not ''")
 
+    @tests.skipUnless(util.which('nvcc') or util.which('xlcuf'), "CUDA compilers required for this test")
+    def test_no_cuda(self):
+        self.reset_project_storage()
+        argv = ['targ2', '--cuda-compilers', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        for role, expected in (CUDA_CXX, ''), (CUDA_FC, ''):
+            path = targ2.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
 #    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
 #    def test_python_init(self):
 #        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
