@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -54,10 +53,10 @@ class StorageRecord(dict):
         storage: Storage container whose database contains this record.
         eid: Element identifier value.
     """
-    eid_type = str
+    eid_type = None
 
     def __init__(self, storage, eid, element):
-        super(StorageRecord, self).__init__(element)
+        super().__init__(element)
         self.storage = storage
         self.eid = eid
 
@@ -65,7 +64,7 @@ class StorageRecord(dict):
         return hash(self.eid)
 
 
-class AbstractStorage(object):
+class AbstractStorage(metaclass=ABCMeta):
     """Abstract base class for storage containers.
 
     A storage container provides a record database, a persistent filesystem, and a key/value store.
@@ -79,11 +78,9 @@ class AbstractStorage(object):
         database (str): Database object implementing :any:`AbstractDatabase`.
     """
 
-    __metaclass__ = ABCMeta
-
     Record = StorageRecord
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def __str__(self):
@@ -114,15 +111,15 @@ class AbstractStorage(object):
         """Iterate over keys in the key/value store."""
 
     @abstractmethod
-    def iterkeys(self):
+    def keys(self):
         """Iterate over keys in the key/value store."""
 
     @abstractmethod
-    def itervalues(self):
+    def values(self):
         """Iterate over values in the key/value store."""
 
     @abstractmethod
-    def iteritems(self):
+    def items(self):
         """Iterate over items in the key/value store."""
 
     @abstractmethod
@@ -142,7 +139,7 @@ class AbstractStorage(object):
         """Close the database for reading and writing."""
 
     @abstractmethod
-    def prefix(self):
+    def prefix(self) -> str:
         """Get the filesystem prefix for file storage.
 
         The filesystem must be persistent and provide the usual POSIX filesystem calls.
@@ -150,6 +147,14 @@ class AbstractStorage(object):
 
         Returns:
             str: Absolute path in the filesystem.
+        """
+
+    @abstractmethod
+    def database_exists(self):
+        """Determine if the database file backing this Storage object exists.
+
+        Returns:
+            bool: True if database exists; false otherwise.
         """
 
     @abstractmethod

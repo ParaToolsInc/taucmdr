@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -46,14 +45,15 @@ import socket
 import platform
 import string
 import logging
-from logging import handlers
+from logging import Logger, LogRecord, handlers # pylint: disable=unused-import
 from datetime import datetime
-from termcolor import termcolor
+from typing import Any, Optional, Tuple, Union, cast # pylint: disable=unused-import
+import termcolor
 from taucmdr import USER_PREFIX, TAUCMDR_VERSION
 
 
 def _prune_ansi(line):
-    """Remove all occurences of the ANSI escape sequence
+    """Remove all occurrences of the ANSI escape sequence
 
     Returns:
         str: Line where all '\x1b[*m' sequences were removed
@@ -68,6 +68,7 @@ def _prune_ansi(line):
     return line
 
 def get_terminal_size():
+    # type: () -> Tuple[int, int]
     """Discover the size of the user's terminal.
 
     Several methods are attempted depending on the user's OS.
@@ -91,7 +92,7 @@ def get_terminal_size():
         if not dims:
             dims = default_width, default_height
     try:
-        dims = map(int, dims)
+        dims = list(map(int, dims))
     except ValueError:
         dims = default_width, default_height
     width = dims[0] if dims[0] >= 10 else default_width
@@ -108,7 +109,7 @@ def _get_term_size_windows():
     """
     res = None
     try:
-        from ctypes import windll, create_string_buffer
+        from ctypes import windll, create_string_buffer # type: ignore[attr-defined]
         # stdin handle is -10, stdout -11, stderr -12
         handle = windll.kernel32.GetStdHandle(-12)
         csbi = create_string_buffer(22)
@@ -135,10 +136,12 @@ def _get_term_size_tput():
     """
     try:
         import subprocess
-        proc = subprocess.Popen(["tput", "cols"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(["tput", "cols"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                universal_newlines=True)
         output = proc.communicate(input=None)
         cols = int(output[0])
-        proc = subprocess.Popen(["tput", "lines"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(["tput", "lines"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                universal_newlines=True)
         output = proc.communicate(input=None)
         rows = int(output[0])
         return (cols, rows)
@@ -147,6 +150,7 @@ def _get_term_size_tput():
 
 
 def _get_term_size_posix():
+    # type: () -> Union[Tuple[int, int], None]
     """Discover the size of the user's terminal on a POSIX operating system (e.g. Linux).
 
     Returns:
@@ -158,14 +162,17 @@ def _get_term_size_posix():
     # Sometimes Pylint thinks termios doesn't exist or doesn't have certain members even when it does.
     # pylint: disable=no-member
     def ioctl_GWINSZ(fd):
+        # type: (int) -> Union[Tuple[int, int], None]
         try:
             import fcntl
             import termios
             import struct
-            dims = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+            dims = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, b'1234'))
         except:     # pylint: disable=bare-except
             return None
-        return dims
+        # pylint: disable=invalid-sequence-index
+        result = cast(Optional[Tuple[int, int]], dims)
+        return result
     dims = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
     if not dims:
         try:
@@ -180,6 +187,7 @@ def _get_term_size_posix():
 
 
 def _get_term_size_env():
+    # type: () -> Optional[Any]
     """Discover the size of the user's terminal via environment variables.
 
     The user may set the LINES and COLUMNS environment variables to control TAU Commander's
@@ -195,7 +203,7 @@ def _get_term_size_env():
         return None
 
 
-class LogFormatter(logging.Formatter, object):
+class LogFormatter(logging.Formatter):
     """Custom log message formatter.
 
     Controls message formatting for all levels.
@@ -210,7 +218,8 @@ class LogFormatter(logging.Formatter, object):
     _printable_chars = set(string.printable)
 
     def __init__(self, line_width, printable_only=False, allow_colors=True):
-        super(LogFormatter, self).__init__()
+        # type: (int, bool, bool) -> None
+        super().__init__()
         self.printable_only = printable_only
         self.allow_colors = allow_colors
         self.line_width = line_width
@@ -234,16 +243,18 @@ class LogFormatter(logging.Formatter, object):
         return '\n'.join(self._textwrap_message(record))
 
     def DEBUG(self, record):
+        # type: (LogRecord) -> str
         message = record.getMessage()
         if self.printable_only and (not set(message).issubset(self._printable_chars)):
             message = "<<UNPRINTABLE>>"
         if __debug__:
-            marker = self._colored("[%s %s:%s]" % (record.levelname, record.name, record.lineno), 'yellow')
+            marker = self._colored(f"[{record.levelname} {record.name}:{record.lineno}]", 'yellow')
         else:
             marker = "[%s]" % record.levelname
-        return '%s %s' % (marker, message)
+        return f'{marker} {message}'
 
     def format(self, record):
+        # type: (LogRecord) -> str
         """Formats a log record.
 
         Args:
@@ -256,7 +267,7 @@ class LogFormatter(logging.Formatter, object):
             RuntimeError: No format specified for a the record's logging level.
         """
         try:
-            return getattr(self, record.levelname)(record)
+            return str(getattr(self, record.levelname)(record))
         except AttributeError:
             raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
 
@@ -326,6 +337,7 @@ class LogFormatter(logging.Formatter, object):
 
 
 def get_logger(name):
+    # type: (str) -> Logger
     """Returns a customized logging object.
 
     Multiple calls to with the same name will always return a reference to the same Logger object.

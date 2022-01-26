@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -27,7 +26,7 @@
 #
 """``measurement list`` subcommand."""
 
-from types import NoneType
+# from types import NoneType
 from taucmdr import util, logger
 from taucmdr.error import ExperimentSelectionError
 from taucmdr.cli import arguments
@@ -52,7 +51,7 @@ class ProjectListCommand(ListCommand):
                              {'header': 'Applications', 'function': _name_list('applications')},
                              {'header': 'Measurements', 'function': _name_list('measurements')},
                              {'header': '# Experiments', 'function': lambda x: len(x['experiments'])}]
-        super(ProjectListCommand, self).__init__(Project, __name__, dashboard_columns=dashboard_columns)
+        super().__init__(Project, __name__, dashboard_columns=dashboard_columns)
 
     def main(self, argv):
         """Command program entry point.
@@ -77,11 +76,12 @@ class ProjectListCommand(ListCommand):
             measurement_list_cmd.title_fmt = "Measurements in project '%s'" % proj_name
             experiment_list_cmd.title_fmt = "Experiments in project '%s'" % proj_name
 
-        retval = super(ProjectListCommand, self).main(argv)
+        retval = super().main(argv)
 
         if single:
             storage = levels[0]
             ctrl = Project.controller(storage)
+            # pylint: disable=unexpected-keyword-arg
             proj = ctrl.one({'name': keys[0]}, context=False)
             for cmd, prop in ((target_list_cmd, 'targets'),
                               (application_list_cmd, 'applications'),
@@ -92,15 +92,15 @@ class ProjectListCommand(ListCommand):
                 if records:
                     cmd.main([record[primary_key] for record in records] + ['-p'] + [proj['name']] + style_args)
                 else:
-                    label = util.color_text('%s: No %s' % (proj['name'], prop), color='red', attrs=['bold'])
-                    print "%s.  Use `%s` to view available %s.\n" % (label, cmd, prop)
+                    label = util.color_text('{}: No {}'.format(proj['name'], prop), color='red', attrs=['bold'])
+                    print(f"{label}.  Use `{cmd}` to view available {prop}.\n")
             try:
                 expr = proj.experiment()
-                if not isinstance(expr, NoneType):
-                    print util.color_text("Selected Experiment: ", 'cyan') + expr['name']
+                if expr:
+                    print(util.color_text("Selected Experiment: ", 'cyan') + expr['name'])
             except ExperimentSelectionError:
-                print (util.color_text('No selected experiment: ', 'red') +
-                       'Use `%s` to create or select an experiment.' % select_cmd)
+                print(util.color_text('No selected experiment: ', 'red') +
+                      'Use `%s` to create or select an experiment.' % select_cmd)
 
         return retval
 

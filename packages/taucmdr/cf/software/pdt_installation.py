@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -42,11 +41,21 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://tau.uoregon.edu/pdt.tgz',
-         X86_64: {None: 'http://tau.uoregon.edu/pdt.tgz',
-                  LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'},
-         INTEL_KNL: {None: 'http://tau.uoregon.edu/pdt.tgz',
-                     LINUX:  'http://tau.uoregon.edu/pdt_lite.tgz'}}
+PDT_REPOS = [
+    'http://tau.uoregon.edu/pdt.tgz',
+    'http://fs.paratools.com/tau-mirror/pdt.tgz'
+]
+
+PDT_LITE_REPOS = [
+    'http://tau.uoregon.edu/pdt_lite.tgz',
+    'http://fs.paratools.com/tau-mirror/pdt_lite.tgz'
+]
+
+REPOS = {None: PDT_REPOS,
+         X86_64: {None: PDT_REPOS,
+                  LINUX: PDT_LITE_REPOS},
+         INTEL_KNL: {None: PDT_REPOS,
+                     LINUX: PDT_LITE_REPOS}}
 
 COMMANDS = {None:
             ['cparse',
@@ -181,7 +190,7 @@ class PdtInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(PdtInstallation, self).__init__('pdt', 'PDT', sources, target_arch, target_os,
+        super().__init__('pdt', 'PDT', sources, target_arch, target_os,
                                               compilers, REPOS, COMMANDS, None, None)
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         # PDT puts installation files (bin, lib, etc.) in a magically named subfolder
@@ -204,7 +213,7 @@ class PdtInstallation(AutotoolsInstallation):
         # Sometimes PDT doesn't build the edg44 rose parsers even though they could be built.
         # If verification fails, try configuring those parsers and see if it helps.
         try:
-            super(PdtInstallation, self).verify()
+            super().verify()
         except SoftwarePackageError as err:
             if not (os.path.exists(self.install_prefix) and self._retry_verify):
                 raise err

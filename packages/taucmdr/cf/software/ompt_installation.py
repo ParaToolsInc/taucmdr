@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -38,7 +37,10 @@ from taucmdr.cf.compiler.host import CC, CXX
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz'}
+REPOS = {None: [
+    'http://tau.uoregon.edu/LLVM-openmp-8.0.tar.gz',
+    'http://fs.paratools.com/tau-mirror/LLVM-openmp-8.0.tar.gz'
+]}
 
 LIBRARIES = {None: ['libomp.so']}
 
@@ -50,8 +52,16 @@ class OmptInstallation(CMakeInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         if sources['ompt'] == 'download-tr6':
-            sources['ompt'] = 'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz'
-        super(OmptInstallation, self).__init__('ompt', 'ompt', sources, target_arch, target_os,
+            sources['ompt'] = [
+                'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz',
+                'http://fs.paratools.com/tau-mirror/LLVM-openmp-ompt-tr6.tar.gz'
+            ]
+        elif sources['ompt'] == 'download-tr4':
+            sources['ompt'] = [
+                'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz',
+                'https://fs.paratools.com/tau-mirror/LLVM-openmp-0.2.tar.gz'
+            ]
+        super().__init__('ompt', 'ompt', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def cmake(self, flags):
@@ -61,8 +71,8 @@ class OmptInstallation(CMakeInstallation):
                       '-DCMAKE_CXX_FLAGS=-fPIC',
                       '-DCMAKE_BUILD_TYPE=Release',
                       '-DCMAKE_DISABLE_FIND_PACKAGE_CUDA:BOOL=TRUE'])
-        return super(OmptInstallation, self).cmake(flags)
+        return super().cmake(flags)
 
     def make(self, flags):
-        super(OmptInstallation, self).make(flags + ['libomp-needed-headers'])
-        return super(OmptInstallation, self).make(flags)
+        super().make(flags + ['libomp-needed-headers'])
+        return super().make(flags)

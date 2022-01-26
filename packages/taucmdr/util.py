@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -38,21 +37,22 @@ import atexit
 import subprocess
 import errno
 import shutil
-import urllib
 import pkgutil
 import tarfile
 import gzip
 import tempfile
-import urlparse
+from stat import S_IRUSR, S_IWUSR, S_IEXEC
 import hashlib
+import urllib.parse
+import urllib.request
 from collections import deque
 from contextlib import contextmanager
-from zipimport import zipimporter
 from zipfile import ZipFile
-from termcolor import termcolor
+import termcolor
 from unidecode import unidecode
 from taucmdr import logger
-from taucmdr.error import InternalError
+from taucmdr.cf.storage.levels import highest_writable_storage
+from taucmdr.error import InternalError, ConfigurationError
 from taucmdr.progress import ProgressIndicator
 
 
@@ -66,9 +66,6 @@ else:
         # pylint: disable=unused-argument
         pass
 
-
-_PY_SUFFEXES = ('.py', '.pyo', '.pyc')
-
 _DTEMP_STACK = []
 
 _DTEMP_ERROR_STACK = []
@@ -78,13 +75,17 @@ _COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 
 
 def _cleanup_dtemp():
-    if _DTEMP_STACK:
-        for path in _DTEMP_STACK:
-            if not any(path in paths for paths in _DTEMP_ERROR_STACK):
-                rmtree(path, ignore_errors=True)
     if _DTEMP_ERROR_STACK:
+        _paths = []
+        for dir in _DTEMP_ERROR_STACK:
+            name = os.path.basename(os.path.normpath(dir))
+            src = os.path.dirname(os.path.normpath(dir))
+            dst =os.path.join(tempfile.gettempdir(), name)
+            shutil.copytree(os.path.normpath(dir), dst)
+            _paths += dst
         LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
-                       ', '.join(_DTEMP_ERROR_STACK))
+                       ', '.join(_paths))
+
 atexit.register(_cleanup_dtemp)
 
 
@@ -99,14 +100,14 @@ def calculate_uid(parts):
     """
     uid = hashlib.sha1()
     for part in parts:
-        uid.update(part)
-    digest = uid.hexdigest()
+        uid.update(bytes(str(part), encoding='utf-8'))
+    digest = str(uid.hexdigest())
     LOGGER.debug("UID: (%s): %s", digest, parts)
     return digest[:8]
 
 def mkdtemp(*args, **kwargs):
     """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
-    path = tempfile.mkdtemp(*args, **kwargs)
+    path = tempfile.TemporaryDirectory(*args, **kwargs)
     _DTEMP_STACK.append(path)
     return path
 
@@ -115,7 +116,7 @@ def copy_file(src, dest, show_progress=True):
     """Works just like :any:`shutil.copy` except with progress bars."""
     context = ProgressIndicator if show_progress else _null_context
     with context(""):
-        shutil.copy(src, dest)
+        shutil.copy(str(src), str(dest))
 
 
 def mkdirp(*args):
@@ -138,7 +139,7 @@ def mkdirp(*args):
                     raise
 
 def add_error_stack(path):
-    _DTEMP_ERROR_STACK.append(path)
+    _DTEMP_ERROR_STACK.append(str(path))
 
 def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
@@ -155,13 +156,16 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
     """
     if not os.path.exists(path):
         return
-    for i in xrange(attempts-1):
+    for i in range(attempts-1):
         try:
             return shutil.rmtree(path)
         except Exception as err:        # pylint: disable=broad-except
             LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
-    shutil.rmtree(path, ignore_errors, onerror)
+    try:
+        shutil.rmtree(path, ignore_errors, onerror)
+    except FileNotFoundError:
+        pass
 
 
 @contextmanager
@@ -193,30 +197,31 @@ def which(program, use_cached=True):
     """
     if not program:
         return None
-    assert isinstance(program, basestring)
+    prog_enc = program
+    assert isinstance(prog_enc, str)
     if use_cached:
         try:
-            return _WHICH_CACHE[program]
+            return _WHICH_CACHE[prog_enc]
         except KeyError:
             pass
     _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-    fpath, _ = os.path.split(program)
+    fpath, _ = os.path.split(prog_enc)
     if fpath:
-        abs_program = os.path.abspath(program)
+        abs_program = os.path.abspath(prog_enc)
         if _is_exec(abs_program):
-            LOGGER.debug("which(%s) = '%s'", program, abs_program)
-            _WHICH_CACHE[program] = abs_program
+            LOGGER.debug("which(%s) = '%s'", prog_enc, abs_program)
+            _WHICH_CACHE[prog_enc] = abs_program
             return abs_program
     else:
         for path in os.environ['PATH'].split(os.pathsep):
             path = path.strip('"')
-            exe_file = os.path.join(path, program)
+            exe_file = os.path.join(path, prog_enc)
             if _is_exec(exe_file):
-                LOGGER.debug("which(%s) = '%s'", program, exe_file)
-                _WHICH_CACHE[program] = exe_file
+                LOGGER.debug("which(%s) = '%s'", prog_enc, exe_file)
+                _WHICH_CACHE[prog_enc] = exe_file
                 return exe_file
-    _heavy_debug("which(%s): command not found", program)
-    _WHICH_CACHE[program] = None
+    _heavy_debug("which(%s): command not found", prog_enc)
+    _WHICH_CACHE[prog_enc] = None
     return None
 
 
@@ -234,9 +239,11 @@ def download(src, dest, timeout=8):
     Raises:
         IOError: File copy or download failed.
     """
+    src = str(src)
+    dest = str(dest)
     assert isinstance(timeout, int) and timeout >= 0
     if src.startswith('file://'):
-        src = src[6:]
+        src = str(src[6:])
     if os.path.isfile(src):
         LOGGER.debug("Copying '%s' to '%s'", src, dest)
         mkdirp(os.path.dirname(dest))
@@ -252,20 +259,21 @@ def download(src, dest, timeout=8):
             LOGGER.warning("%s failed to download '%s'. Retrying with a different method...", cmd, src)
         # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
         if timeout:
-            raise IOError("Failed to download '%s'" % src)
+            raise OSError("Failed to download '%s'" % src)
         with ProgressIndicator("Downloading") as progress_bar:
             try:
-                urllib.urlretrieve(src, dest, reporthook=progress_bar.update)
+                with urllib.request.urlopen(src) as in_stream, open(dest, 'wb') as out_file:
+                    shutil.copyfileobj(in_stream, out_file)
             except Exception as err:
                 LOGGER.warning("urllib failed to download '%s': %s", src, err)
-                raise IOError("Failed to download '%s'" % src)
+                raise OSError("Failed to download '%s'" % src)
 
 
 def _create_dl_subprocess(abs_cmd, src, dest, timeout):
-    if "curl" in os.path.basename(abs_cmd):
+    if "curl" in str(os.path.basename(abs_cmd)):
         size_cmd = [abs_cmd, '-sI', src, '--location', '--max-time', str(timeout)]
         get_cmd = [abs_cmd, '-s', '-L', src, '-o', dest, '--connect-timeout', str(timeout)]
-    elif "wget" in os.path.basename(abs_cmd):
+    elif "wget" in str(os.path.basename(abs_cmd)):
         size_cmd = [abs_cmd, src, '--spider', '--server-response', '--timeout=%d' % timeout, '--tries=1']
         get_cmd = [abs_cmd, '-q', src, '-O', dest, '--timeout=%d' % timeout]
     else:
@@ -282,7 +290,7 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
         file_size = -1
     with ProgressIndicator("Downloading", total_size=file_size) as progress_bar:
         with open(os.devnull, 'wb') as devnull:
-            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT)
+            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT, universal_newlines=True)
             while proc.poll() is None:
                 try:
                     current_size = os.stat(dest).st_size
@@ -320,25 +328,73 @@ def archive_toplevel(archive):
     try:
         fin = tarfile.open(archive)
     except tarfile.ReadError:
-        raise IOError
+        raise OSError
     else:
         if fin.firstmember.isdir():
-            topdir = fin.firstmember.name
+            topdir = str(fin.firstmember.name)
         else:
-            dirs = [d.name for d in fin.getmembers() if d.isdir()]
+            dirs = [str(d.name) for d in fin.getmembers() if d.isdir()]
             if dirs:
                 topdir = min(dirs, key=len)
             else:
-                dirs = set()
-                names = [d.name for d in fin.getmembers() if d.isfile()]
+                names = [str(d.name) for d in fin.getmembers() if d.isfile()]
                 for name in names:
                     dirname, basename = os.path.split(name)
                     while dirname:
                         dirname, basename = os.path.split(dirname)
-                    dirs.add(basename)
+                    dirs += [str(basename)]
                 topdir = min(dirs, key=len)
         LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-        return topdir
+        return str(topdir)
+
+
+def is_clean_container(obj):
+    """Recursively checks a container for bytes, bytearray and memory view objects in keys and values.
+    Care must be taken to avoid infinite loops caused by cycles in a dictionary with cycles.
+
+    Args:
+        obj (any): Container to be checked for disallowed binary data
+
+    Returns:
+        bool: Whether or not bad binary entries were found
+    """
+    bad_types = (bytes, bytearray, memoryview)
+    sequence_types = (list, tuple, range, set, frozenset)
+
+    # Handle empty containers & types not in containers
+    if (not isinstance(obj, (list, tuple, range, set, frozenset, dict))) or not obj:
+        return not isinstance(obj, bad_types)
+
+    try:
+        stack = list(obj.items())
+    except AttributeError:
+        stack = list(obj)
+        is_dictlike = False
+    else:
+        is_dictlike = True
+    visited = set()
+    while stack:
+        if is_dictlike:
+            k, v = stack.pop()
+            if isinstance(k, bad_types):
+                return False
+            elif isinstance(k, sequence_types):
+                if not is_clean_container(k):
+                    return False
+            if isinstance(v, dict):
+                if k not in visited:
+                    stack.extend(v.items())
+                elif isinstance(v, bad_types):
+                    return False
+                visited.add(k)
+        else:
+            v = stack.pop()
+        if isinstance(v, sequence_types):
+            if not is_clean_container(v):
+                return False
+        elif isinstance(v, bad_types):
+            return False
+    return True
 
 
 def _show_extract_progress(members):
@@ -377,7 +433,7 @@ def extract_archive(archive, dest, show_progress=True):
             LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
             fin.extractall(dest)
     if not os.path.isdir(full_dest):
-        raise IOError("Extracting '%s' does not create '%s'" % (archive, full_dest))
+        raise OSError(f"Extracting '{archive}' does not create '{full_dest}'")
     return full_dest
 
 
@@ -402,7 +458,7 @@ def create_archive(fmt, dest, items, cwd=None, show_progress=True):
         try:
             if fmt == 'zip':
                 with ZipFile(dest, 'w') as archive:
-                    archive.comment = "Created by TAU Commander"
+                    archive.comment = b"Created by TAU Commander"
                     for item in items:
                         archive.write(item)
             elif fmt in ('tar', 'tgz', 'tar.bz2'):
@@ -449,7 +505,7 @@ def path_accessible(path, mode='r'):
         handle = None
         try:
             handle = open(path, mode)
-        except IOError as err:
+        except OSError as err:
             if err.errno == errno.EACCES:
                 return False
             # Some other error, not permissions
@@ -459,8 +515,8 @@ def path_accessible(path, mode='r'):
         finally:
             if handle:
                 handle.close()
-        return False
 
+# pylint: disable=unused-argument
 @contextmanager
 def _null_context(label):
     yield
@@ -489,7 +545,7 @@ def create_subprocess(
     """
     subproc_env = dict(os.environ)
     if env:
-        for key, val in env.iteritems():
+        for key, val in env.items():
             if val is None:
                 subproc_env.pop(key, None)
                 _heavy_debug("unset %s", key)
@@ -502,16 +558,16 @@ def create_subprocess(
         if error_buf:
             buf = deque(maxlen=error_buf)
         output = []
-        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env,
+        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, universal_newlines=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
         with proc.stdout:
             # Use iter to avoid hidden read-ahead buffer bug in named pipes:
             # http://bugs.python.org/issue3907
-            for line in iter(proc.stdout.readline, b''):
+            for line in iter(proc.stdout.readline, ''):
                 if log:
                     LOGGER.debug(line[:-1])
                 if stdout:
-                    print line,
+                    print(line, end='')
                 if error_buf:
                     buf.append(line)
                 if record_output:
@@ -521,7 +577,7 @@ def create_subprocess(
     LOGGER.debug("%s returned %d", cmd, retval)
     if retval and error_buf and not stdout:
         for line in buf:
-            print line,
+            print(line, end='')
     if record_output:
         return retval, output
     return retval
@@ -552,14 +608,14 @@ def get_command_output(cmd):
     else:
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
-    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
     get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
     return stdout
 
 
-def page_output(output_string):
+def page_output(output_string: str):
     """Pipe string to a pager.
 
     If PAGER is an environment then use that as pager, otherwise
@@ -569,9 +625,9 @@ def page_output(output_string):
         output_string (str): String to put output.
 
     """
-    output_string = unidecode(output_string.decode('utf-8'))
+    output_string = unidecode(output_string)
     if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
-        print output_string
+        print(output_string)
     else:
         pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
         proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
@@ -592,9 +648,9 @@ def human_size(num, suffix='B'):
         num = 0
     for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
-            return "%3.1f%s%s" % (num, unit, suffix)
+            return f"{num:3.1f}{unit}{suffix}"
         num /= 1024.0
-    return "%.1f%s%s" % (num, 'Yi', suffix)
+    return "{:.1f}{}{}".format(num, 'Yi', suffix)
 
 
 def parse_bool(value, additional_true=None, additional_false=None):
@@ -622,7 +678,7 @@ def parse_bool(value, additional_true=None, additional_false=None):
         true_values.extend(additional_true)
     if additional_false:
         false_values.extend(additional_false)
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         value = value.lower()
         if value in true_values:
             return True
@@ -642,7 +698,7 @@ def is_url(url):
     Returns:
         bool: True if `url` is a URL, False otherwise.
     """
-    return bool(len(urlparse.urlparse(url).scheme))
+    return bool(len(urllib.parse.urlparse(url).scheme))
 
 
 def camelcase(name):
@@ -704,60 +760,12 @@ def uncolor_text(text):
     return re.sub(_COLOR_CONTROL_RE, '', text)
 
 
-def walk_packages(path, prefix):
-    """Fix :any:`pkgutil.walk_packages` to work with Python zip files.
-
-    Python's default :any:`zipimporter` doesn't provide an `iter_modules` method so
-    :any:`pkgutil.walk_packages` silently fails to list modules and packages when
-    they are in a zip file.  This implementation works around this.
-    """
-    def seen(path, dct={}):     # pylint: disable=dangerous-default-value
-        if path in dct:
-            return True
-        dct[path] = True
-    for importer, name, ispkg in _iter_modules(path, prefix):
-        yield importer, name, ispkg
-        if ispkg:
-            __import__(name)
-            path = getattr(sys.modules[name], '__path__', None) or []
-            path = [p for p in path if not seen(p)]
-            for item in walk_packages(path, name+'.'):
-                yield item
-
-
-def _zipimporter_iter_modules(archive, path):
-    """The missing zipimporter.iter_modules method."""
-    libdir, _, pkgpath = path.partition(archive + os.sep)
-    with ZipFile(os.path.join(libdir, archive)) as zipfile:
-        namelist = zipfile.namelist()
-
-    def iter_modules(prefix):
-        for fname in namelist:
-            fname, ext = os.path.splitext(fname)
-            if ext in _PY_SUFFEXES:
-                extrapath, _, modname = fname.partition(pkgpath + os.sep)
-                if extrapath or modname == '__init__':
-                    continue
-                pkgname, modname = os.path.split(modname)
-                if pkgname:
-                    if os.sep in pkgname:
-                        continue
-                    yield prefix + pkgname, True
-                else:
-                    yield prefix + modname, False
-    return iter_modules
-
-
 def _iter_modules(paths, prefix):
     # pylint: disable=no-member
     yielded = {}
     for path in paths:
         importer = pkgutil.get_importer(path)
-        if isinstance(importer, zipimporter):
-            archive = os.path.basename(importer.archive)
-            iter_importer_modules = _zipimporter_iter_modules(archive, path)
-        else:
-            iter_importer_modules = importer.iter_modules
+        iter_importer_modules = importer.iter_modules
         for name, ispkg in iter_importer_modules(prefix):
             if name not in yielded:
                 yielded[name] = True
@@ -773,3 +781,61 @@ def get_binary_linkage(cmd):
     if proc.returncode:
         return 'static' if stdout else None
     return 'dynamic'
+
+
+def tmpfs_prefix():
+    """Path to a uniquely named directory in a temporary filesystem, ideally a ramdisk.
+
+    /dev/shm is the preferred tmpfs, but if it's unavailable or mounted with noexec then
+    fall back to tempfile.gettempdir(), which is usually /tmp.  If that filesystem is also
+    unavailable then use the filesystem prefix of the highest writable storage container.
+
+    An attempt is made to ensure that there is at least 2GiB of free space in the
+    selected filesystem.
+
+    Returns:
+        str: Path to a uniquely-named directory in the temporary filesystem. The directory
+            and all its contents **will be deleted** when the program exits if it installs
+            correctly.
+    """
+    candidate = None
+    for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
+        try:
+            tmp_prefix = mkdtemp(dir=prefix)
+        except OSError as err:
+            LOGGER.debug(err)
+            continue
+        # Check execute privileges some distros mount tmpfs with the noexec option.
+        check_exe_script = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", dir=tmp_prefix.name, delete=False) as tmp_file:
+                check_exe_script = tmp_file.name
+                tmp_file.write("#!/bin/sh\nexit 0")
+            os.chmod(check_exe_script, S_IRUSR | S_IWUSR | S_IEXEC)
+            subprocess.check_call([check_exe_script])
+        except (OSError, subprocess.CalledProcessError) as err:
+            LOGGER.debug(err)
+            continue
+        try:
+            statvfs = os.statvfs(check_exe_script)
+        except OSError as err:
+            LOGGER.debug(err)
+            if candidate is None:
+                candidate = tmp_prefix
+            continue
+        else:
+            free_mib = (statvfs.f_frsize*statvfs.f_bavail)//0x100000
+            LOGGER.debug("%s: %sMB free", tmp_prefix.name, free_mib)
+            if free_mib < 2000:
+                continue
+        if check_exe_script:
+            os.remove(check_exe_script)
+        break
+    else:
+        if not candidate:
+            raise ConfigurationError("No filesystem has at least 2GB free space and supports executables.")
+        tmp_prefix = candidate
+        LOGGER.warning("Unable to count available bytes in '%s'", tmp_prefix)
+    tmpfs_prefix.value = tmp_prefix
+    LOGGER.debug("Temporary prefix: '%s'", tmp_prefix)
+    return tmpfs_prefix.value

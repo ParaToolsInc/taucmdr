@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -28,7 +27,7 @@
 """TAU Common Framework (CF) common objects."""
 
 
-class TrackedInstance(object):
+class TrackedInstance:
     """Base class for classes that need to keep track of their instances.
 
     Each subclass tracks of its own instances separately.  Unliked :any:`KeyedRecordCreator`
@@ -66,7 +65,7 @@ class TrackedInstance(object):
 
     def __new__(cls, *args, **kwargs):
         """Ensure that __instances__ is set and track new instances."""
-        instance = object.__new__(cls, *args, **kwargs)
+        instance = object.__new__(cls)
         if "__instances__" not in cls.__dict__:
             cls.__instances__ = set()
         cls.__instances__.add(instance)
@@ -75,8 +74,7 @@ class TrackedInstance(object):
     @classmethod
     def all(cls):
         """Iterate over class instances."""
-        for instance in cls.__instances__:
-            yield instance
+        yield from cls.__instances__
 
 
 
@@ -109,12 +107,12 @@ class KeyedRecordCreator(type):
         try:
             instance = cls.__instances__[key]
         except KeyError:
-            instance = super(KeyedRecordCreator, cls).__call__(*args, **kwargs)
+            instance = super().__call__(*args, **kwargs)
             cls.__instances__[key] = instance
         return instance
 
 
-class KeyedRecord(object):
+class KeyedRecord(metaclass=KeyedRecordCreator):
     """Data record with a unique key.
 
     Subclasses must declare a ``__key__`` member defining the attribute to be used as the key.
@@ -148,13 +146,14 @@ class KeyedRecord(object):
     # Some members of this class are set by the metaclass __new__ method.
     # pylint: disable=no-member
 
-    __metaclass__ = KeyedRecordCreator
-
     def __str__(self):
         return str(getattr(self, self.__key__))
 
     def __eq__(self, other):
         return self is other
+
+    def __hash__(self):
+        return hash(self.__key__)
 
     def __len__(self):
         return len(getattr(self, self.__key__))
@@ -162,8 +161,7 @@ class KeyedRecord(object):
     @classmethod
     def all(cls):
         """Iterate over class instances."""
-        for instance in cls.__instances__.itervalues():
-            yield instance
+        yield from cls.__instances__.values()
 
     @classmethod
     def keys(cls):
@@ -172,7 +170,7 @@ class KeyedRecord(object):
         Returns:
             list: All instance keys.
         """
-        return cls.__instances__.keys()
+        return list(cls.__instances__.keys())
 
     @classmethod
     def find(cls, key):

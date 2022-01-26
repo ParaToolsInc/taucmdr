@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -47,6 +46,7 @@ from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
+from taucmdr.cf.storage.storage_dispatch import AVAILABLE_BACKENDS
 
 
 HELP_PAGE = """
@@ -84,6 +84,11 @@ class InitializeCommand(AbstractCommand):
                             default=False,
                             metavar='T/F',
                             action=ParseBooleanAction)
+        parser.add_argument('--backend',
+                            help="Database backend in which to store this project's data",
+                            choices=AVAILABLE_BACKENDS.keys(),
+                            metavar="<backend>",
+                            default="auto")
         project_group = parser.add_argument_group('project arguments')
         project_group.add_argument('--project-name',
                                    help="Name of the new project",
@@ -91,7 +96,7 @@ class InitializeCommand(AbstractCommand):
                                    default=(os.path.basename(os.getcwd()) or 'default_project'))
         project_group.add_argument('--storage-level',
                                    help='location of installation directory',
-                                   choices=STORAGE_LEVELS.keys(),
+                                   choices=list(STORAGE_LEVELS.keys()),
                                    metavar='<levels>', default=arguments.SUPPRESS)
         project_group.add_argument('--force',
                                    help="Force project to be created in current directory",
@@ -159,7 +164,7 @@ class InitializeCommand(AbstractCommand):
     def _safe_execute(self, cmd, argv):
         retval = cmd.main(argv)
         if retval != EXIT_SUCCESS:
-            raise InternalError("return code %s: %s %s" % (retval, cmd, ' '.join(argv)))
+            raise InternalError("return code {}: {} {}".format(retval, cmd, ' '.join(argv)))
 
     def _populate_project(self, args):
         # Create default application
@@ -234,6 +239,8 @@ class InitializeCommand(AbstractCommand):
         proj_ctrl = Project.controller()
         if args.force:
             proj_ctrl.storage.force_cwd(True)
+        if args.backend and args.backend != 'auto':
+            PROJECT_STORAGE.set_backend(args.backend)
         try:
             proj = proj_ctrl.selected()
         except ProjectStorageError:
@@ -262,5 +269,6 @@ class InitializeCommand(AbstractCommand):
                                 " '%s' to reset to a fresh environment. %s",
                                 proj['name'], proj_ctrl.storage.prefix, force_str)
             return EXIT_WARNING
+
 
 COMMAND = InitializeCommand(__name__, help_page_fmt=HELP_PAGE, summary_fmt="Initialize TAU Commander.")

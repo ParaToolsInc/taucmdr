@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -46,7 +45,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem
-from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
+from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL, PPC64LE
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
@@ -88,8 +87,12 @@ def _require_compiler_family(family, *hints):
         except KeyError:
             raise ConfigurationError("%s but it is undefined" % msg)
         given_family_name = compiler_record['family']
-        if given_family_name != family.name:
-            raise ConfigurationError("%s but it is a %s compiler" % (msg, given_family_name), *hints)
+        if isinstance(family, list):
+            if given_family_name not in [fam.name for fam in family]:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        else:
+            if given_family_name != family.name:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
     return callback
 
 def knc_require_k1om(*_):
@@ -145,7 +148,7 @@ def tau_source_default():
     try:
         with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source')) as fin:
             path = fin.read()
-    except IOError:
+    except OSError:
         return 'download'
     path = path.strip()
     if not (os.path.isdir(path) and util.path_accessible(path)):
@@ -164,7 +167,7 @@ def attributes():
     """
     from taucmdr.model.project import Project
     from taucmdr.cli.arguments import ParsePackagePathAction
-    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
+    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, GNU
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
@@ -177,6 +180,9 @@ def attributes():
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
+    gnu_only = _require_compiler_family([PGI, GNU],
+                                              "You must use GNU compilers to use the backtrace unwinder",
+                                              "Try adding `--compilers=GNU` to the command line")
 
     return {
         'projects': {
@@ -198,7 +204,7 @@ def attributes():
             'argparse': {'flags': ('--os',),
                          'group': 'host',
                          'metavar': '<os>',
-                         'choices': OperatingSystem.keys()},
+                         'choices': list(OperatingSystem.keys())},
             'rebuild_required': True
         },
         'host_arch': {
@@ -209,7 +215,7 @@ def attributes():
             'argparse': {'flags': ('--arch',),
                          'group': 'host',
                          'metavar': '<arch>',
-                         'choices': Architecture.keys()},
+                         'choices': list(Architecture.keys())},
             'compat': {str(INTEL_KNC):
                        (Target.require('host_arch', knc_require_k1om),
                         Target.require(CC.keyword, knc_intel_only),
@@ -407,6 +413,19 @@ def attributes():
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
+        'unwinder': {
+            'type': 'string',
+            'description': 'name of unwinder to be used',
+            'default': 'backtrace' if HOST_ARCH is PPC64LE else 'libunwind',
+            'argparse': {'flags': ('--unwinder',),
+                          'group': 'software package',
+                          'metavar': '(libunwind|backtrace|None)'},
+            'compat': {'libunwind': Target.exclude('host_arch', PPC64LE),
+                       'backtrace': (Target.require(CC.keyword, gnu_only),
+                                     Target.require(CXX.keyword, gnu_only),
+                                     Target.require(FC.keyword, gnu_only))},
+            'rebuild_required': True
+        },
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
@@ -416,6 +435,30 @@ def attributes():
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
+            'rebuild_required': True
+        },
+        'libdwarf_source': {
+            'type': 'string',
+            'description': 'path or URL to a libdwarf installation or archive file',
+            'default': 'download' if HOST_OS is not DARWIN else None,
+            'argparse': {'flags': ('--libdwarf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN),
+                                                   Target.require('libelf_source'))},
+            'rebuild_required': True
+        },
+        'libelf_source': {
+            'type': 'string',
+            'description': 'libelf installation for libdwarf use',
+            'default': 'download' if HOST_OS is not DARWIN else None,
+            'argparse': {'flags': ('--libelf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+
+            'compat':  {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
         'papi_source': {
@@ -449,7 +492,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|download-tr6|None)',
+                         'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
@@ -458,6 +501,16 @@ def attributes():
             'description': 'path or URL to libotf2 installation or archive file',
             'default': 'download',
             'argparse': {'flags': ('--otf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
+        'sqlite3_source': {
+            'type': 'string',
+            'description': 'path or URL to SQLite3 installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--sqlite3',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
@@ -486,7 +539,7 @@ class TargetController(Controller):
             if used_by:
                 raise ImmutableRecordError("Target '%s' cannot be modified because "
                                            "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
-        return super(TargetController, self).delete(keys)
+        return super().delete(keys)
 
 class Target(Model):
     """Target data model."""
@@ -495,11 +548,11 @@ class Target(Model):
     __controller__ = TargetController
 
     def __init__(self, *args, **kwargs):
-        super(Target, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._compilers = None
 
     def on_create(self):
-        for comp in self.compilers().itervalues():
+        for comp in self.compilers().values():
             comp.generate_wrapper(os.path.join(self.storage.prefix, 'bin', self['name']))
 
     def on_delete(self):
@@ -522,7 +575,7 @@ class Target(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in changes.items():
                 props = self.attributes[attr]
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
@@ -555,7 +608,7 @@ class Target(Model):
             dict: Software package paths indexed by package name.
         """
         sources = {}
-        for attr, val in self.iteritems():
+        for attr, val in self.items():
             if val and attr.endswith('_source'):
                 sources[attr.replace('_source', '')] = val
         return sources
@@ -566,7 +619,7 @@ class Target(Model):
 
     def acquire_sources(self):
         """Acquire all source code packages known to this target."""
-        for attr, val in self.iteritems():
+        for attr, val in self.items():
             if val and attr.endswith('_source'):
                 inst = self.get_installation(attr.replace('_source', ''))
                 try:
@@ -627,7 +680,7 @@ class Target(Model):
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)
         found = []
-        known_compilers = [comp for comp in self.compilers().itervalues()]
+        known_compilers = self.compilers()
         for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
                 compiler_record = self.populate(info.role.keyword)
@@ -649,9 +702,9 @@ class Target(Model):
                         found.append(compiler_record)
                         break
         if not found:
-            parts = ["No compiler in target '%s' matches '%s'." % (self['name'], absolute_path or compiler_cmd),
+            parts = ["No compiler in target '{}' matches '{}'.".format(self['name'], absolute_path or compiler_cmd),
                      "The known compiler commands are:"]
-            parts.extend('  %s (%s)' % (comp.absolute_path, comp.info.short_descr) for comp in known_compilers)
+            parts.extend(f'  {comp.absolute_path} ({comp.info.short_descr})' for comp in known_compilers.values())
             hints = ("Try one of the valid compiler commands",
                      "Create and select a new target configuration that uses the '%s' compiler" % (
                          absolute_path or compiler_cmd),

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -67,13 +66,13 @@ class Error(Exception):
             value (str): Message describing the error.
             *hints: Hint messages to help the user resolve this error.
         """
-        super(Error, self).__init__()
+        super().__init__()
         self.value = value
         self.hints = list(hints)
         self.message_fields = {'contact': HELP_CONTACT, 'logfile': logger.LOG_FILE}
 
     @property
-    def message(self):
+    def message(self) -> str:
         fields = dict(self.message_fields, value=self.value)
         if not self.hints:
             hints_str = ''
@@ -120,8 +119,9 @@ class ConfigurationError(Error):
             *hints: Hint messages to help the user resolve this error.
         """
         if not hints:
+            hints = list()
             hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
-        super(ConfigurationError, self).__init__(value, *hints)
+        super().__init__(value, *hints)
 
     def __str__(self):
         return self.value
@@ -137,7 +137,7 @@ class ModelError(InternalError):
             model (Model): Data model.
             value (str): A message describing the error.
         """
-        super(ModelError, self).__init__("%s: %s" % (model.name, value))
+        super().__init__(f"{model.name}: {value}")
         self.model = model
 
 
@@ -151,7 +151,7 @@ class UniqueAttributeError(ModelError):
             model (Model): Data model.
             unique (dict): Dictionary of unique attributes in the data model.
         """
-        super(UniqueAttributeError, self).__init__(model, "A record with one of '%s' already exists" % unique)
+        super().__init__(model, "A record with one of '%s' already exists" % unique)
 
 
 class ImmutableRecordError(ConfigurationError):
@@ -172,7 +172,7 @@ class ProjectSelectionError(ConfigurationError):
             hints = ("Use `%s` to create a new project configuration." % project_create_cmd,
                      "Use `%s <project_name>` to select a project configuration." % project_select_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)
-        super(ProjectSelectionError, self).__init__(value, *hints)
+        super().__init__(value, *hints)
 
 
 class ExperimentSelectionError(ConfigurationError):
@@ -184,10 +184,10 @@ class ExperimentSelectionError(ConfigurationError):
         from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
         from taucmdr.cli.commands.project.list import COMMAND as project_list_cmd
         if not hints:
-            hints = ("Use `%s` or `%s` to create a new experiment." % (select_cmd, experiment_create_cmd),
+            hints = (f"Use `{select_cmd}` or `{experiment_create_cmd}` to create a new experiment.",
                      "Use `%s` to see current project configuration." % dashboard_cmd,
                      "Use `%s` to see available project configurations." % project_list_cmd)
-        super(ExperimentSelectionError, self).__init__(value, *hints)
+        super().__init__(value, *hints)
 
 
 def excepthook(etype, value, tb):
@@ -217,4 +217,10 @@ def excepthook(etype, value, tb):
             LOGGER.critical(message)
             sys.exit(EXIT_FAILURE)
 
-sys.excepthook = excepthook
+
+# Replace the exception handler, but only if we are not running Python interactively.
+# (Replacing the exception handler when running interactively is annoying because
+# the handler exits on an unhandled exception, which is fine if TAU Commander is being
+# used through the `tau` CLI.)
+if not bool(getattr(sys, 'ps1', sys.flags.interactive)):
+    sys.excepthook = excepthook

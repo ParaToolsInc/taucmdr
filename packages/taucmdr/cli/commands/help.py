@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -29,6 +28,7 @@
 
 import os
 import mimetypes
+import re
 from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
@@ -39,7 +39,7 @@ LOGGER = logger.get_logger(__name__)
 
 _SCRIPT_CMD = os.path.basename(TAUCMDR_SCRIPT)
 
-_GENERIC_HELP = "See '%s --help' or contact %s for assistance" % (_SCRIPT_CMD, HELP_CONTACT)
+_GENERIC_HELP = f"See '{_SCRIPT_CMD} --help' or contact {HELP_CONTACT} for assistance"
 
 _KNOWN_FILES = {'makefile': ("makefile script",
                              "See 'taucmdr make --help' for help building with make"),
@@ -82,9 +82,9 @@ def _guess_filetype(filename):
     mimetypes.init()
     filetype = mimetypes.guess_type(filename)
     if not filetype[0]:
-        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(range(0x20, 0x100))
-        with open(filename) as fd:
-            if fd.read(1024).translate(None, textchars):
+        textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(list(range(0x20, 0x100)))
+        with open(filename,mode='rb') as fd:
+            if re.sub(textchars, b'', fd.read(1024)):
                 filetype = ('application/unknown', None)
             else:
                 filetype = ('text/plain', None)
@@ -155,7 +155,7 @@ class HelpCommand(AbstractCommand):
                 pass
             else:
                 article = 'an' if desc[0] in 'aeiou' else 'a'
-                hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
+                hint = f"'{cmd}' is {article} {desc}.\n{hint}."
                 raise UnknownCommandError(cmd, hint)
 
             # Get the filetype and try to be helpful.
@@ -170,7 +170,7 @@ class HelpCommand(AbstractCommand):
                 else:
                     desc, hint = _fuzzy_index(type_hints, subtype)
                     article = 'an' if desc[0] in 'aeiou' else 'a'
-                    hint = "'%s' is %s %s.\n%s." % (cmd, article, desc, hint)
+                    hint = f"'{cmd}' is {article} {desc}.\n{hint}."
                 raise UnknownCommandError(cmd, hint)
             else:
                 raise UnknownCommandError(cmd)

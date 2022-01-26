@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -41,7 +40,8 @@ from taucmdr.cf.platforms import X86_64, IBM64, PPC64, PPC64LE
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/tau/scorep.tgz'}
+REPOS = {None: ['http://www.cs.uoregon.edu/research/tau/scorep.tgz',
+                'http://fs.paratools.com/tau-mirror/scorep.tgz']}
 
 COMMANDS = {None:
             [
@@ -112,7 +112,7 @@ class ScorepInstallation(AutotoolsInstallation):
                  use_libunwind=False,
                  use_papi=False,
                  use_pdt=False):
-        super(ScorepInstallation, self).__init__('scorep', 'Score-P', sources, target_arch, target_os,
+        super().__init__('scorep', 'Score-P', sources, target_arch, target_os,
                                                  compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
@@ -126,7 +126,7 @@ class ScorepInstallation(AutotoolsInstallation):
     def uid_items(self):
         uid_parts = [self.src, self.target_arch.name, self.target_os.name]
         # Score-P changes if any compiler changes.
-        uid_parts.extend(sorted(comp.uid for comp in self.compilers.itervalues()))
+        uid_parts.extend(sorted(comp.uid for comp in self.compilers.values()))
         # Score-P installations have different symbols depending on what flags were used.
         uid_parts.append(str(self._get_flags()))
         return uid_parts
@@ -168,7 +168,7 @@ class ScorepInstallation(AutotoolsInstallation):
         return flags
 
     def verify(self):
-        super(ScorepInstallation, self).verify()
+        super().verify()
         # Use Score-P's `scorep-info` command to check if this Score-P installation
         # was configured with the flags we need.
         cmd = [os.path.join(self.bin_path, 'scorep-info'), 'config-summary']
@@ -213,4 +213,4 @@ class ScorepInstallation(AutotoolsInstallation):
         #               needed when developing. Python version 2.5 or above, but no
         #               support for python 3. Use PYTHON=: to disable python support.
         os.environ['PYTHON'] = ':'
-        return super(ScorepInstallation, self).configure(flags)
+        return super().configure(flags)

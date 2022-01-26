@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -46,8 +45,11 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3.1.tar.gz',
-         ARM64: {LINUX: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3-rc1.tar.gz'}}
+REPOS = {None: [
+    'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3.1.tar.gz',
+    'http://fs.paratools.com/tau-mirror/libunwind-1.3.1.tar.gz'],
+         ARM64: {LINUX: ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3-rc1.tar.gz',
+                         'http://fs.paratools.com/tau-mirror/libunwind-1.3.-rc1.tar.gz']}}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -65,7 +67,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             except ConfigurationError:
                 raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
-        super(LibunwindInstallation, self).__init__('libunwind', 'libunwind', sources, target_arch, target_os,
+        super().__init__('libunwind', 'libunwind', sources, target_arch, target_os,
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
@@ -74,7 +76,8 @@ class LibunwindInstallation(AutotoolsInstallation):
         os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
         if self.target_arch is IBM_BGQ:
             flags.append('--disable-shared')
-            for line in fileinput.input(os.path.join(self._src_prefix, 'src', 'unwind', 'Resume.c'), inplace=1):
+            for line in fileinput.input(os.path.join(str(self._src_prefix),
+                                                     'src', 'unwind', 'Resume.c'), inplace=True):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
         elif self.target_os is CRAY_CNL:
@@ -83,12 +86,12 @@ class LibunwindInstallation(AutotoolsInstallation):
             flags.append('--disable-shared')
             flags.append('--disable-minidebuginfo')
         # If needed, fix test so `make install` succeeds more frequently.
-        crasher_c = os.path.join(self._src_prefix, 'tests', 'crasher.c')
+        crasher_c = os.path.join(str(self._src_prefix), 'tests', 'crasher.c')
         if os.path.exists(crasher_c):
-            for line in fileinput.input(crasher_c, inplace=1):
+            for line in fileinput.input(crasher_c, inplace=True):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
-        return super(LibunwindInstallation, self).configure(flags)
+        return super().configure(flags)
 
     def make(self, flags):
         """Build libunwind.
@@ -99,7 +102,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         """
         # pylint: disable=broad-except
         try:
-            super(LibunwindInstallation, self).make(flags)
+            super().make(flags)
         except Exception as err:
             LOGGER.debug("libunwind make failed, but continuing anyway: %s", err)
 
@@ -107,11 +110,11 @@ class LibunwindInstallation(AutotoolsInstallation):
     def make_install(self, flags):
         if self.target_arch in [PPC64, PPC64LE]:
             flags.append('-i')
-        super(LibunwindInstallation, self).make_install(flags)
+        super().make_install(flags)
 
     def installation_sequence(self):
         if self.target_arch is ARM64:
             LOGGER.info("Using pre-built libunwind package from U. Oregon Performance Research Laboratory")
-            shutil.move(self._src_prefix, self.install_prefix)
+            shutil.move(str( self._src_prefix), self.install_prefix)
         else:
-            super(LibunwindInstallation, self).installation_sequence()
+            super().installation_sequence()

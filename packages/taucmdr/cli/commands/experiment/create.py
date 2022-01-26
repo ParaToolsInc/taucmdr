@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -42,7 +41,7 @@ class ExperimentCreateCommand(CreateCommand):
     """``experiment create`` subcommand."""
 
     def _construct_parser(self):
-        parser = super(ExperimentCreateCommand, self)._construct_parser()
+        parser = super()._construct_parser()
         # All three options must be given to create the experiments
         parser['--target'].required = True
         parser['--application'].required = True
@@ -56,7 +55,7 @@ class ExperimentCreateCommand(CreateCommand):
         try:
             ctrl.create(data)
         except UniqueAttributeError:
-            self.parser.error("A %s with %s='%s' already exists" % (self.model_name, key_attr, key))
+            self.parser.error(f"A {self.model_name} with {key_attr}='{key}' already exists")
         self.logger.info("Created a new experiment '%s'", key)
         return EXIT_SUCCESS
 

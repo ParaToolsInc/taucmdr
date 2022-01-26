@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -48,10 +47,10 @@ DASHBOARD_COLUMNS = [{'header': 'Name', 'value': 'name', 'align': 'r'},
 class TargetListCommand(ListCommand):
 
     def _format_long_item(self, key, val):
-        fmt_key, fmt_val, flags, description = super(TargetListCommand, self)._format_long_item(key, val)
+        fmt_key, fmt_val, flags, description = super()._format_long_item(key, val)
         attrs = self.model.attributes[key]
         if attrs.get('model') is Compiler:
-            fmt_val = '%s (%s)' % (val['path'], val['family'])
+            fmt_val = '{} ({})'.format(val['path'], val['family'])
         return fmt_key, fmt_val, flags, description
 
 

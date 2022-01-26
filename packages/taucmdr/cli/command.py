@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -32,7 +31,7 @@ from taucmdr import logger, cli
 from taucmdr.cli.arguments import ArgumentsNamespace
 
 
-class AbstractCommand(object):
+class AbstractCommand(metaclass=ABCMeta):
     """Abstract base class for TAU Commander commands.
 
     Attributes:
@@ -42,8 +41,6 @@ class AbstractCommand(object):
         help_page (str): Long and informative description of the command.
         group (str): If not None, commands will be grouped together by group name in help messages.
     """
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, module_name, format_fields=None, summary_fmt=None, help_page_fmt=None, group=None):
         if not summary_fmt:

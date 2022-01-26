@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -50,7 +49,7 @@ class ExperimentListCommand(ListCommand):
     """Base class for the `list` subcommand of command line views."""
 
     def _construct_parser(self):
-        parser = super(ExperimentListCommand, self)._construct_parser()
+        parser = super()._construct_parser()
         parser.add_argument('--current',
                             help="List current trial",
                             default=False,
@@ -75,13 +74,13 @@ class ExperimentListCommand(ListCommand):
             try:
                 expr = proj.experiment()
             except ExperimentSelectionError:
-                print (util.color_text('No selected experiment: ', 'red') +
-                       'Use `%s` to create or select an experiment.' % select_cmd)
+                print(util.color_text('No selected experiment: ', 'red') +
+                      'Use `%s` to create or select an experiment.' % select_cmd)
             else:
-                print expr['name']
+                print(expr['name'])
             retval = EXIT_SUCCESS
         else:
-            retval = super(ExperimentListCommand, self).main(argv)
+            retval = super().main(argv)
         return retval
 
 COMMAND = ExperimentListCommand(Experiment, __name__, dashboard_columns=DASHBOARD_COLUMNS, include_storage_flag=False)

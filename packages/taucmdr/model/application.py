@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
@@ -187,7 +186,7 @@ class ApplicationController(Controller):
             if used_by:
                 raise ImmutableRecordError("Application '%s' cannot be modified because "
                                            "it is used by these experiments: %s" % (model['name'], ', '.join(used_by)))
-        return super(ApplicationController, self).delete(keys)
+        return super().delete(keys)
 
 class Application(Model):
     """Application data model."""
@@ -212,7 +211,7 @@ class Application(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
-            for attr, change in changes.iteritems():
+            for attr, change in changes.items():
                 if self.attributes[attr].get('rebuild_required'):
                     self.controller(self.storage).push_to_topic('rebuild_required', {attr: change})
 
