@@ -576,13 +576,15 @@ class Target(Model):
                                          "Delete experiment '%s' and try again." % expr['name'])
         if self.is_selected():
             for attr, change in changes.items():
+                message = {}
                 props = self.attributes[attr]
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
                         old_comp = Compiler.controller(self.storage).one(change[0])
                         new_comp = Compiler.controller(self.storage).one(change[1])
                         if old_comp is None:
-                            message = {attr: (, new_comp['path'])}
+                            if new_comp['path'] != '':
+                                message = {attr: ('', new_comp['path'])}
                         else:
                             message = {attr: (old_comp['path'], new_comp['path'])}
                     else:
