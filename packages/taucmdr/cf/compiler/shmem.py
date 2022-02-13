@@ -49,6 +49,8 @@ CRAY_SHMEM = SHMEM_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                                  show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                                  CC='cc', CXX='CC', FC='ftn')
 
+NONE = SHMEM_COMPILERS.add('None', CC='', CXX='', FC='')
+
 SHMEM_CC = SHMEM_COMPILERS.roles['CC']
 SHMEM_CXX = SHMEM_COMPILERS.roles['CXX']
 SHMEM_FC = SHMEM_COMPILERS.roles['FC']
