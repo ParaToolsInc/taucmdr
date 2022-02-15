@@ -308,8 +308,7 @@ class Controller:
                 changes[model.eid] = {attr: (model.get(attr), new_value) for attr, new_value in data.items()
                                       if not (attr in model and model.get(attr) == new_value)}
 
-                if 'name' in changes[model.eid]:
-                    if len(changes[model.eid]['name']) == 2:
+                if 'name' in changes[model.eid] and len(changes[model.eid]['name']) == 2:
                         model.on_update(changes[model.eid])
 
                 for attr, foreign in self.model.associations.items():

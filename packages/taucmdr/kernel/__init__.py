@@ -25,36 +25,26 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """
-This file is used for initializing the Plotly Dash server.
+This file is used for importing commands that the JupyterLab Extension will use with
+its IPython Kernel
 """
+import os
+import sys
 
-from dash import dcc
-from dash import html
-import plotly.io as pio
-
-from .server import app
-from . import display, overview, correlation, runtime, data, heatmap   # pylint: disable=unused-import
-
-pio.renderers.default='iframe'
-
-styles = {
-    'body': {
-        'display': 'flex',
-        'height': '100vh'
-    },
-    'sidebar': {
-        'padding': '1.5rem 1rem',
-        'backgroundColor': '#f8f9fa',
-        'flex': '20%'
-    },
-    'content': {
-        'padding': '1.5rem 1rem',
-        'flex': '80%'
-    }
-}
-
-app.layout = html.Div(children=[
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='page-sidebar', children=[], style=styles['sidebar']),
-    html.Div(id='page-content', children=[], style=styles['content'])
-], style=styles['body'])
+from taucmdr.kernel.commands.connect import connect                                               # pylint: disable=unused-import
+from taucmdr.kernel.commands.project import (                                                     # pylint: disable=unused-import
+        get_all_projects, new_project, copy_project, edit_project, delete_project
+)
+from taucmdr.kernel.commands.target import (                                                      # pylint: disable=unused-import
+        new_target, edit_target, copy_target, delete_target
+)
+from taucmdr.kernel.commands.application import (                                                 # pylint: disable=unused-import
+        new_application, edit_application, copy_application, delete_application
+)
+from taucmdr.kernel.commands.measurement import (                                                 # pylint: disable=unused-import
+        new_measurement, edit_measurement, copy_measurement, delete_measurement
+)
+from taucmdr.kernel.commands.experiment import (                                                  # pylint: disable=unused-import
+        new_experiment, select_experiment, edit_experiment, delete_experiment
+)
+from taucmdr.kernel.commands.trial import edit_trial, delete_trial                                # pylint: disable=unused-import

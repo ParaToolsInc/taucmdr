@@ -141,16 +141,16 @@ class Project(Model):
     def on_update(self, changes):
         from taucmdr.model.experiment import Experiment
         from taucmdr.model.compiler import Compiler
+
         try:
-            old_name, new_name = changes['name']
-            new_path = self.prefix.split('/')[:-1]
-            new_path.append(new_name)
-            new_path = '/'.join(new_path)
+            old_value, new_value = changes['name']
+            new_path = os.path.join(os.path.dirname(self.prefix), new_value)
             util.mvtree(self.prefix, new_path)
         except FileNotFoundError:
-            del old_name, new_name
-        except KeyError as e:
+            del old_value, new_value
+        except KeyError:
             pass
+
         try:
             old_value, new_value = changes['experiment']
         except KeyError:
@@ -184,7 +184,6 @@ class Project(Model):
                                 else:
                                     message = {attr: (old_value, new_value)}
                                     self.controller(self.storage).push_to_topic('rebuild_required', message)
-
 
     @classmethod
     def controller(cls, storage=PROJECT_STORAGE):

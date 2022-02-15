@@ -94,7 +94,7 @@ export const editApplicationDialog = (currentRow: any, props: Tables.Application
     .then(response => {
       if (response.button.label == 'Submit') {
         let name = currentRow['Name'];
-        let new_name = response.value!.name;
+        let newName = response.value!.name;
         let linkage = response.value!.linkage;
         let openMP = response.value!.openmp;
         let pThreads = response.value!.pthreads;
@@ -104,14 +104,29 @@ export const editApplicationDialog = (currentRow: any, props: Tables.Application
         let openCL = response.value!.opencl;
         let shmem = response.value!.shmem;
         let mpc = response.value!.mpc;
-        props.kernelExecute(`edit_application('${props.projectName}', '${name}', '${new_name}', '${linkage}', '${openMP}', '${pThreads}', '${tbb}', '${mpi}', '${cuda}', '${openCL}', '${shmem}', '${mpc}')`)
+
+
+        props.kernelExecute(`
+            args = {'linkage': '${linkage}', 
+                'openmp': '${openMP}', 
+                'pthreads': '${pThreads}', 
+                'tbb': '${tbb}', 
+                'mpi': '${mpi}', 
+                'cuda': '${cuda}', 
+                'opencl': '${openCL}', 
+                'shmem': '${shmem}',
+                'mpc': '${mpc}' 
+            }`
+        )
+
+        props.kernelExecute(`edit_application('${props.projectName}', '${name}', '${newName}', args)`) 
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
             }
           });
       }
-      dialog.dispose();
+      dialog.dispose(); 
     });
 }
 

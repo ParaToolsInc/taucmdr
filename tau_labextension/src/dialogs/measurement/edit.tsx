@@ -123,7 +123,7 @@ export const editMeasurementDialog = (currentRow: any, props: Tables.Measurement
     .then(response => {
       if (response.button.label == 'Submit') {
         let name = currentRow['Name'];
-        let new_name = response.value!.name;
+        let newName = response.value!.name;
         let profile = response.value!.profile;
         let trace = response.value!.trace;
         let sample = response.value!.sample;
@@ -134,15 +134,30 @@ export const editMeasurementDialog = (currentRow: any, props: Tables.Measurement
         let io = response.value!.io;
         let mpi = response.value!.mpi;
         let shmem = response.value!.shmem;
-        props.kernelExecute(`edit_measurement('${props.projectName}', '${name}', '${new_name}', '${profile}', '${trace}', '${sample}', '${sourceInst}', '${compilerInst}', '${openMP}', '${cuda}', '${io}', '${mpi}', '${shmem}')`)
+
+        props.kernelExecute(`
+            args = {'profile': '${profile}', 
+                'trace': '${trace}', 
+                'sample': '${sample}', 
+                'source_inst': '${sourceInst}', 
+                'compiler_inst': '${compilerInst}', 
+                'openmp': '${openMP}', 
+                'cuda': '${cuda}', 
+                'io': '${io}', 
+                'mpi': '${mpi}', 
+                'shmem': '${shmem}'
+                }`
+        )
+
+        props.kernelExecute(`edit_measurement('${props.projectName}', '${name}', '${newName}', args)`) 
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
-            }   
-          }); 
-      }   
+            }
+          });
+      }
       dialog.dispose(); 
-    }); 
+    });
 }
 
 namespace Tables {

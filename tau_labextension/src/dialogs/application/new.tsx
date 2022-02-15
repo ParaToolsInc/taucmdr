@@ -96,13 +96,28 @@ export const newApplicationDialog = (props: Dashboard.Application) => {
         let openCL = response.value!.openCL;
         let shmem = response.value!.shmem;
         let mpc = response.value!.mpc;
-        props.kernelExecute(`new_application('${props.projectName}', '${name}', '${linkage}', '${openMP}', '${pThreads}', '${tbb}', '${mpi}', '${cuda}', '${openCL}', '${shmem}', '${mpc}')`)
+
+        props.kernelExecute(`
+            args = {'linkage': '${linkage}', 
+                'openmp': '${openMP}', 
+                'pthreads': '${pThreads}', 
+                'tbb': '${tbb}', 
+                'mpi': '${mpi}', 
+                'cuda': '${cuda}', 
+                'opencl': '${openCL}', 
+                'shmem': '${shmem}',
+                'mpc': '${mpc}' 
+            }`
+        )
+
+        props.kernelExecute(`new_application('${props.projectName}', '${name}', args)`) 
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
             }
           });
       }
+
       dialog.dispose(); 
     });
 }

@@ -127,7 +127,22 @@ export const newMeasurementDialog = (props: Dashboard.Measurement) => {
         let io = response.value!.io;
         let mpi = response.value!.mpi;
         let shmem = response.value!.shmem;
-        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', '${profile}', '${trace}', '${sample}', '${sourceInst}', '${compilerInst}', '${openMP}', '${cuda}', '${io}', '${mpi}', '${shmem}')`)
+
+        props.kernelExecute(`
+            args = {'profile': '${profile}', 
+                'trace': '${trace}', 
+                'sample': '${sample}', 
+                'source_inst': '${sourceInst}', 
+                'compiler_inst': '${compilerInst}', 
+                'openmp': '${openMP}', 
+                'cuda': '${cuda}', 
+                'io': '${io}', 
+                'mpi': '${mpi}', 
+                'shmem': '${shmem}'
+                }`
+        )
+
+        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', args)`) 
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
@@ -137,6 +152,18 @@ export const newMeasurementDialog = (props: Dashboard.Measurement) => {
       dialog.dispose(); 
     });
 }
+
+
+//        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', '${profile}', '${trace}', '${sample}', '${sourceInst}', '${compilerInst}', '${openMP}', '${cuda}', '${io}', '${mpi}', '${shmem}')`)
+//          .then((result) => {
+//            if (result) {
+//              props.updateProject(props.projectName);
+//            }
+//          });
+//      }
+//      dialog.dispose(); 
+//    });
+//}
 
 namespace Dashboard {
   export interface Measurement {

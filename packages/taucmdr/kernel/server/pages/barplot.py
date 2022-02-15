@@ -1,8 +1,35 @@
+#
+# Copyright (c) 2022, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+"""
+This file is used for building the bar plot webpage on the Plotly Dash Server.
+"""
 import os
-from .server import app
-from .parser import TauProfileParser
+from itertools import islice, cycle
 
-import dash
 from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 from dash import html
@@ -13,35 +40,37 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 import pandas as pd
-from itertools import islice, cycle
+
+from .server import app
+from .parser import TauProfileParser
 
 colors = [
-    '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', 
-    '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94', 
-    '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', 
-    '#9edae5', '#7fc97f', '#beaed4', '#fdc086', '#ffff99', 
-    '#f0027f', '#bf5b17', '#666666', '#1b9e77', '#d95f02', 
-    '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666', 
-    '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', 
-    '#fddaec', '#f2f2f2', '#393b79', '#5254a3', '#6b6ecf', 
-    '#637939', '#8ca252', '#b5cf6b', '#cedb9c', '#8c6d31', 
-    '#e7ba52', '#e7cb94', '#843c39', '#ad494a', '#d6616b', 
-    '#7b4173', '#a55194', '#ce6dbd', '#de9ed6', '#8dd3c7', 
-    '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', 
-    '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f', '#3182bd', 
-    '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', 
-    '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', 
+    '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a',
+    '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94',
+    '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d',
+    '#9edae5', '#7fc97f', '#beaed4', '#fdc086', '#ffff99',
+    '#f0027f', '#bf5b17', '#666666', '#1b9e77', '#d95f02',
+    '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666',
+    '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc',
+    '#fddaec', '#f2f2f2', '#393b79', '#5254a3', '#6b6ecf',
+    '#637939', '#8ca252', '#b5cf6b', '#cedb9c', '#8c6d31',
+    '#e7ba52', '#e7cb94', '#843c39', '#ad494a', '#d6616b',
+    '#7b4173', '#a55194', '#ce6dbd', '#de9ed6', '#8dd3c7',
+    '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69',
+    '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f', '#3182bd',
+    '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b',
+    '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1',
     '#bcbddc', '#dadaeb', '#636363', '#969696', '#bdbdbd'
 ]
 
 layout = html.Div(children=[
         html.Label('Choose Graph'),
         html.Div(
-            id='bar-dropdown-container', 
+            id='bar-dropdown-container',
             children=[
                 dcc.Dropdown(
-                    id='bar-graph-selector-dropdown', 
-                    persistence=True, 
+                    id='bar-graph-selector-dropdown',
+                    persistence=True,
                     persistence_type='session',
                     clearable=False,
                 )
@@ -57,10 +86,10 @@ layout = html.Div(children=[
         dbc.Row([
             dbc.Col(
                 children=dcc.Checklist(
-                    id='checklist-1', 
+                    id='checklist-1',
                     options=[
                         {'label': 'Descending', 'value': '0'}
-                    ], 
+                    ],
                     value=['0']
                 )
             ),
@@ -78,7 +107,7 @@ layout = html.Div(children=[
                             {'label':'Exclusive per Call', 'value':'Exclusive per Call'},
                             {'label':'Inclusive per Call', 'value':'Inclusive per Call'},
                             {'label':'Number of Calls', 'value':'Calls'},
-                            {'label':'Number of Child Calls', 'value':'Subcalls'}                  
+                            {'label':'Number of Child Calls', 'value':'Subcalls'}
                         ],
                         value='Exclusive'
                     )
@@ -119,10 +148,13 @@ layout = html.Div(children=[
 )
 
 def parse_profile(project, experiment, trial):
+    """
+    This function is used for parsing profile data from a given path.
+    """
     project_dir = os.environ['PROJECT_DIR']
     trial_path = f'{project_dir}/{project}/{experiment}/{trial}'
-    tauData = TauProfileParser.parse(trial_path)
-    profile = tauData.interval_data()
+    tau_data = TauProfileParser.parse(trial_path)
+    profile = tau_data.interval_data()
     profile['Exclusive per Call'] = profile.loc[:, 'Exclusive']/profile.loc[:, 'Calls']
     profile['Inclusive per Call'] = profile.loc[:, 'Inclusive']/profile.loc[:, 'Calls']
     return profile
@@ -134,7 +166,10 @@ def parse_profile(project, experiment, trial):
     State('url', 'search')
 )
 def update_dropdown_component(pathname, pathsearch):
-    project, experiment, trial, path = [i for i in pathname.split('/') if i != '']
+    """
+    This function is used for updating the options in a dropdown component.
+    """
+    project, experiment, trial, _ = [i for i in pathname.split('/') if i != '']
     profile = parse_profile(project, experiment, trial)
 
     graph_selector_options = [
@@ -144,16 +179,17 @@ def update_dropdown_component(pathname, pathsearch):
         {'label': 'Min', 'value': 'min'}
     ]
     for node, context, thread in profile.unstack().index.values:
-        graph_selector_options.append({'label': f'Node ({node}, {context}, {thread})', 'value': f'{node}-{context}-{thread}'})
+        graph_selector_options.append({'label': f'Node ({node}, {context}, {thread})',
+                                       'value': f'{node}-{context}-{thread}'})
 
     if pathsearch:
         value = pathsearch.split('?index=')[1]
     else:
         value = 'stddev'
-    
+
     return dcc.Dropdown(
-        id='bar-graph-selector-dropdown', 
-        persistence=True, 
+        id='bar-graph-selector-dropdown',
+        persistence=True,
         persistence_type='session',
         clearable=False,
         options=graph_selector_options,
@@ -165,34 +201,40 @@ def update_dropdown_component(pathname, pathsearch):
     Input('bar-graph-selector-dropdown', 'value')
 )
 def update_sort_by_options(dropdown_value):
+    """
+    This function is used for updating the options in the sort-by component.
+    """
     if dropdown_value in {'stddev', 'mean', 'max', 'min'}:
         return [{'label': 'Same as Visible Metric', 'value': 'Same'}], 'Same'
-    else:
-        return [
-            {'label': 'Same as Visible Metric', 'value': 'Same'},
-            {'label': 'Name', 'value': 'Timer Name'}, 
-            {'label': 'Exclusive', 'value': 'Exclusive'},
-            {'label': 'Inclusive', 'value': 'Inclusive'},
-            {'label': 'Exclusive per Call', 'value': 'Exclusive per Call'},
-            {'label': 'Inclusive per Call', 'value': 'Inclusive per Call'},
-            {'label': 'Number of Calls', 'value': 'Calls'},
-            {'label': 'Number of Child Calls', 'value': 'Subcalls'}
-        ], 'Same'
+
+    return [
+        {'label': 'Same as Visible Metric', 'value': 'Same'},
+        {'label': 'Name', 'value': 'Timer Name'},
+        {'label': 'Exclusive', 'value': 'Exclusive'},
+        {'label': 'Inclusive', 'value': 'Inclusive'},
+        {'label': 'Exclusive per Call', 'value': 'Exclusive per Call'},
+        {'label': 'Inclusive per Call', 'value': 'Inclusive per Call'},
+        {'label': 'Number of Calls', 'value': 'Calls'},
+        {'label': 'Number of Child Calls', 'value': 'Subcalls'}
+    ], 'Same'
 
 
 @app.callback(
     Output('graph-1', 'figure'),#, Output('metadata', 'children')],
     [
-        Input('bar-graph-selector-dropdown', 'value'), 
-        Input('checklist-1', 'value'), 
-        Input('select-metric', 'value'), 
+        Input('bar-graph-selector-dropdown', 'value'),
+        Input('checklist-1', 'value'),
+        Input('select-metric', 'value'),
         Input('sort-by', 'value'),
         Input('select-units', 'value'),
         Input('url', 'pathname')
     ], prevent_initial_call=True
 )
 def display_bar_plot(node, checklist, metric, sort, unit, pathname):
-    if node == None:
+    """
+    This functions is used for creating the bar plot display.
+    """
+    if node is None:
         raise PreventUpdate
 
     if sort == 'Same':
@@ -208,30 +250,34 @@ def display_bar_plot(node, checklist, metric, sort, unit, pathname):
         [{'secondary_y': True}]
     ])
 
-    project, experiment, trial, path = [i for i in pathname.split('/') if i != '']
+    project, experiment, trial, _ = [i for i in pathname.split('/') if i != '']
     profile = parse_profile(project, experiment, trial)
     if node in {'stddev', 'mean', 'max', 'min'}:
         metric_data = profile[[metric]]
-        metric_df = metric_data.unstack().sort_values((0, 0, 0), axis=1, ascending=False).transpose().fillna(0)
+        metric_df = metric_data.unstack().sort_values(
+                (0, 0, 0), axis=1, ascending=False).transpose().fillna(0)
 
-        TOTAL_THREAD_COUNT = len(metric_df.columns)
-        metric_df['Std. Dev.'] = metric_df.iloc[:, 0:TOTAL_THREAD_COUNT].std(axis=1)
-        metric_df['Mean'] = metric_df.iloc[:, 0:TOTAL_THREAD_COUNT].mean(axis=1)
-        metric_df['Max'] = metric_df.iloc[:, 0:TOTAL_THREAD_COUNT].max(axis=1)
-        metric_df['Min'] = metric_df.iloc[:, 0:TOTAL_THREAD_COUNT].min(axis=1)
+        total_thread_count = len(metric_df.columns)
+        metric_df['Std. Dev.'] = metric_df.iloc[:, 0:total_thread_count].std(axis=1)
+        metric_df['Mean'] = metric_df.iloc[:, 0:total_thread_count].mean(axis=1)
+        metric_df['Max'] = metric_df.iloc[:, 0:total_thread_count].max(axis=1)
+        metric_df['Min'] = metric_df.iloc[:, 0:total_thread_count].min(axis=1)
 
         index = {
-           'stddev': 'Std. Dev.', 
-           'mean': 'Mean', 
-           'max': 'Max', 
+           'stddev': 'Std. Dev.',
+           'mean': 'Mean',
+           'max': 'Max',
            'min': 'Min'
-        }[node] 
-        
+        }[node]
+
         metric_df = metric_df.sort_values(index, ascending=False)
 
-        TOP_N = 15
-        if len(metric_df.index) > TOP_N:
-            metric_df = pd.concat([metric_df[ :TOP_N], metric_df[TOP_N: ].groupby(level=0).sum().rename({metric: 'Other'})], copy=False)
+        top_n = 15
+        if len(metric_df.index) > top_n:
+            metric_df = pd.concat([metric_df[ :top_n], metric_df[top_n: ]
+                .groupby(level=0)
+                .sum()
+                .rename({metric: 'Other'})], copy=False)
 
         df_indices = []
         for index_name in metric_df.index.values:
@@ -244,7 +290,9 @@ def display_bar_plot(node, checklist, metric, sort, unit, pathname):
                 df_indices.append(new_index_name)
 
         thread_calc = profile[['Exclusive']].sort_values('Exclusive', ascending=False)
-        thread_calc = thread_calc.unstack().sort_values((0, 0, 0), axis=1, ascending=False).transpose().fillna(0)
+        thread_calc = thread_calc.unstack().sort_values(
+                (0, 0, 0), axis=1, ascending=False).transpose().fillna(0)
+
         smax = metric_df[index].max()
 
         fig.add_trace(
@@ -258,7 +306,7 @@ def display_bar_plot(node, checklist, metric, sort, unit, pathname):
                 text=round(metric_df[index] / divisor, 3),
                 textposition='auto',
                 cliponaxis=False
-            ), 
+            ),
             secondary_y=True
         )
 
@@ -266,11 +314,15 @@ def display_bar_plot(node, checklist, metric, sort, unit, pathname):
         index = tuple([int(i) for i in node.split('-')])
         metric_data = profile.loc[index].sort_values(sort, ascending=False)
 
-        TOP_N = 15
-        metric_df = pd.concat([metric_data[ :TOP_N], metric_data[TOP_N: ].groupby(level=0).sum().rename({metric: 'Other'})], copy=False)
-        if len(metric_df.index) > TOP_N:
-            metric_df = metric_df.iloc[ :TOP_N, :]
-        
+        top_n = 15
+        metric_df = pd.concat([metric_data[ :top_n], metric_data[top_n: ]
+            .groupby(level=0)
+            .sum()
+            .rename({metric: 'Other'})], copy=False)
+
+        if len(metric_df.index) > top_n:
+            metric_df = metric_df.iloc[ :top_n, :]
+
         smax = metric_df[metric].max()
 
         fig.add_trace(
@@ -286,7 +338,7 @@ def display_bar_plot(node, checklist, metric, sort, unit, pathname):
             ),
             secondary_y=True
         )
-   
+
     fig.update_layout(
         margin=dict(
             l=20,

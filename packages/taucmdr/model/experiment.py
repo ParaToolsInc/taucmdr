@@ -216,16 +216,13 @@ class Experiment(Model):
 
     def on_update(self, changes):
         try:
-            old_name, new_name = changes['name']
-            new_path = self.prefix.split('/')[:-1]
-            new_path.append(new_name)
-            new_path = '/'.join(new_path)
+            old_value, new_value = changes['name']
+            new_path = os.path.join(os.path.dirname(self.prefix), new_value)
             util.mvtree(self.prefix, new_path)
         except FileNotFoundError:
-            del old_name, new_name
-        except KeyError as e:
+            del old_value, new_value
+        except KeyError:
             pass
-        return
 
     @property
     def prefix(self):

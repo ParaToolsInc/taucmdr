@@ -30,7 +30,6 @@
 import os
 import sys
 import atexit
-import requests
 
 from taucmdr import TAUCMDR_HOME
 from taucmdr.cli import arguments
@@ -69,10 +68,8 @@ class CommanderCommand(AbstractCommand):
             # ANSI escape sequences aren't supported by Jupyter OutputCells
             os.environ['ANSI_COLORS_DISABLED'] = "1"
 
-
-            argv.extend(['--ip=0.0.0.0', '--port=8888'])
-
             os.environ['PROJECT_DIR'] = ProjectStorage().prefix
+            argv.extend(['--ip=0.0.0.0', '--port=8888'])
 
             pid = os.fork()
             if pid == 0:
@@ -80,8 +77,7 @@ class CommanderCommand(AbstractCommand):
                 start()
             else:
                 atexit.register(print, 'Jupyter Server has exited.')
-                return jupyterlab.labapp.main(argv) 
-
+                jupyterlab.labapp.main(argv) 
 
         except ImportError:
             raise ConfigurationError("JupyterLab was not found in your Python environment.")

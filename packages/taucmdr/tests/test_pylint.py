@@ -36,7 +36,7 @@ import re
 from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
-MAX_REPORT_LENGTH = 65500
+MAX_REPORT_LENGTH = 100065500
 REPORT_FILE = os.path.join(TAUCMDR_HOME, "pylint.md")
 PYLINT_REPORT_TEMPLATE = \
 """

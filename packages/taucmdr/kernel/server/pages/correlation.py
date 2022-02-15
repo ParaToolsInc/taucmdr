@@ -1,14 +1,40 @@
-import os
-from .server import app
-from .parser import TauProfileParser
+#
+# Copyright (c) 2022, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+""" This file is used for creating content for the correlation webpage """
 
-import dash
-from dash.dependencies import Input, Output, State
+import os
+from dash.dependencies import Input, Output
 from dash import html
 from dash import dcc
-import dash_bootstrap_components as dbc
 
 import plotly.express as px
+
+from .server import app
+from .parser import TauProfileParser
 
 layout = html.Div(
     children=[
@@ -41,7 +67,7 @@ layout = html.Div(
             ]
         ),
         dcc.Graph(
-            id='correlation-graph', 
+            id='correlation-graph',
             config={
                 'displayModeBar': False
             }
@@ -65,29 +91,31 @@ layout = html.Div(
     ]
 )
 
-
 def parse_profile(project, experiment, trial):
+    """ This function is used for parsing a profile by path"""
     project_dir = os.environ['PROJECT_DIR']
     trial_path = f'{project_dir}/{project}/{experiment}/{trial}'
-    tauData = TauProfileParser.parse(trial_path)
-    profile = tauData.interval_data()
+    tau_data = TauProfileParser.parse(trial_path)
+    profile = tau_data.interval_data()
     profile['Exclusive per Call'] = profile.loc[:, 'Exclusive']/profile.loc[:, 'Calls']
     profile['Inclusive per Call'] = profile.loc[:, 'Inclusive']/profile.loc[:, 'Calls']
     return profile
-
 
 @app.callback(
     Output('function-dropdowns', 'children'),
     Input('url', 'pathname')
 )
 def update_dropdowns(pathname):
-    project, experiment, trial, path = [i for i in pathname.split('/') if i != '']
+    """ This function returns a dropdown based on the profile """
+    project, experiment, trial, _ = [i for i in pathname.split('/') if i != '']
     profile = parse_profile(project, experiment, trial)
 
-
-    functions = [] 
+    functions = []
     for j in range(0,len(profile.loc[0,0,0].values)-1):
-        functions.append({'label':'{}'.format(profile.loc[0,0,0]["Timer Name"].iloc[[j]]), 'value':j})
+        functions.append({
+            'label':'{}'.format(profile.loc[0,0,0]["Timer Name"].iloc[[j]]),
+            'value':j
+        })
 
     return [
             html.Label('Choose First Function'),
@@ -109,20 +137,21 @@ def update_dropdowns(pathname):
                 options=functions,
                 value=0
             )
-    ] 
+    ]
 
 
 @app.callback(
     Output('correlation-graph', 'figure'),
     [
-        Input('function-selector-dropdown-first', 'value'), 
-        Input('function-selector-dropdown-second', 'value'), 
+        Input('function-selector-dropdown-first', 'value'),
+        Input('function-selector-dropdown-second', 'value'),
         Input('scatter-metric-dropdown', 'value'),
-        Input('url', 'pathname') 
+        Input('url', 'pathname')
     ]
 )
 def display_scatter_plot(first_func, second_func, scatter_metric, pathname):
-    project, experiment, trial, path = [i for i in pathname.split('/') if i != '']
+    """ This function returns a scatter plot based on the dropdown selection and profile """
+    project, experiment, trial, _ = [i for i in pathname.split('/') if i != '']
     profile = parse_profile(project, experiment, trial)
 
     scatter_data = profile[[scatter_metric]]
@@ -138,6 +167,4 @@ def display_scatter_plot(first_func, second_func, scatter_metric, pathname):
             'y':'{}'.format(profile.loc[0,0,0]['Timer Name'].iloc[[second_func]])
         }
     )
-
     return fig
-
