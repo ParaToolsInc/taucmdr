@@ -428,7 +428,7 @@ class InstalledCompilerCreator(type):
     and `icc` would be probed twice. With this metaclass, ``b is a == True`` and `icc` is only invoked once.
     """
     def __call__(cls, absolute_path, info, **kwargs):
-        assert isinstance(absolute_path, str) and os.path.isabs(absolute_path)
+        assert absolute_path == '' or (isinstance(absolute_path, str) and os.path.isabs(absolute_path))
         assert isinstance(info, _CompilerInfo)
         # Don't allow unchecked values into the instance cache
         if kwargs:
@@ -637,7 +637,10 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         assert isinstance(role, _CompilerRole) or role is None
         absolute_path = util.which(command)
         if not absolute_path:
-            raise ConfigurationError("Compiler '%s' not found on PATH" % command)
+            if family is None:
+                absolute_path = ''
+            else:
+                raise ConfigurationError("Compiler '%s' not found on PATH" % command)
         command = os.path.basename(absolute_path)
         LOGGER.debug("Probe: command='%s', abspath='%s', family='%s', role='%s'",
                      command, absolute_path, family, role)
@@ -765,6 +768,11 @@ class InstalledCompilerFamily:
                         LOGGER.warning(err)
                         continue
                     self.members.setdefault(role, []).append(installed)
+        for role, info_list in family.members.items():
+            for info in info_list:
+              if family.name == 'None':
+                  installed = InstalledCompiler(info.command, info)
+                  self.members.setdefault(role, []).append(installed)
         if not self.members:
             cmds = [info.command for info_list in family.members.values() for info in info_list]
             raise ConfigurationError(f"{self.family.name} {self.family.kbase.description} not found.",
