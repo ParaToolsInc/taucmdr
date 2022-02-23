@@ -360,7 +360,7 @@ class Release(SDistCommand):
         from taucmdr import util
         module_name = pkg + '_installation'
         repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)),
-                                   globals(), locals(), ['REPOS'], -1), 'REPOS')
+                                   globals(), locals(), ['REPOS'], 0), 'REPOS')
         default = repos[None]
         try:
             arch_dct = repos[self.target_arch]
@@ -379,7 +379,7 @@ class Release(SDistCommand):
                 cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
                 cache_pkg = os.path.join(cache_dir, pkg)
                 try:
-                    with open(cache_db) as fin:
+                    with open(cache_db, 'rb') as fin:
                         cache = pickle.load(fin)
                 except OSError:
                     cache = {}
@@ -387,7 +387,7 @@ class Release(SDistCommand):
                     print(f"Downloading '{pkg}' for ({self.target_arch}, {self.target_os})")
                     util.download(src, cache_pkg)
                 cache[cache_pkg] = src
-                with open(cache_db, 'w') as fout:
+                with open(cache_db, 'wb') as fout:
                     pickle.dump(cache, fout)
                 util.download(cache_pkg, os.path.join('system', 'src', pkg))
                 success = True
