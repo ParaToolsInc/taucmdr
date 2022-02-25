@@ -30,6 +30,7 @@
 import os
 import sys
 import atexit
+import signal
 
 from taucmdr import TAUCMDR_HOME
 from taucmdr.cli import arguments
@@ -73,6 +74,7 @@ class CommanderCommand(AbstractCommand):
 
             pid = os.fork()
             if pid == 0:
+                atexit.register(os.kill, os.getppid(), signal.SIGINT)
                 atexit.register(print, '\nPlotly Dash Server has exited.')
                 start()
             else:

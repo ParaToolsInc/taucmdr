@@ -135,8 +135,6 @@ async function activate(
     label: (trialPath) => `Run ${trialPath['project']} Display`,
     execute: (trialPath) => {
 
-      console.log(trialPath);
-
       let exists = tracker.find((widget) => {
         return widget.id == `project-${trialPath['project']}-${trialPath['experiment']}-${trialPath['trial']}`;
       });

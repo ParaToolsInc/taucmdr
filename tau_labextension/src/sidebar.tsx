@@ -7,6 +7,8 @@ import {
 import { 
   Widget, 
   PanelLayout,
+  SplitPanel,
+  Panel
 } from '@lumino/widgets';
 
 import { 
@@ -52,6 +54,7 @@ export class Sidebar extends Widget {
     this._kernelSession = options.kernelSession;
     
     const layout = (this.layout = new PanelLayout()); 
+    this._splitter = new SplitPanel({ orientation: 'vertical' });
 
     // A function to initialize the ipython kernel
     this._updateConnected = () => {
@@ -83,6 +86,11 @@ export class Sidebar extends Widget {
           }
           this.update();
         });
+    }
+
+    // A function to select a project
+    this._selectProject = (projectName: string) => {
+      this._kernelExecute(`select_project("${projectName}")`)
     }
   
     // A function to create a project
@@ -148,7 +156,11 @@ export class Sidebar extends Widget {
           if (msg.header.msg_type == 'stream') {
             let content = (msg as KernelMessage.IStreamMsg).content;
             let output = content.text;
-            this._console.show();
+            if (this._console.isHidden) {
+              this._console.show();
+              this._consoleClearButton.show();
+              this._splitter.setRelativeSizes([0.5,0.5])
+            }
             this._consoleStream.push(output);
             this.update();
           }
@@ -229,6 +241,7 @@ export class Sidebar extends Widget {
           if (this._console.isHidden) {
             this._console.show()
             this._consoleClearButton.show();
+            this._splitter.setRelativeSizes([0.5,0.5])
           } else {
             this._console.hide();
             this._consoleClearButton.hide();
@@ -243,17 +256,24 @@ export class Sidebar extends Widget {
       this._consoleClearButton
     );
 
-    this._toolbar.hide();
-    layout.addWidget(this._toolbar);
+    layout.addWidget(this._splitter);
+    let body = new Panel();
+
+    this._splitter.addClass('tau-Splitter');
+    body.addClass('tau-SidebarBody');
+
+    body.addWidget(this._toolbar);
 
     this._display = new Widget();
     this._display.addClass('tau-ListingDisplay');
-    layout.addWidget(this._display);
+    body.addWidget(this._display);
+
+    this._splitter.addWidget(body);
 
     this._console = new Widget();
     this._console.addClass('tau-StreamConsole');
     this._console.hide();
-    layout.addWidget(this._console);
+    this._splitter.addWidget(this._console);
   }
 
 
@@ -284,6 +304,7 @@ export class Sidebar extends Widget {
         <ProjectListing
           openDashboardCommand={this._openDashboardCommand}
           projects={this._projects}
+          selectProject={this._selectProject}
           copyProject={this._copyProject}
           editProject={this._editProject}
           deleteProject={this._deleteProject}
@@ -310,6 +331,14 @@ export class Sidebar extends Widget {
     return this._consoleStream;
   }
 
+  get consoleClearButton(): ToolbarButton {
+    return this._consoleClearButton;
+  }
+
+  get splitter(): SplitPanel {
+    return this._splitter;
+  }
+
   get projects(): Sidebar.ProjectList {
     return this._projects;
   }
@@ -328,11 +357,13 @@ export class Sidebar extends Widget {
   private _createProject: () => void;
   private _updateConnected: () => void;
   private _updateProjects: () => void;
+  private _selectProject: (project: string) => void;
   private _copyProject: (project: string) => void;
   private _editProject: (project: string) => void;
   private _deleteProject: (project: string) => void;
   private _kernelExecute: (code: string) => Promise<any>;
 
+  private _splitter: SplitPanel;
   private _projects: Sidebar.ProjectList = {};
   private _connected: boolean | undefined = false;
   private _consoleStream: string[] = [];
@@ -382,10 +413,13 @@ const ProjectListing = (props: ProjectListingProps) => {
         <p className='tau-ProjectListing-item-name'>{ project }</p>
         <div className='tau-ProjectListing-item-buttons'>
           <Button 
-            onClick={() => props.openDashboardCommand({
-              label: project,
-              data: props.projects[project]
-            })}
+            onClick={() => {
+                props.openDashboardCommand({
+                  label: project,
+                  data: props.projects[project]
+                });
+                props.selectProject(project)
+            }}
             className='tau-ProjectListingItem-button'>
             <Icon icon='application'/>
           </Button>
@@ -422,6 +456,7 @@ const ProjectListing = (props: ProjectListingProps) => {
 interface ProjectListingProps {
   openDashboardCommand: (project: IDashboardItem) => void;
   projects: Sidebar.ProjectList;
+  selectProject: (project: string) => void;
   copyProject: (project: string) => void;
   editProject: (project: string) => void;
   deleteProject: (project: string) => void;

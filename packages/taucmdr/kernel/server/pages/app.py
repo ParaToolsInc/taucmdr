@@ -42,11 +42,6 @@ styles = {
         'display': 'flex',
         'height': '100vh'
     },
-    'sidebar': {
-        'padding': '1.5rem 1rem',
-        'backgroundColor': '#f8f9fa',
-        'flex': '20%'
-    },
     'content': {
         'padding': '1.5rem 1rem',
         'flex': '80%'
@@ -55,6 +50,6 @@ styles = {
 
 app.layout = html.Div(children=[
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-sidebar', children=[], style=styles['sidebar']),
+    html.Div(id='page-sidebar', children=[]),
     html.Div(id='page-content', children=[], style=styles['content'])
 ], style=styles['body'])

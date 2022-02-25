@@ -18,6 +18,11 @@
   align-items: center;
 }
 
+.tau-TauSidebar-toolbar {
+  display: flex;
+  align-items: center;
+}
+
 .tau-TauSidebar .jp-Toolbar .tau-TauSidebar-toolbar-label {
   flex: 0 0 auto;
   font-weight: 600;
@@ -32,6 +37,14 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+.tau-Splitter {
+  height: -webkit-fill-available;
+}
+
+.tau-SidebarBody {
+  height: -webkit-fill-available;
 }
 
 .tau-SidebarFailure {

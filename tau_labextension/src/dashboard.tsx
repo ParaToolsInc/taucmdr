@@ -169,7 +169,11 @@ export class Dashboard extends Widget {
           if (msg.header.msg_type == 'stream') {
             let content = (msg as KernelMessage.IStreamMsg).content;
             let output = content.text;
-            this._sidebar.console.show();
+            if (this._sidebar.console.isHidden) {
+              this._sidebar.console.show();
+              this._sidebar.consoleClearButton.show();
+              this._sidebar.splitter.setRelativeSizes([0.5,0.5])
+            }
             this._sidebar.consoleStream.push(output);
             this._sidebar.update();
           }
@@ -231,6 +235,8 @@ export class Dashboard extends Widget {
     if (!this.isVisible) {
       return;
     }
+    
+    this._kernelExecute(`select_project("${this._projectName}")`)
     
     ReactDOM.render(
       <TargetTable

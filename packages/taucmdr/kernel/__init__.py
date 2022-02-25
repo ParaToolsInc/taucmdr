@@ -33,7 +33,8 @@ import sys
 
 from taucmdr.kernel.commands.connect import connect                                               # pylint: disable=unused-import
 from taucmdr.kernel.commands.project import (                                                     # pylint: disable=unused-import
-        get_all_projects, new_project, copy_project, edit_project, delete_project
+        get_all_projects, new_project, select_project, 
+        copy_project, edit_project, delete_project
 )
 from taucmdr.kernel.commands.target import (                                                      # pylint: disable=unused-import
         new_target, edit_target, copy_target, delete_target

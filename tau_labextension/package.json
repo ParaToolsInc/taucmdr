@@ -45,8 +45,8 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlab/application": "^3.2.6",
-    "@jupyterlab/apputils": "^3.2.6",
+    "@jupyterlab/application": "3.2.9",
+    "@jupyterlab/apputils": "3.2.9",
     "@material-ui/core": "^4.12.3",
     "react-dom": "^17.0.2"
   },

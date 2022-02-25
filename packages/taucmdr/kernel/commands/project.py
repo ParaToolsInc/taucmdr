@@ -240,6 +240,14 @@ def new_project(name):
     PROJECT_STORAGE.disconnect_filesystem()
     return json.dumps({'status': 'success'})
 
+def select_project(name):
+    """
+    This function is called by the JupyterLab Extension to select a Project 
+    """ 
+    PROJECT_STORAGE.connect_filesystem()
+    select_project_cmd.main([name])
+    PROJECT_STORAGE.disconnect_filesystem()
+    return json.dumps({'status': 'success'})
 
 def delete_project(name):
     """

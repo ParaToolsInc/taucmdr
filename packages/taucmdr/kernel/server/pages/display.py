@@ -58,15 +58,30 @@ def not_found_layout(pathname):
         ])
     )
 
+sidebar_styles = {
+    'sidebar_back': {
+        'padding': '1.5rem 1rem',
+        'backgroundColor': '#f8f9fa',
+        'flex': '0%',
+        'height': '100%'
+    },
+    'sidebar_full': {
+        'padding': '1.5rem 1rem',
+        'backgroundColor': '#f8f9fa',
+        'flex': '20%',
+        'height': '100%'
+    },
+}
+
 def sidebar_layout(project, experiment, trial, path):
     """ This function is used for displaying the sidebar on each webpage """
     if path:
-        return html.Div([
+        return html.Div(id='page-sidebar', children=[
             dbc.Nav([
                 dbc.NavLink('Back', href=f'/{project}/{experiment}/{trial}', external_link=True)
             ])
-        ])
-    return html.Div([
+        ], style=sidebar_styles['sidebar_back'])
+    return html.Div(id='page-sidebar', children=[
         html.H5('Menu', className='display-5'),
         html.Hr(),
         html.P('Paraprof-style graphs and tables that visualize TAU profiles',
@@ -98,7 +113,7 @@ def sidebar_layout(project, experiment, trial, path):
                 active=(path == 'heat-map'),
                 external_link=True),
         ], vertical=True, pills=True)
-    ])
+    ], style=sidebar_styles['sidebar_full'])
 
 @app.callback(
     [Output('page-sidebar', 'children'), Output('page-content', 'children')],
