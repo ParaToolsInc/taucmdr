@@ -236,6 +236,7 @@ class TauInstallation(Installation):
                  forced_makefile=None,
                  dyninst=False,
                  mpit=False,
+                 unwinder='libunwind',
                  unwind_depth=0):
         """Initialize the TAU installation wrapper class.
 
@@ -274,7 +275,7 @@ class TauInstallation(Installation):
             measure_mpi (bool): If True then measure time spent in MPI calls.
             measure_openmp (str): String specifying OpenMP measurement method, one of "ignore", "ompt", or "opari".
             measure_cuda (bool): If True then measure time spent in CUDA calls.
-            meaure_level_zero (bool): If True then use Intel oneAPI level 0 tool iterface
+            meaure_level_zero (bool): If True then use Intel oneAPI level 0 tool interface
             measure_shmem (bool): If True then measure time spent in SHMEM calls.
             measure_heap_usage (bool): If True then measure memory usage.
             measure_system_load (bool): If True then measure the system load.
@@ -298,6 +299,7 @@ class TauInstallation(Installation):
             sampling_period (int): Sampling period in microseconds; set to 0 to use architecture specific defaults.
             track_memory_footprint (bool): If True then track memory footprint.
             mpit (bool): If True then enable MPI-T profiling interface.
+            unwinder (str): Tool used to unwind code
             forced_makefile (str): Path to external makefile if forcing TAU_MAKEFILE or None.
         """
         assert minimal in (True, False)
@@ -350,6 +352,7 @@ class TauInstallation(Installation):
         assert isinstance(sampling_period, int)
         assert track_memory_footprint in (True, False)
         assert isinstance(forced_makefile, str) or forced_makefile is None
+        assert isinstance(unwinder, str)
         super().__init__('tau', 'TAU Performance System',
                                               sources, target_arch, target_os, compilers,
                                               REPOS, COMMANDS, None, None)
@@ -421,13 +424,14 @@ class TauInstallation(Installation):
         self.track_memory_footprint = track_memory_footprint
         self.tags = tags
         self.forced_makefile = forced_makefile
+        self.unwinder = unwinder
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources
-        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources
+        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources and self.unwinder == 'libunwind'
         self.uses_libelf = not minimal and (self.target_os is not DARWIN) and 'libelf' in sources
+        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources and self.uses_libelf
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
@@ -452,7 +456,7 @@ class TauInstallation(Installation):
         for met in self.metrics:
             mets.extend(met.split(','))
         self.metrics = mets
-        uses = lambda pkg: sources[pkg] if forced_makefile else getattr(self, 'uses_'+pkg)
+        uses = lambda pkg: sources.get(pkg, False) if forced_makefile else getattr(self, 'uses_'+pkg)
         for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3', 'level_zero':
             if uses(pkg):
                 self.add_dependency(pkg, sources)
@@ -778,7 +782,8 @@ class TauInstallation(Installation):
                     '-tag=%s' % self.uid,
                     '-arch=%s' % self.tau_magic.name,
                     '-bfd=%s' % binutils.install_prefix if binutils else None,
-                    '-unwind=%s' % libunwind.install_prefix if libunwind else None,
+                    '-unwinder=%s' % self.unwinder,
+                    '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else None,
                    ] if flag]
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
@@ -862,7 +867,8 @@ class TauInstallation(Installation):
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
                   '-bfd=%s' % binutils.install_prefix if binutils else None,
                   '-papi=%s' % papi.install_prefix if papi else None,
-                  '-unwind=%s' % libunwind.install_prefix if libunwind else None,
+                  '-unwinder=%s' % self.unwinder,
+                  '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else None,
                   '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
                   '-elf=%s' % libelf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
