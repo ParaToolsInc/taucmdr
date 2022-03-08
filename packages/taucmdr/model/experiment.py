@@ -390,6 +390,7 @@ class Experiment(Model):
             tags=measurement.get_or_default('tag'),
             forced_makefile=target.get('forced_makefile', None),
             mpit=measurement.get_or_default('mpit'),
+            unwinder=target.get_or_default('unwinder'),
             unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
         if not baseline:
@@ -552,6 +553,7 @@ class Experiment(Model):
             ptts_report_flags=measurement.get_or_default('ptts_report_flags'),
             forced_makefile=target.get('forced_makefile', None),
             mpit=measurement.get_or_default('mpit'),
+            unwinder=target.get_or_default('unwinder'),
             unwind_depth=measurement.get_or_default('unwind_depth'),
             dyninst=dyninst)
         tau.install()
