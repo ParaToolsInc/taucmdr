@@ -70,6 +70,11 @@ NEC_SX = MPI_COMPILERS.add('NEC', family_regex=r'NEC Corporation',
                           show_wrapper_flags=['-show'],
                           CC='mpincc', CXX='mpinc++', FC='mpinfort')
 
+
+NONE = MPI_COMPILERS.add('None', #family_regex='',
+                         CC='', CXX='', FC='')
+
+
 MPI_CC = MPI_COMPILERS.roles['CC']
 MPI_CXX = MPI_COMPILERS.roles['CXX']
 MPI_FC = MPI_COMPILERS.roles['FC']
