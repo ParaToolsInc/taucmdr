@@ -151,8 +151,7 @@ class MainCommand(AbstractCommand):
         if shortcut:
             LOGGER.debug('Trying shortcut: %s', shortcut)
             return cli.execute_command(shortcut, cmd_args)
-        else:
-            LOGGER.debug('No shortcut found for %r', cmd)
+        LOGGER.debug('No shortcut found for %r', cmd)
 
         # Not sure what to do at this point, so advise the user and exit
         LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", TAUCMDR_SCRIPT, cmd)

@@ -163,8 +163,7 @@ class TrialController(Controller):
                              "Does the selected application configuration correctly describe this program?",
                              "Does the selected measurement configuration specify the right measurement methods?",
                              "Does the selected target configuration match the runtime environment?")
-        else:
-            LOGGER.info("The job has been added to the queue.")
+        LOGGER.info("The job has been added to the queue.")
         return retval
 
     def _perform_interactive(self, expr, trial, cmd, cwd, env, record_output=False):
@@ -381,7 +380,7 @@ class Trial(Model):
             return launcher_cmd, []
         if num_exes <= 1:
             return launcher_cmd, [cmd]
-        elif num_exes > 1:
+        if num_exes > 1:
             colons = [i for i, x in enumerate(cmd) if x == ':']
             if not colons:
                 # Recognized launcher with multiple executables but not using ':' syntax.
@@ -410,7 +409,7 @@ class Trial(Model):
             util.mkdirp(self.prefix)
         except Exception as err:
             raise ConfigurationError(f'Cannot create directory {self.prefix!r}: {err}',
-                                     'Check that you have write access')
+                                     'Check that you have write access') from err
 
     def on_delete(self):
         try:
@@ -522,7 +521,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None))
+            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None)) from err
         if retval:
             LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
         return retval
@@ -563,7 +562,7 @@ class Trial(Model):
             errno_hint = {errno.EPERM: "Check filesystem permissions",
                           errno.ENOENT: "Check paths and command line arguments",
                           errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None))
+            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None)) from err
 
         measurement = expr.populate('measurement')
 

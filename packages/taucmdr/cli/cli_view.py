@@ -548,7 +548,7 @@ class ListCommand(AbstractCliView):
         if count == 1:
             return ["There is 1 %(level)s %(model_name)s."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list it." % fields]
-        elif count > 1:
+        if count > 1:
             return ["There are %(count)d %(level)s %(model_name)ss."
                     " Type `%(command)s -%(level_flag)s %(level)s` to list them." % fields]
         #return ["There are no %(level)s %(model_name)ss." % fields]
