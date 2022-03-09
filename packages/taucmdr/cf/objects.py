@@ -51,14 +51,14 @@ class TrackedInstance:
         drink = Bar('water', 'sugar')
 
         for inst in Foo.all():
-            print inst.x
+            print(inst.x)
 
         >>> haddock
         >>> potatoes
         >>> potatoes
 
         for inst in Bar.all():
-            print inst.x
+            print(inst.x)
 
         >>> water
     """
@@ -132,7 +132,7 @@ class KeyedRecord(metaclass=KeyedRecordCreator):
         steak = Foo('meat')
 
         for inst in Foo.all():
-            print inst.a
+            print(inst.a)
 
         >>> vegetable
         >>> meat
