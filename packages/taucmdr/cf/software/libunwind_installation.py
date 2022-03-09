@@ -64,8 +64,8 @@ class LibunwindInstallation(AutotoolsInstallation):
         if compilers[CC].unwrap().info.family is PGI:
             try:
                 gnu_compilers = GNU.installation()
-            except ConfigurationError:
-                raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.")
+            except ConfigurationError as err:
+                raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.") from err
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super().__init__('libunwind', 'libunwind', sources, target_arch, target_os,
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)

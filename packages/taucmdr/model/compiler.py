@@ -206,9 +206,8 @@ class Compiler(Model):
                                      "Check loaded environment modules",
                                      "Check environment variables, especially PATH",
                                      "Contact your system administrator")
-        else:
-            LOGGER.warning(msg, ("\n\nCheck loaded environment modules and environment variables.\n"
-                                 "Attempting to continue.  Compilation may fail later on."))
+        LOGGER.warning(msg, ("\n\nCheck loaded environment modules and environment variables.\n"
+                             "Attempting to continue.  Compilation may fail later on."))
         return comp
 
     def installation(self):

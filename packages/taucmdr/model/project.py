@@ -125,8 +125,8 @@ class ProjectController(Controller):
             selected = self.one(self.storage['selected_project'])
             if not selected:
                 raise KeyError
-        except KeyError:
-            raise ProjectSelectionError("No project selected")
+        except KeyError as err:
+            raise ProjectSelectionError("No project selected") from err
         else:
             return selected
 
@@ -201,5 +201,5 @@ class Project(Model):
         """
         try:
             return self.populate('experiment')
-        except KeyError:
-            raise ExperimentSelectionError("No experiment configured")
+        except KeyError as err:
+            raise ExperimentSelectionError("No experiment configured") from err

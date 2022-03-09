@@ -1,4 +1,4 @@
-#
+#.language
 # Copyright (c) 2015, ParaTools, Inc.
 # All rights reserved.
 #
@@ -45,7 +45,7 @@ def valid(context, record):
         field = record.get(requirement[0])
         if isinstance(field, int):
             return field == requirement[1]
-        elif isinstance(field, list):
+        if isinstance(field, list):
             return requirement[1] in field
         return False
 
@@ -65,7 +65,7 @@ def contextualize(function):
         if context and isinstance(context, list):
             if not records:
                 return records
-            elif isinstance(records, dict):
+            if isinstance(records, dict):
                 records = records if valid(context, records) else None
             elif isinstance(records, list):
                 records = [e for e in records if valid(context, e)]
@@ -221,15 +221,14 @@ class Controller:
         if attribute:
             _heavy_debug("Populating %s(%s)[%s]", model.name, model.eid, attribute)
             return self._populate_attribute(model, attribute, defaults, context=context)
-        else:
-            _heavy_debug("Populating %s(%s)", model.name, model.eid)
+        _heavy_debug("Populating %s(%s)", model.name, model.eid)
         return {attr: self._populate_attribute(model, attr, defaults, context=context) for attr in model}
 
     def _populate_attribute(self, model, attr, defaults, context=True):
         try:
             props = model.attributes[attr]
-        except KeyError:
-            raise ModelError(model, "no attribute '%s'" % attr)
+        except KeyError as err:
+            raise ModelError(model, "no attribute '%s'" % attr) from err
         if not defaults or 'default' not in props:
             value = model[attr]
         else:

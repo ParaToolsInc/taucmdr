@@ -42,8 +42,8 @@ SYSTEM = HOST_COMPILERS.add('System', CC='cc', CXX=('c++', 'cxx', 'CC'), FC=('ft
 GNU = HOST_COMPILERS.add('GNU', family_regex=r'Free Software Foundation, Inc',
                          CC='gcc', CXX='g++', FC=('gfortran', 'g77'), UPC='gupc')
 
-INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation',
-                           CC='icc', CXX='icpc', FC='ifort')
+INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation|Intel\(R\) oneAPI',
+                           CC=('icc', 'icx'), CXX=('icpc', 'icpx', 'dpcpp'), FC='ifort')
 
 PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group|NVIDIA CORPORATION',
                          CC='pgcc', CXX=('pgCC', 'pgc++', 'pgcxx'), FC=('pgfortran', 'pgf90', 'pgf77'))

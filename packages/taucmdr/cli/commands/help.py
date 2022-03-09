@@ -172,8 +172,7 @@ class HelpCommand(AbstractCommand):
                     article = 'an' if desc[0] in 'aeiou' else 'a'
                     hint = f"'{cmd}' is {article} {desc}.\n{hint}."
                 raise UnknownCommandError(cmd, hint)
-            else:
-                raise UnknownCommandError(cmd)
+            raise UnknownCommandError(cmd)
 
         LOGGER.error("Cannot identify '%s' as a command or filename.")
         return self.exit_with_help('__main__')
