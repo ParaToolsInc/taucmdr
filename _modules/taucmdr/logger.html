@@ -315,8 +315,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)(</span><span class="n">record</span><span class="p">))</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Unknown record level (name: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span></div>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Unknown record level (name: </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span></div>
 
 <div class="viewcode-block" id="LogFormatter._colored"><a class="viewcode-back" href="../../taucmdr.logger.html#taucmdr.logger.LogFormatter._colored">[docs]</a>    <span class="k">def</span> <span class="nf">_colored</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="o">*</span><span class="n">color_args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Insert ANSII color formatting via `termcolor`_.</span>
@@ -487,7 +487,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Feb 23, 2022 at 15:57:31 UTC.
+      Last updated on Mar 09, 2022 at 17:56:36 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>

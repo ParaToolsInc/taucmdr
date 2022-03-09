@@ -105,8 +105,8 @@
         <span class="k">if</span> <span class="n">compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">family</span> <span class="ow">is</span> <span class="n">IBM</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">gnu_compilers</span> <span class="o">=</span> <span class="n">GNU</span><span class="o">.</span><span class="n">installation</span><span class="p">()</span>
-            <span class="k">except</span> <span class="n">ConfigurationError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;GNU compilers (required to build PAPI) could not be found.&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SoftwarePackageError</span><span class="p">(</span><span class="s2">&quot;GNU compilers (required to build PAPI) could not be found.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
             <span class="n">compilers</span> <span class="o">=</span> <span class="n">compilers</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">Host_CC</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CC</span><span class="p">],</span> <span class="n">Host_CXX</span><span class="o">=</span><span class="n">gnu_compilers</span><span class="p">[</span><span class="n">CXX</span><span class="p">])</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;papi&#39;</span><span class="p">,</span> <span class="s1">&#39;PAPI&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="n">target_arch</span><span class="p">,</span> <span class="n">target_os</span><span class="p">,</span>
                                                <span class="n">compilers</span><span class="p">,</span> <span class="n">REPOS</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">LIBRARIES</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -180,7 +180,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">why</span> <span class="o">=</span> <span class="s2">&quot;: </span><span class="si">%s</span><span class="s2"> is not supported on this host&quot;</span> <span class="o">%</span> <span class="n">event</span>
                     <span class="k">break</span>
-                <span class="k">elif</span> <span class="s2">&quot;can&#39;t be found&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;can&#39;t be found&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
                     <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">event</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -195,7 +195,7 @@
                                      <span class="s2">&quot;Use papi_avail to check metric availability.&quot;</span><span class="p">,</span>
                                      <span class="s2">&quot;Spread the desired metrics over multiple measurements.&quot;</span><span class="p">,</span>
                                      <span class="s2">&quot;Choose fewer metrics.&quot;</span><span class="p">,</span>
-                                     <span class="s2">&quot;You may ignore this if you are cross-compiling.&quot;</span><span class="p">)</span></div>
+                                     <span class="s2">&quot;You may ignore this if you are cross-compiling.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span></div>
 
 <div class="viewcode-block" id="PapiInstallation.papi_metrics"><a class="viewcode-back" href="../../../../taucmdr.cf.software.papi_installation.html#taucmdr.cf.software.papi_installation.PapiInstallation.papi_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">papi_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="o">=</span><span class="s2">&quot;PRESET&quot;</span><span class="p">,</span> <span class="n">include_modifiers</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;List PAPI available metrics.</span>
@@ -211,7 +211,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: List of event name/description tuples.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;PRESET&quot;</span> <span class="ow">or</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;NATIVE&quot;</span>
+        <span class="k">assert</span> <span class="n">event_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;PRESET&quot;</span><span class="p">,</span> <span class="s2">&quot;NATIVE&quot;</span><span class="p">)</span>
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">def</span> <span class="nf">_format</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
@@ -240,7 +240,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Feb 23, 2022 at 15:57:31 UTC.
+      Last updated on Mar 09, 2022 at 17:56:36 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
