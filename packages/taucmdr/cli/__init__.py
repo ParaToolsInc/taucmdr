@@ -127,7 +127,7 @@ def _get_commands(package_name):
     def lookup(cmd, dct):
         if not cmd:
             return dct
-        elif len(cmd) == 1:
+        if len(cmd) == 1:
             return dct[cmd[0]]
         return lookup(cmd[1:], dct[cmd[0]])
 
@@ -238,9 +238,9 @@ def _resolve(cmd, c, d):
         matches = [i for i in d.items() if i[0].startswith(car)]
     if len(matches) == 1:
         return [matches[0][0]] + _resolve(cmd, cdr, matches[0][1])
-    elif not matches:
+    if not matches:
         raise UnknownCommandError(' '.join(cmd))
-    elif len(matches) > 1:
+    if len(matches) > 1:
         raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
 
 def find_command(cmd):
@@ -267,8 +267,8 @@ def find_command(cmd):
         resolved = _resolve(cmd, cmd, _COMMANDS[SCRIPT_COMMAND])
         LOGGER.debug('Resolved ambiguous command %r to %r', cmd, resolved)
         return find_command(resolved)
-    except AttributeError:
-        raise InternalError("'COMMAND' undefined in %r" % cmd)
+    except AttributeError as err:
+        raise InternalError("'COMMAND' undefined in %r" % cmd) from err
 
 
 def _permute(cmd, cmd_args):

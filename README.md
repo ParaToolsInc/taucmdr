@@ -144,8 +144,10 @@ TAU Commander developers should visit the [developer documentation](http://parat
 Acknowledgements
 ================
 
-This work is supported by the United States Department of Energy under
-DoE SBIR grant DE-SC0009593.
+Initial development of TAU Commander was supported by the United States
+Department of Energy under DOE SBIR award DE-SC0009593. Development of support
+for machine learning and artificial intelligence applications is supported by
+the United States Department of Energy under DOE SBIR award DE-SC0019700.
 
 The work on extending TAU Commander for OpenSHMEM was supported by the
 United States Department of Defense (DoD) and used resources of the

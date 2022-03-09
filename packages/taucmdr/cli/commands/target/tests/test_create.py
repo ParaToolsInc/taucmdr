@@ -114,14 +114,62 @@ class CreateTest(tests.TestCase):
         cxx_cmd = self.assertCompiler(CXX)
         self.assertRaises(ConfigurationError, self.exec_command, create_cmd, ['test_targ', '--cc', cxx_cmd])
 
-    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
-    def test_python_init(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--mpi-wrappers', 'None'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        for role, expected in (MPI_CC, ''), (MPI_CXX, ''), (MPI_FC, ''):
+            path = test_targ.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
 
-    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
-    def test_python2_init(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
 
-    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
-    def test_python3_init(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi_cc(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--mpi-cc', 'None'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        path = test_targ.populate(MPI_CC.keyword)['path']
+        self.assertEqual(path, '', f"Target[{MPI_CC}] is '{path}', not ''")
+
+    @tests.skipUnless(util.which('nvcc') or util.which('xlcuf'), "CUDA compilers required for this test")
+    def test_no_cuda(self):
+        self.reset_project_storage()
+        argv = ['targ2', '--cuda-compilers', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        for role, expected in (CUDA_CXX, ''), (CUDA_FC, ''):
+            path = targ2.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
+#    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
+#    def test_python_init(self):
+#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
+
+#    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
+#    def test_python2_init(self):
+#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
+
+#    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
+#    def test_python3_init(self):
+#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])

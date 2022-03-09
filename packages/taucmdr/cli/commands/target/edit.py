@@ -37,6 +37,7 @@ from taucmdr.cf.compiler import InstalledCompilerFamily
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
+from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.software.tau_installation import TauInstallation
 
 
@@ -99,6 +100,9 @@ class TargetEditCommand(EditCommand):
 
         group = parser.add_argument_group('Symmetric Hierarchical Memory (SHMEM) arguments')
         self._configure_argument_group(group, SHMEM_COMPILERS, '--shmem-compilers', 'shmem_family')
+
+        group = parser.add_argument_group('CUDA arguments')
+        self._configure_argument_group(group, CUDA_COMPILERS, '--cuda-compilers', 'cuda_family')
         return parser
 
     def _update_record(self, store, data, key):

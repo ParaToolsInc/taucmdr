@@ -45,7 +45,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem
-from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL
+from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL, PPC64LE
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
@@ -84,11 +84,15 @@ def _require_compiler_family(family, *hints):
                (lhs_attr, lhs_value, lhs_name, rhs_attr, rhs_name, family))
         try:
             compiler_record = rhs.populate(rhs_attr)
-        except KeyError:
-            raise ConfigurationError("%s but it is undefined" % msg)
+        except KeyError as err:
+            raise ConfigurationError("%s but it is undefined" % msg) from err
         given_family_name = compiler_record['family']
-        if given_family_name != family.name:
-            raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        if isinstance(family, list):
+            if given_family_name not in [fam.name for fam in family]:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
+        else:
+            if given_family_name != family.name:
+                raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
     return callback
 
 def knc_require_k1om(*_):
@@ -113,12 +117,21 @@ def papi_source_default():
     """Choose the best default PAPI source."""
     if HOST_OS is DARWIN:
         return None
-    elif HOST_OS is CRAY_CNL:
+    if HOST_OS is CRAY_CNL:
         for path in ('/opt/cray/papi/default', '/opt/cray/pe/papi/default'):
             if os.path.isdir(path):
                 return path
     return 'download'
 
+def level_zero_source_default():
+    try:
+        ld_lib_paths = os.environ['LD_LIBRARY_PATH'].split(':')
+    except KeyError:
+        return 'download'
+    for path in ld_lib_paths:
+        if os.path.isfile(path+'/libze_loader.so'):
+            return path
+    return 'download'
 
 def cuda_toolkit_default():
     for path in sorted(glob.glob('/usr/local/cuda*')):
@@ -163,7 +176,7 @@ def attributes():
     """
     from taucmdr.model.project import Project
     from taucmdr.cli.arguments import ParsePackagePathAction
-    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL
+    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, GNU
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
@@ -176,6 +189,9 @@ def attributes():
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
+    gnu_only = _require_compiler_family([PGI, GNU],
+                                              "You must use GNU compilers to use the backtrace unwinder",
+                                              "Try adding `--compilers=GNU` to the command line")
 
     return {
         'projects': {
@@ -406,6 +422,19 @@ def attributes():
             'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
             'rebuild_required': True
         },
+        'unwinder': {
+            'type': 'string',
+            'description': 'name of unwinder to be used',
+            'default': 'backtrace' if HOST_ARCH is PPC64LE else 'libunwind',
+            'argparse': {'flags': ('--unwinder',),
+                          'group': 'software package',
+                          'metavar': '(libunwind|backtrace|None)'},
+            'compat': {'libunwind': Target.exclude('host_arch', PPC64LE),
+                       'backtrace': (Target.require(CC.keyword, gnu_only),
+                                     Target.require(CXX.keyword, gnu_only),
+                                     Target.require(FC.keyword, gnu_only))},
+            'rebuild_required': True
+        },
         'libunwind_source': {
             'type': 'string',
             'description': 'path or URL to a libunwind installation or archive file',
@@ -496,6 +525,16 @@ def attributes():
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
+        'level_zero_source': {
+            'type': 'string',
+            'description': 'path to Intel Level Zero',
+            'default': level_zero_source_default(),
+            'argparse': {'flags': ('--level_zero_source',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
         'forced_makefile': {
             'type': 'string',
             'description': 'Populate target configuration from a TAU Makefile (WARNING: Overrides safety checks)',
@@ -553,15 +592,20 @@ class Target(Model):
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
-                                         "Delete experiment '%s' and try again." % expr['name'])
+                                         "Delete experiment '%s' and try again." % expr['name']) from err
         if self.is_selected():
             for attr, change in changes.items():
+                message = {}
                 props = self.attributes[attr]
                 if props.get('rebuild_required'):
                     if props.get('model', None) == Compiler:
                         old_comp = Compiler.controller(self.storage).one(change[0])
                         new_comp = Compiler.controller(self.storage).one(change[1])
-                        message = {attr: (old_comp['path'], new_comp['path'])}
+                        if old_comp is None:
+                            if new_comp['path'] != '':
+                                message = {attr: ('', new_comp['path'])}
+                        else:
+                            message = {attr: (old_comp['path'], new_comp['path'])}
                     else:
                         message = {attr: change}
                     self.controller(self.storage).push_to_topic('rebuild_required', message)

@@ -56,8 +56,8 @@ endif
 
 # Get build system locations from configuration file or command line
 ifneq ("$(wildcard setup.cfg)","")
-	BUILDDIR = $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
-	INSTALLDIR = $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
+	BUILDDIR ?= $(shell grep '^build-base =' setup.cfg | sed 's/build-base = //')
+	INSTALLDIR ?= $(shell grep '^prefix =' setup.cfg | sed 's/prefix = //')
 endif
 ifeq ($(BUILDDIR),)
 	BUILDDIR=build

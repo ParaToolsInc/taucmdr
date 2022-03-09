@@ -272,7 +272,7 @@ def download(src, dest, timeout=8):
                     shutil.copyfileobj(in_stream, out_file)
             except Exception as err:
                 LOGGER.warning("urllib failed to download '%s': %s", src, err)
-                raise OSError("Failed to download '%s'" % src)
+                raise OSError("Failed to download '%s'" % src) from err
 
 
 def _create_dl_subprocess(abs_cmd, src, dest, timeout):
@@ -333,8 +333,8 @@ def archive_toplevel(archive):
     _heavy_debug("Determining top-level directory name in '%s'", archive)
     try:
         fin = tarfile.open(archive)
-    except tarfile.ReadError:
-        raise OSError
+    except tarfile.ReadError as err:
+        raise OSError from err
     else:
         if fin.firstmember.isdir():
             topdir = str(fin.firstmember.name)

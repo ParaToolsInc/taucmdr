@@ -59,16 +59,16 @@ class SQLiteProjectStorage(SQLiteLocalFileStorage):
         from taucmdr.cf.storage.levels import USER_STORAGE
         try:
             project_prefix = self.prefix
-        except ProjectStorageError:
+        except ProjectStorageError as err:
             project_prefix = os.path.join(os.getcwd(), PROJECT_DIR)
             if os.path.exists(os.path.join(project_prefix, USER_STORAGE.name + ".sqlite3")):
                 raise StorageError("Cannot create project in home directory. "
-                                   "Use '-@ user' option for user level storage.")
+                                   "Use '-@ user' option for user level storage.") from err
             try:
                 util.mkdirp(project_prefix)
             except Exception as err:
                 raise StorageError("Failed to access %s filesystem prefix '%s': %s" %
-                                   (self.name, project_prefix, err))
+                                   (self.name, project_prefix, err)) from err
             # Exclude project storage directory from git
             with open(os.path.join(self.prefix, '.gitignore'), 'w+') as fout:
                 fout.write('/*\n')
