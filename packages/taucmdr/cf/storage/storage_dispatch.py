@@ -92,7 +92,7 @@ class StorageDispatch(AbstractStorage):
     def _get_storage(self):
         if self._backend == DB_TINYDB:
             return self._local_storage
-        elif self._backend == DB_SQLITE:
+        if self._backend == DB_SQLITE:
             return self._sqlite_storage
         raise InternalError(f'Bad storage type in dispatch: {self._backend}')
 
@@ -327,7 +327,7 @@ class StorageDispatch(AbstractStorage):
             TypeError: If binary data (bytes, bytearray, memoryview) found in fields or key dict
         """
         if not util.is_clean_container(fields):
-          raise TypeError(f"Bad types (bytes, bytearray, etc.) passed as fields:\n{fields}")
+            raise TypeError(f"Bad types (bytes, bytearray, etc.) passed as fields:\n{fields}")
         if isinstance(keys, dict) and not util.is_clean_container(keys):
             raise TypeError(f"Bad types (bytes, bytearray, etc. passed as keys:\n{keys}")
         return self._get_storage().update(fields, keys, table_name=table_name, match_any=match_any)

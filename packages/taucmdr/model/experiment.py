@@ -182,10 +182,9 @@ class Experiment(Model):
         if not matching:
             raise ExperimentSelectionError(
                 "There is no experiment named '{}' in project '{}'.".format(name, proj['name']))
-        elif len(matching) > 1:
+        if len(matching) > 1:
             raise InternalError("More than one experiment with data %r exists!" % data)
-        else:
-            expr = matching[0]
+        expr = matching[0]
         proj_ctrl.select(proj, expr)
 
     @classmethod
@@ -200,7 +199,7 @@ class Experiment(Model):
         def _fmt(val):
             if isinstance(val, list):
                 return "[%s]" % ", ".join(val)
-            elif isinstance(val, str):
+            if isinstance(val, str):
                 return "'%s'" % val
             return str(val)
         rebuild_required = cls.controller().pop_topic('rebuild_required')
@@ -279,7 +278,7 @@ class Experiment(Model):
                                 "The \"--%s %s\" option has been deprecated in TAU version %s and will be removed in a future release." %(attr, deprecated_option, depr_str)
                             )
                         elif is_removed:
-                            raise ConfigurationError('The \"--%s %s\" option was removed in TAU version %s.' % (attr, deprecated_option, rem_str))
+                            raise ConfigurationError(f'The \"--{attr} {deprecated_option}\" option was removed in TAU version {rem_str}.')
 
     def on_create(self):
         self.verify()
@@ -365,6 +364,7 @@ class Experiment(Model):
             measure_openmp=measurement.get_or_default('openmp'),
             measure_opencl=measurement.get_or_default('opencl'),
             measure_cuda=measurement.get_or_default('cuda'),
+            measure_level_zero=measurement.get_or_default('level_zero'),
             measure_shmem=measurement.get_or_default('shmem'),
             measure_heap_usage=measurement.get_or_default('heap_usage'),
             measure_system_load=measurement.get_or_default('system_load'),
@@ -486,7 +486,7 @@ class Experiment(Model):
         target = populated['target']
         application = populated['application']
         measurement = populated['measurement']
-        if rewrite_package == 'maqao' or rewrite_package == 'pebil':
+        if rewrite_package in ('maqao', 'pebil'):
             source_inst = "automatic"
             dyninst = False
         else:
@@ -529,6 +529,7 @@ class Experiment(Model):
             measure_openmp=measurement.get_or_default('openmp'),
             measure_opencl=measurement.get_or_default('opencl'),
             measure_cuda=measurement.get_or_default('cuda'),
+            measure_level_zero=measurement.get_or_default('level_zero'),
             measure_shmem=measurement.get_or_default('shmem'),
             measure_heap_usage=measurement.get_or_default('heap_usage'),
             measure_system_load=measurement.get_or_default('system_load'),

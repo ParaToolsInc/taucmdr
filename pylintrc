@@ -114,6 +114,9 @@ ignored-classes=
 # expressions are accepted.
 generated-members=
 
+# List of decorators that change the signature of a decorated function.
+signature-mutators=taucmdr.mvc.controller.contextualize
+
 
 [FORMAT]
 

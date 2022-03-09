@@ -126,8 +126,8 @@ class Architecture(KeyedRecord):
                 python_arch = platform.machine()
                 try:
                     inst = Architecture.find(python_arch)
-                except KeyError:
-                    raise ConfigurationError("Host architecture '%s' is not yet supported" % python_arch)
+                except KeyError as err:
+                    raise ConfigurationError("Host architecture '%s' is not yet supported" % python_arch) from err
             cls._detect = inst
             return cls._detect
 
@@ -180,8 +180,8 @@ class OperatingSystem(KeyedRecord):
                 python_os = platform.system()
                 try:
                     inst = OperatingSystem.find(python_os)
-                except KeyError:
-                    raise ConfigurationError("Host operating system '%s' is not yet supported" % python_os)
+                except KeyError as err:
+                    raise ConfigurationError("Host operating system '%s' is not yet supported" % python_os) from err
             cls._detect = inst
             return cls._detect
 
@@ -230,8 +230,8 @@ class TauMagic(KeyedRecord):
         except AttributeError:
             try:
                 inst = TauMagic.find((HOST_ARCH, HOST_OS))
-            except KeyError:
-                raise ConfigurationError(f"{HOST_OS} on {HOST_ARCH} is not supported.")
+            except KeyError as err:
+                raise ConfigurationError(f"{HOST_OS} on {HOST_ARCH} is not supported.") from err
             cls._detect = inst
             return cls._detect
 

@@ -58,8 +58,8 @@ class PapiInstallation(AutotoolsInstallation):
         if compilers[CC].unwrap().info.family is IBM:
             try:
                 gnu_compilers = GNU.installation()
-            except ConfigurationError:
-                raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
+            except ConfigurationError as err:
+                raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.") from err
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super().__init__('papi', 'PAPI', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, None)
@@ -133,7 +133,7 @@ class PapiInstallation(AutotoolsInstallation):
                     else:
                         why = ": %s is not supported on this host" % event
                     break
-                elif "can't be found" in line:
+                if "can't be found" in line:
                     parts = line.split()
                     try:
                         event = parts[1]
@@ -148,7 +148,7 @@ class PapiInstallation(AutotoolsInstallation):
                                      "Use papi_avail to check metric availability.",
                                      "Spread the desired metrics over multiple measurements.",
                                      "Choose fewer metrics.",
-                                     "You may ignore this if you are cross-compiling.")
+                                     "You may ignore this if you are cross-compiling.") from err
 
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         """List PAPI available metrics.
@@ -164,7 +164,7 @@ class PapiInstallation(AutotoolsInstallation):
         Returns:
             list: List of event name/description tuples.
         """
-        assert event_type == "PRESET" or event_type == "NATIVE"
+        assert event_type in ("PRESET", "NATIVE")
         metrics = []
         def _format(item):
             name = item.attrib['name']

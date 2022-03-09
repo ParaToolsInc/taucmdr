@@ -141,8 +141,8 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
     def format_help(self):
         try:
             func = getattr(self, '_format_help_'+USAGE_FORMAT.lower())
-        except AttributeError:
-            raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT)
+        except AttributeError as err:
+            raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT) from err
         return func()
 
     def _sorted_groups(self):
@@ -280,16 +280,15 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
         if not action.option_strings:
             metavar, = self._metavar_formatter(action, action.dest)(1)
             return self._format_positional(metavar)
+        parts = []
+        if action.nargs == 0:
+            parts.extend(self._format_optional(x) for x in action.option_strings)
         else:
-            parts = []
-            if action.nargs == 0:
-                parts.extend(self._format_optional(x) for x in action.option_strings)
-            else:
-                default = action.dest.upper()
-                args_string = self._format_args(action, default)
-                for option_string in action.option_strings:
-                    parts.append('{} {}'.format(self._format_optional(option_string), args_string))
-            return ', '.join(parts)
+            default = action.dest.upper()
+            args_string = self._format_args(action, default)
+            for option_string in action.option_strings:
+                parts.append('{} {}'.format(self._format_optional(option_string), args_string))
+        return ', '.join(parts)
 
 
 class ConsoleHelpFormatter(HelpFormatter):
@@ -473,11 +472,11 @@ class ParsePackagePathAction(argparse.Action):
         """
         try:
             value_as_bool = util.parse_bool(value, additional_true=['download', 'download-tr4', 'download-tr6', 'nightly'])
-        except TypeError:
+        except TypeError as err:
             if not util.is_url(value):
                 value = os.path.abspath(os.path.expanduser(value))
                 if not (os.path.isdir(value) or util.path_accessible(value)):
-                    raise argparse.ArgumentError(self, "Keyword, valid path, or URL required: %s" % value)
+                    raise argparse.ArgumentError(self, "Keyword, valid path, or URL required: %s" % value) from err
         else:
             value = value.lower() if value_as_bool else None
         setattr(namespace, self.dest, value)
@@ -503,8 +502,8 @@ class ParseBooleanAction(argparse.Action):
         """
         try:
             setattr(namespace, self.dest, util.parse_bool(value))
-        except TypeError:
-            raise argparse.ArgumentError(self, 'Boolean value required')
+        except TypeError as err:
+            raise argparse.ArgumentError(self, 'Boolean value required') from err
 
 
 def get_parser(prog=None, usage=None, description=None, epilog=None):
@@ -524,8 +523,8 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
     """
     try:
         formatter = getattr(sys.modules[__name__], USAGE_FORMAT.capitalize() + 'HelpFormatter')
-    except AttributeError:
-        raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT)
+    except AttributeError as err:
+        raise InternalError("Invalid USAGE_FORMAT: %s" % USAGE_FORMAT) from err
     return MutableArgumentGroupParser(prog=prog,
                                       usage=usage,
                                       description=description,
