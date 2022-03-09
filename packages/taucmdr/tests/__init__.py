@@ -325,6 +325,20 @@ class TestCase(unittest.TestCase):
             raise NotImplementedError
         self.fail("'{}' not found in '{}'".format(value, '\n'.join(data)))
 
+    def assertProjectDirectoryExists(self, directory_name):
+        prefix = PROJECT_STORAGE.prefix
+        if os.path.isdir(os.path.join(prefix, directory_name)):
+            return
+        self.fail("Project '{}' not found in '{}'".format(directory_name, prefix))
+
+    def assertNotProjectDirectoryExists(self, directory_name):
+        prefix = PROJECT_STORAGE.prefix
+        if os.path.isdir(os.path.join(prefix, directory_name)):
+            self.fail("Project '{}' found in '{}'".format(directory_name, prefix))
+        return
+
+
+
 
 class TestRunner(unittest.TextTestRunner):
     """Test suite runner."""

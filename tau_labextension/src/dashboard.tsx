@@ -37,6 +37,11 @@ import {
 
 import * as ReactDOM from 'react-dom';
 
+const regexpTime = /\[TAU\] (\d+).\d seconds [\/-|\\-]\[CPU: (\d+).\d [^\]]*]/gm;
+const regexpDownload = /\[TAU\] Downloading: (\d+).\d seconds [\/\\-|-]\[CPU: (\d+).\d/gm;
+const regexpExtract = /\[TAU\] Extracting: (\d+).\d seconds [\/\\-|-] \[(\d+).\d%/gm;
+const regexpExtractArchive = /\[TAU\] Extracting archive: (\d+).\d seconds [\/\\-|-]+/gm;
+
 export class Dashboard extends Widget {
   constructor(options: Dashboard.IOptions) {
     super();
@@ -174,7 +179,26 @@ export class Dashboard extends Widget {
               this._sidebar.consoleClearButton.show();
               this._sidebar.splitter.setRelativeSizes([0.5,0.5])
             }
-            this._sidebar.consoleStream.push(output);
+            
+            let stream = this._sidebar.consoleStream;
+            let prev = stream[stream.length - 1];
+            if (prev && output.match(regexpTime) && prev.match(regexpTime)) {
+              stream.pop()
+            }   
+
+            if (prev && output.match(regexpDownload) && prev.match(regexpDownload)) {
+              stream.pop()
+            }
+
+            if (prev && output.match(regexpExtract) && prev.match(regexpExtract)) {
+              stream.pop()
+            }
+
+            if (prev && output.match(regexpExtractArchive) && prev.match(regexpExtractArchive)) {
+              stream.pop()
+            }
+
+            stream.push(output);
             this._sidebar.update();
           }
   

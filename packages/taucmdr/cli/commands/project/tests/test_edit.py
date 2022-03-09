@@ -45,12 +45,18 @@ class EditTest(tests.TestCase):
 
     def test_rename(self):
         self.reset_project_storage()
+        self.assertProjectDirectoryExists('proj1')
+        self.assertNotProjectDirectoryExists('proj2')
         argv = ['proj1', '--new-name', 'proj2']
         self.assertCommandReturnValue(0, edit.COMMAND, argv)
         proj_ctrl = Project.controller()
+        self.assertProjectDirectoryExists('proj2')
+        self.assertNotProjectDirectoryExists('proj1')
         self.assertIsNone(proj_ctrl.one({'name': 'proj1'}))
         self.assertIsNotNone(proj_ctrl.one({'name': 'proj2'}))
         self.assertCommandReturnValue(0, edit.COMMAND, ['proj2', '--new-name', 'proj1'])
+        self.assertProjectDirectoryExists('proj1')
+        self.assertNotProjectDirectoryExists('proj2')
 
     def test_wrongname(self):
         self.reset_project_storage()
