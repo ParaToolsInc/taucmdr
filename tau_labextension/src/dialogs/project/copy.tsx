@@ -4,7 +4,7 @@ import { Dialog } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
 
 const writeCopyBody = (name: string) => {
-  let copyName = name + '_copy';
+  const copyName = name + '_copy';
   return (
     <div>
       <label>
@@ -28,13 +28,13 @@ class DialogBody extends Widget {
   }
 
   getValue() {
-    let response = this.node.querySelectorAll('input');
-    return Array.from(response); 
+    const response = this.node.querySelectorAll('input');
+    return Array.from(response);
   }
 };
 
 export const copyProjectDialog = (props: Sidebar.Project) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeCopyBody(props.projectName), body);
 
   const dialog = new Dialog({
@@ -49,9 +49,9 @@ export const copyProjectDialog = (props: Sidebar.Project) => {
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
-        let copyProject = response.value![0].value;
-        let tamSuffix = response.value![1].value;
+      if (response.button.label === 'Submit') {
+        const copyProject = response.value![0].value;
+        const tamSuffix = response.value![1].value;
         props.kernelExecute(`copy_project('${props.projectName}', '${copyProject}', '${tamSuffix}')`)
           .then((result) => {
             if (result) {
@@ -61,14 +61,12 @@ export const copyProjectDialog = (props: Sidebar.Project) => {
       }
       dialog.dispose();
     });
-
-
 }
 
 namespace Sidebar {
   export interface Project {
     projectName: string;
     kernelExecute: (code: string) => Promise<any>;
-    updateProjects: () => void; 
+    updateProjects: () => void;
   }
 }

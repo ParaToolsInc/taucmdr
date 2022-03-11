@@ -10,7 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import {
   selectExperimentDialog,
-  editExperimentDialog, 
+  editExperimentDialog,
   deleteExperimentDialog,
 } from '../dialogs';
 
@@ -21,20 +21,20 @@ export const ExperimentTable = (props: Tables.Experiment) => {
   const [activeRow, setActiveRow] = React.useState<any | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
-    let root = document.documentElement;
-    let offset = document.getElementById(`tau-Experiment-title-${props.projectName}`)!.getBoundingClientRect().x
+    const root = document.documentElement;
+    const offset = document.getElementById(`tau-Experiment-title-${props.projectName}`)!.getBoundingClientRect().x
     root.style.setProperty('--tau-Menu-margin', `${event.nativeEvent.clientX - offset}px`);
     setAnchorEl(event.currentTarget);
     setActiveRow(row);
-  };  
+  };
 
   const handleClose = () => {
     setAnchorEl(null);
     setActiveRow(null);
-  };  
+  };
 
-  let rows = Object.entries(props.experiments).map(([name, row]) => {
-    let rowItem = {...row, 'Name': name};
+  const rows = Object.entries(props.experiments).map(([name, row]) => {
+    const rowItem = {...row, 'Name': name};
     return (
       <TableRow className='tau-Table-row tau-Table-row-clickable' key={name} onClick={(e) => handleClick(e, rowItem)}>
         <TableCell component='th' scope='row'>{name}</TableCell>
@@ -45,8 +45,8 @@ export const ExperimentTable = (props: Tables.Experiment) => {
         <TableCell align='right'>{row['Measurement']}</TableCell>
         <TableCell align='right'>{row['TAU Makefile']}</TableCell>
       </TableRow>
-    )   
-  }); 
+    )
+  });
 
   return (
     <div>
@@ -75,7 +75,7 @@ export const ExperimentTable = (props: Tables.Experiment) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         className='tau-Option-menu'
-      >   
+      >
         <MenuItem onClick={() => {
           handleClose();
           selectExperimentDialog(activeRow['Name'], props);
@@ -86,19 +86,19 @@ export const ExperimentTable = (props: Tables.Experiment) => {
         <MenuItem onClick={() => {
           handleClose();
           editExperimentDialog(activeRow, props);
-        }}> 
+        }}>
           Edit
         </MenuItem>
 
         <MenuItem onClick={() => {
-          handleClose(); 
+          handleClose();
           deleteExperimentDialog(activeRow['Name'], props);
-        }}>   
+        }}>
           Delete
         </MenuItem>
       </Menu>
     </div>
-  );  
+  );
 }
 
 namespace Tables {

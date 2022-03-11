@@ -10,7 +10,7 @@ class DialogBody extends Widget {
   }
 
   getValue() {
-    let response = this.node.querySelector('input');
+    const response = this.node.querySelector('input');
     if (response) {
       return response.value;
     }
@@ -33,7 +33,7 @@ const writeNewBody = () => {
 }
 
 export const newProjectDialog = (props: Sidebar.Project) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeNewBody(), body);
 
   const dialog = new Dialog({
@@ -48,21 +48,21 @@ export const newProjectDialog = (props: Sidebar.Project) => {
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
+      if (response.button.label === 'Submit') {
         props.kernelExecute(`new_project('${response.value}')`)
-          .then((result) => { 
+          .then((result) => {
             if (result) {
               props.updateProjects();
             }
           });
       }
-      dialog.dispose(); 
+      dialog.dispose();
     });
 }
 
 namespace Sidebar {
   export interface Project {
     kernelExecute: (code: string) => Promise<any>;
-    updateProjects: () => void; 
+    updateProjects: () => void;
   }
 }

@@ -14,16 +14,16 @@ export const deleteExperimentDialog = (experimentName: string, props: Tables.Exp
 
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Delete') {
+      if (response.button.label === 'Delete') {
         props.kernelExecute(`delete_experiment('${props.projectName}', '${experimentName}')`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
-            }   
-          }); 
-      }   
-      dialog.dispose(); 
-    }); 
+            }
+          });
+      }
+      dialog.dispose();
+    });
 }
 
 namespace Tables {

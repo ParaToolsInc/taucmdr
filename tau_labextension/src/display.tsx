@@ -1,13 +1,11 @@
-import { 
-  Widget, 
-  PanelLayout 
+import {
+  Widget,
+  PanelLayout
 } from '@lumino/widgets';
 
 import {
   IFrame
 } from '@jupyterlab/apputils';
-
-
 
 import {
   IPlotlyDisplayItem
@@ -21,7 +19,6 @@ export class PlotlyDisplay extends Widget {
     this.addClass('tau-TauDisplay');
 
     const layout = (this.layout = new PanelLayout());
-
     const project = options.trialPath['project'];
     const experiment = options.trialPath['experiment'];
     const trial = options.trialPath['trial'];
@@ -47,7 +44,6 @@ export class PlotlyDisplay extends Widget {
   protected onAfterShow(): void {
     this.update();
   }
-
 }
 
 export namespace PlotlyDisplay {

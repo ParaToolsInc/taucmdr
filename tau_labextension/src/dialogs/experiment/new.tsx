@@ -52,19 +52,19 @@ class DialogBody extends Widget {
   }
 
   getValue() {
-    let response = this.node.querySelectorAll('input, select');
-    let responseDict: { [id: string] : string } = {};
+    const response = this.node.querySelectorAll('input, select');
+    const responseDict: { [id: string] : string } = {};
     Object.entries(response).map((resp) => {
-      let elem = resp[1];
-      if (resp[1].tagName == 'INPUT') {
-        let inputElem = elem as HTMLInputElement;
-        if (inputElem.type == 'text') {
+      const elem = resp[1];
+      if (resp[1].tagName === 'INPUT') {
+        const inputElem = elem as HTMLInputElement;
+        if (inputElem.type === 'text') {
             responseDict[inputElem.name] = inputElem.value;
         } else {
             responseDict[inputElem.name] = inputElem.checked.toString();
         }
       } else {
-        let selectElem = elem as HTMLSelectElement;
+        const selectElem = elem as HTMLSelectElement;
         responseDict[selectElem.name] = selectElem.value;
       }
     });
@@ -73,26 +73,26 @@ class DialogBody extends Widget {
 };
 
 export const newExperimentDialog = (props: Dashboard.Experiment) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeNewBody(props.project), body);
 
   const dialog = new Dialog({
     title: `New Experiment`,
     body: new DialogBody(body),
     buttons: [
-      Dialog.cancelButton({ label: 'Cancel' }), 
+      Dialog.cancelButton({ label: 'Cancel' }),
       Dialog.okButton({ label: 'Submit' })
-    ]   
-  }); 
+    ]
+  });
 
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
-        let name = response.value!.name;
-        let target = response.value!.target;
-        let application = response.value!.application;
-        let measurement = response.value!.measurement;
+      if (response.button.label === 'Submit') {
+        const name = response.value!.name;
+        const target = response.value!.target;
+        const application = response.value!.application;
+        const measurement = response.value!.measurement;
         props.kernelExecute(`new_experiment('${props.projectName}', '${name}', '${target}', '${application}', '${measurement}')`)
           .then((result) => {
             if (result) {
@@ -100,9 +100,8 @@ export const newExperimentDialog = (props: Dashboard.Experiment) => {
             }
           });
       }
-      dialog.dispose(); 
+      dialog.dispose();
     });
-
 }
 
 namespace Dashboard {
@@ -110,6 +109,6 @@ namespace Dashboard {
     project: any
     projectName: string;
     kernelExecute: (code: string) => Promise<any>;
-    updateProject: (project: string) => void; 
+    updateProject: (project: string) => void;
   }
 }

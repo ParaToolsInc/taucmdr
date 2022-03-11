@@ -14,7 +14,7 @@ export const deleteApplicationDialog = (applicationName: string, props: Tables.A
 
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Delete') {
+      if (response.button.label === 'Delete') {
         props.kernelExecute(`delete_application('${applicationName}')`)
           .then((result) => {
             if (result) {

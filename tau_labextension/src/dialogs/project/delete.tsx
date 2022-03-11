@@ -16,13 +16,13 @@ export const deleteProjectDialog = (props: Sidebar.Project) => {
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Delete') {
+      if (response.button.label === 'Delete') {
         props.kernelExecute(`delete_project('${props.projectName}')`)
           .then((result) => {
             if (result) {
               props.updateProjects();
-              let exists = props.tracker.find((widget) => {
-                return widget.id == `project-${props.projectName}`;
+              const exists = props.tracker.find((widget) => {
+                return widget.id === `project-${props.projectName}`;
               });
 
               if (exists) {
@@ -40,7 +40,7 @@ namespace Sidebar {
   export interface Project {
     projectName: string;
     kernelExecute: (code: string) => Promise<any>;
-    updateProjects: () => void; 
+    updateProjects: () => void;
     tracker: WidgetTracker;
   }
 }

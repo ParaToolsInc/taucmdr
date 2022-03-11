@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { 
+import {
   Dialog,
   WidgetTracker
 } from '@jupyterlab/apputils';
@@ -14,7 +14,7 @@ class DialogBody extends Widget {
   }
 
   getValue() {
-    let response = this.node.querySelector('input');
+    const response = this.node.querySelector('input');
     if (response) {
       return response.value;
     }
@@ -37,7 +37,7 @@ const writeEditBody = (project: string) => {
 }
 
 export const editProjectDialog = (props: Sidebar.Project) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeEditBody(props.projectName), body);
 
   const dialog = new Dialog({
@@ -52,13 +52,13 @@ export const editProjectDialog = (props: Sidebar.Project) => {
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
+      if (response.button.label === 'Submit') {
         props.kernelExecute(`edit_project('${props.projectName}', '${response.value}')`)
           .then((result) => {
             if (result) {
               props.updateProjects();
-              let exists = props.tracker.find((widget) => {
-                return widget.id == `project-${props.projectName}`;
+              const exists = props.tracker.find((widget) => {
+                return widget.id === `project-${props.projectName}`;
               });
 
               if (exists) {
@@ -77,7 +77,7 @@ namespace Sidebar {
   export interface Project {
     projectName: string;
     kernelExecute: (code: string) => Promise<any>;
-    updateProjects: () => void; 
+    updateProjects: () => void;
     tracker: WidgetTracker;
   }
 }

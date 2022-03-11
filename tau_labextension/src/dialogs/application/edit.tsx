@@ -1,19 +1,19 @@
-import React from 'react'; 
-import ReactDOM from 'react-dom'; 
- 
-import { Dialog } from '@jupyterlab/apputils'; 
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import { Dialog } from '@jupyterlab/apputils';
 import { Checkbox } from '@jupyterlab/ui-components';
-import { Widget } from '@lumino/widgets'; 
- 
-const writeEditBody = (currentRow: any) => { 
-  let openmp = (currentRow['OpenMP'] == 'Yes') ? true : false;
-  let pthreads = (currentRow['Pthreads'] == 'Yes') ? true : false;   
-  let tbb = (currentRow['TBB'] == 'Yes') ? true : false;
-  let mpi = (currentRow['MPI'] == 'Yes') ? true : false; 
-  let cuda = (currentRow['CUDA'] == 'Yes') ? true : false;
-  let opencl = (currentRow['OpenCL'] == 'Yes') ? true : false;   
-  let shmem = (currentRow['SHMEM'] == 'Yes') ? true : false;
-  let mpc = (currentRow['MPC'] == 'Yes') ? true : false; 
+import { Widget } from '@lumino/widgets';
+
+const writeEditBody = (currentRow: any) => {
+  const openmp = (currentRow['OpenMP'] === 'Yes') ? true : false;
+  const pthreads = (currentRow['Pthreads'] === 'Yes') ? true : false;
+  const tbb = (currentRow['TBB'] === 'Yes') ? true : false;
+  const mpi = (currentRow['MPI'] === 'Yes') ? true : false;
+  const cuda = (currentRow['CUDA'] === 'Yes') ? true : false;
+  const opencl = (currentRow['OpenCL'] === 'Yes') ? true : false;
+  const shmem = (currentRow['SHMEM'] === 'Yes') ? true : false;
+  const mpc = (currentRow['MPC'] === 'Yes') ? true : false;
 
   return (
     <React.Fragment>
@@ -47,86 +47,85 @@ const writeEditBody = (currentRow: any) => {
         </div>
       </form>
     </React.Fragment>
-  )   
+  )
 }
 
 class DialogBody extends Widget {
     constructor(domElement: HTMLElement) {
         super({node : domElement});
-    }   
+    }
 
     getValue() {
-        let response = this.node.querySelectorAll('input, select');
-        let responseDict: { [id: string] : string } = {}; 
+        const response = this.node.querySelectorAll('input, select');
+        const responseDict: { [id: string] : string } = {};
         Object.entries(response).map((resp) => {
-            let elem = resp[1];
-            if (resp[1].tagName == 'INPUT') {
-                let inputElem = elem as HTMLInputElement;
-                if (inputElem.type == 'text') {
+            const elem = resp[1];
+            if (resp[1].tagName === 'INPUT') {
+                const inputElem = elem as HTMLInputElement;
+                if (inputElem.type === 'text') {
                         responseDict[inputElem.name] = inputElem.value;
                 } else {
                         responseDict[inputElem.name] = inputElem.checked.toString();
-                }   
+                }
             } else {
-                let selectElem = elem as HTMLSelectElement;
+                const selectElem = elem as HTMLSelectElement;
                 responseDict[selectElem.name] = selectElem.value;
-            }   
-        }); 
+            }
+        });
         return responseDict;
-    }   
+    }
 };
 
 export const editApplicationDialog = (currentRow: any, props: Tables.Application) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeEditBody(currentRow), body);
 
   const dialog = new Dialog({
     title: `Edit Application`,
     body: new DialogBody(body),
     buttons: [
-      Dialog.cancelButton({ label: 'Cancel' }), 
+      Dialog.cancelButton({ label: 'Cancel' }),
       Dialog.okButton({ label: 'Submit' })
-    ]   
-  }); 
+    ]
+  });
 
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
-        let name = currentRow['Name'];
-        let newName = response.value!.name;
-        let linkage = response.value!.linkage;
-        let openMP = response.value!.openmp;
-        let pThreads = response.value!.pthreads;
-        let tbb = response.value!.tbb;
-        let mpi = response.value!.mpi;
-        let cuda = response.value!.cuda;
-        let openCL = response.value!.opencl;
-        let shmem = response.value!.shmem;
-        let mpc = response.value!.mpc;
-
+      if (response.button.label === 'Submit') {
+        const name = currentRow['Name'];
+        const newName = response.value!.name;
+        const linkage = response.value!.linkage;
+        const openMP = response.value!.openmp;
+        const pThreads = response.value!.pthreads;
+        const tbb = response.value!.tbb;
+        const mpi = response.value!.mpi;
+        const cuda = response.value!.cuda;
+        const openCL = response.value!.opencl;
+        const shmem = response.value!.shmem;
+        const mpc = response.value!.mpc;
 
         props.kernelExecute(`
-            args = {'linkage': '${linkage}', 
-                'openmp': '${openMP}', 
-                'pthreads': '${pThreads}', 
-                'tbb': '${tbb}', 
-                'mpi': '${mpi}', 
-                'cuda': '${cuda}', 
-                'opencl': '${openCL}', 
+            args = {'linkage': '${linkage}',
+                'openmp': '${openMP}',
+                'pthreads': '${pThreads}',
+                'tbb': '${tbb}',
+                'mpi': '${mpi}',
+                'cuda': '${cuda}',
+                'opencl': '${openCL}',
                 'shmem': '${shmem}',
-                'mpc': '${mpc}' 
+                'mpc': '${mpc}'
             }`
         )
 
-        props.kernelExecute(`edit_application('${props.projectName}', '${name}', '${newName}', args)`) 
+        props.kernelExecute(`edit_application('${props.projectName}', '${name}', '${newName}', args)`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
             }
           });
       }
-      dialog.dispose(); 
+      dialog.dispose();
     });
 }
 

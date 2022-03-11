@@ -1,6 +1,6 @@
-import { 
-  Widget, 
-  PanelLayout 
+import {
+  Widget,
+  PanelLayout
 } from '@lumino/widgets';
 
 import {
@@ -13,7 +13,7 @@ import {
   ToolbarButton
 } from '@jupyterlab/apputils';
 
-import { 
+import {
   Session,
   KernelMessage
 } from '@jupyterlab/services';
@@ -66,7 +66,7 @@ export class Dashboard extends Widget {
         });
     }
 
-    let toolbar = options.toolbar;
+    const toolbar = options.toolbar;
     toolbar.addItem(
       'refresh',
       new ToolbarButton({
@@ -85,10 +85,10 @@ export class Dashboard extends Widget {
         label: 'New Target',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          let props = {
-            projectName: this._projectName, 
-            kernelExecute: this._kernelExecute, 
-            updateProject: this._updateProject 
+          const props = {
+            projectName: this._projectName,
+            kernelExecute: this._kernelExecute,
+            updateProject: this._updateProject
           };
           newTargetDialog(props);
         },
@@ -102,10 +102,10 @@ export class Dashboard extends Widget {
         label: 'New Application',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          let props = {
-            projectName: this._projectName, 
-            kernelExecute: this._kernelExecute, 
-            updateProject: this._updateProject 
+          const props = {
+            projectName: this._projectName,
+            kernelExecute: this._kernelExecute,
+            updateProject: this._updateProject
           };
           newApplicationDialog(props);
         },
@@ -119,10 +119,10 @@ export class Dashboard extends Widget {
         label: 'New Measurement',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          let props = {
-            projectName: this._projectName, 
-            kernelExecute: this._kernelExecute, 
-            updateProject: this._updateProject 
+          const props = {
+            projectName: this._projectName,
+            kernelExecute: this._kernelExecute,
+            updateProject: this._updateProject
           };
           newMeasurementDialog(props);
         },
@@ -136,11 +136,11 @@ export class Dashboard extends Widget {
         label: 'New Experiment',
         className: 'tau-dashboardToolbar-button',
         onClick: () => {
-          let props = {
-            project: this._project, 
-            projectName: this._projectName, 
-            kernelExecute: this._kernelExecute, 
-            updateProject: this._updateProject 
+          const props = {
+            project: this._project,
+            projectName: this._projectName,
+            kernelExecute: this._kernelExecute,
+            updateProject: this._updateProject
           };
           newExperimentDialog(props);
         },
@@ -161,7 +161,7 @@ export class Dashboard extends Widget {
           resolve('Kernel Failure');
         });
       }
-  
+
       const kernel = this._kernelSession!.kernel;
       const content: KernelMessage.IExecuteRequestMsg['content'] = {
         store_history: false,
@@ -171,20 +171,20 @@ export class Dashboard extends Widget {
       return new Promise<string>((resolve, _) => {
         const future = kernel!.requestExecute(content);
         future.onIOPub = msg => {
-          if (msg.header.msg_type == 'stream') {
-            let content = (msg as KernelMessage.IStreamMsg).content;
-            let output = content.text;
+          if (msg.header.msg_type === 'stream') {
+            const message = (msg as KernelMessage.IStreamMsg).content;
+            const output = message.text;
             if (this._sidebar.console.isHidden) {
               this._sidebar.console.show();
               this._sidebar.consoleClearButton.show();
               this._sidebar.splitter.setRelativeSizes([0.5,0.5])
             }
-            
-            let stream = this._sidebar.consoleStream;
-            let prev = stream[stream.length - 1];
+
+            const stream = this._sidebar.consoleStream;
+            const prev = stream[stream.length - 1];
             if (prev && output.match(regexpTime) && prev.match(regexpTime)) {
               stream.pop()
-            }   
+            }
 
             if (prev && output.match(regexpDownload) && prev.match(regexpDownload)) {
               stream.pop()
@@ -201,26 +201,26 @@ export class Dashboard extends Widget {
             stream.push(output);
             this._sidebar.update();
           }
-  
-          if (msg.header.msg_type == 'error') {
-            let content = (msg as KernelMessage.IErrorMsg).content;
-            let output = content.ename + ': ' + content.evalue; 
-            let dialog = errorDialog(output);
+
+          if (msg.header.msg_type === 'error') {
+            const message = (msg as KernelMessage.IErrorMsg).content;
+            const output = message.ename + ': ' + message.evalue;
+            const dialog = errorDialog(output);
             dialog.launch().then(response => {
               console.log(output);
             });
           }
-  
-          if (msg.header.msg_type == 'execute_result') {
-            let data = (msg as KernelMessage.IDisplayDataMsg).content.data;
-            let output = (data['text/plain'] as string) || '';
-            let jsonOutput = JSON.parse(output.replace(/'/g, ''));
-            if (jsonOutput.status == 'failure') {
+
+          if (msg.header.msg_type === 'execute_result') {
+            const message = (msg as KernelMessage.IDisplayDataMsg).content.data;
+            const output = (message['text/plain'] as string) || '';
+            const jsonOutput = JSON.parse(output.replace(/'/g, ''));
+            if (jsonOutput.status === 'failure') {
               if (jsonOutput.message.includes('Error in')) {
-                let dialog = errorDialog(jsonOutput.message + ': ' + 'This name may already be taken. Please try a different name.');
+                const dialog = errorDialog(jsonOutput.message + ': ' + 'This name may already be taken. Please try a different name.');
                 dialog.launch();
               } else {
-                let dialog = errorDialog(jsonOutput.message);
+                const dialog = errorDialog(jsonOutput.message);
                 dialog.launch();
               }
             } else {
@@ -259,9 +259,9 @@ export class Dashboard extends Widget {
     if (!this.isVisible) {
       return;
     }
-    
+
     this._kernelExecute(`select_project("${this._projectName}")`)
-    
+
     ReactDOM.render(
       <TargetTable
         projectName={this._projectName}
@@ -271,7 +271,7 @@ export class Dashboard extends Widget {
       />,
       this._targetDisplay.node
     );
- 
+
     ReactDOM.render(
       <ApplicationTable
         projectName={this._projectName}
@@ -291,7 +291,7 @@ export class Dashboard extends Widget {
       />,
       this._measurementDisplay.node
     );
- 
+
     ReactDOM.render(
       <ExperimentTable
         project={this._project}
@@ -309,7 +309,7 @@ export class Dashboard extends Widget {
         projectName={this._projectName}
         kernelExecute={this._kernelExecute}
         updateProject={this._updateProject}
-        experiment={this._project.experiments[this._selectedExperiment]}  
+        experiment={this._project.experiments[this._selectedExperiment]}
         setSelectedExperiment={this._setExperiment}
         selectedExperiment={this._selectedExperiment}
         openDisplayCommand={this._openDisplayCommand}

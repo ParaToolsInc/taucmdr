@@ -13,16 +13,16 @@ export const deleteMeasurementDialog = (measurementName: string, props: Tables.M
   });
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Delete') {
+      if (response.button.label === 'Delete') {
         props.kernelExecute(`delete_measurement('${measurementName}')`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
-            }   
-          }); 
-      }   
-      dialog.dispose(); 
-    }); 
+            }
+          });
+      }
+      dialog.dispose();
+    });
 }
 
 namespace Tables {

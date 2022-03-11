@@ -14,17 +14,17 @@ export const selectExperimentDialog = (experimentName: string, props: Tables.Exp
 
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Select') {
+      if (response.button.label === 'Select') {
         props.kernelExecute(`select_experiment('${props.projectName}', '${experimentName}')`)
           .then((result) => {
             if (result) {
               props.setSelectedExperiment(experimentName);
               props.updateProject(props.projectName);
-            }   
-          }); 
-      }   
-      dialog.dispose(); 
-    }); 
+            }
+          });
+      }
+      dialog.dispose();
+    });
 }
 
 namespace Tables {

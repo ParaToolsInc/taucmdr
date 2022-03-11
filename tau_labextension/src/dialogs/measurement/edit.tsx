@@ -1,16 +1,16 @@
-import React from 'react'; 
-import ReactDOM from 'react-dom'; 
- 
-import { Dialog } from '@jupyterlab/apputils'; 
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import { Dialog } from '@jupyterlab/apputils';
 import { Checkbox } from '@jupyterlab/ui-components';
-import { Widget } from '@lumino/widgets'; 
- 
-const writeEditBody = (currentRow: any) => { 
-  let sample = (currentRow['Sample'] == 'Yes') ? true : false;
-  let cuda = (currentRow['CUDA'] == 'Yes') ? true : false;
-  let io = (currentRow['I/O'] == 'Yes') ? true : false;
-  let mpi = (currentRow['MPI'] == 'Yes') ? true : false;
-  let shmem = (currentRow['SHMEM'] == 'Yes') ? true : false;
+import { Widget } from '@lumino/widgets';
+
+const writeEditBody = (currentRow: any) => {
+  const sample = (currentRow['Sample'] === 'Yes') ? true : false;
+  const cuda = (currentRow['CUDA'] === 'Yes') ? true : false;
+  const io = (currentRow['I/O'] === 'Yes') ? true : false;
+  const mpi = (currentRow['MPI'] === 'Yes') ? true : false;
+  const shmem = (currentRow['SHMEM'] === 'Yes') ? true : false;
 
   return (
     <React.Fragment>
@@ -76,87 +76,87 @@ const writeEditBody = (currentRow: any) => {
         </div>
       </form>
     </React.Fragment>
-  )   
-} 
+  )
+}
 
 class DialogBody extends Widget {
     constructor(domElement: HTMLElement) {
         super({node : domElement});
-    }   
+    }
 
     getValue() {
-        let response = this.node.querySelectorAll('input, select');
-        let responseDict: { [id: string] : string } = {}; 
+        const response = this.node.querySelectorAll('input, select');
+        const responseDict: { [id: string] : string } = {};
         Object.entries(response).map((resp) => {
-            let elem = resp[1];
-            if (resp[1].tagName == 'INPUT') {
-                let inputElem = elem as HTMLInputElement;
-                if (inputElem.type == 'text') {
+            const elem = resp[1];
+            if (resp[1].tagName === 'INPUT') {
+                const inputElem = elem as HTMLInputElement;
+                if (inputElem.type === 'text') {
                         responseDict[inputElem.name] = inputElem.value;
                 } else {
                         responseDict[inputElem.name] = inputElem.checked.toString();
-                }   
+                }
             } else {
-                let selectElem = elem as HTMLSelectElement;
+                const selectElem = elem as HTMLSelectElement;
                 responseDict[selectElem.name] = selectElem.value;
-            }   
-        }); 
+            }
+        });
         return responseDict;
-    }   
+    }
 };
 
 export const editMeasurementDialog = (currentRow: any, props: Tables.Measurement) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeEditBody(currentRow), body);
 
   const dialog = new Dialog({
     title: `Edit Measurement`,
     body: new DialogBody(body),
     buttons: [
-    Dialog.cancelButton({ label: 'Cancel' }), 
+    Dialog.cancelButton({ label: 'Cancel' }),
     Dialog.okButton({ label: 'Submit' })
-    ]   
-  }); 
+    ]
+  });
 
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
-        let name = currentRow['Name'];
-        let newName = response.value!.name;
-        let profile = response.value!.profile;
-        let trace = response.value!.trace;
-        let sample = response.value!.sample;
-        let sourceInst = response.value!.sourceInst;
-        let compilerInst = response.value!.compilerInst;
-        let openMP = response.value!.openmp;
-        let cuda = response.value!.cuda;
-        let io = response.value!.io;
-        let mpi = response.value!.mpi;
-        let shmem = response.value!.shmem;
+      if (response.button.label === 'Submit') {
+        const name = currentRow['Name'];
+        const newName = response.value!.name;
+        const profile = response.value!.profile;
+        const trace = response.value!.trace;
+        const sample = response.value!.sample;
+        const sourceInst = response.value!.sourceInst;
+        const compilerInst = response.value!.compilerInst;
+        const openMP = response.value!.openmp;
+        const cuda = response.value!.cuda;
+        const io = response.value!.io;
+        const mpi = response.value!.mpi;
+        const shmem = response.value!.shmem;
 
         props.kernelExecute(`
-            args = {'profile': '${profile}', 
-                'trace': '${trace}', 
-                'sample': '${sample}', 
-                'source_inst': '${sourceInst}', 
-                'compiler_inst': '${compilerInst}', 
-                'openmp': '${openMP}', 
-                'cuda': '${cuda}', 
-                'io': '${io}', 
-                'mpi': '${mpi}', 
+            args = {'profile': '${profile}',
+                'trace': '${trace}',
+                'sample': '${sample}',
+                'source_inst': '${sourceInst}',
+                'compiler_inst': '${compilerInst}',
+                'openmp': '${openMP}',
+                'cuda': '${cuda}',
+                'io': '${io}',
+                'mpi': '${mpi}',
                 'shmem': '${shmem}'
                 }`
         )
 
-        props.kernelExecute(`edit_measurement('${props.projectName}', '${name}', '${newName}', args)`) 
+        props.kernelExecute(`edit_measurement('${props.projectName}', '${name}', '${newName}', args)`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
             }
           });
       }
-      dialog.dispose(); 
+      dialog.dispose();
     });
 }
 

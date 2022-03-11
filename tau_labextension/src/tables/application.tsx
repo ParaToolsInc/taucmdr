@@ -20,9 +20,9 @@ export const ApplicationTable = (props: Tables.Application) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const [activeRow, setActiveRow] = React.useState<any | null>(null);
 
-  let root = document.documentElement;
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
-    let offset = document.getElementById(`tau-Application-title-${props.projectName}`)!.getBoundingClientRect().x
+    const root = document.documentElement;
+    const offset = document.getElementById(`tau-Application-title-${props.projectName}`)!.getBoundingClientRect().x
     root.style.setProperty('--tau-Menu-margin', `${event.nativeEvent.clientX - offset}px`);
     setAnchorEl(event.currentTarget);
     setActiveRow(row);
@@ -33,8 +33,8 @@ export const ApplicationTable = (props: Tables.Application) => {
     setActiveRow(null);
   };
 
-  let rows = Object.entries(props.applications).map(([name, row]) => {
-    let rowItem = {...row, 'Name': name};
+  const rows = Object.entries(props.applications).map(([name, row]) => {
+    const rowItem = {...row, 'Name': name};
     return (
       <TableRow className='tau-Table-row tau-Table-row-clickable' key={name} onClick={(e) => handleClick(e, rowItem)} >
         <TableCell component='th' scope='row'>{name}</TableCell>

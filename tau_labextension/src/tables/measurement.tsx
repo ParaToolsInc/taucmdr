@@ -9,7 +9,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import {
-  editMeasurementDialog, 
+  editMeasurementDialog,
   copyMeasurementDialog,
   deleteMeasurementDialog
 } from '../dialogs';
@@ -21,20 +21,20 @@ export const MeasurementTable = (props: Tables.Measurement) => {
   const [activeRow, setActiveRow] = React.useState<any | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
-    let root = document.documentElement;
-    let offset = document.getElementById(`tau-Measurement-title-${props.projectName}`)!.getBoundingClientRect().x
+    const root = document.documentElement;
+    const offset = document.getElementById(`tau-Measurement-title-${props.projectName}`)!.getBoundingClientRect().x
     root.style.setProperty('--tau-Menu-margin', `${event.nativeEvent.clientX - offset}px`);
     setAnchorEl(event.currentTarget);
     setActiveRow(row);
-  };  
+  };
 
   const handleClose = () => {
     setAnchorEl(null);
     setActiveRow(null);
-  };  
+  };
 
-  let rows = Object.entries(props.measurements).map(([name, row]) => {
-    let rowItem = {...row, 'Name': name};
+  const rows = Object.entries(props.measurements).map(([name, row]) => {
+    const rowItem = {...row, 'Name': name};
     return (
       <TableRow className='tau-Table-row tau-Table-row-clickable' key={name} onClick={(e) => handleClick(e, rowItem)}>
         <TableCell component='th' scope='row'>{name}</TableCell>
@@ -49,8 +49,8 @@ export const MeasurementTable = (props: Tables.Measurement) => {
         <TableCell align='right'>{row['MPI']}</TableCell>
         <TableCell align='right'>{row['SHMEM']}</TableCell>
       </TableRow>
-    )   
-  }); 
+    )
+  });
 
   return (
     <div>
@@ -83,7 +83,7 @@ export const MeasurementTable = (props: Tables.Measurement) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         className='tau-Option-menu'
-      >   
+      >
         <MenuItem onClick={() => {
           handleClose();
           editMeasurementDialog(activeRow, props);
@@ -94,19 +94,19 @@ export const MeasurementTable = (props: Tables.Measurement) => {
         <MenuItem onClick={() => {
           handleClose();
           copyMeasurementDialog(activeRow['Name'], props);
-        }}>   
+        }}>
           Copy
         </MenuItem>
 
         <MenuItem onClick={() => {
-          handleClose(); 
+          handleClose();
           deleteMeasurementDialog(activeRow['Name'], props);
-        }}> 
+        }}>
           Delete
         </MenuItem>
       </Menu>
     </div>
-  );  
+  );
 }
 
 namespace Tables {

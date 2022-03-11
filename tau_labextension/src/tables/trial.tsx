@@ -11,7 +11,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import * as React from 'react';
 
 import {
-  editTrialDialog, 
+  editTrialDialog,
   deleteTrialDialog
 } from '../dialogs';
 
@@ -19,18 +19,18 @@ export const TrialTable = (props: Tables.Trial) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const [activeRow, setActiveRow] = React.useState<any | null>(null);
 
-  let root = document.documentElement;
   const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, row: any) => {
-    let offset = document.getElementById(`tau-Trial-title-${props.projectName}`)!.getBoundingClientRect().x
+    const root = document.documentElement;
+    const offset = document.getElementById(`tau-Trial-title-${props.projectName}`)!.getBoundingClientRect().x
     root.style.setProperty('--tau-Menu-margin', `${event.nativeEvent.clientX - offset}px`);
     setAnchorEl(event.currentTarget);
     setActiveRow(row);
-  };  
+  };
 
   const handleClose = () => {
     setAnchorEl(null);
     setActiveRow(null);
-  };  
+  };
 
   if (!(props.experiment)) {
     return (
@@ -38,8 +38,8 @@ export const TrialTable = (props: Tables.Trial) => {
     )
   }
 
-  let rows = Object.entries(props.experiment['Trial Data']).map(([name, row]) => {
-    let rowItem = {...row, 'Number': name};
+  const rows = Object.entries(props.experiment['Trial Data']).map(([name, row]) => {
+    const rowItem = {...row, 'Number': name};
     return (
       <TableRow className='tau-Table-row tau-Table-row-clickable' key={name} onClick={(e) => {handleClick(e, rowItem)}}>
         <TableCell component='th' scope='row'>{name}</TableCell>
@@ -49,8 +49,8 @@ export const TrialTable = (props: Tables.Trial) => {
         <TableCell align='right'>{row['Status']}</TableCell>
         <TableCell align='right'>{row['Elapsed Seconds'].toFixed(5)}</TableCell>
       </TableRow>
-    )   
-  }); 
+    )
+  });
 
   if (!(rows.length)) {
     props.setSelectedExperiment(null);
@@ -85,35 +85,35 @@ export const TrialTable = (props: Tables.Trial) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         className='tau-Option-menu'
-      >   
+      >
 
         <MenuItem onClick={() => {
           handleClose();
           props.openDisplayCommand({
-              project: props.projectName, 
-              experiment: props.selectedExperiment, 
+              project: props.projectName,
+              experiment: props.selectedExperiment,
               trial: activeRow['Number']
           });
-        }}>   
+        }}>
           Display
         </MenuItem>
 
         <MenuItem onClick={() => {
           handleClose();
           editTrialDialog(activeRow, props);
-        }}>   
+        }}>
           Edit
         </MenuItem>
 
         <MenuItem onClick={() => {
-          handleClose(); 
+          handleClose();
           deleteTrialDialog(activeRow['Number'], props);
-        }}>   
+        }}>
           Delete
         </MenuItem>
       </Menu>
     </div>
-  );  
+  );
 }
 
 export interface IPlotlyDisplayItem {

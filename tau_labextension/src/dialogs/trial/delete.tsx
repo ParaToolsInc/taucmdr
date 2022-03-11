@@ -14,16 +14,16 @@ export const deleteTrialDialog = (trialName: string, props: Tables.Trial) => {
 
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Delete') {
+      if (response.button.label === 'Delete') {
         props.kernelExecute(`delete_trial('${props.projectName}', '${trialName}')`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
-            }   
-          }); 
-      }   
-      dialog.dispose(); 
-    }); 
+            }
+          });
+      }
+      dialog.dispose();
+    });
 }
 
 namespace Tables {

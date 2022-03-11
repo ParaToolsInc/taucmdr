@@ -79,19 +79,19 @@ class DialogBody extends Widget {
   }
 
   getValue() {
-    let response = this.node.querySelectorAll('input, select');
-    let responseDict: { [id: string] : string } = {};
+    const response = this.node.querySelectorAll('input, select');
+    const responseDict: { [id: string] : string } = {};
     Object.entries(response).map((resp) => {
-      let elem = resp[1];
-      if (resp[1].tagName == 'INPUT') {
-        let inputElem = elem as HTMLInputElement;
-        if (inputElem.type == 'text') {
+      const elem = resp[1];
+      if (resp[1].tagName === 'INPUT') {
+        const inputElem = elem as HTMLInputElement;
+        if (inputElem.type === 'text') {
           responseDict[inputElem.name] = inputElem.value;
         } else {
           responseDict[inputElem.name] = inputElem.checked.toString();
         }
       } else {
-        let selectElem = elem as HTMLSelectElement;
+        const selectElem = elem as HTMLSelectElement;
         responseDict[selectElem.name] = selectElem.value;
       }
     });
@@ -100,75 +100,63 @@ class DialogBody extends Widget {
 };
 
 export const newMeasurementDialog = (props: Dashboard.Measurement) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeNewBody(), body);
 
   const dialog = new Dialog({
     title: `New Measurement`,
     body: new DialogBody(body),
     buttons: [
-      Dialog.cancelButton({ label: 'Cancel' }), 
+      Dialog.cancelButton({ label: 'Cancel' }),
       Dialog.okButton({ label: 'Submit' })
-    ]   
-  }); 
+    ]
+  });
 
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
-        let name = response.value!.name;
-        let profile = response.value!.profile;
-        let trace = response.value!.trace;
-        let sample = response.value!.sample;
-        let sourceInst = response.value!.sourceInst;
-        let compilerInst = response.value!.compilerInst;
-        let openMP = response.value!.openMP;
-        let cuda = response.value!.cuda;
-        let io = response.value!.io;
-        let mpi = response.value!.mpi;
-        let shmem = response.value!.shmem;
+      if (response.button.label === 'Submit') {
+        const name = response.value!.name;
+        const profile = response.value!.profile;
+        const trace = response.value!.trace;
+        const sample = response.value!.sample;
+        const sourceInst = response.value!.sourceInst;
+        const compilerInst = response.value!.compilerInst;
+        const openMP = response.value!.openMP;
+        const cuda = response.value!.cuda;
+        const io = response.value!.io;
+        const mpi = response.value!.mpi;
+        const shmem = response.value!.shmem;
 
         props.kernelExecute(`
-            args = {'profile': '${profile}', 
-                'trace': '${trace}', 
-                'sample': '${sample}', 
-                'source_inst': '${sourceInst}', 
-                'compiler_inst': '${compilerInst}', 
-                'openmp': '${openMP}', 
-                'cuda': '${cuda}', 
-                'io': '${io}', 
-                'mpi': '${mpi}', 
+            args = {'profile': '${profile}',
+                'trace': '${trace}',
+                'sample': '${sample}',
+                'source_inst': '${sourceInst}',
+                'compiler_inst': '${compilerInst}',
+                'openmp': '${openMP}',
+                'cuda': '${cuda}',
+                'io': '${io}',
+                'mpi': '${mpi}',
                 'shmem': '${shmem}'
                 }`
         )
 
-        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', args)`) 
+        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', args)`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
             }
           });
       }
-      dialog.dispose(); 
+      dialog.dispose();
     });
 }
-
-
-//        props.kernelExecute(`new_measurement('${props.projectName}', '${name}', '${profile}', '${trace}', '${sample}', '${sourceInst}', '${compilerInst}', '${openMP}', '${cuda}', '${io}', '${mpi}', '${shmem}')`)
-//          .then((result) => {
-//            if (result) {
-//              props.updateProject(props.projectName);
-//            }
-//          });
-//      }
-//      dialog.dispose(); 
-//    });
-//}
 
 namespace Dashboard {
   export interface Measurement {
     projectName: string;
     kernelExecute: (code: string) => Promise<any>;
-    updateProject: (project: string) => void; 
+    updateProject: (project: string) => void;
   }
 }

@@ -3,25 +3,25 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
-import { 
-  SessionContext, 
+import {
+  SessionContext,
   ICommandPalette,
   MainAreaWidget,
   WidgetTracker,
-  Toolbar 
+  Toolbar
 } from '@jupyterlab/apputils';
 
-import { 
+import {
   Session,
   ServiceManager
 } from '@jupyterlab/services';
 
 import {
-  fileIcon 
+  fileIcon
 } from '@jupyterlab/ui-components';
 
 import {
-  Sidebar, 
+  Sidebar,
   IDashboardItem
 } from './sidebar';
 
@@ -57,13 +57,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
 export default plugin;
 
 async function activate(
-  app: JupyterFrontEnd, 
+  app: JupyterFrontEnd,
   palette: ICommandPalette
 ): Promise<void> {
 
   const { serviceManager, shell } = app;
 
-  // Create the Tau Kernel 
+  // Create the Tau Kernel
   let kernelSession: Session.ISessionConnection | null | undefined;
   kernelSession = await Private.initKernel(serviceManager);
 
@@ -76,11 +76,11 @@ async function activate(
       openDashboardCommand: (project: IDashboardItem) => {
         app.commands.execute(CommandIDs.launchDashboard, project);
       },
-      kernelSession: kernelSession,
-      tracker: tracker
+      kernelSession,
+      tracker
   });
   sidebar.id = 'tau-sidebar';
-  sidebar.title.iconClass = 'tau-TauLogo'; 
+  sidebar.title.iconClass = 'tau-TauLogo';
   sidebar.title.caption = 'Tau';
   shell.add(sidebar, 'left', { rank: 300 });
 
@@ -89,8 +89,8 @@ async function activate(
     label: (project) => `Run ${project['label']} Dashboard`,
     execute: (project) => {
 
-      let exists = tracker.find((widget) => {
-        return widget.id == `project-${project['label']}`;
+      const exists = tracker.find((widgetObj) => {
+        return widgetObj.id === `project-${project['label']}`;
       });
 
       if (exists) {
@@ -99,24 +99,23 @@ async function activate(
       }
 
       const toolbar = new Toolbar();
-
       const content = new Dashboard({
         project: project as IDashboardItem,
-        kernelSession: kernelSession,
-        sidebar: sidebar,
-        toolbar: toolbar,
+        kernelSession,
+        sidebar,
+        toolbar,
         openDisplayCommand: (trialPath: IPlotlyDisplayItem) => {
           app.commands.execute(CommandIDs.launchDisplay, trialPath);
         }
       });
 
-      const widget = new MainAreaWidget({ 
-        content: content,
-        toolbar: toolbar
+      const widget = new MainAreaWidget({
+        content,
+        toolbar
       });
 
       widget.id = `project-${project['label']}`;
-      widget.title.icon = fileIcon; 
+      widget.title.icon = fileIcon;
       widget.title.label = `${project['label']} Dashboard`;
       widget.title.closable = true;
       tracker.add(widget);
@@ -135,8 +134,8 @@ async function activate(
     label: (trialPath) => `Run ${trialPath['project']} Display`,
     execute: (trialPath) => {
 
-      let exists = tracker.find((widget) => {
-        return widget.id == `project-${trialPath['project']}-${trialPath['experiment']}-${trialPath['trial']}`;
+      const exists = tracker.find((widgetObj) => {
+        return widgetObj.id === `project-${trialPath['project']}-${trialPath['experiment']}-${trialPath['trial']}`;
       });
 
       if (exists) {
@@ -145,14 +144,14 @@ async function activate(
       }
 
       const content = new PlotlyDisplay({
-        trialPath: trialPath
+        trialPath
       });
-      const widget = new MainAreaWidget({ 
-        content: content,
+      const widget = new MainAreaWidget({
+        content
       });
 
       widget.id = `project-${trialPath['project']}-${trialPath['experiment']}-${trialPath['trial']}`;
-      widget.title.icon = fileIcon; 
+      widget.title.icon = fileIcon;
       widget.title.label = `Trial ${trialPath['trial']} Display`;
       widget.title.closable = true;
       tracker.add(widget);
@@ -174,19 +173,19 @@ namespace Private {
    * Initialize a kernel on startup. If a kernel
    * already exists, then return that instance.
    * Otherwise, initilize a new kernel and return
-   * that instance. 
+   * that instance.
    */
   export async function initKernel(
     manager: ServiceManager
   ): Promise<Session.ISessionConnection | null | undefined> {
-    
+
     let kernelSession: Session.ISessionConnection | null | undefined;
 
     await manager.sessions.findByPath(TAU_KERNEL_PATH)
       .then((session) => {
           if (session) {
             kernelSession = manager.sessions.connectTo({
-              model: session 
+              model: session
             });
           }
       });
@@ -199,7 +198,7 @@ namespace Private {
         sessionManager: manager.sessions,
         specsManager: manager.kernelspecs,
         name: 'TAU Session',
-        path: TAU_KERNEL_PATH 
+        path: TAU_KERNEL_PATH
       });
 
       return context

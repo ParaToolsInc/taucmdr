@@ -4,19 +4,19 @@ import {
   WidgetTracker,
 } from '@jupyterlab/apputils';
 
-import { 
-  Widget, 
+import {
+  Widget,
   PanelLayout,
   SplitPanel,
   Panel
 } from '@lumino/widgets';
 
-import { 
+import {
   Session,
   KernelMessage
 } from '@jupyterlab/services';
 
-import { 
+import {
   Button,
   addIcon,
   clearIcon,
@@ -24,7 +24,7 @@ import {
   tableRowsIcon
 } from '@jupyterlab/ui-components';
 
-import { 
+import {
   Icon
 } from '@blueprintjs/core';
 
@@ -52,8 +52,8 @@ export class Sidebar extends Widget {
 
     this._openDashboardCommand = options.openDashboardCommand;
     this._kernelSession = options.kernelSession;
-    
-    const layout = (this.layout = new PanelLayout()); 
+
+    const layout = (this.layout = new PanelLayout());
     this._splitter = new SplitPanel({ orientation: 'vertical' });
 
     // A function to initialize the ipython kernel
@@ -67,9 +67,9 @@ export class Sidebar extends Widget {
       ].map((code) => {
         this._kernelExecute(code);
       });
-  
+
       this._kernelExecute('connect()')
-        .then((result) => { 
+        .then((result) => {
           if (result) {
             this._connected = true;
             this.update();
@@ -92,11 +92,11 @@ export class Sidebar extends Widget {
     this._selectProject = (projectName: string) => {
       this._kernelExecute(`select_project("${projectName}")`)
     }
-  
+
     // A function to create a project
     this._createProject = () => {
-      let props = {
-        kernelExecute: this._kernelExecute, 
+      const props = {
+        kernelExecute: this._kernelExecute,
         updateProjects: this._updateProjects
       };
       newProjectDialog(props);
@@ -104,36 +104,36 @@ export class Sidebar extends Widget {
 
     // A function to edit a project
     this._editProject = (projectName: string) => {
-      let props = {
-        projectName: projectName,
-        kernelExecute: this._kernelExecute, 
+      const props = {
+        projectName,
+        kernelExecute: this._kernelExecute,
         updateProjects: this._updateProjects,
         tracker: options.tracker
       };
       editProjectDialog(props);
     }
- 
+
     // A function to copy a project
     this._copyProject = (projectName: string) => {
-      let props = {
-        projectName: projectName,
-        kernelExecute: this._kernelExecute, 
+      const props = {
+        projectName,
+        kernelExecute: this._kernelExecute,
         updateProjects: this._updateProjects
       };
       copyProjectDialog(props);
     }
-   
+
     // A function to delete a project
     this._deleteProject = (projectName: string) => {
-      let props = {
-        projectName: projectName,
-        kernelExecute: this._kernelExecute, 
+      const props = {
+        projectName,
+        kernelExecute: this._kernelExecute,
         updateProjects: this._updateProjects,
         tracker: options.tracker,
       };
       deleteProjectDialog(props);
     }
-  
+
     /**
      * Execute kernel commands (python3)
      */
@@ -143,19 +143,19 @@ export class Sidebar extends Widget {
           resolve('Kernel Failure');
         });
       }
-  
+
       const kernel = this._kernelSession!.kernel;
       const content: KernelMessage.IExecuteRequestMsg['content'] = {
         store_history: false,
         code
       };
-  
+
       return new Promise<string>((resolve, _) => {
         const future = kernel!.requestExecute(content);
         future.onIOPub = msg => {
-          if (msg.header.msg_type == 'stream') {
-            let content = (msg as KernelMessage.IStreamMsg).content;
-            let output = content.text;
+          if (msg.header.msg_type === 'stream') {
+            const message = (msg as KernelMessage.IStreamMsg).content;
+            const output = message.text;
             if (this._console.isHidden) {
               this._console.show();
               this._consoleClearButton.show();
@@ -164,26 +164,26 @@ export class Sidebar extends Widget {
             this._consoleStream.push(output);
             this.update();
           }
-  
-          if (msg.header.msg_type == 'error') {
-            let content = (msg as KernelMessage.IErrorMsg).content;
-            let output = content.ename + ': ' + content.evalue; 
-            let dialog = errorDialog(output);
+
+          if (msg.header.msg_type === 'error') {
+            const message = (msg as KernelMessage.IErrorMsg).content;
+            const output = message.ename + ': ' + message.evalue;
+            const dialog = errorDialog(output);
             dialog.launch().then(response => {
               console.log(output);
             });
           }
-  
-          if (msg.header.msg_type == 'execute_result') {
-            let data = (msg as KernelMessage.IDisplayDataMsg).content.data;
-            let output = (data['text/plain'] as string) || '';
-            let jsonOutput = JSON.parse(output.replace(/'/g, ''));
-            if (jsonOutput.status == 'failure') {
+
+          if (msg.header.msg_type === 'execute_result') {
+            const message = (msg as KernelMessage.IDisplayDataMsg).content.data;
+            const output = (message['text/plain'] as string) || '';
+            const jsonOutput = JSON.parse(output.replace(/'/g, ''));
+            if (jsonOutput.status === 'failure') {
               if (jsonOutput.message.includes('Error in')) {
-                let dialog = errorDialog(jsonOutput.message + ': ' + 'This name may already be taken. Please try a different name.');
+                const dialog = errorDialog(jsonOutput.message + ': ' + 'This name may already be taken. Please try a different name.');
                 dialog.launch();
               } else {
-                let dialog = errorDialog(jsonOutput.message);
+                const dialog = errorDialog(jsonOutput.message);
                 dialog.launch();
               }
             } else {
@@ -193,11 +193,11 @@ export class Sidebar extends Widget {
         };
       });
     }
-    
+
     this._updateConnected();
     this._updateProjects();
 
-    this._toolbar = new Toolbar<Widget>();  
+    this._toolbar = new Toolbar<Widget>();
     this._toolbar.addClass('tau-TauSidebar-toolbar')
 
     const toolbarLabel = new Widget();
@@ -257,17 +257,15 @@ export class Sidebar extends Widget {
     );
 
     layout.addWidget(this._splitter);
-    let body = new Panel();
+    const body = new Panel();
 
     this._splitter.addClass('tau-Splitter');
     body.addClass('tau-SidebarBody');
-
     body.addWidget(this._toolbar);
 
     this._display = new Widget();
     this._display.addClass('tau-ListingDisplay');
     body.addWidget(this._display);
-
     this._splitter.addWidget(body);
 
     this._console = new Widget();
@@ -294,7 +292,7 @@ export class Sidebar extends Widget {
           refresh={this._updateConnected}
         />,
         this._display.node
-      ); 
+      );
 
     } else {
       if (this._toolbar.isHidden) {
@@ -311,7 +309,7 @@ export class Sidebar extends Widget {
         />,
         this._display.node
       );
-      
+
       ReactDOM.render(
         <ConsoleOutput
          stream={this._consoleStream}
@@ -407,12 +405,12 @@ export interface IDashboardItem {
 }
 
 const ProjectListing = (props: ProjectListingProps) => {
-  let listing = Object.keys(props.projects).map(project => {
+  const listing = Object.keys(props.projects).map(project => {
     return (
       <li className='tau-ProjectListing-item' key={project}>
         <p className='tau-ProjectListing-item-name'>{ project }</p>
         <div className='tau-ProjectListing-item-buttons'>
-          <Button 
+          <Button
             onClick={() => {
                 props.openDashboardCommand({
                   label: project,
@@ -423,19 +421,19 @@ const ProjectListing = (props: ProjectListingProps) => {
             className='tau-ProjectListingItem-button'>
             <Icon icon='application'/>
           </Button>
-          <Button 
+          <Button
             onClick={() => props.copyProject(project)}
             className='tau-ProjectListingItem-button'
           >
             <Icon icon='duplicate'/>
           </Button>
-          <Button 
+          <Button
             onClick={() => props.editProject(project)}
             className='tau-ProjectListingItem-button'
           >
             <Icon icon='edit'/>
           </Button>
-          <Button 
+          <Button
             onClick={() => props.deleteProject(project)}
             className='tau-ProjectListingItem-button'
           >
@@ -469,8 +467,8 @@ const SidebarFailure = (props: SidebarFailureProps) => {
         TAU not found
       </span>
       <span className='tau-SidebarFailure-detail'>
-        To connect a display, include the path of TAU in 
-        your $PATH environment variable. If you are still 
+        To connect a display, include the path of TAU in
+        your $PATH environment variable. If you are still
         unable to connect, please reach out to cfd@paratools.com
       </span>
       <Button className='tau-SidebarFailure-refresh'
@@ -487,14 +485,14 @@ interface SidebarFailureProps {
 }
 
 const ConsoleOutput = (props: ConsoleOutputProps) => {
-  let data = props.stream.map((line, idx) => {
+  const data = props.stream.map((line, idx) => {
     return (
       <li className='tau-StreamConsole-item' key={idx}>
         {idx+1} <code>{ line }</code>
       </li>
     );
   });
-  
+
   return (
     <ul className='tau-StreamConsole-list'>
       {data}

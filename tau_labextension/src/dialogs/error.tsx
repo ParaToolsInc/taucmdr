@@ -11,20 +11,21 @@ class DialogBody extends Widget {
 };
 
 const writeErrorBody = (message:string) => {
-  let newMessage = message.split('\\n');
+  const newMessage = message.split('\\n');
+  const elements = newMessage.map((val) => {
+    return (val === "")
+      ? (<React.Fragment><br/></React.Fragment>)
+      : (<React.Fragment><code>{val}</code><br/></React.Fragment>)
+  });
   return (
     <pre className='tau-Dialog-error'>
-      { newMessage.map(function(val) {
-        return (val == "")
-          ? (<React.Fragment><br/></React.Fragment>)
-          : (<React.Fragment><code>{val}</code><br/></React.Fragment>)
-      })}
+      { elements }
     </pre>
   )
 };
 
 export const errorDialog = (message: string) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeErrorBody(message), body);
 
   const dialog = new Dialog({

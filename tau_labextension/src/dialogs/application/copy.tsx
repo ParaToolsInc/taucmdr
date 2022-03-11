@@ -4,49 +4,49 @@ import { Dialog } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
 
 const writeCopyBody = (applicationName: string) => {
-  let copyName = applicationName + '_copy';
+  const copyName = applicationName + '_copy';
 
   return (
     <div>
-      <label> 
+      <label>
         Name of new application:
         <br/>
         <input className='tau-Dialog-name' type='text' name='name' defaultValue={copyName}/>
       </label>
     </div>
-  )   
+  )
 };
 
 class DialogBody extends Widget {
   constructor(domElement: HTMLElement) {
     super({node : domElement});
-  }   
+  }
 
   getValue() {
-    let response = this.node.querySelectorAll('input');
-    return Array.from(response); 
-  }   
+    const response = this.node.querySelectorAll('input');
+    return Array.from(response);
+  }
 };
 
 export const copyApplicationDialog = (applicationName: string, props: Tables.Application) => {
-  let body = document.createElement('div');
+  const body = document.createElement('div');
   ReactDOM.render(writeCopyBody(applicationName), body);
 
   const dialog = new Dialog({
     title: 'Copy Application',
     body: new DialogBody(body),
     buttons: [
-      Dialog.cancelButton({ label: 'Cancel' }), 
+      Dialog.cancelButton({ label: 'Cancel' }),
       Dialog.okButton({ label: 'Submit' })
-    ]   
-  }); 
+    ]
+  });
 
   dialog.addClass('tau-Dialog-body');
   dialog.launch()
     .then(response => {
-      if (response.button.label == 'Submit') {
-        let new_name = response.value![0].value;
-        props.kernelExecute(`copy_application('${props.projectName}', '${applicationName}', '${new_name}')`)
+      if (response.button.label === 'Submit') {
+        const newName = response.value![0].value;
+        props.kernelExecute(`copy_application('${props.projectName}', '${applicationName}', '${newName}')`)
           .then((result) => {
             if (result) {
               props.updateProject(props.projectName);
