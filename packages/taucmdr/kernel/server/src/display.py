@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-""" This file is used for routing links to their respected displays """ 
+""" This file is used for routing links to their respected displays """
 
 from dash.dependencies import Input, Output
 from dash import html
@@ -41,82 +41,94 @@ def shutdown_server():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
 
+
 def not_found_layout(pathname):
     """ This function is used for returning 404 errors """
     return (
         html.Div([
-            html.H2('Error', className='display-4'),
+            html.P(
+                className='tau-dash-sidebar-full-header',
+                children='Error'
+            ),
             html.Hr(),
-            dbc.Nav([
-                dbc.NavLink('Go back', href='javascript:history.back()')
-            ])
+            html.Div(
+              className='tau-dash-sidebar-back',
+              children=[
+                dbc.Nav([
+                    dbc.NavLink('Back', href='javascript:history.back()')
+                ])
+              ],
+            ),
         ]),
         dbc.Container([
-            html.H1('404: Not found', className='text-danger'),
-            html.Hr(),
-            html.P(f'The pathname {pathname} was not recognized...')
+            html.P(
+                className='tau-dash-sidebar-full-header',
+                children='404: Not found'
+            ),
+            html.P(
+                className='tau-dash-sidebar-full-header',
+                children=f'The pathname {pathname} was not recognized...'
+            )
         ])
     )
-
-sidebar_styles = {
-    'sidebar_back': {
-        'padding': '1.5rem 1rem',
-        'backgroundColor': '#f8f9fa',
-        'flex': '0%',
-        'height': '100%'
-    },
-    'sidebar_full': {
-        'padding': '1.5rem 1rem',
-        'backgroundColor': '#f8f9fa',
-        'flex': '20%',
-        'height': '100%'
-    },
-}
 
 def sidebar_layout(project, experiment, trial, path):
     """ This function is used for displaying the sidebar on each webpage """
     if path:
-        return html.Div(id='page-sidebar', children=[
-            dbc.Nav([
-                dbc.NavLink('Back', href=f'/{project}/{experiment}/{trial}', external_link=True)
-            ])
-        ], style=sidebar_styles['sidebar_back'])
-    return html.Div(id='page-sidebar', children=[
-        html.H5('Menu', className='display-5'),
-        html.Hr(),
-        html.P('Paraprof-style graphs and tables that visualize TAU profiles',
-                className='lead'),
-        html.Hr(),
-        dbc.Nav([
-            dbc.NavLink('Overview',
-                href=f'/{project}/{experiment}/{trial}/overview',
-                active=(path == 'overview'),
-                external_link=True),
-            dbc.NavLink('Bar Plot by Node',
-                href=f'/{project}/{experiment}/{trial}/bar-plot',
-                active=(path == 'bar-plot'),
-                external_link=True),
-            dbc.NavLink('Correlation Graph',
-                href=f'/{project}/{experiment}/{trial}/correlation',
-                active=(path == 'correlation'),
-                external_link=True),
-            dbc.NavLink('Runtime Breakdown',
-                href=f'/{project}/{experiment}/{trial}/runtime-breakdown',
-                active=(path == 'runtime-breakdown'),
-                external_link=True),
-            dbc.NavLink('Data Table by Node',
-                href=f'/{project}/{experiment}/{trial}/data-table',
-                active=(path == 'data-table'),
-                external_link=True),
-            dbc.NavLink('Heat Map',
-                href=f'/{project}/{experiment}/{trial}/heat-map',
-                active=(path == 'heat-map'),
-                external_link=True),
-        ], vertical=True, pills=True)
-    ], style=sidebar_styles['sidebar_full'])
+        return html.Div(
+            className='tau-dash-sidebar-back',
+            children=[
+                dbc.Nav([
+                    dbc.NavLink('Back', href=f'/{project}/{experiment}/{trial}', external_link=True)
+                ])
+            ],
+        )
+    return html.Div(
+        className='tau-dash-sidebar-full',
+        children=[
+            html.Hr(),
+            html.P(
+                className='tau-dash-sidebar-full-header',
+                children='Paraprof-style graphs and tables that visualize TAU profiles'
+            ),
+            html.Hr(),
+            dbc.Nav(
+                className='tau-dash-sidebar-full-navlinks-pills',
+                children=[
+                    dbc.NavLink('Overview',
+                        href=f'/{project}/{experiment}/{trial}/overview',
+                        active=(path == 'overview'),
+                        external_link=True),
+                    dbc.NavLink('Bar Plot by Node',
+                        href=f'/{project}/{experiment}/{trial}/bar-plot',
+                        active=(path == 'bar-plot'),
+                        external_link=True),
+                    dbc.NavLink('Correlation Graph',
+                        href=f'/{project}/{experiment}/{trial}/correlation',
+                        active=(path == 'correlation'),
+                        external_link=True),
+                    dbc.NavLink('Runtime Breakdown',
+                        href=f'/{project}/{experiment}/{trial}/runtime-breakdown',
+                        active=(path == 'runtime-breakdown'),
+                        external_link=True),
+                    dbc.NavLink('Data Table by Node',
+                        href=f'/{project}/{experiment}/{trial}/data-table',
+                        active=(path == 'data-table'),
+                        external_link=True),
+                    dbc.NavLink('Heat Map',
+                        href=f'/{project}/{experiment}/{trial}/heat-map',
+                        active=(path == 'heat-map'),
+                        external_link=True),
+                ],
+                vertical='sm',
+                justified=True,
+                pills=True
+            )
+        ]
+    )
 
 @app.callback(
-    [Output('page-sidebar', 'children'), Output('page-content', 'children')],
+    [Output('tau-dash-sidebar', 'children'), Output('tau-dash-page-content', 'children')],
     Input('url', 'pathname')
 )
 def display_page(pathname):

@@ -1,0 +1,74 @@
+.tau-dash-layout {
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: space-around;
+}
+
+.tau-dash-sidebar {
+    height: 100vh;
+    padding: 1.5rem 0rem;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+}
+
+.tau-dash-sidebar-back a {
+    color: #595959;
+}
+
+.tau-dash-sidebar-back a:hover {
+    background-color: #eeeeee;
+    border-radius: 0px;
+    color: #3b3b3b;
+}
+
+.tau-dash-sidebar-full {
+    width: 100vw;
+    padding: 30px;
+}
+
+.tau-dash-sidebar-full-header {
+    display: flex;
+    justify-content: center;
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 0.8333em;
+    font-family: sans-serif;
+    color: #626262
+}
+
+.tau-dash-sidebar-full-navlinks {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #d6d6d6;
+    margin: 25px;
+    padding: 9px;
+}
+
+.tau-dash-sidebar-full-navlinks-pills a {
+    border-radius: 0px !important;
+    color: #595959;
+    margin: 2px;
+    white-space: nowrap;
+}
+
+.tau-dash-sidebar-full-navlinks-pills a:hover {
+    background-color: #eeeeee;
+    border-radius: 0px;
+    color: #3b3b3b;
+}
+
+.tau-dash-page-content {
+    width: 90vw;
+    padding: 20px 0px;
+}
+
+.tau-overview {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tau-datatable {
+    font-size: smaller;
+}

@@ -79,7 +79,8 @@ layout = html.Div(children=[
         dcc.Graph(
             id='graph-1',
             config={
-                'displayModeBar': False
+                'displayModeBar': False,
+                'responsive': True
             }
         ),
         html.Label('Options'),
@@ -339,6 +340,7 @@ def display_bar_plot(node, checklist, metric, sort, unit, pathname):
             secondary_y=True
         )
 
+    fig.update_yaxes(showticklabels=False)
     fig.update_layout(
         margin=dict(
             l=20,

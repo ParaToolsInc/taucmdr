@@ -29,14 +29,14 @@ This file is used for starting the Dash Server.
 The server can be run by running this file or calling the start function.
 """
 
-from taucmdr.kernel.server.pages.app import app
+from taucmdr.kernel.server.src.app import app
 
 def start():
     """
     This function is used for starting the server
     """
-    app.run_server(mode='jupyterlab', debug=False, host='0.0.0.0', port=8889, height=800)
+    app.run_server(debug=False, host='0.0.0.0', port=8889)
 
 
 if __name__ == '__main__':
-    app.run_server(mode='jupyterlab', debug=False, host='0.0.0.0', port=8889, height=800)
+    app.run_server(debug=False, host='0.0.0.0', port=8889)

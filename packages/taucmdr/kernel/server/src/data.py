@@ -51,6 +51,7 @@ layout = html.Div(
             ]
         ),
         html.Div(
+            className='tau-datatable',
             id='dataTable-container',
             children=[]
         )

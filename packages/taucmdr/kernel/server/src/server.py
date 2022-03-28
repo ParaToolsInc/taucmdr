@@ -26,7 +26,13 @@
 #
 """ This file is used for creating the dash application """
 
-from jupyter_dash import JupyterDash
+import os
+from dash import Dash
 import dash_bootstrap_components as dbc
 
-app = JupyterDash(__name__, external_stylesheets=[dbc.themes.LITERA], suppress_callback_exceptions=True)
+app = Dash(
+        __name__,
+        assets_folder = 'style/',
+        external_stylesheets=[dbc.themes.LITERA],
+        suppress_callback_exceptions=True
+    )

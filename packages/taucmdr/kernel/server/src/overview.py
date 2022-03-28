@@ -39,23 +39,29 @@ import plotly.graph_objects as go
 from .server import app
 from .parser import TauProfileParser
 
-layout = html.Div([
-    html.Label('Data Metric:'),
-    dcc.Dropdown(options = [
-        {'label':'Exclusive', 'value':'Exclusive'},
-        {'label':'Inclusive', 'value':'Inclusive'},
-        {'label':'Exclusive per Call', 'value':'Exclusive per Call'},
-        {'label':'Inclusive per Call', 'value':'Inclusive per Call'},
-        {'label':'Number of Calls', 'value':'Calls'},
-        {'label':'Number of Child Calls', 'value':'Subcalls'}
-    ], value='Exclusive', id='overview-dm-dropdown', clearable=False),
-    dcc.Graph(
-        id='overview',
-        config={
-            'displayModeBar': False
-        }
-    )
-])
+layout = html.Div(
+    className='tau-overview',
+    children=[
+        html.Label('Data Metric:'),
+        dcc.Dropdown(options=[
+            {'label': 'Exclusive', 'value': 'Exclusive'},
+            {'label': 'Inclusive', 'value': 'Inclusive'},
+            {'label': 'Exclusive per Call', 'value': 'Exclusive per Call'},
+            {'label': 'Inclusive per Call', 'value': 'Inclusive per Call'},
+            {'label': 'Number of Calls', 'value': 'Calls'},
+            {'label': 'Number of Child Calls', 'value': 'Subcalls'}
+        ], value='Exclusive', id='overview-dm-dropdown', clearable=False),
+        dcc.Graph(
+            id='overview',
+            config={
+                'displayModeBar': False,
+                'responsive': True
+            },
+            style={
+                'height': '100%'
+            }
+        )]
+)
 
 def parse_profile(project, experiment, trial):
     """ This function is used for parsing profile data """
@@ -91,7 +97,7 @@ def make_overview(dropdown_value, pathname):
 
     indices = ['Std. Dev.', 'Mean', 'Max', 'Min']
     for node, context, thread in metric_df.columns.values:
-        indices.append(f'node {node}, context {context}, thread {thread}')
+        indices.append(f'node {node}, thread {thread}')
 
     total_thread_count = len(metric_df.columns)
     metric_df['Std. Dev.'] = metric_df.iloc[:, 0:total_thread_count].std(axis=1)
@@ -123,19 +129,17 @@ def make_overview(dropdown_value, pathname):
         barmode='stack',
         showlegend=False,
         hovermode='closest',
-    )
-
-    fig = go.Figure(data=data, layout=layout)
-    fig.update_layout(width=800, height=700)
-
-    fig.update_layout(
         margin=dict(
             l=10,
             r=10,
             t=10,
             b=10
-        )
+        ),
     )
+
+    fig = go.Figure(data=data, layout=layout)
+#    fig.update_layout(width=800, height=700)
+
     return fig
 
 # Callback: Update URL when a node is clicked

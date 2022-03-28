@@ -32,24 +32,29 @@ from dash import dcc
 from dash import html
 import plotly.io as pio
 
-from .server import app
-from . import display, overview, correlation, runtime, data, heatmap   # pylint: disable=unused-import
+from . import server
+from . import display
+from . import overview
+from . import correlation
+from . import runtime
+from . import data
+from . import heatmap
 
 pio.renderers.default='iframe'
 
-styles = {
-    'body': {
-        'display': 'flex',
-        'height': '100vh'
-    },
-    'content': {
-        'padding': '1.5rem 1rem',
-        'flex': '80%'
-    }
-}
-
-app.layout = html.Div(children=[
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='page-sidebar', children=[]),
-    html.Div(id='page-content', children=[], style=styles['content'])
-], style=styles['body'])
+app = server.app
+app.layout = html.Div(
+    className='tau-dash-layout',
+    children=[
+        dcc.Location(id='url', refresh=False),
+        html.Div(
+            id='tau-dash-sidebar',
+            className='tau-dash-sidebar',
+            children=[]),
+        html.Div(
+            id='tau-dash-page-content',
+            className='tau-dash-page-content',
+            children=[]
+        )
+    ]
+)
