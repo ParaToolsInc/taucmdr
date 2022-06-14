@@ -102,6 +102,20 @@ class CreateTest(tests.TestCase):
         path = test_targ.populate(CC.keyword)['path']
         self.assertEqual('pgcc', os.path.basename(path), "Target[CC] is '%s', not 'pgcc'" % path)
 
+    @tests.skipUnless(util.which('nvc'), "NVHPC compilers required for this test")
+    def test_host_family_nvhpc(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'NVHPC'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        path = test_targ.populate(CC.keyword)['path']
+        self.assertEqual('nvc', os.path.basename(path), "Target[CC] is '%s', not 'nvc'" % path)
+
     def test_cc_flag(self):
         self.reset_project_storage()
         cc_cmd = self.assertCompiler(CC)

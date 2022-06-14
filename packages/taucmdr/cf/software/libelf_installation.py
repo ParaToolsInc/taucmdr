@@ -32,6 +32,9 @@ The ELF library provides an interface to read, modify or create ELF files in
 """
 
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.software import SoftwarePackageError
+from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, NVHPC
 
 REPOS = {None: ['http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/elfutils-0.180.tar.bz2',
                 'https://sourceware.org/elfutils/ftp/0.180/elfutils-0.180.tar.bz2']}
@@ -45,6 +48,12 @@ class LibelfInstallation(AutotoolsInstallation):
     """Encapsulates a libelf installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
+        if compilers[CC].unwrap().info.family is PGI or compilers[CC].unwrap().info.family is NVHPC :
+            try:
+                gnu_compilers = GNU.installation()
+            except ConfigurationError as err:
+                raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.") from err
+            compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super().__init__('libelf', 'libelf', sources,
                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 

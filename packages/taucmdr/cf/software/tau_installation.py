@@ -502,7 +502,7 @@ class TauInstallation(Installation):
                                      "Unload the darshan module and try again.")
         if os.environ.get('PE_ENV', '').lower() == 'cray':
             raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
-                                     "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, or PrgEnv-pgi and try again.")
+                                     "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, PrgEnv-nvhpc, or PrgEnv-pgi and try again.")
 
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]
@@ -805,6 +805,7 @@ class TauInstallation(Installation):
             fc_magic_map = {host_compilers.GNU: 'gfortran',
                             host_compilers.INTEL: 'intel',
                             host_compilers.PGI: 'pgi',
+                            host_compilers.NVHPC: 'nvhpc',
                             host_compilers.CRAY: 'cray',
                             host_compilers.IBM: 'ibm',
                             host_compilers.ARM: 'armflang',
@@ -1054,6 +1055,7 @@ class TauInstallation(Installation):
 
     def _compiler_tags(self):
         return {host_compilers.INTEL: 'intel' if self.tau_magic.operating_system is CRAY_CNL else 'icpc',
+                host_compilers.NVHPC: 'nvhpc',
                 host_compilers.PGI: 'pgi'}
 
     def get_tags(self):

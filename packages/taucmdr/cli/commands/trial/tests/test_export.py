@@ -81,6 +81,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipIf(util.which('nvc'), "This test cannot be run with NVHPC compilers")
     def test_export_cubex(self):
         self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
         expr = Project.selected().experiment()

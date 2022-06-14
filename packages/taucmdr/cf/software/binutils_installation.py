@@ -39,7 +39,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
+from taucmdr.cf.compiler.host import CC, CXX, PGI, NVHPC, GNU
 
 
 LOGGER = logger.get_logger(__name__)
@@ -54,8 +54,8 @@ class BinutilsInstallation(AutotoolsInstallation):
     """Encapsulates a GNU binutils installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        # binutils can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].unwrap().info.family is PGI:
+        # binutils can't be built with PGI or NVHPC compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is PGI or compilers[CC].unwrap().info.family is NVHPC:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError as err:

@@ -8,7 +8,7 @@ General Definitions
   A list of configuration options (a "configuration object") that completely describes the hardware and
   software environment in which the TAU Commander workflow will be performed.  This includes, among other things, the
   operating system distribution (e.g. Linux, Darwin, CNL, etc.) CPU architecture (x86_64, ppc64, etc.) compiler
-  installation paths, compiler family (e.g. Intel, Cray, PGI, etc.), MPI installation path, and TAU and PDT
+  installation paths, compiler family (e.g. Intel, Cray, PGI, NVHPC, etc.), MPI installation path, and TAU and PDT
   installation paths.
 
 :Application:

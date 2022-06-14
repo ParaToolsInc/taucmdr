@@ -55,6 +55,19 @@ class CreateTest(tests.TestCase):
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
 
+    @tests.skipUnless(util.which('nvcc'), "NVHPC compilers required for this test")
+    def test_nvhpc(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'NVHPC'])
+        self.assertIn("Added target 'test_targ' to project configuration", stdout)
+        self.assertFalse(stderr)
+        stdout, stderr = self.assertCommandReturnValue(0, measurement_create_cmd, ['meas_NVHPC'])
+        self.assertIn("Added measurement 'meas_NVHPC' to project configuration", stdout)
+        self.assertFalse(stderr)
+        argv = ['exp2', '--target', 'test_targ', '--application', 'app1', '--measurement', 'meas_NVHPC']
+        _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertFalse(stderr)
+
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, experiment_create_cmd, ['-h'])

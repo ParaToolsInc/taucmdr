@@ -176,7 +176,7 @@ def attributes():
     """
     from taucmdr.model.project import Project
     from taucmdr.cli.arguments import ParsePackagePathAction
-    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, GNU
+    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, NVHPC, GNU
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
@@ -189,7 +189,7 @@ def attributes():
     knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
                                                   "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
                                                   "Try adding `--mpi-wrappers=Intel` to the command line")
-    gnu_only = _require_compiler_family([PGI, GNU],
+    gnu_only = _require_compiler_family([PGI, NVHPC, GNU],
                                               "You must use GNU compilers to use the backtrace unwinder",
                                               "Try adding `--compilers=GNU` to the command line")
 

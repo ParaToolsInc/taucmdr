@@ -48,6 +48,9 @@ INTEL = HOST_COMPILERS.add('Intel', family_regex=r'Intel Corporation|Intel\(R\) 
 PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group|NVIDIA CORPORATION',
                          CC='pgcc', CXX=('pgCC', 'pgc++', 'pgcxx'), FC=('pgfortran', 'pgf90', 'pgf77'))
 
+NVHPC = HOST_COMPILERS.add('NVHPC', family_regex=r'NVIDIA CORPORATION',
+                         CC=('nvc', 'nvcc') , CXX='nvc++', FC='nvfortran')
+
 IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                          version_flags=['-qversion'],
                          CC=('xlc_r', 'xlc'),

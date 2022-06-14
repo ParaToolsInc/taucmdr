@@ -39,7 +39,7 @@ from taucmdr.error import ConfigurationError
 from taucmdr.cf.platforms import IBM_BGQ, ARM64, PPC64LE, PPC64, CRAY_CNL, LINUX
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU
+from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, NVHPC
 
 
 
@@ -60,8 +60,8 @@ class LibunwindInstallation(AutotoolsInstallation):
     """Encapsulates a libunwind installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        # libunwind can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].unwrap().info.family is PGI:
+        # libunwind can't be built with PGI or NVHPC compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is PGI or compilers[CC].unwrap().info.family is NVHPC :
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError as err:
