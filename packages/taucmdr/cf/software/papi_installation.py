@@ -40,7 +40,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
+from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU, NVHPC
 
 LOGGER = logger.get_logger(__name__)
 
@@ -54,8 +54,8 @@ class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        # PAPI can't be built with IBM compilers so substitute GNU compilers instead
-        if compilers[CC].unwrap().info.family is IBM:
+        # PAPI can't be built with IBM or NVHPC compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is IBM or compilers[CC].unwrap().info.family is NVHPC:
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError as err:
@@ -70,6 +70,12 @@ class PapiInstallation(AutotoolsInstallation):
         src_prefix = super()._prepare_src(*args, **kwargs)
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
+        
+        # Modify PAPI's config.mk script to not use -Werror
+        for line in fileinput.input(os.path.join(src_prefix, 'libpfm4/config.mk'), inplace=True):
+            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+            sys.stdout.write(line.replace('-Werror',''))
+
         return src_prefix
 
     def configure(self, flags):

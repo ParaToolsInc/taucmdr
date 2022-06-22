@@ -216,10 +216,7 @@ class TestCase(unittest.TestCase):
         if init_args is not None:
             argv.extend(init_args)
         if '--bare' in argv or glob.glob(os.path.join(SYSTEM_STORAGE.prefix, 'tau', 'tau-nightly-*')):
-            try :
-                initialize_cmd.main(argv)
-            except Exception as e :
-                raise e
+            initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
             # CI drivers like Travis don't think our unit tests have stalled.

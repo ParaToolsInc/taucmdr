@@ -70,7 +70,7 @@ class CreateTest(tests.TestCase):
 
     def test_no_time_metric(self):
         self.reset_project_storage()
-        argv = ['meas_no_time', '--metrics', 'PAPI_FP_INS', '--source-inst', 'never']
+        argv = ['meas_no_time', '--metrics', 'PAPI_L2_DCM', '--source-inst', 'never']
         self.assertCommandReturnValue(0, measurement_create_cmd, argv)
         argv = ['exp2', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas_no_time']
         self.assertCommandReturnValue(0, experiment_create_cmd, argv)

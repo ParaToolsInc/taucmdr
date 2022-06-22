@@ -31,6 +31,7 @@ The ELF library provides an interface to read, modify or create ELF files in
             an architecture-independent way.
 """
 
+import os
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
@@ -52,11 +53,14 @@ class LibelfInstallation(AutotoolsInstallation):
             try:
                 gnu_compilers = GNU.installation()
             except ConfigurationError as err:
-                raise SoftwarePackageError("GNU compilers (required to build libunwind) could not be found.") from err
+                raise SoftwarePackageError("GNU compilers (required to build libelf) could not be found.") from err
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super().__init__('libelf', 'libelf', sources,
                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def configure(self, flags):
         flags.extend(['--disable-debuginfod'])
-        return super().configure(flags)
+        cc = os.environ['CC']
+        os.environ['CC'] = GNU.installation()[CC].unwrap().info.command
+        ret = super().configure(flags)
+        os.environ['CC'] = cc

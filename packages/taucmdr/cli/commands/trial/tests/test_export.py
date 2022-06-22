@@ -54,6 +54,7 @@ class ExportTest(tests.TestCase):
         export_file = expr['name'] + '.trial0.ppk'
         self.assertTrue(os.path.exists(export_file))
 
+    @tests.skipIf(util.which('nvc'), "NVHPC compilers do not work with sqlite")
     def test_export_sqlite_profile(self):
         self.reset_project_storage(['--profile', 'sqlite', '--trace', 'none'])
         util.mkdirp(os.getcwd())

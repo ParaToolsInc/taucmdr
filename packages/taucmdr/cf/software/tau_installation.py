@@ -805,7 +805,7 @@ class TauInstallation(Installation):
             fc_magic_map = {host_compilers.GNU: 'gfortran',
                             host_compilers.INTEL: 'intel',
                             host_compilers.PGI: 'pgi',
-                            host_compilers.NVHPC: 'nvhpc',
+                            host_compilers.NVHPC: 'nvfortran',
                             host_compilers.CRAY: 'cray',
                             host_compilers.IBM: 'ibm',
                             host_compilers.ARM: 'armflang',
@@ -941,6 +941,7 @@ class TauInstallation(Installation):
 
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
+        LOGGER.debug("Configuring TAU: " + (" ".join(cmd)))
         if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
             raise SoftwarePackageError('TAU configure failed')
 

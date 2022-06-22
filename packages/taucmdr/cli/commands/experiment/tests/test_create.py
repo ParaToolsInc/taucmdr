@@ -55,7 +55,7 @@ class CreateTest(tests.TestCase):
         _, stderr = self.assertCommandReturnValue(0, experiment_create_cmd, argv)
         self.assertFalse(stderr)
 
-    @tests.skipUnless(util.which('nvcc'), "NVHPC compilers required for this test")
+    @tests.skipUnless(util.which('nvc'), "NVHPC compilers required for this test")
     def test_nvhpc(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, target_create_cmd, ['test_targ', '--compilers', 'NVHPC'])

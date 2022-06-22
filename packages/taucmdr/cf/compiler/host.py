@@ -49,7 +49,7 @@ PGI = HOST_COMPILERS.add('PGI', family_regex=r'The Portland Group|NVIDIA CORPORA
                          CC='pgcc', CXX=('pgCC', 'pgc++', 'pgcxx'), FC=('pgfortran', 'pgf90', 'pgf77'))
 
 NVHPC = HOST_COMPILERS.add('NVHPC', family_regex=r'NVIDIA CORPORATION',
-                         CC=('nvc', 'nvcc') , CXX='nvc++', FC='nvfortran')
+                         CC='nvc' , CXX=('nvc++', 'nvcc'), FC='nvfortran')
 
 IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                          version_flags=['-qversion'],
