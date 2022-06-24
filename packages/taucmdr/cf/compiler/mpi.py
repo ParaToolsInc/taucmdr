@@ -42,6 +42,11 @@ MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing I
                               CXX=('MPI C++', 'MPI_CXX'),
                               FC=('MPI Fortran', ('MPI_FC', 'MPI_F77', 'MPI_F90')))
 
+NVHPC = MPI_COMPILERS.add('NVHPC', family_regex=r'NVIDIA CORPORATION', show_wrapper_flags=['-show'],
+                           CC='mpicc',
+                           CXX=('mpic++', 'mpicxx', 'mpiCC'),
+                           FC=('mpiftn', 'mpif90', 'mpif77', 'mpifort'))
+
 SYSTEM = MPI_COMPILERS.add('System', show_wrapper_flags=['-show'],
                            CC='mpicc',
                            CXX=('mpic++', 'mpicxx', 'mpiCC'),

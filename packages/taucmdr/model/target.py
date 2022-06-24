@@ -660,7 +660,7 @@ class Target(Model):
             InstalledCompilerSet: Collection of installed compilers used by this target.
         """
         if not self._compilers:
-            eids = []
+            paths = []
             compilers = {}
             for role in Knowledgebase.all_roles():
                 try:
@@ -670,8 +670,8 @@ class Target(Model):
                     continue
                 compilers[role.keyword] = compiler_record.installation()
                 LOGGER.debug("compilers[%s] = '%s'", role.keyword, compilers[role.keyword].absolute_path)
-                eids.append(compiler_record.eid)
-            self._compilers = InstalledCompilerSet('_'.join([str(x) for x in sorted(eids)]), **compilers)
+                paths.append(compilers[role.keyword].absolute_path)
+            self._compilers = InstalledCompilerSet('_'.join([str(x) for x in sorted(paths)]), **compilers)
         return self._compilers
 
     def check_compiler(self, compiler_cmd, compiler_args):
