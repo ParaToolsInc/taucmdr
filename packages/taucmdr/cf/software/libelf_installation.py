@@ -60,7 +60,10 @@ class LibelfInstallation(AutotoolsInstallation):
 
     def configure(self, flags):
         flags.extend(['--disable-debuginfod'])
-        cc = os.environ['CC']
+        cc = None
+        if 'CC' in os.environ.find :
+            cc = os.environ['CC']
         os.environ['CC'] = GNU.installation()[CC].unwrap().info.command
         super().configure(flags)
-        os.environ['CC'] = cc
+        if cc is not None:
+            os.environ['CC'] = cc

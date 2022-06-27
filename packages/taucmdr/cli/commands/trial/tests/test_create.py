@@ -253,7 +253,7 @@ class CreateTest(tests.TestCase):
         )
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
-        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python2')
+        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 
@@ -271,7 +271,7 @@ class CreateTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 
-    @tests.skipUnless(util.which('nvcc'), "NVHPC compilers required for this test")
+    @tests.skipUnless(util.which('nvc'), "NVHPC compilers required for this test")
     def test_run_openacc(self):
         self.reset_project_storage(['--openacc', 'T', '--cuda', 'T'])
         self.copy_testfile('jacobi.c')
