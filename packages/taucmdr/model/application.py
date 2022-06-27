@@ -79,6 +79,13 @@ def attributes():
             'argparse': {'flags': ('--openmp',)},
             'rebuild_required': True
         },
+        'openacc': {
+            'type': 'boolean',
+            'description': 'application uses OpenACC',
+            'default': False,
+            'argparse': {'flags': ('--openacc',)},
+            'rebuild_required': True
+        },
         'pthreads': {
             'type': 'boolean',
             'description': 'application uses pthreads',
@@ -93,7 +100,6 @@ def attributes():
             'argparse': {'flags': ('--python',)},
             'rebuild_required': True
         },
-
         'tbb': {
             'type': 'boolean',
             'description': 'application uses Thread Building Blocks (TBB)',

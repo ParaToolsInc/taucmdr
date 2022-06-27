@@ -270,3 +270,14 @@ class CreateTest(tests.TestCase):
         # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
+
+    @tests.skipUnless(util.which('nvcc'), "NVHPC compilers required for this test")
+    def test_run_openacc(self):
+        self.reset_project_storage(['--openacc', 'T', '--cuda', 'T'])
+        self.copy_testfile('jacobi.c')
+        self.copy_testfile('timer.h')
+        test_dir = os.getcwd()
+        self.assertManagedBuild(0, CC, ['-acc', '-g', '-o', 'jacobi'], 'jacobi.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, [os.path.join(test_dir, 'jacobi')])
+        self.assertIn('Trial 0 produced 2 profile files', stdout)
+        self.assertFalse(stderr)

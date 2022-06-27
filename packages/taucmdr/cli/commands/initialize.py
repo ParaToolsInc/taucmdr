@@ -195,7 +195,7 @@ class InitializeCommand(AbstractCommand):
             self._create_measurement(
                 'baseline', args, baseline=True, profile='tau', trace='none',
                 sample=False, source_inst='never', compiler_inst='never',
-                mpi=False, cuda=False, opencl=False, openmp='ignore', shmem=False,
+                mpi=False, cuda=False, openacc=False, opencl=False, openmp='ignore', shmem=False,
                 track_memory_footprint=False, callsite=False, comm_matrix=False,
                 heap_usage=False, memory_alloc=False)
             if args.sample:

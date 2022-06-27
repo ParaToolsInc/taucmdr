@@ -55,6 +55,7 @@ def attributes():
     from taucmdr.model.application import Application
     from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+    from taucmdr.cf.compiler.cuda import CUDA_CXX
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 
     def _merged_profile_compat(lhs, lhs_attr, lhs_value, rhs):
@@ -207,6 +208,17 @@ def attributes():
                         Measurement.exclude('baseline', True)),
                        'ompt': (Application.require('openmp', True),
                                 Measurement.exclude('baseline', True))},
+            'rebuild_required': True
+        },
+        'openacc': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'use OpeACC library wrapper to measure time spent in OpenACC methods',
+            'argparse': {'flags': ('--openacc',)},
+            'compat': {True:
+                       (Target.require(CUDA_CXX.keyword),
+                        Application.require('openacc', True),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'cuda': {

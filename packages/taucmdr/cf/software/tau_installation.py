@@ -182,6 +182,7 @@ class TauInstallation(Installation):
                  tbb_support=False,
                  mpi_support=False,
                  mpi_libraries=None,
+                 openacc_support=False,
                  caf_support=False,
                  cuda_support=False,
                  cuda_prefix=None,
@@ -255,6 +256,7 @@ class TauInstallation(Installation):
             mpi_support (bool): Enable or disable MPI support in TAU.
             mpi_libraries (list): MPI libraries to include when linking with TAU.
             cuda_support (bool): Enable or disable CUDA support in TAU.
+            openacc_support (bool): Enable or disable OpenACC support in TAU.
             cuda_prefix (str): Path to CUDA toolkit installation.
             opencl_support (bool): Enable or disable OpenCL support in TAU.
             shmem_support (bool): Enable or disable SHMEM support in TAU.
@@ -309,6 +311,7 @@ class TauInstallation(Installation):
         assert tbb_support in (True, False)
         assert mpi_support in (True, False)
         assert isinstance(mpi_libraries, list) or mpi_libraries is None
+        assert openacc_support in (True, False)
         assert cuda_support in (True, False)
         assert isinstance(cuda_prefix, str) or cuda_prefix is None
         assert opencl_support in (True, False)
@@ -375,6 +378,7 @@ class TauInstallation(Installation):
         self.tbb_support = tbb_support
         self.mpi_support = mpi_support
         self.mpi_libraries = mpi_libraries if mpi_libraries is not None else []
+        self.openacc_support = openacc_support
         self.caf_support = caf_support
         self.cuda_support = cuda_support
         self.cuda_prefix = cuda_prefix
@@ -875,6 +879,7 @@ class TauInstallation(Installation):
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
                   '-tbb' if self.tbb_support else None,
                   '-mpi' if self.mpi_support else None,
+                  '-openacc' if self.openacc_support else None,
                   '-mpiinc=%s' % mpiinc if mpiinc else None,
                   '-mpilib=%s' % mpilib if mpilib else None,
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else None,
@@ -1105,6 +1110,8 @@ class TauInstallation(Installation):
             tags.add('tbb')
         if self.mpi_support:
             tags.add('mpi')
+        if self.openacc_support:
+            tags.add('acc')
         if self.cuda_support or self.opencl_support:
             tags.add('cupti')
         if self.shmem_support:
@@ -1399,6 +1406,8 @@ class TauInstallation(Installation):
             opts.append('-ebs')
         if self.measure_cuda:
             opts.append('-cupti')
+        if self.openacc_support:
+            opts.append('-openacc')
         if self.measure_level_zero:
             opts.append('-l0')
         if self.measure_opencl:

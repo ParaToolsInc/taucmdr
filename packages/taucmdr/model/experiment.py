@@ -290,6 +290,7 @@ class Experiment(Model):
             tbb_support=application.get_or_default('tbb'),
             mpi_support=application.get_or_default('mpi'),
             mpi_libraries=target.get('mpi_libraries', []),
+            openacc_support=application.get_or_default('openacc'),
             caf_support=application.get_or_default('caf'),
             cuda_support=application.get_or_default('cuda'),
             cuda_prefix=target.get('cuda_toolkit', None),
