@@ -135,7 +135,7 @@ class ScorepInstallation(AutotoolsInstallation):
         flags = ['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube',
                  '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking']
         if self.target_arch in (X86_64, IBM64, PPC64, PPC64LE):
-            suites = {host.INTEL: 'intel', host.IBM: 'ibm', host.PGI: 'pgi', host.NVHPC: 'nvhpc', host.GNU: 'gcc'}
+            suites = {host.INTEL: 'intel', host.IBM: 'ibm', host.PGI: 'pgi', host.GNU: 'gcc'}
             suite = suites.get(self.compilers[host.CC].unwrap().info.family)
             flags.append('--with-nocross-compiler-suite' + ('='+suite if suite else ''))
         if self.use_mpi:

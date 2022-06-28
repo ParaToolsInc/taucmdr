@@ -506,7 +506,7 @@ class TauInstallation(Installation):
                                      "Unload the darshan module and try again.")
         if os.environ.get('PE_ENV', '').lower() == 'cray':
             raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
-                                     "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, PrgEnv-nvhpc, or PrgEnv-pgi and try again.")
+                                     "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, PrgEnv-nvidia, or PrgEnv-pgi and try again.")
 
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]

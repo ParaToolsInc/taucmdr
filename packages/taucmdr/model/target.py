@@ -660,6 +660,7 @@ class Target(Model):
             InstalledCompilerSet: Collection of installed compilers used by this target.
         """
         if not self._compilers:
+            # We use the paths to the compilers as unique identifiers since the EIDs for the records may come from different tables, and so may not be unique
             paths = []
             compilers = {}
             for role in Knowledgebase.all_roles():

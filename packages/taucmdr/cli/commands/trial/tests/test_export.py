@@ -54,7 +54,7 @@ class ExportTest(tests.TestCase):
         export_file = expr['name'] + '.trial0.ppk'
         self.assertTrue(os.path.exists(export_file))
 
-    @tests.skipIf(util.which('nvc'), "NVHPC compilers do not work with sqlite")
+    @tests.skipIf(util.which('nvc'), "NVHPC compilers do not work with sqlite (due to a compiler bug in NVHPC)")
     def test_export_sqlite_profile(self):
         self.reset_project_storage(['--profile', 'sqlite', '--trace', 'none'])
         util.mkdirp(os.getcwd())
@@ -82,7 +82,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
-    @tests.skipIf(util.which('nvc'), "This test cannot be run with NVHPC compilers")
+    @tests.skipIf(util.which('nvc'), "This test cannot be run with NVHPC compilers (ScoreP cannot be configured with NVHPC compilers)")
     def test_export_cubex(self):
         self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
         expr = Project.selected().experiment()

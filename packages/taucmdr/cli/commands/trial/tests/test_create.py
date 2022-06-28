@@ -33,7 +33,7 @@ import os
 import tempfile
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN
-from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.compiler.host import CC, NVHPC
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.trial.list import COMMAND as trial_list_cmd
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
@@ -92,7 +92,8 @@ class CreateTest(tests.TestCase):
         self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
         self.assertFalse(stderr)
         ccflags = ['-g']
-        if (not util.which('nvc')) :
+        # The NVHPC compilers do not accept the -no-pie option
+        if (not (util.which('nvc') and self.assertCompiler(CC) == util.which('nvc'))) :
             ccflags.append('-no-pie')
         self.assertManagedBuild(0, CC, ccflags, 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])

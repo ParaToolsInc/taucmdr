@@ -201,7 +201,6 @@ class TestCase(unittest.TestCase):
             prefix = PROJECT_STORAGE.prefix
         except StorageError:
             pass
-
         PROJECT_STORAGE.destroy(ignore_errors=False)
         try:
             prefix = PROJECT_STORAGE.prefix
