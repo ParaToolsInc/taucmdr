@@ -565,7 +565,7 @@ class AutotoolsInstallation(MakeInstallation):
         make [flags] install [options]
     """
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         """Invoke `configure`.
 
         Args:
@@ -578,7 +578,7 @@ class AutotoolsInstallation(MakeInstallation):
         LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
         cmd = ['./configure', '--prefix=%s' % self.install_prefix] + flags
         LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, env=None):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('%s configure failed' % self.title)
 

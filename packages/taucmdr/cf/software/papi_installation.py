@@ -71,7 +71,7 @@ class PapiInstallation(AutotoolsInstallation):
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
         
-        # Modify PAPI's config.mk script to not use -Werror
+        # Modify PAPI's config.mk script to not use -Werror due to upstream bug when using NVHPC
         for line in fileinput.input(os.path.join(src_prefix, 'libpfm4/config.mk'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
             sys.stdout.write(line.replace('-Werror',''))
