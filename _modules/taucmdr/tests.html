@@ -330,13 +330,21 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Copying test file </span><span class="si">{</span><span class="n">test_src</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">test_dst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">test_src</span><span class="p">,</span> <span class="n">test_dst</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TestCase.assertCompiler"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertCompiler">[docs]</a>    <span class="k">def</span> <span class="nf">assertCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="TestCase.getCompiler"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.getCompiler">[docs]</a>    <span class="k">def</span> <span class="nf">getCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">taucmdr.model.target</span> <span class="kn">import</span> <span class="n">Target</span>
         <span class="n">targ_ctrl</span> <span class="o">=</span> <span class="n">Target</span><span class="o">.</span><span class="n">controller</span><span class="p">(</span><span class="n">PROJECT_STORAGE</span><span class="p">)</span>
         <span class="n">targ</span> <span class="o">=</span> <span class="n">targ_ctrl</span><span class="o">.</span><span class="n">one</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">target_name</span><span class="p">})</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">inf</span> <span class="o">=</span> <span class="n">targ</span><span class="o">.</span><span class="n">populate</span><span class="p">(</span><span class="n">role</span><span class="o">.</span><span class="n">keyword</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;path&#39;</span> <span class="ow">in</span> <span class="n">inf</span> <span class="p">:</span>
+            <span class="k">return</span> <span class="n">inf</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+        <span class="k">else</span> <span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+    
+<div class="viewcode-block" id="TestCase.assertCompiler"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertCompiler">[docs]</a>    <span class="k">def</span> <span class="nf">assertCompiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="s1">&#39;targ1&#39;</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCompiler</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">target_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="p">:</span>
+            <span class="k">return</span> <span class="n">path</span>
+        <span class="k">else</span> <span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2"> compiler in target &#39;</span><span class="si">{</span><span class="n">target_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TestCase.assertCommandReturnValue"><a class="viewcode-back" href="../../taucmdr.tests.html#taucmdr.tests.TestCase.assertCommandReturnValue">[docs]</a>    <span class="k">def</span> <span class="nf">assertCommandReturnValue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_value</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">argv</span><span class="p">):</span>
@@ -400,7 +408,7 @@
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Mar 09, 2022 at 18:06:00 UTC.
+      Last updated on Jun 30, 2022 at 20:01:18 UTC.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
