@@ -382,7 +382,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
                 self._database.open()
             except OSError as err:
                 raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
-                                   "Check that you have `write` access")
+                                   "Check that you have `write` access") from err
             if not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
@@ -416,9 +416,8 @@ class SQLiteLocalFileStorage(LocalFileStorage):
             if ex_type:
                 self._database.revert_transaction()
                 return False
-            else:
-                self._database.commit_transaction()
-                return True
+            self._database.commit_transaction()
+            return True
         return bool(ex_type)
 
     def table(self, table_name):

@@ -268,8 +268,8 @@ class LogFormatter(logging.Formatter):
         """
         try:
             return str(getattr(self, record.levelname)(record))
-        except AttributeError:
-            raise RuntimeError('Unknown record level (name: %s)' % record.levelname)
+        except AttributeError as err:
+            raise RuntimeError('Unknown record level (name: %s)' % record.levelname) from err
 
     def _colored(self, text, *color_args):
         """Insert ANSII color formatting via `termcolor`_.

@@ -55,6 +55,7 @@ def attributes():
     from taucmdr.model.application import Application
     from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+    from taucmdr.cf.compiler.cuda import CUDA_CXX
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 
     def _merged_profile_compat(lhs, lhs_attr, lhs_value, rhs):
@@ -207,6 +208,17 @@ def attributes():
                         Measurement.exclude('baseline', True)),
                        'ompt': (Application.require('openmp', True),
                                 Measurement.exclude('baseline', True))},
+            'rebuild_required': True
+        },
+        'openacc': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'use OpeACC library wrapper to measure time spent in OpenACC methods',
+            'argparse': {'flags': ('--openacc',)},
+            'compat': {True:
+                       (Target.require(CUDA_CXX.keyword),
+                        Application.require('openacc', True),
+                        Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
         'cuda': {
@@ -481,6 +493,12 @@ def attributes():
             'description': 'MPI-T profiling interface',
             'argparse': {'flags': ('--mpit',)},
         },
+        'level_zero': {
+            'type': 'boolean',
+            'default': False,
+            'description': 'Level zero ',
+            'argparse': {'flags': ('--level_zero',)},
+        },
         'force_tau_options': {
             'type': 'array',
             'description': "forcibly set the TAU_OPTIONS environment variable (not recommended)",
@@ -540,10 +558,10 @@ class Measurement(Model):
         """Check for TIME in metrics, add it if missing, ensure it is first"""
         try:
             self['metrics'].remove('TIME')
-        except KeyError:
+        except KeyError as err:
             raise ConfigurationError(
-                "The metrics attribute should always exist with at least TIME present!")
-        except ValueError:
+                "The metrics attribute should always exist with at least TIME present!") from err
+        except ValueError as err:
             LOGGER.warning("'TIME' must always be present as the first metric!")
         finally:
             self['metrics'].insert(0, 'TIME')
@@ -567,7 +585,7 @@ class Measurement(Model):
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing measurement '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
-                                         "Delete experiment '%s' and try again." % expr['name'])
+                                         "Delete experiment '%s' and try again." % expr['name']) from err
         self._check_select_file()
         self._check_metrics()
         if self.is_selected():

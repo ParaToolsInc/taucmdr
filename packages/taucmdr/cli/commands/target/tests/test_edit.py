@@ -30,7 +30,7 @@ Functions used for unit tests of edit.py.
 """
 
 
-from taucmdr import tests
+from taucmdr import tests, util
 from taucmdr.cli.commands.target import edit
 
 class EditTest(tests.TestCase):
@@ -69,3 +69,68 @@ class EditTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: ambiguous option: --mpi could match --mpi-', stderr)
+
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi(self):
+        self.reset_project_storage()
+        argv = ['targ1', '--mpi-wrappers', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn("Updated target \'targ1\'", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ1 = ctrl.one({'name': 'targ1'})
+        for role, expected in (MPI_CC, ''), (MPI_CXX, ''), (MPI_FC, ''):
+            path = targ1.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi_cc(self):
+        self.reset_project_storage()
+        argv = ['targ1', '--mpi-cc', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn("Updated target \'targ1\'", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ1 = ctrl.one({'name': 'targ1'})
+        path = targ1.populate(MPI_CC.keyword)['path']
+        self.assertEqual(path, '', f"Target[{MPI_CC}] is '{path}', not ''")
+
+    @tests.skipUnless(util.which('nvcc'), "CUDA CXX compiler required for this test")
+    def test_no_cuda_cxx(self):
+        self.reset_project_storage()
+        argv = ['targ1', '--cuda-cxx', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn("Updated target \'targ1\'", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_CXX
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ1 = ctrl.one({'name': 'targ1'})
+        role = CUDA_CXX
+        expected = ''
+        path = targ1.populate(role.keyword)['path']
+        self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
+    @tests.skipUnless(util.which('xlcuf'), "CUDA CXX compiler required for this test")
+    def test_no_cuda_fc(self):
+        self.reset_project_storage()
+        argv = ['targ1', '--cuda-fc', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, edit.COMMAND, argv)
+        self.assertIn("Updated target \'targ1\'", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ1 = ctrl.one({'name': 'targ1'})
+        role = CUDA_FC
+        expected = ''
+        path = targ1.populate(role.keyword)['path']
+        self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")

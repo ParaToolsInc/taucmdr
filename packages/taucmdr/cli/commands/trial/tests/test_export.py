@@ -56,6 +56,8 @@ class ExportTest(tests.TestCase):
 
     def test_export_sqlite_profile(self):
         self.reset_project_storage(['--profile', 'sqlite', '--trace', 'none'])
+        if util.which('nvc') and self.getCompiler(CC) == util.which('nvc') :
+            self.skipTest("NVHPC compilers do not work with sqlite (due to a compiler bug in NVHPC)")
         util.mkdirp(os.getcwd())
         expr = Project.selected().experiment()
         meas = expr.populate('measurement')
@@ -83,6 +85,8 @@ class ExportTest(tests.TestCase):
     @tests.skipUnlessHaveCompiler(MPI_CC)
     def test_export_cubex(self):
         self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
+        if util.which('nvc') and self.getCompiler(CC) == util.which('nvc') :
+            self.skipTest("This test cannot be run with NVHPC compilers (ScoreP cannot be configured with NVHPC compilers)")
         expr = Project.selected().experiment()
         meas = expr.populate('measurement')
         self.assertEqual(meas['profile'], 'cubex')

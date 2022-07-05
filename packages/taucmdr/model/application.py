@@ -79,6 +79,13 @@ def attributes():
             'argparse': {'flags': ('--openmp',)},
             'rebuild_required': True
         },
+        'openacc': {
+            'type': 'boolean',
+            'description': 'application uses OpenACC',
+            'default': False,
+            'argparse': {'flags': ('--openacc',)},
+            'rebuild_required': True
+        },
         'pthreads': {
             'type': 'boolean',
             'description': 'application uses pthreads',
@@ -93,7 +100,6 @@ def attributes():
             'argparse': {'flags': ('--python',)},
             'rebuild_required': True
         },
-
         'tbb': {
             'type': 'boolean',
             'description': 'application uses Thread Building Blocks (TBB)',
@@ -209,7 +215,7 @@ class Application(Model):
             except IncompatibleRecordError as err:
                 raise ConfigurationError("Changing application '%s' in this way will create an invalid condition "
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
-                                         "Delete experiment '%s' and try again." % expr['name'])
+                                         "Delete experiment '%s' and try again." % expr['name']) from err
         if self.is_selected():
             for attr, change in changes.items():
                 if self.attributes[attr].get('rebuild_required'):

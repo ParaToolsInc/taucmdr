@@ -47,4 +47,4 @@ class Sqlite3Installation(AutotoolsInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         super().__init__('sqlite3', 'SQLite3', sources,
-                                                  target_arch, target_os, compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
+                         target_arch, target_os, compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)

@@ -33,10 +33,14 @@ CUDA_COMPILERS = Knowledgebase('CUDA', 'Compilers supporting CUDA',
                                CXX=('CUDA', 'CU'),
                                FC=('CUDA Fortran', 'CUF'))
 
+NVHPC = CUDA_COMPILERS.add('NVHPC', CXX='nvcc')
+
 NVIDIA = CUDA_COMPILERS.add('NVIDIA', CXX='nvcc')
 
 IBM = CUDA_COMPILERS.add('IBM', family_regex=r'^IBM XL', version_flags=['-qversion'],
                          FC='xlcuf')
+
+NONE = CUDA_COMPILERS.add('None', CXX='', FC='')
 
 CUDA_CXX = CUDA_COMPILERS.roles['CXX']
 CUDA_FC = CUDA_COMPILERS.roles['FC']

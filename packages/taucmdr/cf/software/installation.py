@@ -63,8 +63,8 @@ def parallel_make_flags(nprocs=None):
             nprocs = int(nprocs)
             if nprocs < 1:
                 raise ValueError
-        except ValueError:
-            raise ConfigurationError("Invalid parallel make job count: %s" % nprocs)
+        except ValueError as err:
+            raise ConfigurationError("Invalid parallel make job count: %s" % nprocs) from err
     return ['-j', str(nprocs)]
 
 
@@ -153,8 +153,8 @@ class Installation:
                 self.srcs_avail = self.srcs[:]
                 try:
                     self.src = self.srcs.pop(0)
-                except IndexError:
-                    raise ConfigurationError("No sources provided for %s." % self.title)
+                except IndexError as err:
+                    raise ConfigurationError("No sources provided for %s." % self.title) from err
             else:
                 self.srcs = []
                 self.srcs_avail = [self.src]
@@ -325,8 +325,7 @@ class Installation:
                      "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
                      "Check that the file or directory is accessible")
             raise ConfigurationError("Cannot acquire source archive '%s'." % ', '.join(self.srcs_avail), *hints)
-        else:
-            return str(archive)
+        return str(archive)
 
     def _prepare_src(self, reuse_archive=True):
         """Prepares source code for installation.
@@ -353,7 +352,7 @@ class Installation:
                 LOGGER.info("Unable to extract source archive '%s'.  Downloading a new copy.", archive)
                 return str(self._prepare_src(reuse_archive=False))
             raise ConfigurationError(f"Cannot extract source archive '{archive}': {err}",
-                                     "Check that the file or directory is accessible")
+                                     "Check that the file or directory is accessible") from err
 
     def verify(self):
         """Check if the installation at :any:`installation_prefix` is valid.
@@ -420,8 +419,9 @@ class Installation:
                 if self.unmanaged:
                     raise SoftwarePackageError("%s source package is unavailable and the installation at '%s' "
                                                "is invalid: %s" % (self.title, self.install_prefix, err),
-                                               "Specify source code path or URL to enable package reinstallation.")
-                elif not force_reinstall:
+                                               "Specify source code path or URL to enable package reinstallation.") \
+                                                       from err
+                if not force_reinstall:
                     LOGGER.debug(err)
         LOGGER.info("Installing %s to '%s'", self.title, self.install_prefix)
         if os.path.isdir(self.install_prefix):
@@ -565,7 +565,7 @@ class AutotoolsInstallation(MakeInstallation):
         make [flags] install [options]
     """
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         """Invoke `configure`.
 
         Args:
@@ -578,7 +578,7 @@ class AutotoolsInstallation(MakeInstallation):
         LOGGER.debug("Configuring %s at '%s'", self.name, self._src_prefix)
         cmd = ['./configure', '--prefix=%s' % self.install_prefix] + flags
         LOGGER.info("Configuring %s...", self.title)
-        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
+        if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True, env=env):
             util.add_error_stack(self._src_prefix)
             raise SoftwarePackageError('%s configure failed' % self.title)
 
@@ -604,7 +604,7 @@ class CMakeInstallation(MakeInstallation):
         try:
             stdout = util.get_command_output([cmake, '--version'])
         except (CalledProcessError, OSError) as err:
-            raise ConfigurationError("Failed to get CMake version: %s" % err)
+            raise ConfigurationError("Failed to get CMake version: %s" % err) from err
         for line in stdout.split('\n'):
             if 'cmake version' in line:
                 verstr = (line.split('cmake version ')[1]).split('-')[0]

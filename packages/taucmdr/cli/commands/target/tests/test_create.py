@@ -102,6 +102,20 @@ class CreateTest(tests.TestCase):
         path = test_targ.populate(CC.keyword)['path']
         self.assertEqual('pgcc', os.path.basename(path), "Target[CC] is '%s', not 'pgcc'" % path)
 
+    @tests.skipUnless(util.which('nvc'), "NVHPC compilers required for this test")
+    def test_host_family_nvhpc(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'NVHPC'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        path = test_targ.populate(CC.keyword)['path']
+        self.assertEqual('nvc', os.path.basename(path), "Target[CC] is '%s', not 'nvc'" % path)
+
     def test_cc_flag(self):
         self.reset_project_storage()
         cc_cmd = self.assertCompiler(CC)
@@ -113,6 +127,54 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         cxx_cmd = self.assertCompiler(CXX)
         self.assertRaises(ConfigurationError, self.exec_command, create_cmd, ['test_targ', '--cc', cxx_cmd])
+
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--mpi-wrappers', 'None'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        for role, expected in (MPI_CC, ''), (MPI_CXX, ''), (MPI_FC, ''):
+            path = test_targ.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
+
+
+    @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
+    def test_no_mpi_cc(self):
+        self.reset_project_storage()
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--mpi-cc', 'None'])
+        self.assertIn("Added target", stdout)
+        self.assertIn("test_targ", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        test_targ = ctrl.one({'name': 'test_targ'})
+        path = test_targ.populate(MPI_CC.keyword)['path']
+        self.assertEqual(path, '', f"Target[{MPI_CC}] is '{path}', not ''")
+
+    @tests.skipUnless(util.which('nvcc') or util.which('xlcuf'), "CUDA compilers required for this test")
+    def test_no_cuda(self):
+        self.reset_project_storage()
+        argv = ['targ2', '--cuda-compilers', 'None']
+        stdout, stderr = self.assertCommandReturnValue(0, create_cmd, argv)
+        self.assertIn("Added target \'targ2\' to project configuration", stdout)
+        self.assertFalse(stderr)
+        from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
+        from taucmdr.cf.storage.levels import PROJECT_STORAGE
+        from taucmdr.model.target import Target
+        ctrl = Target.controller(PROJECT_STORAGE)
+        targ2 = ctrl.one({'name': 'targ2'})
+        for role, expected in (CUDA_CXX, ''), (CUDA_FC, ''):
+            path = targ2.populate(role.keyword)['path']
+            self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
 
 #    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
 #    def test_python_init(self):

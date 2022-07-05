@@ -40,7 +40,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU
+from taucmdr.cf.compiler.host import CC, CXX, IBM, GNU, NVHPC
 
 LOGGER = logger.get_logger(__name__)
 
@@ -54,12 +54,12 @@ class PapiInstallation(AutotoolsInstallation):
     """Encapsulates a PAPI installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        # PAPI can't be built with IBM compilers so substitute GNU compilers instead
-        if compilers[CC].unwrap().info.family is IBM:
+        # PAPI can't be built with IBM or NVHPC compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is IBM or compilers[CC].unwrap().info.family is NVHPC:
             try:
                 gnu_compilers = GNU.installation()
-            except ConfigurationError:
-                raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.")
+            except ConfigurationError as err:
+                raise SoftwarePackageError("GNU compilers (required to build PAPI) could not be found.") from err
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super().__init__('papi', 'PAPI', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, None)
@@ -70,6 +70,12 @@ class PapiInstallation(AutotoolsInstallation):
         src_prefix = super()._prepare_src(*args, **kwargs)
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
+        
+        # Modify PAPI's config.mk script to not use -Werror due to upstream bug when using NVHPC
+        for line in fileinput.input(os.path.join(src_prefix, 'libpfm4/config.mk'), inplace=True):
+            # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
+            sys.stdout.write(line.replace('-Werror',''))
+
         return src_prefix
 
     def configure(self, flags):
@@ -133,7 +139,7 @@ class PapiInstallation(AutotoolsInstallation):
                     else:
                         why = ": %s is not supported on this host" % event
                     break
-                elif "can't be found" in line:
+                if "can't be found" in line:
                     parts = line.split()
                     try:
                         event = parts[1]
@@ -148,7 +154,7 @@ class PapiInstallation(AutotoolsInstallation):
                                      "Use papi_avail to check metric availability.",
                                      "Spread the desired metrics over multiple measurements.",
                                      "Choose fewer metrics.",
-                                     "You may ignore this if you are cross-compiling.")
+                                     "You may ignore this if you are cross-compiling.") from err
 
     def papi_metrics(self, event_type="PRESET", include_modifiers=False):
         """List PAPI available metrics.
@@ -164,7 +170,7 @@ class PapiInstallation(AutotoolsInstallation):
         Returns:
             list: List of event name/description tuples.
         """
-        assert event_type == "PRESET" or event_type == "NATIVE"
+        assert event_type in ("PRESET", "NATIVE")
         metrics = []
         def _format(item):
             name = item.attrib['name']

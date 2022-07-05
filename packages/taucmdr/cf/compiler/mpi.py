@@ -42,6 +42,11 @@ MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing I
                               CXX=('MPI C++', 'MPI_CXX'),
                               FC=('MPI Fortran', ('MPI_FC', 'MPI_F77', 'MPI_F90')))
 
+NVHPC = MPI_COMPILERS.add('NVHPC', family_regex=r'NVIDIA CORPORATION', show_wrapper_flags=['-show'],
+                           CC='mpicc',
+                           CXX=('mpic++', 'mpicxx', 'mpiCC'),
+                           FC=('mpiftn', 'mpif90', 'mpif77', 'mpifort'))
+
 SYSTEM = MPI_COMPILERS.add('System', show_wrapper_flags=['-show'],
                            CC='mpicc',
                            CXX=('mpic++', 'mpicxx', 'mpiCC'),
@@ -65,6 +70,10 @@ CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                          version_flags=['-craype-verbose', '--version', '-E'],
                          show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                          CC='cc', CXX='CC', FC='ftn')
+
+NONE = MPI_COMPILERS.add('None', #family_regex='',
+                         CC='', CXX='', FC='')
+
 
 MPI_CC = MPI_COMPILERS.roles['CC']
 MPI_CXX = MPI_COMPILERS.roles['CXX']

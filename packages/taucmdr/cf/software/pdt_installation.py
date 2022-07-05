@@ -36,7 +36,7 @@ from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK,\
     ARM64
-from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, INTEL
+from taucmdr.cf.compiler.host import CC, CXX, PGI, NVHPC, GNU, INTEL
 
 
 LOGGER = logger.get_logger(__name__)
@@ -183,12 +183,12 @@ class PdtInstallation(AutotoolsInstallation):
     """
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        # PDT 3.22 can't be built with PGI compilers so substitute GNU compilers instead
-        if compilers[CC].unwrap().info.family is PGI:
+        # PDT 3.22 can't be built with PGI or NVHPC compilers so substitute GNU compilers instead
+        if compilers[CC].unwrap().info.family is PGI or compilers[CC].unwrap().info.family is NVHPC :
             try:
                 gnu_compilers = GNU.installation()
-            except ConfigurationError:
-                raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.")
+            except ConfigurationError as err:
+                raise SoftwarePackageError("GNU compilers (required to build PDT) could not be found.") from err
             compilers = compilers.modify(Host_CC=gnu_compilers[CC], Host_CXX=gnu_compilers[CXX])
         super().__init__('pdt', 'PDT', sources, target_arch, target_os,
                                               compilers, REPOS, COMMANDS, None, None)
@@ -222,7 +222,7 @@ class PdtInstallation(AutotoolsInstallation):
             self.verify()
 
     def configure(self, _):
-        family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC'}
+        family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC', NVHPC.name: '-nvc++'}
         compiler_flag = family_flags.get(self.compilers[CXX].info.family.name, '')
         cmd = ['./configure', '-prefix=' + self.install_prefix, compiler_flag]
         LOGGER.info("Configuring PDT...")

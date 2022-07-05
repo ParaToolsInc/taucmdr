@@ -29,7 +29,6 @@
 Functions used for unit tests of papi_installation.py.
 """
 
-
 from taucmdr.tests import TestCase
 from taucmdr.model.project import Project
 

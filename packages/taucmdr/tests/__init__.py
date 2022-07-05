@@ -283,13 +283,21 @@ class TestCase(unittest.TestCase):
         LOGGER.info(f"Copying test file {test_src} to {test_dst}")
         shutil.copy(test_src, test_dst)
 
-    def assertCompiler(self, role, target_name='targ1'):
+    def getCompiler(self, role, target_name='targ1'):
         from taucmdr.model.target import Target
         targ_ctrl = Target.controller(PROJECT_STORAGE)
         targ = targ_ctrl.one({'name': target_name})
-        try:
-            return targ.populate(role.keyword)['path']
-        except KeyError:
+        inf = targ.populate(role.keyword)
+        if 'path' in inf :
+            return inf['path']
+        else :
+            return None
+    
+    def assertCompiler(self, role, target_name='targ1'):
+        path = self.getCompiler(role, target_name)
+        if path is not None :
+            return path
+        else :
             self.fail(f"No {role} compiler in target '{target_name}'")
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
