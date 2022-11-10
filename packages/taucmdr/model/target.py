@@ -127,11 +127,14 @@ def level_zero_source_default():
     try:
         ld_lib_paths = os.environ['LD_LIBRARY_PATH'].split(':')
     except KeyError:
-        return 'download'
+        return None
     for path in ld_lib_paths:
         if os.path.isfile(path+'/libze_loader.so'):
             return path
-    return 'download'
+    # l0 isn't something TAU Commander can download and install itself
+    # (it's part of the oneAPI Toolkit), so if we can't find it,
+    # build TAU without it instead of trying to download it.
+    return None
 
 def cuda_toolkit_default():
     for path in sorted(glob.glob('/usr/local/cuda*')):
@@ -531,7 +534,7 @@ def attributes():
             'default': level_zero_source_default(),
             'argparse': {'flags': ('--level_zero_source',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|None)',
+                         'metavar': '(<path>|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
