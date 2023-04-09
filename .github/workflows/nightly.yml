@@ -8,6 +8,7 @@ name: TAU nightly testing
 on:
   schedule:
     - cron: '18 10 * * *' # 10:18 UTC daily, 3:18 Pacific
+  workflow_dispatch:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
