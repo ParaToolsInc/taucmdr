@@ -137,14 +137,14 @@ jobs:
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload Pylint report
-        if: always() && matrix.os == 'ubuntu-18.04'
+        if: always() && matrix.os == 'ubuntu-20.04'
         uses: actions/upload-artifact@v2
         with:
           name: taucmdr-pylint-logs-${{ matrix.os }}
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: matrix.os == 'ubuntu-18.04'
+        if: ${{ !env.ACT }} && matrix.os == 'ubuntu-20.04'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
@@ -152,7 +152,7 @@ jobs:
           recreate: true
 
       - name: Upload Coverage info
-        if: always()
+        if: ${{ !env.ACT }} && always()
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -164,7 +164,7 @@ jobs:
 
       - name: Deploy Sphinx docs
         uses: peaceiris/actions-gh-pages@v3
-        if: success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-18.04'
+        if: ${{ !env.ACT }} && success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-20.04'
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           enable_jekyll: false
