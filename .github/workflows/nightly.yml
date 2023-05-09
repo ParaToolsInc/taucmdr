@@ -8,6 +8,7 @@ name: TAU nightly testing
 on:
   schedule:
     - cron: '18 10 * * *' # 10:18 UTC daily, 3:18 Pacific
+  workflow_dispatch:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
@@ -25,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04] #, ubuntu-20.04
+        os: [ubuntu-20.04] 
         python_version: ['3.7']
     env:
       OS: ${{ matrix.os }}
