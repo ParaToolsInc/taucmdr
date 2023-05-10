@@ -40,7 +40,7 @@ jobs:
         run: |
           # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev 
 
       - name: System info
         id: info
