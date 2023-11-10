@@ -506,6 +506,7 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
                          'action': ParsePackagePathAction},
+            'deprecated': {'download-tr4' : ['2.29.1',''], 'download-tr6' : ['2.29.1','']},
             'rebuild_required': True
         },
         'libotf2_source': {
@@ -747,6 +748,9 @@ class Target(Model):
 
     def tau_metrics(self):
         return self.get_installation('tau').tau_metrics()
+
+    def tau_version(self):
+        return self.get_installation('tau').tau_version()
 
     def cupti_metrics(self):
         if not self.get('cuda'):

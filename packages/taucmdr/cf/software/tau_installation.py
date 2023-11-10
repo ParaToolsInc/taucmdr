@@ -1022,6 +1022,7 @@ class TauInstallation(Installation):
                     LOGGER.info(f'Installing {self.title} to:\n    {self.install_prefix}')
                     try:
                         shutil.move(self._prepare_src(), self.install_prefix)
+                        self.tau_version = self.get_version(os.path.join(self.install_prefix, 'include/TAU.h.default'))
                     except Exception as err:
                         LOGGER.debug("Exception thrown by shutil.move, attempting to continue.")
                         # On some docker fuse mounted file systems shutil.move was failing with symlinks
@@ -1944,3 +1945,15 @@ class TauInstallation(Installation):
         pattern = re.compile(r'\d+\.\d+\.\d+')
         match = pattern.search(out)
         return match.group()
+
+    def get_version(self):
+        header_path = os.path.join(self.install_prefix, 'include/TAU.h.default')
+        with open(header_path) as f:
+            for line in f:
+                if line.startswith("#define TAU_VERSION"):
+                    verline = line
+                    break
+        verstr = re.findall('"([^"]*)"', verline)[0]
+        if verstr.endswith('-git'):
+            ver = verstr[:-len('-git')]
+        return ver
