@@ -76,6 +76,9 @@ APPLE_LLVM = HOST_COMPILERS.add('Apple', family_regex=r'Apple',
 ARM = HOST_COMPILERS.add('Arm', family_regex=r'Arm C/C\+\+/Fortran Compiler',
                          CC='armclang', CXX='armclang++', FC='armflang')
 
+NEC_SX = HOST_COMPILERS.add('NEC', family_regex=r'NEC Corporation',
+                            CC='ncc', CXX='nc++', FC='nfort')
+
 CC = HOST_COMPILERS.roles['CC']
 CXX = HOST_COMPILERS.roles['CXX']
 FC = HOST_COMPILERS.roles['FC']

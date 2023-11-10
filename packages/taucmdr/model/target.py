@@ -45,7 +45,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem
-from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL, PPC64LE
+from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL, NEC_SX, PPC64LE
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
@@ -446,7 +446,8 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'compat': {(lambda x: x is not None): Target.discourage('host_os', DARWIN)},
+            'compat': {(lambda x: x is not None): (Target.discourage('host_os', DARWIN),
+                                                   Target.exclude('host_arch', NEC_SX))},
             'rebuild_required': True
         },
         'libdwarf_source': {
@@ -513,6 +514,16 @@ def attributes():
             'description': 'path or URL to libotf2 installation or archive file',
             'default': 'download',
             'argparse': {'flags': ('--otf',),
+                         'group': 'software package',
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction},
+            'rebuild_required': True
+        },
+        'zlib_source': {
+            'type': 'string',
+            'description': 'path or URL to zlib installation or archive file',
+            'default': 'download',
+            'argparse': {'flags': ('--zlib',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
@@ -638,6 +649,8 @@ class Target(Model):
         for attr, val in self.items():
             if val and attr.endswith('_source'):
                 sources[attr.replace('_source', '')] = val
+        if sources['binutils']:
+            sources['zlib'] = sources['binutils']
         return sources
 
     def get_installation(self, name):

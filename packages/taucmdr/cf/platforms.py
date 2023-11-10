@@ -67,6 +67,9 @@ class Architecture(KeyedRecord):
     def is_arm(self):
         return self in (ARM32, ARM64)
 
+    def is_nec(self):
+        return self in (NEC_SX)
+
     @classmethod
     def _parse_proc_cpuinfo(cls):
         try:
@@ -248,6 +251,7 @@ PPC64 = Architecture('ppc64', 'IBM 64-bit PowerPC')
 PPC64LE = Architecture('ppc64le', 'IBM 64-bit PowerPC (Little Endian)')
 ARM32 = Architecture('aarch32', '32-bit ARM')
 ARM64 = Architecture('aarch64', '64-bit ARM')
+NEC_SX = Architecture('NEC', 'NEC SX Aurora')
 
 DARWIN = OperatingSystem('Darwin', 'Darwin')
 LINUX = OperatingSystem('Linux', 'Linux')
@@ -326,6 +330,11 @@ TAU_ARM32_ANDROID = TauMagic((ARM32, ANDROID), 'arm_android',
                              {HOST_COMPILERS: host.GNU,
                               MPI_COMPILERS: mpi.SYSTEM,
                               SHMEM_COMPILERS: shmem.OPENSHMEM})
+
+TAU_NEC_LINUX = TauMagic((NEC_SX, LINUX), 'nec-sx-aurora',
+                         {HOST_COMPILERS: host.NEC_SX,
+                          MPI_COMPILERS: mpi.NEC_SX,
+                          SHMEM_COMPILERS: shmem.OPENSHMEM})
 
 HOST_ARCH = Architecture.detect()
 HOST_OS = OperatingSystem.detect()

@@ -71,6 +71,11 @@ CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray',
                          show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                          CC='cc', CXX='CC', FC='ftn')
 
+NEC_SX = MPI_COMPILERS.add('NEC', family_regex=r'NEC Corporation',
+                          show_wrapper_flags=['-show'],
+                          CC='mpincc', CXX='mpinc++', FC='mpinfort')
+
+
 NONE = MPI_COMPILERS.add('None', #family_regex='',
                          CC='', CXX='', FC='')
 
