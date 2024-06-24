@@ -30,8 +30,22 @@ Functions used for unit tests of tau_installation.py.
 """
 
 
-from taucmdr.tests import TestCase, not_implemented
+from taucmdr.tests import TestCase
+from taucmdr.model.project import Project
 
-@not_implemented
+
 class TauInstallationTest(TestCase):
-    pass
+    """Unit tests for TauInstallation."""
+
+    def _get_tau_installation(self):
+        expr = Project.selected().experiment()
+        return expr.populate('target').get_installation('tau')
+
+    def test_tau_installation(self):
+        self.reset_project_storage()
+        tau = self._get_tau_installation()
+        tau.verify()
+        tau_src = tau.acquire_source()
+        self.assertIsNotNone(tau_src)
+        self.assertTrue(tau_src)
+        self.assertIsInstance(tau_src, str)
