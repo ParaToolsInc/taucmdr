@@ -77,7 +77,7 @@ jobs:
           fi
 
       - name: Cache TAU sources
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.info.outputs.taucmdr_system}}/src
           key: ${{ matrix.os }}-system-src-${{ github.sha }}
@@ -85,7 +85,7 @@ jobs:
             ${{ matrix.os }}-system-src
 
       - name: Cache pylint directory
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.info.outputs.home_dir }}/.pylint.d
           key: ${{ matrix.os }}-pylint-cache-${{ steps.info.outputs.branch }}-${{ github.sha }}
