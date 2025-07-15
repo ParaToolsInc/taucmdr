@@ -84,14 +84,14 @@ jobs:
 
       - name: Upload TAU Commander install log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload TAU Commander minimal install
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: taucmdr-installation-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/taucmdr-nightly.zip
@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: taucmdr-full-tau-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
@@ -127,7 +127,7 @@ jobs:
 
       - name: Upload TAU Commander unit test log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: taucmdr-unit-test-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload nightly TAU validate
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
