@@ -708,7 +708,7 @@ class Target(Model):
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)
         found = []
-        known_compilers = self.compilers()
+        known_compilers = [comp for comp in self.compilers().values()]
         for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
                 compiler_record = self.populate(info.role.keyword)
@@ -732,7 +732,7 @@ class Target(Model):
         if not found:
             parts = ["No compiler in target '{}' matches '{}'.".format(self['name'], absolute_path or compiler_cmd),
                      "The known compiler commands are:"]
-            parts.extend(f'  {comp.absolute_path} ({comp.info.short_descr})' for comp in known_compilers.values())
+            parts.extend(f'  {comp.absolute_path} ({comp.info.short_descr})' for comp in known_compilers)
             hints = ("Try one of the valid compiler commands",
                      "Create and select a new target configuration that uses the '%s' compiler" % (
                          absolute_path or compiler_cmd),
