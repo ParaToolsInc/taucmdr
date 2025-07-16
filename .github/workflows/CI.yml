@@ -110,7 +110,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
+          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}-${{ matrix.backend }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       # - name: Upload TAU Commander minimal install
@@ -133,14 +133,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-unit-test-debug-log-${{ matrix.os }}
+          name: taucmdr-unit-test-debug-log-${{ matrix.os }}-${{ matrix.backend }} 
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload Pylint report
         if: always() && matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-pylint-logs-${{ matrix.os }}
+          name: taucmdr-pylint-logs-${{ matrix.os }}-${{ matrix.backend }} 
           path: pylint.md
 
       - name: Pylint PR Comment
@@ -188,5 +188,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
+          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ matrix.backend }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
