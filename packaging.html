@@ -1,36 +1,25 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Packaging and Releasing TAU Commander &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>Packaging and Releasing TAU Commander &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Continuous Integration" href="continuous_integration.html" />
     <link rel="prev" title="How to write and run unit tests" href="unit_tests.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>Packaging and Releasing TAU Commander</span></h2>
@@ -57,51 +46,51 @@
 The version number is MAJOR.MINOR.PATCH.COMMIT where COMMIT is the number of
 commits since the last tag.  E.g. version 1.3.0.5 is five unreleased commits
 after the version 1.3.0 release.</p>
-<p>The <code class="docutils literal"><span class="pre">VERSION</span></code> file is created automatically and shows the current version.
-It might be out of date.  It&#8217;s always a good idea to <code class="docutils literal"><span class="pre">make</span> <span class="pre">clean</span></code> before
+<p>The <code class="docutils literal notranslate"><span class="pre">VERSION</span></code> file is created automatically and shows the current version.
+It might be out of date.  It’s always a good idea to <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">clean</span></code> before
 performing any task that depends on a version number.</p>
 </div>
 <div class="section" id="setup-py">
 <h2>setup.py<a class="headerlink" href="#setup-py" title="Permalink to this headline">¶</a></h2>
 <p>TAU Commander follows the <a class="reference external" href="https://packaging.python.org/">Python Packaging Guide</a>, the same resource that guides package deployment to the
 <a class="reference external" href="https://pypi.python.org/pypi">Python Package Index (PyPI)</a>.  All tasks related to packaging and releasing TAU Commander are handled via the
-setup.py script in the project root directory.  The script has many commands but most aren&#8217;t relevant to
+setup.py script in the project root directory.  The script has many commands but most aren’t relevant to
 TAU Commander.  The important ones are:</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">build:</th><td class="field-body"><p class="first">Build everything needed for a new TAU Commander installation in the <code class="docutils literal"><span class="pre">build</span></code> directory.</p>
+<tr class="field-odd field"><th class="field-name">build:</th><td class="field-body"><p class="first">Build everything needed for a new TAU Commander installation in the <code class="docutils literal notranslate"><span class="pre">build</span></code> directory.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">build_sphinx:</th><td class="field-body"><p class="first">Rebuild TAU Commander developer documentation (which you are currently reading) in the <code class="docutils literal"><span class="pre">build/sphinx</span></code> directory.
-Use the <code class="docutils literal"><span class="pre">--update-gh-pages</span></code> option and associated options (see <code class="docutils literal"><span class="pre">--help</span></code>) to update the developer documentation
+<tr class="field-even field"><th class="field-name">build_sphinx:</th><td class="field-body"><p class="first">Rebuild TAU Commander developer documentation (which you are currently reading) in the <code class="docutils literal notranslate"><span class="pre">build/sphinx</span></code> directory.
+Use the <code class="docutils literal notranslate"><span class="pre">--update-gh-pages</span></code> option and associated options (see <code class="docutils literal notranslate"><span class="pre">--help</span></code>) to update the developer documentation
 on Github (<a class="reference external" href="http://paratoolsinc.github.io/taucmdr/">http://paratoolsinc.github.io/taucmdr/</a>).</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">test:</th><td class="field-body"><p class="first">Run all unit tests and pylint.</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">release:</th><td class="field-body"><p class="first">Generate distributable release packages in the <code class="docutils literal"><span class="pre">dist</span></code> directory.
-See the <code class="docutils literal"><span class="pre">--web</span></code> and <code class="docutils literal"><span class="pre">--all</span></code> flags.  You probably want the <code class="docutils literal"><span class="pre">--all</span></code> flag.
+<tr class="field-even field"><th class="field-name">release:</th><td class="field-body"><p class="first">Generate distributable release packages in the <code class="docutils literal notranslate"><span class="pre">dist</span></code> directory.
+See the <code class="docutils literal notranslate"><span class="pre">--web</span></code> and <code class="docutils literal notranslate"><span class="pre">--all</span></code> flags.  You probably want the <code class="docutils literal notranslate"><span class="pre">--all</span></code> flag.
 E.g. for a new version release:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>git tag v1.3.1
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git tag v1.3.1
 make clean
 python setup.py release --all
 </pre></div>
 </div>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">install:</th><td class="field-body"><p class="first last">Install a TAU Commander distribution. End users must <strong>NEVER</strong> use <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>!  TAU Commander needs
-its own, private, un-shared Python installation to avoid environment contamination when profiling a user&#8217;s code.
-For example, if the user&#8217;s Python has a package named &#8220;tau&#8221; installed in it then both TAU Commander and the user&#8217;s
-code will break.  The top-level Makefile will call <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> with appropriate options after
+<tr class="field-odd field"><th class="field-name">install:</th><td class="field-body"><p class="first last">Install a TAU Commander distribution. End users must <strong>NEVER</strong> use <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>!  TAU Commander needs
+its own, private, un-shared Python installation to avoid environment contamination when profiling a user’s code.
+For example, if the user’s Python has a package named “tau” installed in it then both TAU Commander and the user’s
+code will break.  The top-level Makefile will call <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> with appropriate options after
 installing a pristine Python just for TAU Commander. <a class="footnote-reference" href="#id3" id="id1">[2]</a></p>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Use <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">&lt;command&gt;</span> <span class="pre">--help</span></code> to see command line options for each command.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">&lt;command&gt;</span> <span class="pre">--help</span></code> to see command line options for each command.</p>
 <table class="docutils footnote" frame="void" id="id2" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -112,10 +101,10 @@ shared Python installation and cause problems when profiling Python applications
 <table class="docutils footnote" frame="void" id="id3" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[2]</a></td><td>Why not <a class="reference external" href="https://virtualenv.pypa.io">virtualenv</a>?  Because user&#8217;s are untrustworthy and do ... nonstandard ... things to their Python
-installations.  Asserting that TAU Commander has it&#8217;s own, private Python installation simplifies installation and
+<tr><td class="label"><a class="fn-backref" href="#id1">[2]</a></td><td>Why not <a class="reference external" href="https://virtualenv.pypa.io">virtualenv</a>?  Because user’s are untrustworthy and do … nonstandard … things to their Python
+installations.  Asserting that TAU Commander has it’s own, private Python installation simplifies installation and
 increases the chances that the installation will work on the first try.  Also, we might not have network access at
-the user&#8217;s end so we can&#8217;t count on automatic dependency resolution.</td></tr>
+the user’s end so we can’t count on automatic dependency resolution.</td></tr>
 </tbody>
 </table>
 </div>
@@ -136,9 +125,9 @@ the user&#8217;s end so we can&#8217;t count on automatic dependency resolution.
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>

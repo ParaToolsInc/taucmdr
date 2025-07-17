@@ -1,7 +1,0 @@
-taucmdr.cli.commands.tests.test_dashboard module
-================================================
-
-.. automodule:: taucmdr.cli.commands.tests.test_dashboard
-    :members:
-    :undoc-members:
-    :show-inheritance:

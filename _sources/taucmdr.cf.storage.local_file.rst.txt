@@ -1,0 +1,7 @@
+taucmdr.cf.storage.local\_file module
+=====================================
+
+.. automodule:: taucmdr.cf.storage.local_file
+    :members:
+    :undoc-members:
+    :show-inheritance:

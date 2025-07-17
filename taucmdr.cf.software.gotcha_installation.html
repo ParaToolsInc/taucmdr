@@ -1,0 +1,106 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>taucmdr.cf.software.gotcha_installation module &#8212; TAU Commander Developer Documentation</title>
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="taucmdr.cf.software.installation module" href="taucmdr.cf.software.installation.html" />
+    <link rel="prev" title="taucmdr.cf.software.binutils_installation module" href="taucmdr.cf.software.binutils_installation.html" /> 
+  </head><body>
+      <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
+          <span>TAU Commander Developer Documentation</span></a></h1>
+        <h2 class="heading"><span>taucmdr.cf.software.gotcha_installation module</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.software.binutils_installation.html">taucmdr.cf.software.binutils_installation module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.software.installation.html">taucmdr.cf.software.installation module</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="module-taucmdr.cf.software.gotcha_installation">
+<span id="taucmdr-cf-software-gotcha-installation-module"></span><h1>taucmdr.cf.software.gotcha_installation module<a class="headerlink" href="#module-taucmdr.cf.software.gotcha_installation" title="Permalink to this headline">¶</a></h1>
+<p>GOTCHA software installation management.</p>
+<p>GOTCHA is required for Score-P 9.0 and later.</p>
+<dl class="class">
+<dt id="taucmdr.cf.software.gotcha_installation.GotchaInstallation">
+<em class="property">class </em><code class="descclassname">taucmdr.cf.software.gotcha_installation.</code><code class="descname">GotchaInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/gotcha_installation.html#GotchaInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.gotcha_installation.GotchaInstallation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.CMakeInstallation" title="taucmdr.cf.software.installation.CMakeInstallation"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.cf.software.installation.CMakeInstallation</span></code></a></p>
+<p>Encapsulates a GOTCHA installation.</p>
+<dl class="method">
+<dt id="taucmdr.cf.software.gotcha_installation.GotchaInstallation.cmake">
+<code class="descname">cmake</code><span class="sig-paren">(</span><em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/gotcha_installation.html#GotchaInstallation.cmake"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.gotcha_installation.GotchaInstallation.cmake" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke <cite>cmake</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flags</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Command line flags to pass to <cite>cmake</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SoftwarePackageError</span></code> – Configuration failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="taucmdr.cf.software.gotcha_installation.GotchaInstallation.make">
+<code class="descname">make</code><span class="sig-paren">(</span><em>flags</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/gotcha_installation.html#GotchaInstallation.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.gotcha_installation.GotchaInstallation.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invoke <cite>make</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>flags</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Command line flags to pass to <cite>make</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SoftwarePackageError</span></code> – Compilation failed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="taucmdr.cf.software.binutils_installation.html">taucmdr.cf.software.binutils_installation module</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="taucmdr.cf.software.installation.html">taucmdr.cf.software.installation module</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
+    </div>
+  </body>
+</html>

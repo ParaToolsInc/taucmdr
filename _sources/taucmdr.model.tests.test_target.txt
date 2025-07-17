@@ -1,7 +1,0 @@
-taucmdr.model.tests.test_target module
-======================================
-
-.. automodule:: taucmdr.model.tests.test_target
-    :members:
-    :undoc-members:
-    :show-inheritance:

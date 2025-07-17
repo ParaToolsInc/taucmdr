@@ -1,0 +1,7 @@
+taucmdr.mvc.tests.test\_controller module
+=========================================
+
+.. automodule:: taucmdr.mvc.tests.test_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:

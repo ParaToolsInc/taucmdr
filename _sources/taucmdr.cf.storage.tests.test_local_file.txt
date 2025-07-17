@@ -1,7 +1,0 @@
-taucmdr.cf.storage.tests.test_local_file module
-===============================================
-
-.. automodule:: taucmdr.cf.storage.tests.test_local_file
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,35 +1,23 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>taucmdr.cf.platforms &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>taucmdr.cf.platforms &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="taucmdr" href="../../taucmdr.html" /> 
-  </head>
-  <body role="document">
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>taucmdr.cf.platforms</span></h2>
@@ -136,8 +124,8 @@
             <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_cpuinfo</span>
 
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Architecture.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="Architecture.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.Architecture.detect">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Detect the processor architecture we are currently executing on.</span>
 
 <span class="sd">        Mostly relies on Python&#39;s platform module but may also probe</span>
@@ -200,8 +188,8 @@
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="OperatingSystem.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.OperatingSystem.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="OperatingSystem.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.OperatingSystem.detect">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Detect the operating system we are currently running on.</span>
 
 <span class="sd">        Mostly relies on Python&#39;s platform module but may also probe</span>
@@ -257,8 +245,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">operating_system</span> <span class="o">=</span> <span class="n">arch_os</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preferred_families</span> <span class="o">=</span> <span class="n">preferred_families</span>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="TauMagic.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.TauMagic.detect">[docs]</a>    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="TauMagic.detect"><a class="viewcode-back" href="../../../taucmdr.cf.platforms.html#taucmdr.cf.platforms.TauMagic.detect">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Detect TAU magic for the target we are currently executing on.</span>
 
 <span class="sd">        Mostly relies on Python&#39;s platform module but may also probe</span>
@@ -389,9 +377,9 @@
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>

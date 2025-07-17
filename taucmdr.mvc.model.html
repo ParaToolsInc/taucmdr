@@ -1,37 +1,25 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>taucmdr.mvc.model module &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>taucmdr.mvc.model module &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="taucmdr.mvc package" href="taucmdr.mvc.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="taucmdr.tests package" href="taucmdr.tests.html" />
     <link rel="prev" title="taucmdr.mvc.controller module" href="taucmdr.mvc.controller.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>taucmdr.mvc.model module</span></h2>
@@ -50,47 +38,82 @@
       <div class="content">
         
         
-  <div class="section" id="taucmdr-mvc-model-module">
-<h1>taucmdr.mvc.model module<a class="headerlink" href="#taucmdr-mvc-model-module" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-taucmdr.mvc.model"></span><p>TODO: FIXME: Docs</p>
+  <div class="section" id="module-taucmdr.mvc.model">
+<span id="taucmdr-mvc-model-module"></span><h1>taucmdr.mvc.model module<a class="headerlink" href="#module-taucmdr.mvc.model" title="Permalink to this headline">¶</a></h1>
+<p>TODO: FIXME: Docs</p>
 <dl class="class">
 <dt id="taucmdr.mvc.model.Model">
 <em class="property">class </em><code class="descclassname">taucmdr.mvc.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.StorageRecord" title="taucmdr.cf.storage.StorageRecord"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.storage.StorageRecord</span></code></a></p>
-<p>The &#8220;M&#8221; in <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">MVC</a>.</p>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.storage.html#taucmdr.cf.storage.StorageRecord" title="taucmdr.cf.storage.StorageRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.cf.storage.StorageRecord</span></code></a></p>
+<p>The “M” in <a class="reference external" href="https://en.wikipedia.org/wiki/Model-view-controller">MVC</a>.</p>
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.Model.name">
 <code class="descname">name</code><a class="headerlink" href="#taucmdr.mvc.model.Model.name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Name of the model.</p>
+<dd><p>Name of the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.Model.associations">
 <code class="descname">associations</code><a class="headerlink" href="#taucmdr.mvc.model.Model.associations" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em></p>
-<p>(Controller, str) tuples keyed by attribute name defining attribute associations.</p>
+<dd><p>(Controller, str) tuples keyed by attribute name defining attribute associations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.Model.references">
 <code class="descname">references</code><a class="headerlink" href="#taucmdr.mvc.model.Model.references" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>set</em></p>
-<p>(Controller, str) tuples listing foreign models referencing this model.</p>
+<dd><p>(Controller, str) tuples listing foreign models referencing this model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)">set</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.Model.attributes">
 <code class="descname">attributes</code><a class="headerlink" href="#taucmdr.mvc.model.Model.attributes" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em></p>
-<p>Model attributes.</p>
+<dd><p>Model attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.Model.key_attribute">
 <code class="descname">key_attribute</code><a class="headerlink" href="#taucmdr.mvc.model.Model.key_attribute" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Name of an attribute that serves as a unique identifier.</p>
+<dd><p>Name of an attribute that serves as a unique identifier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -98,91 +121,95 @@
 <code class="descname">associations</code><em class="property"> = {}</em></dt>
 <dd></dd></dl>
 
+<dl class="attribute">
+<dt>
+<code class="descname">attributes</code><em class="property"> = {}</em></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="taucmdr.mvc.model.Model.check_compatibility">
 <code class="descname">check_compatibility</code><span class="sig-paren">(</span><em>rhs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.check_compatibility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.check_compatibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Test this record for compatibility with another record.</p>
 <p>Operations combining data from multiple records must know that the records are mutually
-compatible.  This routine checks the &#8216;compat&#8217; property of each attribute (if set) to enforce
-compatibility.  &#8216;compat&#8217; is a dictionary where the keys are values or callables and the
-values are tuples of compatibility conditions.  If the attribute with the &#8216;compat&#8217; property
-is one of the key values then the conditions are checked.  The general form of &#8216;compat&#8217; is:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>{
-(value|callable): (condition, [condition, ...]),
-[(value|callable): (condition, [condition, ...]), ...]
-}
+compatible.  This routine checks the ‘compat’ property of each attribute (if set) to enforce
+compatibility.  ‘compat’ is a dictionary where the keys are values or callables and the
+values are tuples of compatibility conditions.  If the attribute with the ‘compat’ property
+is one of the key values then the conditions are checked.  The general form of ‘compat’ is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="p">(</span><span class="n">value</span><span class="o">|</span><span class="n">callable</span><span class="p">):</span> <span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="p">[</span><span class="n">condition</span><span class="p">,</span> <span class="o">...</span><span class="p">]),</span>
+<span class="p">[(</span><span class="n">value</span><span class="o">|</span><span class="n">callable</span><span class="p">):</span> <span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="p">[</span><span class="n">condition</span><span class="p">,</span> <span class="o">...</span><span class="p">]),</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>Use tuples to join multiple conditions.  If only one condition is needed then you do
 not need to use a tuple.</p>
-<p>&#8216;value&#8217; may either be a literal value (e.g. True or &#8220;oranges&#8221;) or a callable accepting
-one argument and returning either True or False.  The attribute&#8217;s value is passed to the
-callable to determine if the listed conditions should be checked.  If &#8216;value&#8217; is a literal
-then the listed conditions are checked when the attribute&#8217;s value matches &#8216;value&#8217;.</p>
-<p>See <a class="reference internal" href="#taucmdr.mvc.model.Model.require" title="taucmdr.mvc.model.Model.require"><code class="xref any py py-meth docutils literal"><span class="pre">require</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.encourage" title="taucmdr.mvc.model.Model.encourage"><code class="xref any py py-meth docutils literal"><span class="pre">encourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.discourage" title="taucmdr.mvc.model.Model.discourage"><code class="xref any py py-meth docutils literal"><span class="pre">discourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.exclude" title="taucmdr.mvc.model.Model.exclude"><code class="xref any py py-meth docutils literal"><span class="pre">exclude</span></code></a> for common conditions.</p>
+<p>‘value’ may either be a literal value (e.g. True or “oranges”) or a callable accepting
+one argument and returning either True or False.  The attribute’s value is passed to the
+callable to determine if the listed conditions should be checked.  If ‘value’ is a literal
+then the listed conditions are checked when the attribute’s value matches ‘value’.</p>
+<p>See <a class="reference internal" href="#taucmdr.mvc.model.Model.require" title="taucmdr.mvc.model.Model.require"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">require</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.encourage" title="taucmdr.mvc.model.Model.encourage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">encourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.discourage" title="taucmdr.mvc.model.Model.discourage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">discourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.exclude" title="taucmdr.mvc.model.Model.exclude"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">exclude</span></code></a> for common conditions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rhs</strong> (<a class="reference internal" href="#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><em>Model</em></a>) &#8211; Check compatibility with this data record.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rhs</strong> (<a class="reference internal" href="#taucmdr.mvc.model.Model" title="taucmdr.mvc.model.Model"><em>Model</em></a>) – Check compatibility with this data record.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code> &#8211;
-The two records are not compatible.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IncompatibleRecordError</span></code> – The two records are not compatible.</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <p>Suppose we have this data:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>Programmer.attributes = {
-    &#39;hungry&#39;: {
-        &#39;type&#39;: &#39;boolean&#39;,
-        &#39;compat&#39;: {True: (CheeseShop.require(&#39;have_cheese&#39;, True),
-                          CheeseShop.encourage(&#39;chedder&#39;, &#39;Wisconsin&#39;),
-                          ProgramManager.discourage(&#39;holding_long_meeting&#39;, True),
-                          Roommate.exclude(&#39;steals_food&#39;, True)}
-    }
-}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Programmer</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;hungry&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;compat&#39;</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="p">(</span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                          <span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;chedder&#39;</span><span class="p">,</span> <span class="s1">&#39;Wisconsin&#39;</span><span class="p">),</span>
+                          <span class="n">ProgramManager</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;holding_long_meeting&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                          <span class="n">Roommate</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;steals_food&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 
-bob = Programmer({&#39;hungry&#39;: True})
-world_o_cheese = CheeseShop({&#39;have_cheese&#39;: False, &#39;chedder&#39;: &#39;Wisconsin&#39;})
-cheese_wizzard = CheeseShop({&#39;have_cheese&#39;: True, &#39;chedder&#39;: &#39;California&#39;})
-louis = ProgramManager({&#39;holding_long_meeting&#39;: True})
-keith = Roommate({&#39;steals_food&#39;: True})
+<span class="n">bob</span> <span class="o">=</span> <span class="n">Programmer</span><span class="p">({</span><span class="s1">&#39;hungry&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">world_o_cheese</span> <span class="o">=</span> <span class="n">CheeseShop</span><span class="p">({</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;chedder&#39;</span><span class="p">:</span> <span class="s1">&#39;Wisconsin&#39;</span><span class="p">})</span>
+<span class="n">cheese_wizzard</span> <span class="o">=</span> <span class="n">CheeseShop</span><span class="p">({</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;chedder&#39;</span><span class="p">:</span> <span class="s1">&#39;California&#39;</span><span class="p">})</span>
+<span class="n">louis</span> <span class="o">=</span> <span class="n">ProgramManager</span><span class="p">({</span><span class="s1">&#39;holding_long_meeting&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">keith</span> <span class="o">=</span> <span class="n">Roommate</span><span class="p">({</span><span class="s1">&#39;steals_food&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>These expressions raise <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c1"># Because have_cheese == False</span>
+<p>These expressions raise <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">IncompatibleRecordError</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">world_o_cheese</span><span class="p">)</span>   <span class="c1"># Because have_cheese == False</span>
 <span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">keith</span><span class="p">)</span>            <span class="c1"># Because steals_food == True</span>
 </pre></div>
 </div>
 <p>These expressions generate warning messages:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">cheese_wizzard</span><span class="p">)</span>   <span class="c1"># Because chedder != Wisconsin</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">cheese_wizzard</span><span class="p">)</span>   <span class="c1"># Because chedder != Wisconsin</span>
 <span class="n">bob</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">(</span><span class="n">louis</span><span class="p">)</span>            <span class="c1"># Because holding_long_meeting == True</span>
 </pre></div>
 </div>
-<p>If <code class="docutils literal"><span class="pre">bob['hungry']</span> <span class="pre">==</span> <span class="pre">False</span></code> or if the &#8216;hungry&#8217; attribute were not set then all
+<p>If <code class="docutils literal notranslate"><span class="pre">bob['hungry']</span> <span class="pre">==</span> <span class="pre">False</span></code> or if the ‘hungry’ attribute were not set then all
 the above expressions do nothing.</p>
 </dd></dl>
 
 <dl class="classmethod">
 <dt id="taucmdr.mvc.model.Model.construct_condition">
 <em class="property">classmethod </em><code class="descname">construct_condition</code><span class="sig-paren">(</span><em>args</em>, <em>attr_defined=None</em>, <em>attr_undefined=None</em>, <em>attr_eq=None</em>, <em>attr_ne=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.construct_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.construct_condition" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs a compatibility condition, see <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a>.</p>
+<dd><p>Constructs a compatibility condition, see <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">check_compatibility</span></code></a>.</p>
 <dl class="docutils">
 <dt>The returned condition is a callable that accepts four arguments:</dt>
 <dd><ul class="first last simple">
 <li>lhs (Model): The left-hand side of the <cite>check_compatibility</cite> operation.</li>
-<li>lhs_attr (str): Name of the attribute that defines the &#8216;compat&#8217; property.</li>
-<li>lhs_value: The value of the attribute that defines the &#8216;compat&#8217; property.</li>
+<li>lhs_attr (str): Name of the attribute that defines the ‘compat’ property.</li>
+<li>lhs_value: The value of the attribute that defines the ‘compat’ property.</li>
 <li>rhs (Model): Controller of the data record we are checking against.</li>
 </ul>
 </dd>
 </dl>
-<p>The <cite>condition</cite> callable raises a <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a> if the compared attributes
-are fatally incompatibile, i.e. the user&#8217;s operation is guaranteed to fail with the chosen
+<p>The <cite>condition</cite> callable raises a <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">IncompatibleRecordError</span></code></a> if the compared attributes
+are fatally incompatibile, i.e. the user’s operation is guaranteed to fail with the chosen
 records. It may emit log messages to indicate that the records are not perfectly compatible
-but that the user&#8217;s operation is still likely to succeed with the chosen records.</p>
-<p>See <a class="reference internal" href="#taucmdr.mvc.model.Model.require" title="taucmdr.mvc.model.Model.require"><code class="xref any py py-meth docutils literal"><span class="pre">require</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.encourage" title="taucmdr.mvc.model.Model.encourage"><code class="xref any py py-meth docutils literal"><span class="pre">encourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.discourage" title="taucmdr.mvc.model.Model.discourage"><code class="xref any py py-meth docutils literal"><span class="pre">discourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.exclude" title="taucmdr.mvc.model.Model.exclude"><code class="xref any py py-meth docutils literal"><span class="pre">exclude</span></code></a> for common conditions.</p>
+but that the user’s operation is still likely to succeed with the chosen records.</p>
+<p>See <a class="reference internal" href="#taucmdr.mvc.model.Model.require" title="taucmdr.mvc.model.Model.require"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">require</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.encourage" title="taucmdr.mvc.model.Model.encourage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">encourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.discourage" title="taucmdr.mvc.model.Model.discourage"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">discourage</span></code></a>, <a class="reference internal" href="#taucmdr.mvc.model.Model.exclude" title="taucmdr.mvc.model.Model.exclude"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">exclude</span></code></a> for common conditions.</p>
 <p>args[0] specifies a model attribute to check.  If args[1] is given, it is a value to compare
 the specified attribute against or a callback function.  If args[1] is callable, it must check attribute
 existence and value correctness and throw the appropriate exception and/or emit log messages.</p>
@@ -191,15 +218,15 @@ existence and value correctness and throw the appropriate exception and/or emit 
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>args</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a>) &#8211; Attribute name in args[0] and, optionally, attribute value in args[1].</li>
-<li><strong>attr_defined</strong> &#8211; Callback function to be invoked when the attribute is defined.</li>
-<li><strong>attr_undefined</strong> &#8211; Callback function to be invoked when the attribute is undefined.</li>
-<li><strong>attr_eq</strong> &#8211; Callback function to be invoked when the attribute is equal to args[1].</li>
-<li><strong>attr_ne</strong> &#8211; Callback function to be invoked when the attribute is not equal to args[1].</li>
+<li><strong>args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – Attribute name in args[0] and, optionally, attribute value in args[1].</li>
+<li><strong>attr_defined</strong> – Callback function to be invoked when the attribute is defined.</li>
+<li><strong>attr_undefined</strong> – Callback function to be invoked when the attribute is undefined.</li>
+<li><strong>attr_eq</strong> – Callback function to be invoked when the attribute is equal to args[1].</li>
+<li><strong>attr_ne</strong> – Callback function to be invoked when the attribute is not equal to args[1].</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">check_compatibility</span></code></a>.</p>
 </td>
 </tr>
 </tbody>
@@ -221,23 +248,23 @@ defined or equal to the specified value (if given).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> – Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<p>&#8216;have_cheese&#8217; should not be True:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<p>‘have_cheese’ should not be True:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>&#8216;have_cheese&#8217; should not be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
+<p>‘have_cheese’ should not be set to any value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<p>The value of ‘have_cheese’ will be checked for correctness by ‘cheese_callback’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">discourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -252,23 +279,23 @@ undefined or not equal to the specified value (if given).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> – Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<p>&#8216;have_cheese&#8217; should be True:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<p>‘have_cheese’ should be True:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>&#8216;have_cheese&#8217; should be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
+<p>‘have_cheese’ should be set to any value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<p>The value of ‘have_cheese’ will be checked for correctness by ‘cheese_callback’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">encourage</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -277,29 +304,29 @@ undefined or not equal to the specified value (if given).</p>
 <dt id="taucmdr.mvc.model.Model.exclude">
 <em class="property">classmethod </em><code class="descname">exclude</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.exclude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.exclude" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to enforce required conditions.</p>
-<p>The condition will raise a <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a> if the specified attribute is
+<p>The condition will raise a <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">IncompatibleRecordError</span></code></a> if the specified attribute is
 defined or equal to the specified value (if given).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> – Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<p>&#8216;yellow_cheese&#8217; must not be &#8216;American&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;yellow_cheese&#39;</span><span class="p">,</span> <span class="s1">&#39;American&#39;</span><span class="p">)</span>
+<p>‘yellow_cheese’ must not be ‘American’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;yellow_cheese&#39;</span><span class="p">,</span> <span class="s1">&#39;American&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>&#8216;blue_cheese&#8217; must not be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;blue_cheese&#39;</span><span class="p">)</span>
+<p>‘blue_cheese’ must not be set to any value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;blue_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<p>The value of ‘have_cheese’ will be checked for correctness by ‘cheese_callback’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -312,21 +339,26 @@ defined or equal to the specified value (if given).</p>
 <dl class="method">
 <dt id="taucmdr.mvc.model.Model.get_or_default">
 <code class="descname">get_or_default</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.get_or_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.get_or_default" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the attribute&#8217;s value or default value.</p>
+<dd><p>Returns the attribute’s value or default value.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Attribute name.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Attribute name.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If the attribute is set then the attribute&#8217;s value is returned.
-If the attribute is not set then the attribute&#8217;s default value is returned.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If the attribute is set then the attribute’s value is returned.
+If the attribute is not set then the attribute’s default value is returned.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">If the attribute is not set and has no default value then a KeyError is raised.</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">key_attribute</code><em class="property"> = None</em></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt>
@@ -354,7 +386,7 @@ If the attribute is not set then the attribute&#8217;s default value is returned
 <dl class="method">
 <dt id="taucmdr.mvc.model.Model.populate">
 <code class="descname">populate</code><span class="sig-paren">(</span><em>attribute=None</em>, <em>defaults=False</em>, <em>context=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.populate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.populate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shorthand for <code class="docutils literal"><span class="pre">self.controller(self.storage).populate(self,</span> <span class="pre">attribute,</span> <span class="pre">defaults)</span></code>.</p>
+<dd><p>Shorthand for <code class="docutils literal notranslate"><span class="pre">self.controller(self.storage).populate(self,</span> <span class="pre">attribute,</span> <span class="pre">defaults)</span></code>.</p>
 <p>Result is cached in the object instance when possible so this should be faster
 than populating directly from the controller.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -362,8 +394,8 @@ than populating directly from the controller.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>attribute</strong> (<em>Optional[str]</em>) &#8211; If given, return only the populated attribute.</li>
-<li><strong>defaults</strong> (<em>Optional[bool]</em>) &#8211; If given, set undefined attributes to their default values.</li>
+<li><strong>attribute</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – If given, return only the populated attribute.</li>
+<li><strong>defaults</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>]</em>) – If given, set undefined attributes to their default values.</li>
 </ul>
 </td>
 </tr>
@@ -371,8 +403,7 @@ than populating directly from the controller.</p>
 If attribute is not None, the value of the populated attribute.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/exceptions.html#KeyError" title="(in Python v3.10)"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code></a> &#8211;
-<cite>attribute</cite> is undefined in the record.</p>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.13)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code></a> – <cite>attribute</cite> is undefined in the record.</p>
 </td>
 </tr>
 </tbody>
@@ -381,36 +412,36 @@ If attribute is not None, the value of the populated attribute.</p>
 
 <dl class="attribute">
 <dt>
-<code class="descname">references</code><em class="property"> = set()</em></dt>
+<code class="descname">references</code><em class="property"> = {}</em></dt>
 <dd></dd></dl>
 
 <dl class="classmethod">
 <dt id="taucmdr.mvc.model.Model.require">
 <em class="property">classmethod </em><code class="descname">require</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/mvc/model.html#Model.require"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.Model.require" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a compatibility condition to enforce required conditions.</p>
-<p>The condition will raise a <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal"><span class="pre">IncompatibleRecordError</span></code></a> if the specified attribute is
+<p>The condition will raise a <a class="reference internal" href="taucmdr.error.html#taucmdr.error.IncompatibleRecordError" title="taucmdr.error.IncompatibleRecordError"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">IncompatibleRecordError</span></code></a> if the specified attribute is
 undefined or not equal to the specified value (if given).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> &#8211; Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal"><span class="pre">construct_condition</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> – Corresponds to <cite>args</cite> in <a class="reference internal" href="#taucmdr.mvc.model.Model.construct_condition" title="taucmdr.mvc.model.Model.construct_condition"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">construct_condition</span></code></a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal"><span class="pre">check_compatibility</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Callable condition object for use with <a class="reference internal" href="#taucmdr.mvc.model.Model.check_compatibility" title="taucmdr.mvc.model.Model.check_compatibility"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">check_compatibility</span></code></a></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<p>&#8216;have_cheese&#8217; must be True:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<p>‘have_cheese’ must be True:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>&#8216;have_cheese&#8217; must be set to any value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
+<p>‘have_cheese’ must be set to any value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The value of &#8216;have_cheese&#8217; will be checked for correctness by &#8216;cheese_callback&#8217;:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
+<p>The value of ‘have_cheese’ will be checked for correctness by ‘cheese_callback’:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CheeseShop</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s1">&#39;have_cheese&#39;</span><span class="p">,</span> <span class="n">cheese_callback</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -423,14 +454,13 @@ undefined or not equal to the specified value (if given).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) &#8211; Data to validate, may be None.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Data to validate, may be None.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Validated data or None if <cite>data</cite> is None.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ModelError</span></code> &#8211;
-The given data doesn&#8217;t fit the model.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ModelError</span></code> – The given data doesn’t fit the model.</td>
 </tr>
 </tbody>
 </table>
@@ -441,7 +471,7 @@ The given data doesn&#8217;t fit the model.</td>
 <dl class="class">
 <dt id="taucmdr.mvc.model.ModelMeta">
 <em class="property">class </em><code class="descclassname">taucmdr.mvc.model.</code><code class="descname">ModelMeta</code><a class="reference internal" href="_modules/taucmdr/mvc/model.html#ModelMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.mvc.model.ModelMeta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.10)"><code class="xref py py-class docutils literal"><span class="pre">type</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></p>
 <p>Constructs model attributes, configures defaults, and establishes relationships.</p>
 <dl class="attribute">
 <dt id="taucmdr.mvc.model.ModelMeta.attributes">
@@ -472,9 +502,9 @@ The given data doesn&#8217;t fit the model.</td>
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>

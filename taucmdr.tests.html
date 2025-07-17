@@ -1,37 +1,25 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>taucmdr.tests package &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>taucmdr.tests package &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="taucmdr package" href="taucmdr.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="taucmdr.tests.test_error module" href="taucmdr.tests.test_error.html" />
     <link rel="prev" title="taucmdr.mvc.model module" href="taucmdr.mvc.model.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>taucmdr.tests package</span></h2>
@@ -69,9 +57,9 @@
 <dl class="class">
 <dt id="taucmdr.tests.TestCase">
 <em class="property">class </em><code class="descclassname">taucmdr.tests.</code><code class="descname">TestCase</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.case.TestCase</span></code></p>
 <p>Base class for unit tests.</p>
-<p>Performs tests in a temporary directory and reconfigures <a class="reference internal" href="taucmdr.logger.html"><em>taucmdr.logger module</em></a> to work with <a class="reference external" href="https://docs.python.org/library/unittest.html#module-unittest" title="(in Python v3.10)"><code class="xref any docutils literal"><span class="pre">unittest</span></code></a>.</p>
+<p>Performs tests in a temporary directory and reconfigures <a class="reference internal" href="taucmdr.logger.html"><span class="doc">taucmdr.logger module</span></a> to work with <a class="reference external" href="https://docs.python.org/3/library/unittest.html#module-unittest" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">unittest</span></code></a>.</p>
 <dl class="method">
 <dt id="taucmdr.tests.TestCase.assertCommandReturnValue">
 <code class="descname">assertCommandReturnValue</code><span class="sig-paren">(</span><em>return_value</em>, <em>cmd</em>, <em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.assertCommandReturnValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.assertCommandReturnValue" title="Permalink to this definition">¶</a></dt>
@@ -107,7 +95,7 @@
 <code class="descname">destroy_project_storage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.destroy_project_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.destroy_project_storage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete project storage.</p>
 <p>Effectively the same as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; rm -rf .tau
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">.</span><span class="n">tau</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -115,21 +103,21 @@
 <dl class="method">
 <dt id="taucmdr.tests.TestCase.exec_command">
 <code class="descname">exec_command</code><span class="sig-paren">(</span><em>cmd</em>, <em>argv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.exec_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.exec_command" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute a tau command&#8217;s main() routine and return the exit code, stdout, and stderr data.</p>
+<dd><p>Execute a tau command’s main() routine and return the exit code, stdout, and stderr data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a>) &#8211; A command instance that has a <cite>main</cite> callable attribute.</li>
-<li><strong>argv</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Arguments to pass to cmd.main()</li>
+<li><strong>cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><em>type</em></a>) – A command instance that has a <cite>main</cite> callable attribute.</li>
+<li><strong>argv</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Arguments to pass to cmd.main()</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(retval, stdout, stderr) results of running the command.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
 </td>
 </tr>
 </tbody>
@@ -146,15 +134,15 @@
 <code class="descname">reset_project_storage</code><span class="sig-paren">(</span><em>init_args=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.reset_project_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.reset_project_storage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete and recreate project storage.</p>
 <p>Effectively the same as:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; rm -rf .tau
-&gt; tau initialize [init_args]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">.</span><span class="n">tau</span>
+<span class="o">&gt;</span> <span class="n">tau</span> <span class="n">initialize</span> <span class="p">[</span><span class="n">init_args</span><span class="p">]</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>init_args</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Command line arguments to <cite>tau initialize</cite>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>init_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Command line arguments to <cite>tau initialize</cite>.</td>
 </tr>
 </tbody>
 </table>
@@ -167,35 +155,40 @@
 
 <dl class="method">
 <dt id="taucmdr.tests.TestCase.setUp">
-<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.setUp" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">setUp</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="taucmdr.tests.TestCase.setUpClass">
 <em class="property">classmethod </em><code class="descname">setUpClass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.setUpClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.setUpClass" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Hook method for setting up class fixture before running tests in the class.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="taucmdr.tests.TestCase.tearDown">
-<code class="descname">tearDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.tearDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.tearDown" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">tearDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.tearDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
 
 <dl class="classmethod">
 <dt id="taucmdr.tests.TestCase.tearDownClass">
 <em class="property">classmethod </em><code class="descname">tearDownClass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestCase.tearDownClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestCase.tearDownClass" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Hook method for deconstructing the class fixture after running all tests in the class.</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="taucmdr.tests.TestRunner">
 <em class="property">class </em><code class="descclassname">taucmdr.tests.</code><code class="descname">TestRunner</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestRunner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestRunner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.runner.TextTestRunner</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.runner.TextTestRunner</span></code></p>
 <p>Test suite runner.</p>
 <dl class="method">
 <dt id="taucmdr.tests.TestRunner.run">
 <code class="descname">run</code><span class="sig-paren">(</span><em>test</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#TestRunner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.TestRunner.run" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Run the given test case or test suite.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -208,7 +201,7 @@
 <dl class="function">
 <dt id="taucmdr.tests.get_test_workdir">
 <code class="descclassname">taucmdr.tests.</code><code class="descname">get_test_workdir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#get_test_workdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.get_test_workdir" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the current unit test&#8217;s working directory.</p>
+<dd><p>Return the current unit test’s working directory.</p>
 </dd></dl>
 
 <dl class="function">
@@ -221,15 +214,15 @@
 <dt id="taucmdr.tests.pop_test_workdir">
 <code class="descclassname">taucmdr.tests.</code><code class="descname">pop_test_workdir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#pop_test_workdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.pop_test_workdir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively deletes the most recently created unit test working directory.</p>
-<p>Restores the current working directory and <a class="reference external" href="https://docs.python.org/library/tempfile.html#tempfile.tempdir" title="(in Python v3.10)"><code class="xref any docutils literal"><span class="pre">tempfile.tempdir</span></code></a> to their values before
-<a class="reference internal" href="#taucmdr.tests.push_test_workdir" title="taucmdr.tests.push_test_workdir"><code class="xref any py py-func docutils literal"><span class="pre">push_test_workdir</span></code></a> was called.</p>
+<p>Restores the current working directory and <a class="reference external" href="https://docs.python.org/3/library/tempfile.html#tempfile.tempdir" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">tempfile.tempdir</span></code></a> to their values before
+<a class="reference internal" href="#taucmdr.tests.push_test_workdir" title="taucmdr.tests.push_test_workdir"><code class="xref any py py-func docutils literal notranslate"><span class="pre">push_test_workdir</span></code></a> was called.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="taucmdr.tests.push_test_workdir">
 <code class="descclassname">taucmdr.tests.</code><code class="descname">push_test_workdir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#push_test_workdir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.push_test_workdir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new working directory for a unit test.</p>
-<p>Sets the current working directory and <a class="reference external" href="https://docs.python.org/library/tempfile.html#tempfile.tempdir" title="(in Python v3.10)"><code class="xref any docutils literal"><span class="pre">tempfile.tempdir</span></code></a> to the newly created test directory.</p>
+<p>Sets the current working directory and <a class="reference external" href="https://docs.python.org/3/library/tempfile.html#tempfile.tempdir" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">tempfile.tempdir</span></code></a> to the newly created test directory.</p>
 <p>Directories created via this method are tracked.  If any of them exist when the program exits then
 an error message is shown for each.</p>
 </dd></dl>
@@ -238,12 +231,12 @@ an error message is shown for each.</p>
 <dt id="taucmdr.tests.skipUnlessHaveCompiler">
 <code class="descclassname">taucmdr.tests.</code><code class="descname">skipUnlessHaveCompiler</code><span class="sig-paren">(</span><em>role</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/tests.html#skipUnlessHaveCompiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.tests.skipUnlessHaveCompiler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to skip test functions when no compiler fills the given role.</p>
-<p>If no installed compiler can fill this role then skip the test and report &#8220;&lt;role&gt; compiler not found&#8221;.</p>
+<p>If no installed compiler can fill this role then skip the test and report “&lt;role&gt; compiler not found”.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>role</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerRole" title="taucmdr.cf.compiler._CompilerRole"><em>_CompilerRole</em></a>) &#8211; A compiler role.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>role</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerRole" title="taucmdr.cf.compiler._CompilerRole"><em>_CompilerRole</em></a>) – A compiler role.</td>
 </tr>
 </tbody>
 </table>
@@ -267,9 +260,9 @@ an error message is shown for each.</p>
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>

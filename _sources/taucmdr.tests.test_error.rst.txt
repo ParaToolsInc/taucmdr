@@ -1,0 +1,7 @@
+taucmdr.tests.test\_error module
+================================
+
+.. automodule:: taucmdr.tests.test_error
+    :members:
+    :undoc-members:
+    :show-inheritance:

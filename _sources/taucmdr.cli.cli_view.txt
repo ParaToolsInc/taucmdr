@@ -1,7 +1,0 @@
-taucmdr.cli.cli_view module
-===========================
-
-.. automodule:: taucmdr.cli.cli_view
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,0 +1,7 @@
+taucmdr.cli.commands.\_\_main\_\_ module
+========================================
+
+.. automodule:: taucmdr.cli.commands.__main__
+    :members:
+    :undoc-members:
+    :show-inheritance:

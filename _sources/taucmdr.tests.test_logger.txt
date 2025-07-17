@@ -1,7 +1,0 @@
-taucmdr.tests.test_logger module
-================================
-
-.. automodule:: taucmdr.tests.test_logger
-    :members:
-    :undoc-members:
-    :show-inheritance:

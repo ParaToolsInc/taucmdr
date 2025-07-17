@@ -1,35 +1,23 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>taucmdr.cf.compiler &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>taucmdr.cf.compiler &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="../../../_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="../../../index.html" />
-    <link rel="up" title="taucmdr" href="../../taucmdr.html" /> 
-  </head>
-  <body role="document">
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="../../../_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="../../../index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>taucmdr.cf.compiler</span></h2>
@@ -151,22 +139,22 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;Knowledgebase(</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyword</span>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.all_roles"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.all_roles">[docs]</a>    <span class="k">def</span> <span class="nf">all_roles</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.all_roles"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.all_roles">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">all_roles</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return all known compiler roles.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.find_role"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.find_role">[docs]</a>    <span class="k">def</span> <span class="nf">find_role</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.find_role"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.find_role">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">find_role</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">keyword</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find a compiler role with the given keyword.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_CompilerRole</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">keyword</span><span class="p">)</span></div>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.all_compilers"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.all_compilers">[docs]</a>    <span class="k">def</span> <span class="nf">all_compilers</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.all_compilers"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.all_compilers">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">all_compilers</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="Knowledgebase.find_compiler"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.find_compiler">[docs]</a>    <span class="k">def</span> <span class="nf">find_compiler</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Knowledgebase.find_compiler"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.Knowledgebase.find_compiler">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">find_compiler</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_CompilerInfo</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
@@ -305,8 +293,8 @@
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;_CompilerFamily(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="_CompilerFamily.probe"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerFamily.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="_CompilerFamily.probe"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerFamily.probe">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">absolute_path</span><span class="p">,</span> <span class="n">candidates</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Determine the compiler family of a given command.</span>
 
 <span class="sd">        Executes the command with :any:`version_flags` from all families</span>
@@ -429,8 +417,8 @@
             <span class="k">return</span> <span class="p">[</span><span class="n">info</span> <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">role</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">[]</span>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="_CompilerInfo.find"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerInfo.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="_CompilerInfo.find"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler._CompilerInfo.find">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find _CompilerInfo instances that matches the given command and/or family and/or role.</span>
 
 <span class="sd">        Args:</span>
@@ -663,8 +651,8 @@
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrapper library path: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">library_path</span><span class="p">)</span>
         <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Wrapper libraries: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="InstalledCompiler.probe"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.probe">[docs]</a>    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="InstalledCompiler.probe"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.probe">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Probe the system to discover information about an installed compiler.</span>
 
 <span class="sd">        Args:</span>
@@ -705,8 +693,8 @@
                      <span class="s2">&quot;compiler &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">absolute_path</span><span class="p">]</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg_parts</span><span class="p">))</span></div>
 
-    <span class="nd">@classmethod</span>
-<div class="viewcode-block" id="InstalledCompiler.find_any"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.find_any">[docs]</a>    <span class="k">def</span> <span class="nf">find_any</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+<div class="viewcode-block" id="InstalledCompiler.find_any"><a class="viewcode-back" href="../../../taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler.find_any">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">find_any</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">role</span><span class="o">.</span><span class="n">kbase</span><span class="o">.</span><span class="n">iterfamilies</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">role</span><span class="p">]:</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -928,9 +916,9 @@
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>

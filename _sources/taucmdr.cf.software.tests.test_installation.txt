@@ -1,7 +1,0 @@
-taucmdr.cf.software.tests.test_installation module
-==================================================
-
-.. automodule:: taucmdr.cf.software.tests.test_installation
-    :members:
-    :undoc-members:
-    :show-inheritance:

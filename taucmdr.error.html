@@ -1,37 +1,25 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>taucmdr.error module &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>taucmdr.error module &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="taucmdr package" href="taucmdr.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="taucmdr.logger module" href="taucmdr.logger.html" />
     <link rel="prev" title="taucmdr.tests.test_util module" href="taucmdr.tests.test_util.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>taucmdr.error module</span></h2>
@@ -58,7 +46,7 @@ Error classes should be defined in their appropriate modules.</p>
 <dl class="exception">
 <dt id="taucmdr.error.ConfigurationError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ConfigurationError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ConfigurationError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.Error" title="taucmdr.error.Error"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.Error</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.Error" title="taucmdr.error.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.Error</span></code></a></p>
 <p>Indicates that TAU Commander cannot succeed with the given parameters.</p>
 <p>This is most commonly caused by user error, e.g the user specifies measurement
 settings that are incompatible with the application.</p>
@@ -72,7 +60,7 @@ settings that are incompatible with the application.</p>
 <dl class="exception">
 <dt id="taucmdr.error.Error">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">Error</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.Error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/library/exceptions.html#Exception" title="(in Python v3.10)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 <p>Base class for all errors in TAU Commander.</p>
 <dl class="attribute">
 <dt id="taucmdr.error.Error.value">
@@ -83,22 +71,43 @@ settings that are incompatible with the application.</p>
 <dl class="attribute">
 <dt id="taucmdr.error.Error.hints">
 <code class="descname">hints</code><a class="headerlink" href="#taucmdr.error.Error.hints" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>list</em></p>
-<p>String hints for the user to help resolve the error.</p>
+<dd><p>String hints for the user to help resolve the error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.error.Error.show_backtrace">
 <code class="descname">show_backtrace</code><a class="headerlink" href="#taucmdr.error.Error.show_backtrace" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>bool</em></p>
-<p>Set to True to include a backtrace in the error message.</p>
+<dd><p>Set to True to include a backtrace in the error message.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="taucmdr.error.Error.message_fmt">
 <code class="descname">message_fmt</code><a class="headerlink" href="#taucmdr.error.Error.message_fmt" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em></p>
-<p>Format string for the error message.</p>
+<dd><p>Format string for the error message.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -126,30 +135,30 @@ settings that are incompatible with the application.</p>
 <dl class="exception">
 <dt id="taucmdr.error.ExperimentSelectionError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ExperimentSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ExperimentSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ExperimentSelectionError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
 <p>Indicates an error while selecting an experiment.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="taucmdr.error.ImmutableRecordError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ImmutableRecordError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ImmutableRecordError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ImmutableRecordError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
 <p>Indicates that a data record cannot be modified.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="taucmdr.error.IncompatibleRecordError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">IncompatibleRecordError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#IncompatibleRecordError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.IncompatibleRecordError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
 <p>Indicates that a pair of data records are incompatible.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="taucmdr.error.InternalError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">InternalError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#InternalError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.InternalError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.Error" title="taucmdr.error.Error"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.Error</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.Error" title="taucmdr.error.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.Error</span></code></a></p>
 <p>Indicates that an internal error has occurred, i.e. a bug in TAU.</p>
-<p>These are bad and really shouldn&#8217;t happen.</p>
+<p>These are bad and really shouldn’t happen.</p>
 <dl class="attribute">
 <dt id="taucmdr.error.InternalError.show_backtrace">
 <code class="descname">show_backtrace</code><em class="property"> = True</em><a class="headerlink" href="#taucmdr.error.InternalError.show_backtrace" title="Permalink to this definition">¶</a></dt>
@@ -160,21 +169,21 @@ settings that are incompatible with the application.</p>
 <dl class="exception">
 <dt id="taucmdr.error.ModelError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ModelError</code><span class="sig-paren">(</span><em>model</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ModelError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.InternalError" title="taucmdr.error.InternalError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.InternalError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.InternalError" title="taucmdr.error.InternalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.InternalError</span></code></a></p>
 <p>Indicates an error in model data or the model itself.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="taucmdr.error.ProjectSelectionError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">ProjectSelectionError</code><span class="sig-paren">(</span><em>value</em>, <em>*hints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#ProjectSelectionError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.ProjectSelectionError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ConfigurationError" title="taucmdr.error.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.ConfigurationError</span></code></a></p>
 <p>Indicates an error while selecting a project.</p>
 </dd></dl>
 
 <dl class="exception">
 <dt id="taucmdr.error.UniqueAttributeError">
 <em class="property">exception </em><code class="descclassname">taucmdr.error.</code><code class="descname">UniqueAttributeError</code><span class="sig-paren">(</span><em>model</em>, <em>unique</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#UniqueAttributeError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.UniqueAttributeError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ModelError" title="taucmdr.error.ModelError"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.error.ModelError</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#taucmdr.error.ModelError" title="taucmdr.error.ModelError"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.error.ModelError</span></code></a></p>
 <p>Indicates that duplicate values were given for a unique attribute.</p>
 </dd></dl>
 
@@ -182,15 +191,15 @@ settings that are incompatible with the application.</p>
 <dt id="taucmdr.error.excepthook">
 <code class="descclassname">taucmdr.error.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>value</em>, <em>tb</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/error.html#excepthook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.error.excepthook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception handler for any uncaught exception (except SystemExit).</p>
-<p>Replaces <a class="reference external" href="https://docs.python.org/library/sys.html#sys.excepthook" title="(in Python v3.10)"><code class="xref any docutils literal"><span class="pre">sys.excepthook</span></code></a>.</p>
+<p>Replaces <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">sys.excepthook</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>etype</strong> &#8211; Exception class.</li>
-<li><strong>value</strong> &#8211; Exception instance.</li>
-<li><strong>tb</strong> &#8211; Traceback object.</li>
+<li><strong>etype</strong> – Exception class.</li>
+<li><strong>value</strong> – Exception instance.</li>
+<li><strong>tb</strong> – Traceback object.</li>
 </ul>
 </td>
 </tr>
@@ -215,9 +224,9 @@ settings that are incompatible with the application.</p>
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>

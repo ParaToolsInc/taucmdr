@@ -1,7 +1,0 @@
-taucmdr.cf.storage.storage_dispatch module
-==========================================
-
-.. automodule:: taucmdr.cf.storage.storage_dispatch
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,37 +1,25 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>taucmdr.cf.software.tau_installation module &mdash; TAU Commander Developer Documentation</title>
-    
+    <title>taucmdr.cf.software.tau_installation module &#8212; TAU Commander Developer Documentation</title>
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.0.0
-',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
-    <link rel="top" title="TAU Commander Developer Documentation" href="index.html" />
-    <link rel="up" title="taucmdr.cf.software package" href="taucmdr.cf.software.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="taucmdr.cf.storage package" href="taucmdr.cf.storage.html" />
     <link rel="prev" title="taucmdr.cf.software.sqlite3_installation module" href="taucmdr.cf.software.sqlite3_installation.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
       <div class="header" role="banner"><img class="rightlogo" src="_static/taulogo-large.png" alt="Logo"/><h1 class="heading"><a href="index.html">
           <span>TAU Commander Developer Documentation</span></a></h1>
         <h2 class="heading"><span>taucmdr.cf.software.tau_installation module</span></h2>
@@ -57,7 +45,7 @@
 <dl class="class">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation">
 <em class="property">class </em><code class="descclassname">taucmdr.cf.software.tau_installation.</code><code class="descname">TauInstallation</code><span class="sig-paren">(</span><em>sources</em>, <em>target_arch</em>, <em>target_os</em>, <em>compilers</em>, <em>minimal=False</em>, <em>application_linkage='dynamic'</em>, <em>openmp_support=False</em>, <em>pthreads_support=False</em>, <em>tbb_support=False</em>, <em>mpi_support=False</em>, <em>mpi_libraries=None</em>, <em>openacc_support=False</em>, <em>caf_support=False</em>, <em>cuda_support=False</em>, <em>cuda_prefix=None</em>, <em>opencl_support=False</em>, <em>opencl_prefix=None</em>, <em>shmem_support=False</em>, <em>shmem_libraries=None</em>, <em>mpc_support=False</em>, <em>max_threads=None</em>, <em>uses_python=False</em>, <em>source_inst='never'</em>, <em>compiler_inst='never'</em>, <em>keep_inst_files=False</em>, <em>reuse_inst_files=False</em>, <em>select_file=None</em>, <em>baseline=False</em>, <em>profile='tau'</em>, <em>trace='none'</em>, <em>sample=False</em>, <em>metrics=None</em>, <em>measure_io=False</em>, <em>measure_mpi=False</em>, <em>measure_openmp='ignore'</em>, <em>measure_opencl=False</em>, <em>measure_cuda=False</em>, <em>measure_level_zero=False</em>, <em>measure_shmem=False</em>, <em>measure_heap_usage=False</em>, <em>measure_system_load=False</em>, <em>measure_memory_alloc=False</em>, <em>measure_comm_matrix=False</em>, <em>measure_callsite=False</em>, <em>callpath_depth=100</em>, <em>throttle=True</em>, <em>metadata_merge=True</em>, <em>throttle_per_call=10</em>, <em>throttle_num_calls=100000</em>, <em>sample_resolution='line'</em>, <em>sampling_period=0</em>, <em>track_memory_footprint=False</em>, <em>update_nightly=False</em>, <em>ptts=False</em>, <em>ptts_post=False</em>, <em>ptts_sample_flags=None</em>, <em>ptts_restart=False</em>, <em>ptts_start=None</em>, <em>ptts_stop=None</em>, <em>ptts_report_flags=None</em>, <em>tags=None</em>, <em>forced_makefile=None</em>, <em>dyninst=False</em>, <em>mpit=False</em>, <em>unwinder='libunwind'</em>, <em>unwind_depth=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation" title="taucmdr.cf.software.installation.Installation"><code class="xref py py-class docutils literal"><span class="pre">taucmdr.cf.software.installation.Installation</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="taucmdr.cf.software.installation.html#taucmdr.cf.software.installation.Installation" title="taucmdr.cf.software.installation.Installation"><code class="xref py py-class docutils literal notranslate"><span class="pre">taucmdr.cf.software.installation.Installation</span></code></a></p>
 <p>Encapsulates a TAU installation.</p>
 <p>TAU is an enormous, organic, complex piece of software so this class is
 unusually complex to consider all the corner cases.  This is where most
@@ -78,18 +66,18 @@ of the systemization of TAU is actually implemented so it can get ugly.</p>
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation._sanitize_environment">
 <em class="property">static </em><code class="descname">_sanitize_environment</code><span class="sig-paren">(</span><em>env</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation._sanitize_environment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation._sanitize_environment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unsets any TAU environment variables that were set by the user.</p>
-<p>A user&#8217;s preexisting TAU configuration may conflict with the configuration
+<p>A user’s preexisting TAU configuration may conflict with the configuration
 specified by the TAU Commander project.  This routine lets us work in a
-clean environment without disrupting the user&#8217;s shell environment.</p>
+clean environment without disrupting the user’s shell environment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) &#8211; Environment variables.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Environment variables.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><cite>env</cite> without TAU environment variables.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></td>
 </tr>
 </tbody>
 </table>
@@ -105,8 +93,7 @@ checks that no conflicting packages are active in the current environment.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-TAU cannot be used in the current environment.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigurationError</span></code> – TAU cannot be used in the current environment.</td>
 </tr>
 </tbody>
 </table>
@@ -124,19 +111,18 @@ executes the compiler command.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>compiler</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler"><em>InstalledCompiler</em></a>) &#8211; A compiler command.</li>
-<li><strong>compiler_args</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Compiler command line arguments.</li>
+<li><strong>compiler</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler"><em>InstalledCompiler</em></a>) – A compiler command.</li>
+<li><strong>compiler_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Compiler command line arguments.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Compilation failed.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigurationError</span></code> – Compilation failed.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Compiler return value (always 0 if no exception raised).</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/functions.html#int" title="(in Python v3.10)">int</a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
 </td>
 </tr>
 </tbody>
@@ -154,15 +140,15 @@ for the TAU compiler wrapper scripts.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Command line options.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) &#8211; Environment variables.</li>
+<li><strong>opts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Command line options.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Environment variables.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(opts, env) updated to support TAU.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
 </td>
 </tr>
 </tbody>
@@ -173,13 +159,12 @@ for the TAU compiler wrapper scripts.</p>
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.configure">
 <code class="descname">configure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.configure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configures TAU</p>
-<p>Executes TAU&#8217;s configuration script with appropriate arguments to support the specified configuration.</p>
+<p>Executes TAU’s configuration script with appropriate arguments to support the specified configuration.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwareConfigurationError</span></code> &#8211;
-TAU&#8217;s configure script failed.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SoftwareConfigurationError</span></code> – TAU’s configure script failed.</td>
 </tr>
 </tbody>
 </table>
@@ -188,15 +173,15 @@ TAU&#8217;s configure script failed.</td>
 <dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.create_ppk_file">
 <code class="descname">create_ppk_file</code><span class="sig-paren">(</span><em>dest</em>, <em>src</em>, <em>remove_existing=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.create_ppk_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.create_ppk_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write a PPK file at <code class="docutils literal"><span class="pre">dest</span></code> from the data at <code class="docutils literal"><span class="pre">src</span></code>.</p>
+<dd><p>Write a PPK file at <code class="docutils literal notranslate"><span class="pre">dest</span></code> from the data at <code class="docutils literal notranslate"><span class="pre">src</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Path to the PPK file to create.</li>
-<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Directory containing TAU profiles to convert to PPK format.</li>
-<li><strong>remove_existing</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) &#8211; If True, delete <code class="docutils literal"><span class="pre">dest</span></code> before writing it.</li>
+<li><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the PPK file to create.</li>
+<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Directory containing TAU profiles to convert to PPK format.</li>
+<li><strong>remove_existing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, delete <code class="docutils literal notranslate"><span class="pre">dest</span></code> before writing it.</li>
 </ul>
 </td>
 </tr>
@@ -209,25 +194,29 @@ TAU&#8217;s configure script failed.</td>
 <code class="descname">get_application_command</code><span class="sig-paren">(</span><em>launcher_cmd</em>, <em>application_cmds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.get_application_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_application_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build a command line to launch an application under TAU.</p>
 <p>Sometimes TAU needs to use tau_exec, sometimes not.  This routine
-also handles backend launch commands like <code class="docutils literal"><span class="pre">aprun</span></code>.</p>
+also handles backend launch commands like <code class="docutils literal notranslate"><span class="pre">aprun</span></code>.</p>
 <p><cite>application_cmds</cite> may be an empty list if the application is launched
-via a configuration file, e.g. <code class="docutils literal"><span class="pre">mpirun</span> <span class="pre">--app</span> <span class="pre">myapp.cfg</span></code>.</p>
+via a configuration file, e.g. <code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">--app</span> <span class="pre">myapp.cfg</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>launcher_cmd</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Application launcher with command line arguments, e.g. <code class="docutils literal"><span class="pre">['mpirun',</span> <span class="pre">'-np',</span> <span class="pre">'4']</span></code>.</li>
-<li><strong>application_cmds</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; List of application command with command line arguments (list of list),
-e.g. <code class="docutils literal"><span class="pre">[['./a.out',</span> <span class="pre">'-g',</span> <span class="pre">'hello'],</span> <span class="pre">[':',</span> <span class="pre">'-np',</span> <span class="pre">'2',</span> <span class="pre">'./b.out',</span> <span class="pre">'foobar']]</span></code></li>
+<li><strong>launcher_cmd</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Application launcher with command line arguments, e.g. <code class="docutils literal notranslate"><span class="pre">['mpirun',</span> <span class="pre">'-np',</span> <span class="pre">'4']</span></code>.</li>
+<li><strong>application_cmds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – List of application command with command line arguments (list of list),
+e.g. <code class="docutils literal notranslate"><span class="pre">[['./a.out',</span> <span class="pre">'-g',</span> <span class="pre">'hello'],</span> <span class="pre">[':',</span> <span class="pre">'-np',</span> <span class="pre">'2',</span> <span class="pre">'./b.out',</span> <span class="pre">'foobar']]</span></code></li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(cmd, env) where <cite>cmd</cite> is the new command line and <cite>env</cite> is a dictionary of environment
-variables to set before running the application command.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>(cmd, env) where <cite>cmd</cite> is the new command line and <cite>env</cite> is a dictionary of environment</dt>
+<dd><p class="first last">variables to set before running the application command.</p>
+</dd>
+</dl>
+</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
 </td>
 </tr>
 </tbody>
@@ -242,11 +231,11 @@ variables to set before running the application command.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>compiler</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler"><em>InstalledCompiler</em></a>) &#8211; A compiler to find a wrapper for.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>compiler</strong> (<a class="reference internal" href="taucmdr.cf.compiler.html#taucmdr.cf.compiler.InstalledCompiler" title="taucmdr.cf.compiler.InstalledCompiler"><em>InstalledCompiler</em></a>) – A compiler to find a wrapper for.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Command for TAU compiler wrapper without path or arguments.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)">str</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -256,19 +245,18 @@ variables to set before running the application command.</p>
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.get_data_format">
 <em class="property">static </em><code class="descname">get_data_format</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.get_data_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_data_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Guess the data format of a file path.</p>
-<p>Look at a file&#8217;s extension and guess what kind of performance data it might be.</p>
+<p>Look at a file’s extension and guess what kind of performance data it might be.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; File path.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – File path.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">String indicating the data format.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)">str</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-Cannot determine the file&#8217;s data format.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigurationError</span></code> – Cannot determine the file’s data format.</td>
 </tr>
 </tbody>
 </table>
@@ -284,10 +272,13 @@ and application support features specified in the constructor.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A file path that could be used to set the TAU_MAKEFILE environment
-variable, or None if a suitable makefile couldn&#8217;t be found.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A file path that could be used to set the TAU_MAKEFILE environment</dt>
+<dd>variable, or None if a suitable makefile couldn’t be found.</dd>
+</dl>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)">str</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -322,12 +313,12 @@ variable, or None if a suitable makefile couldn&#8217;t be found.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tau_makefile</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; path to a TAU Makefile</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tau_makefile</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – path to a TAU Makefile</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the path to a TAU shared library directory containing the shared libraries that
 would be used by the TAU configuration represented by the Makefile.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)">str</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></td>
 </tr>
 </tbody>
 </table>
@@ -344,9 +335,9 @@ function will likely not match the order they appear in the makefile name or tau
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Makefile tags, e.g. set(&#8216;papi&#8217;, &#8216;pdt&#8217;, &#8216;icpc&#8217;)</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Makefile tags, e.g. set(‘papi’, ‘pdt’, ‘icpc’)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#set" title="(in Python v3.10)">set</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)">set</a></td>
 </tr>
 </tbody>
 </table>
@@ -361,10 +352,9 @@ function will likely not match the order they appear in the makefile name or tau
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) &#8211; Set to True to force reinstall even if TAU is already installed and working.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force_reinstall</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Set to True to force reinstall even if TAU is already installed and working.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-TAU failed installation or did not pass verification after it was installed.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SoftwarePackageError</span></code> – TAU failed installation or did not pass verification after it was installed.</td>
 </tr>
 </tbody>
 </table>
@@ -378,26 +368,25 @@ TAU failed installation or did not pass verification after it was installed.</td
 <dl class="staticmethod">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.is_profile_format">
 <em class="property">static </em><code class="descname">is_profile_format</code><span class="sig-paren">(</span><em>fmt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.is_profile_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.is_profile_format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return True if <code class="docutils literal"><span class="pre">fmt</span></code> is a string indicating a profile data format.</p>
+<dd><p>Return True if <code class="docutils literal notranslate"><span class="pre">fmt</span></code> is a string indicating a profile data format.</p>
 </dd></dl>
 
 <dl class="staticmethod">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.is_trace_format">
 <em class="property">static </em><code class="descname">is_trace_format</code><span class="sig-paren">(</span><em>fmt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.is_trace_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.is_trace_format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return True if <code class="docutils literal"><span class="pre">fmt</span></code> is a string indicating a trace data format.</p>
+<dd><p>Return True if <code class="docutils literal notranslate"><span class="pre">fmt</span></code> is a string indicating a trace data format.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.make_install">
 <code class="descname">make_install</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.make_install"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.make_install" title="Permalink to this definition">¶</a></dt>
-<dd><p>Installs TAU to <code class="docutils literal"><span class="pre">self.install_prefix</span></code>.</p>
-<p>Executes &#8216;make install&#8217; to build and install TAU.</p>
+<dd><p>Installs TAU to <code class="docutils literal notranslate"><span class="pre">self.install_prefix</span></code>.</p>
+<p>Executes ‘make install’ to build and install TAU.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">SoftwarePackageError</span></code> &#8211;
-&#8216;make install&#8217; failed.</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SoftwarePackageError</span></code> – ‘make install’ failed.</td>
 </tr>
 </tbody>
 </table>
@@ -412,12 +401,12 @@ TAU failed installation or did not pass verification after it was installed.</td
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.merge_tau_trace_files">
 <code class="descname">merge_tau_trace_files</code><span class="sig-paren">(</span><em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.merge_tau_trace_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.merge_tau_trace_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use tau_treemerge.pl to merge multiple TAU trace files into a single edf and a single trc file.</p>
-<p>The new edf file and trc file are written to <code class="docutils literal"><span class="pre">prefix</span></code>.</p>
+<p>The new edf file and trc file are written to <code class="docutils literal notranslate"><span class="pre">prefix</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Path to the directory containing <code class="docutils literal"><span class="pre">*.trc</span></code> and <code class="docutils literal"><span class="pre">*.edf</span></code> files.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the directory containing <code class="docutils literal notranslate"><span class="pre">*.trc</span></code> and <code class="docutils literal notranslate"><span class="pre">*.edf</span></code> files.</td>
 </tr>
 </tbody>
 </table>
@@ -439,15 +428,15 @@ for the TAU library and tau_exec script.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>opts</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Command line options.</li>
-<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) &#8211; Environment variables.</li>
+<li><strong>opts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Command line options.</li>
+<li><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Environment variables.</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">(opts, env) updated to support TAU.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/library/stdtypes.html#tuple" title="(in Python v3.10)">tuple</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
 </td>
 </tr>
 </tbody>
@@ -464,14 +453,13 @@ for the TAU library and tau_exec script.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>dataset</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) &#8211; Lists of paths to data files indexed by data format.  See <a class="reference internal" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_data_format" title="taucmdr.cf.software.tau_installation.TauInstallation.get_data_format"><code class="xref any py py-meth docutils literal"><span class="pre">get_data_format</span></code></a>.</li>
-<li><strong>profile_tools</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Visualization or data processing tools for profiles.</li>
-<li><strong>trace_tools</strong> (<a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list"><em>list</em></a>) &#8211; Visualization or data processing tools for traces.</li>
+<li><strong>dataset</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – Lists of paths to data files indexed by data format.  See <a class="reference internal" href="#taucmdr.cf.software.tau_installation.TauInstallation.get_data_format" title="taucmdr.cf.software.tau_installation.TauInstallation.get_data_format"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">get_data_format</span></code></a>.</li>
+<li><strong>profile_tools</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Visualization or data processing tools for profiles.</li>
+<li><strong>trace_tools</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Visualization or data processing tools for traces.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ConfigurationError</span></code> &#8211;
-An error occurred while displaying a data file.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ConfigurationError</span></code> – An error occurred while displaying a data file.</p>
 </td>
 </tr>
 </tbody>
@@ -489,7 +477,7 @@ An error occurred while displaying a data file.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of event name/description tuples.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="taucmdr.cli.commands.application.list.html#module-taucmdr.cli.commands.application.list" title="taucmdr.cli.commands.application.list">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -504,9 +492,9 @@ An error occurred while displaying a data file.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>trc</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Path to the trc file.</li>
-<li><strong>edf</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Path to the edf file.</li>
-<li><strong>slog2</strong> (<a class="reference external" href="https://docs.python.org/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) &#8211; Path to the slog2 file to create.</li>
+<li><strong>trc</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the trc file.</li>
+<li><strong>edf</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the edf file.</li>
+<li><strong>slog2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the slog2 file to create.</li>
 </ul>
 </td>
 </tr>
@@ -517,12 +505,40 @@ An error occurred while displaying a data file.</p>
 <dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.uid_items">
 <code class="descname">uid_items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.uid_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.uid_items" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>List items affecting this installation’s UID.</p>
+<p>Most packages only care about changes in source archive, target, or C/C++ compilers.
+More sensitive packages (e.g. Score-P or TAU) can override this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>An <strong>ordered</strong> list of items affecting this installation’s UID.</dt>
+<dd>Changing the order of this list will change the UID.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="taucmdr.cf.software.tau_installation.TauInstallation.verify">
 <code class="descname">verify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/taucmdr/cf/software/tau_installation.html#TauInstallation.verify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#taucmdr.cf.software.tau_installation.TauInstallation.verify" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check if the installation at <code class="xref any docutils literal notranslate"><span class="pre">installation_prefix</span></code> is valid.</p>
+<p>A valid installation provides all expected files and commands.
+Subclasses may wish to perform additional checks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SoftwarePackageError</span></code> – Describs why the installation is invalid.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -543,9 +559,9 @@ An error occurred while displaying a data file.</p>
       </div>
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015 ParaTools, Inc..
-      Last updated on Jul 06, 2022 at 00:01:36 UTC.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2015 ParaTools, Inc..
+      Last updated on Jul 17, 2025 at 06:51:46 UTC.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.6.
     </div>
   </body>
 </html>
