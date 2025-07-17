@@ -95,7 +95,7 @@ COMMANDS = {None:
 HEADERS = {None: ['otf2/otf2.h']}
 
 
-LIBRARIES = {None: ['libcube4.a']}
+LIBRARIES = {None: ['libcube4.so']}
 
 
 class ScorepInstallation(AutotoolsInstallation):
