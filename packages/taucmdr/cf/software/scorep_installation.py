@@ -138,7 +138,7 @@ class ScorepInstallation(AutotoolsInstallation):
             suite = suites.get(self.compilers[host.CC].unwrap().info.family)
             flags.append('--with-nocross-compiler-suite' + ('='+suite if suite else ''))
         if self.use_mpi:
-            suites = {mpi.INTEL: 'intel2'}
+            suites = {mpi.INTEL: 'intel2', mpi.SYSTEM: 'openmpi'}
             suite = suites.get(self.compilers[mpi.MPI_CC].info.family)
             if suite:
                 flags.append('--with-mpi=%s' % suite)
