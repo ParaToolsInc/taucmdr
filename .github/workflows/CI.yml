@@ -28,6 +28,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
