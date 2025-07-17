@@ -121,6 +121,14 @@ jobs:
       #   with:
       #     name: taucmdr-installation-${{ matrix.os }}
       #     path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
+      
+      - name: Verify MPI functionality
+        run: |
+          mkdir -p /tmp/mpitest
+          cp .testfiles/mpi_hello.c /tmp/mpitest
+          cd /tmp/mpitest
+          mpicc mpi_hello.c
+          mpirun -np 4 ./a.out
 
       - name: Test TAU Commander
         run: |
