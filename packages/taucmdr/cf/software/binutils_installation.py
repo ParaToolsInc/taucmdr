@@ -67,6 +67,10 @@ class BinutilsInstallation(AutotoolsInstallation):
     def configure(self, flags):
         from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
         flags.extend(['--disable-nls', '--disable-werror'])
+        # We don't need these and they force a dependency on texinfo
+        flags.extend(['--disable-gas', '--disable-gprof', '--disable-gprofng'])
+        # Score-P requires shared library
+        flags.extend(['--enable-shared'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
             os.environ.pop(var, None)
         if self.target_os is DARWIN:
