@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2025, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -114,6 +114,7 @@ class ScorepInstallation(AutotoolsInstallation):
                  use_pdt=False):
         super().__init__('scorep', 'Score-P', sources, target_arch, target_os,
                                                  compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
+        self.add_dependency('gotcha', sources)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
         for pkg, used in (('binutils', use_binutils),
@@ -151,6 +152,7 @@ class ScorepInstallation(AutotoolsInstallation):
             flags.append('--with-shmem' + ('='+suite if suite else ''))
         else:
             flags.append('--without-shmem')
+        flags.append('--with-libgotcha=%s' % self.dependencies['gotcha'].install_prefix)
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
         papi = self.dependencies.get('papi')
