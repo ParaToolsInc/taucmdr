@@ -26,6 +26,8 @@ jobs:
   Install-taucmdr-minimal:
     name: Install and Test TAU Commander
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -174,10 +176,10 @@ jobs:
           env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Deploy Sphinx docs
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ !env.ACT }} && success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-22.04'
+        uses: peaceiris/actions-gh-pages@v4
+        if: ${{ !env.ACT }} && success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           enable_jekyll: false
           allow_empty_commit: true
           publish_dir: ./build/sphinx/html
