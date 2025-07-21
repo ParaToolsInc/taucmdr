@@ -191,6 +191,8 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             line = '  {}{}'.format(util.color_text(f'{cmd:<14}', 'green'), descr)
         elif usage_fmt == 'markdown':
             line = '  {} | {}'.format(f'{cmd:<28}', descr)
+        else:
+            line = ''
         groups.setdefault(group, []).append(line)
     parts = []
     for group, members in groups.items():

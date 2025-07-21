@@ -118,3 +118,9 @@ id_rsa_Travis2GH.pub
 
 # mypy caches
 .mypy_cache
+
+# Test output files
+test-timings*.csv
+
+# JetBrains settings
+.idea

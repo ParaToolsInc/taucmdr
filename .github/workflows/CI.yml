@@ -18,15 +18,21 @@ env:
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"
   TZ: "UTC"
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+  OMPI_MCA_rmaps_base_oversubscribe: "true"
 
 jobs:
   Install-taucmdr-minimal:
     name: Install and Test TAU Commander
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
         backend: ['tinydb', 'sqlite']
         python_version: ['3.7']
     env:
@@ -42,7 +48,7 @@ jobs:
         run: |
           # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev cmake
 
       - name: System info
         id: info
@@ -77,7 +83,7 @@ jobs:
           fi
 
       - name: Cache TAU sources
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.info.outputs.taucmdr_system}}/src
           key: ${{ matrix.os }}-system-src-${{ github.sha }}
@@ -85,7 +91,7 @@ jobs:
             ${{ matrix.os }}-system-src
 
       - name: Cache pylint directory
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.info.outputs.home_dir }}/.pylint.d
           key: ${{ matrix.os }}-pylint-cache-${{ steps.info.outputs.branch }}-${{ github.sha }}
@@ -108,9 +114,9 @@ jobs:
 
       - name: Upload TAU Commander install log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
+          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}-${{ matrix.backend }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       # - name: Upload TAU Commander minimal install
@@ -119,6 +125,14 @@ jobs:
       #   with:
       #     name: taucmdr-installation-${{ matrix.os }}
       #     path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
+      
+      - name: Verify MPI functionality
+        run: |
+          mkdir -p /tmp/mpitest
+          cp .testfiles/mpi_hello.c /tmp/mpitest
+          cd /tmp/mpitest
+          mpicc mpi_hello.c
+          mpirun -np 4 ./a.out
 
       - name: Test TAU Commander
         run: |
@@ -131,20 +145,20 @@ jobs:
 
       - name: Upload TAU Commander unit test log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-unit-test-debug-log-${{ matrix.os }}
+          name: taucmdr-unit-test-debug-log-${{ matrix.os }}-${{ matrix.backend }} 
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload Pylint report
-        if: always() && matrix.os == 'ubuntu-18.04'
-        uses: actions/upload-artifact@v2
+        if: always() && matrix.os == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-pylint-logs-${{ matrix.os }}
+          name: taucmdr-pylint-logs-${{ matrix.os }}-${{ matrix.backend }} 
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: matrix.os == 'ubuntu-18.04'
+        if: ${{ !env.ACT }} && matrix.os == 'ubuntu-22.04'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
@@ -152,7 +166,7 @@ jobs:
           recreate: true
 
       - name: Upload Coverage info
-        if: always()
+        if: ${{ !env.ACT }} && always()
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -163,10 +177,10 @@ jobs:
           env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Deploy Sphinx docs
-        uses: peaceiris/actions-gh-pages@v3
-        if: success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-18.04'
+        uses: peaceiris/actions-gh-pages@v4
+        if: ${{ !env.ACT }} && success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           enable_jekyll: false
           allow_empty_commit: true
           publish_dir: ./build/sphinx/html
@@ -186,7 +200,7 @@ jobs:
 
       - name: Upload unit tests TAU validate
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
+          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ matrix.backend }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate

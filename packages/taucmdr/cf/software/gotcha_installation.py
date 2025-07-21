@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2025, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,27 +24,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""libotf2 software installation management.
+"""GOTCHA software installation management.
 
-The OTF2 library  provides an interface to write and read trace data.
+GOTCHA is required for Score-P 9.0 and later.
 """
 
-from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr import logger
+from taucmdr.cf.software.installation import CMakeInstallation
+from taucmdr.cf.compiler.host import CC, CXX
 
+
+
+LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: [
-    'https://tau.uoregon.edu/otf2-3.0.3.tgz',
-    'https://fs.paratools.com/tau-mirror/otf2-3.0.3.tgz'
+    'https://fs.paratools.com/tau-mirror/GOTCHA-1.0.8.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
+LIBRARIES = {None: ['libgotcha.so']}
 
-HEADERS = {None: ['otf2/otf2.h']}
+HEADERS = {None: ['gotcha/gotcha.h']}
 
 
-class Libotf2Installation(AutotoolsInstallation):
-    """Encapsulates a libotf2 installation."""
+class GotchaInstallation(CMakeInstallation):
+    """Encapsulates a GOTCHA installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super().__init__('libotf2', 'libotf2', sources,
-                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
+        super().__init__('gotcha', 'gotcha', sources, target_arch, target_os,
+                                               compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def cmake(self, flags):
+        flags.extend(['-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path,
+                      '-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path,
+                      '-DCMAKE_BUILD_TYPE=Release'])
+        return super().cmake(flags)
+
+    def make(self, flags):
+        return super().make(flags)
