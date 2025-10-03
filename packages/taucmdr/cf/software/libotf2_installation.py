@@ -33,11 +33,11 @@ from taucmdr.cf.software.installation import AutotoolsInstallation
 
 
 REPOS = {None: [
-    'https://tau.uoregon.edu/otf2-3.0.3.tgz',
-    'https://fs.paratools.com/tau-mirror/otf2-3.0.3.tgz'
+    'https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/otf2-3.1.1.tar.gz',
+    'https://https://fs.paratools.com/tau-mirror/otf2-3.1.1.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libotf2.la', 'libotf2.a']}
+LIBRARIES = {None: ['libotf2.so']}
 
 HEADERS = {None: ['otf2/otf2.h']}
 
