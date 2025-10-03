@@ -33,7 +33,10 @@ to store profile data in such a database.
 from taucmdr.cf.software.installation import AutotoolsInstallation
 
 
-REPOS = {None: 'http://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/sos/sqlite-autoconf-3210000.tar.gz'}
+REPOS = {None: [
+    'https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/sos/sqlite-autoconf-3210000.tar.gz',
+    'https://fs.paratools.com/tau-mirror/sqlite-autoconf-3210000.tar.gz'
+]}
 
 LIBRARIES = {None: ['libsqlite3.a', 'libsqlite3.la', 'libsqlite3.so']}
 
