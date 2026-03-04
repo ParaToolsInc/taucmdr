@@ -158,7 +158,7 @@ jobs:
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: ${{ !env.ACT && matrix.os == 'ubuntu-22.04' }}
+        if: ${{ !env.ACT && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb' }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
