@@ -29,9 +29,71 @@
 Functions used for unit tests of tau_installation.py.
 """
 
+import os
+import tempfile
+from taucmdr import tests
+from taucmdr.cf.software.tau_installation import TauInstallation
 
-from taucmdr.tests import TestCase, not_implemented
 
-@not_implemented
-class TauInstallationTest(TestCase):
-    pass
+class TauInstallationTest(tests.TestCase):
+    """Tests for TauInstallation CUPTI detection and tagging."""
+
+    def setUp(self):
+        super().setUp()
+        # Give each test its own isolated temp directory so tests don't
+        # pollute each other's filesystem state.
+        self._cuda_tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self._cuda_tmpdir, ignore_errors=True)
+        super().tearDown()
+
+    # ------------------------------------------------------------------ #
+    # Helpers                                                              #
+    # ------------------------------------------------------------------ #
+
+    def _make_cupti_header(self, *path_parts):
+        """Create a fake cupti_events.h under the per-test cuda tmpdir."""
+        inc = os.path.join(self._cuda_tmpdir, *path_parts, 'include')
+        os.makedirs(inc, exist_ok=True)
+        open(os.path.join(inc, 'cupti_events.h'), 'w').close()
+
+    def _fake_self(self, cuda_prefix):
+        class _FakeSelf:
+            pass
+        fs = _FakeSelf()
+        fs.cuda_prefix = cuda_prefix
+        return fs
+
+    # ------------------------------------------------------------------ #
+    # _find_cupti_prefix                                                   #
+    # ------------------------------------------------------------------ #
+
+    def test_find_cupti_standard_sdk_layout(self):
+        """extras/CUPTI/include/cupti_events.h — first candidate."""
+        self._make_cupti_header('extras', 'CUPTI')
+        result = TauInstallation._find_cupti_prefix(self._fake_self(self._cuda_tmpdir))
+        self.assertEqual(result, os.path.join(self._cuda_tmpdir, 'extras', 'CUPTI'))
+
+    def test_find_cupti_system_packaged_layout(self):
+        """<cuda>/include/cupti_events.h — third candidate (e.g. /usr)."""
+        self._make_cupti_header()
+        result = TauInstallation._find_cupti_prefix(self._fake_self(self._cuda_tmpdir))
+        self.assertEqual(result, self._cuda_tmpdir)
+
+    def test_find_cupti_orig_layout(self):
+        """extras/CUPTI.orig/include/cupti_events.h — fourth candidate."""
+        self._make_cupti_header('extras', 'CUPTI.orig')
+        result = TauInstallation._find_cupti_prefix(self._fake_self(self._cuda_tmpdir))
+        self.assertEqual(result, os.path.join(self._cuda_tmpdir, 'extras', 'CUPTI.orig'))
+
+    def test_find_cupti_returns_none_when_missing(self):
+        """No headers present: returns None."""
+        result = TauInstallation._find_cupti_prefix(self._fake_self(self._cuda_tmpdir))
+        self.assertIsNone(result)
+
+    def test_find_cupti_returns_none_when_no_cuda_prefix(self):
+        """No cuda_prefix: returns None without touching filesystem."""
+        result = TauInstallation._find_cupti_prefix(self._fake_self(None))
+        self.assertIsNone(result)
