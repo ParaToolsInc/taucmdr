@@ -40,7 +40,7 @@ jobs:
       __TAUCMDR_DB_BACKEND__: ${{ matrix.backend }}
       PY_VER: ${{ matrix.python_version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 9999
 
@@ -65,25 +65,25 @@ jobs:
           type -a python
           while read -r line ; do "${line##* is }" --version; done <<< $(type -a python)
           export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "::set-output name=install_dir::${INSTALLDIR}"
+          echo "install_dir=${INSTALLDIR}" >> "${GITHUB_OUTPUT}"
           echo "INSTALLDIR=${INSTALLDIR}" >> "${GITHUB_ENV}"
-          echo "::set-output name=home_dir::${HOME}"
-          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+          echo "home_dir=${HOME}" >> "${GITHUB_OUTPUT}"
+          echo "taucmdr_system=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
           echo "__TAUCMDR_SYSTEM_PREFIX__=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_ENV}"
-          echo "::set-output name=branch::${GITHUB_REF#refs/*/}"
+          echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
           echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
           BASEREF=${{ github.base_ref }}
           if [ "${BASEREF}" ]; then
-            echo "::set-output name=baseref::${BASEREF#refs/*/}"
+            echo "baseref=${BASEREF#refs/*/}" >> "${GITHUB_OUTPUT}"
             echo "BASEREF: ${BASEREF#/refs/*/}"
           else
-            echo "::set-output name=baseref::unstable"
+            echo "baseref=unstable" >> "${GITHUB_OUTPUT}"
             echo "BASEREF: unstable"
           fi
 
       - name: Cache TAU sources
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.info.outputs.taucmdr_system}}/src
           key: ${{ matrix.os }}-system-src-${{ github.sha }}
@@ -91,7 +91,7 @@ jobs:
             ${{ matrix.os }}-system-src
 
       - name: Cache pylint directory
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.info.outputs.home_dir }}/.pylint.d
           key: ${{ matrix.os }}-pylint-cache-${{ steps.info.outputs.branch }}-${{ github.sha }}
@@ -114,7 +114,7 @@ jobs:
 
       - name: Upload TAU Commander install log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}-${{ matrix.backend }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
@@ -145,20 +145,20 @@ jobs:
 
       - name: Upload TAU Commander unit test log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-unit-test-debug-log-${{ matrix.os }}-${{ matrix.backend }} 
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload Pylint report
         if: always() && matrix.os == 'ubuntu-22.04'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-pylint-logs-${{ matrix.os }}-${{ matrix.backend }} 
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: ${{ !env.ACT }} && matrix.os == 'ubuntu-22.04'
+        if: ${{ !env.ACT && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb' }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
@@ -166,27 +166,20 @@ jobs:
           recreate: true
 
       - name: Upload Coverage info
-        if: ${{ !env.ACT }} && always()
-        uses: codecov/codecov-action@v2
+        if: ${{ !env.ACT && always() }}
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests,CI
           name: codecov-${{ matrix.os }}
           fail_ci_if_error: true # optional (default = false)
-          path_to_write_report: codecov-upload.txt
           env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
-      - name: Deploy Sphinx docs
-        uses: peaceiris/actions-gh-pages@v4
-        if: ${{ !env.ACT }} && success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
+      - name: Upload Sphinx docs for GitHub Pages
+        if: ${{ !env.ACT && success() && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb' }}
+        uses: actions/upload-pages-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          enable_jekyll: false
-          allow_empty_commit: true
-          publish_dir: ./build/sphinx/html
-          username: ${{ github.actor }}
-          commitMessage: "Documentation for commit ${{ github.sha }}"
-          keep_files: false
+          path: ./build/sphinx/html
 
       - name: tau_validate
         if: always()
@@ -200,7 +193,26 @@ jobs:
 
       - name: Upload unit tests TAU validate
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ matrix.backend }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
+
+  deploy-docs:
+    name: Deploy Sphinx docs to GitHub Pages
+    needs: Install-taucmdr-minimal
+    if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' )
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
