@@ -896,11 +896,7 @@ class TauInstallation(Installation):
             pythoninc = get_command_output(
                 [python_path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
 
-        # Build tag string including tags that get_tags() expects but TAU's
-        # configure doesn't automatically embed in Makefile filenames
         tag = self.uid
-        if self.cupti_prefix:
-            tag += '-cupti'
         if (not self.pthreads_support and self.openmp_support
                 and self.measure_openmp == 'ompt'
                 and not self.uses_ompt_tr6 and not self.uses_ompt_tr4):
