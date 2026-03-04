@@ -158,7 +158,7 @@ jobs:
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: ${{ !env.ACT }} && matrix.os == 'ubuntu-22.04'
+        if: ${{ !env.ACT && matrix.os == 'ubuntu-22.04' }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
@@ -166,7 +166,7 @@ jobs:
           recreate: true
 
       - name: Upload Coverage info
-        if: ${{ !env.ACT }} && always()
+        if: ${{ !env.ACT && always() }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -176,7 +176,7 @@ jobs:
           env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Upload Sphinx docs for GitHub Pages
-        if: ${{ !env.ACT }} && success() && github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' ) && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
+        if: ${{ !env.ACT && success() && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb' }}
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./build/sphinx/html
