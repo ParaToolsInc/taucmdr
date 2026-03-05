@@ -121,6 +121,7 @@ id_rsa_Travis2GH.pub
 
 # Test output files
 test-timings*.csv
+TEST-*.xml
 
 # JetBrains settings
 .idea

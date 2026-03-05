@@ -29,11 +29,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04] 
-        python_version: ['3.7']
+        os: [ubuntu-22.04]
     env:
       OS: ${{ matrix.os }}
-      PY_VER: ${{ matrix.python_version }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -43,7 +41,7 @@ jobs:
         run: |
           # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev 
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev
 
       - name: System info
         id: info
@@ -119,11 +117,31 @@ jobs:
           coverage run setup.py test
           coverage xml
 
+      - name: Upload test results to Codecov (TinyDB)
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: TEST-*.xml
+          flags: unittests,CI
+          name: test-results-nightly-${{ matrix.os }}-tinydb
+
       - name: Test TAU Commander with SQLite backend
         run: |
           export __TAUCMDR_DB_BACKEND__=sqlite
           coverage run setup.py test
           coverage xml
+
+      - name: Upload test results to Codecov (SQLite)
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: TEST-*.xml
+          flags: unittests,CI
+          name: test-results-nightly-${{ matrix.os }}-sqlite
 
       - name: Build sphinx docs
         run: python setup.py build_sphinx
