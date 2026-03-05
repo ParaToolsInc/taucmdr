@@ -246,7 +246,7 @@ class Test(TestCommand):
         assert isinstance(self, TestCommand)
         self.test_args = args + self.test_args
         try:
-            import xmlrunner  # noqa: F811
+            import xmlrunner  # noqa: F401
             self.test_runner = 'xmlrunner:XMLTestRunner'
         except ImportError:
             pass
