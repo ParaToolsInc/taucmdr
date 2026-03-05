@@ -61,4 +61,4 @@ class LibelfInstallation(AutotoolsInstallation):
     def configure(self, flags):
         flags.extend(['--disable-debuginfod'])
         # Libelf's configure script requires CC to be a GNU compiler, so we have to set the environment variable before running the configure script
-        return super().configure(flags, env={'CC':GNU.installation()[CC].unwrap().absolute_path})
+        return super().configure(flags, env={'CC':GNU.installation()[CC].unwrap().absolute_path, 'CFLAGS': '-Wno-error', 'CXXFLAGS': '-Wno-error'})

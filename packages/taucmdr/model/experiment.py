@@ -432,6 +432,16 @@ class Experiment(Model):
         return Trial.controller(self.storage).perform(proj, cmd, os.getcwd(), env, description, record_output)
 
     def managed_rewrite(self, rewrite_package, executable, inst_file):
+        """Instrument an executable via binary rewriting using the experiment's configuration.
+
+        Builds a TauInstallation from the experiment's target, application, and measurement
+        settings, then delegates to :meth:`TauInstallation.rewrite`.
+
+        Args:
+            rewrite_package (str): Rewriting backend ('dyninst', 'pebil', or 'maqao').
+            executable (str): Path to the executable to instrument.
+            inst_file (str): Path for the instrumented output file.
+        """
         from taucmdr.cf.software.tau_installation import TauInstallation
         with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
             populated = self.populate(defaults=True)

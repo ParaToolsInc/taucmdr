@@ -660,6 +660,17 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
 
     @classmethod
     def find_any(cls, role):
+        """Find any installed compiler that can fill the given role.
+
+        Iterates through all known compiler families and probes for an installed
+        compiler matching the specified role.
+
+        Args:
+            role (_CompilerRole): The compiler role to fill (e.g. CC, CXX, FC).
+
+        Raises:
+            ConfigurationError: No installed compiler found for the role.
+        """
         for family in role.kbase.iterfamilies():
             for info in family.members[role]:
                 try:
@@ -727,7 +738,7 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         Args:
             prefix (str): Path to a directory in which the wrapper script will be created.
         """
-        script_file = os.path.join(prefix, '{}_{}'.format(os.path.basename(TAUCMDR_SCRIPT), self.command))
+        script_file = os.path.join(prefix, f'{os.path.basename(TAUCMDR_SCRIPT)}_{self.command}')
         util.mkdirp(prefix)
         with open(script_file, "w+") as fout:
             wrapper = _COMPILER_WRAPPER_TEMPLATE % {'date': str(datetime.now()),

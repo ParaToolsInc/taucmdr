@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2025, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,6 @@ COMMANDS = {None:
                 'cube_regioninfo',
                 'cube_remap2',
                 'cube_sanity',
-                'cube_score',
                 'cube_server',
                 'cube_stat',
                 'cube_test',
@@ -82,7 +81,6 @@ COMMANDS = {None:
                 'otf2-marker',
                 'otf2-print',
                 'otf2-snapshots',
-                'otf2-template',
                 'scorep',
                 'scorep-backend-info',
                 'scorep-config',
@@ -97,7 +95,7 @@ COMMANDS = {None:
 HEADERS = {None: ['otf2/otf2.h']}
 
 
-LIBRARIES = {None: ['libcube4.a']}
+LIBRARIES = {None: ['libcube4.so']}
 
 
 class ScorepInstallation(AutotoolsInstallation):
@@ -114,6 +112,7 @@ class ScorepInstallation(AutotoolsInstallation):
                  use_pdt=False):
         super().__init__('scorep', 'Score-P', sources, target_arch, target_os,
                                                  compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
+        self.add_dependency('gotcha', sources)
         self.use_mpi = use_mpi
         self.use_shmem = use_shmem
         for pkg, used in (('binutils', use_binutils),
@@ -139,7 +138,7 @@ class ScorepInstallation(AutotoolsInstallation):
             suite = suites.get(self.compilers[host.CC].unwrap().info.family)
             flags.append('--with-nocross-compiler-suite' + ('='+suite if suite else ''))
         if self.use_mpi:
-            suites = {mpi.INTEL: 'intel2'}
+            suites = {mpi.INTEL: 'intel2', mpi.SYSTEM: 'openmpi'}
             suite = suites.get(self.compilers[mpi.MPI_CC].info.family)
             if suite:
                 flags.append('--with-mpi=%s' % suite)
@@ -151,6 +150,7 @@ class ScorepInstallation(AutotoolsInstallation):
             flags.append('--with-shmem' + ('='+suite if suite else ''))
         else:
             flags.append('--without-shmem')
+        flags.append('--with-libgotcha=%s' % self.dependencies['gotcha'].install_prefix)
         binutils = self.dependencies.get('binutils')
         libunwind = self.dependencies.get('libunwind')
         papi = self.dependencies.get('papi')

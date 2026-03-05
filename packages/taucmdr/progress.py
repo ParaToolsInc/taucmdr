@@ -175,6 +175,12 @@ class ProgressIndicator:
         self._phase_base = max(self._phase_base, self._phase_depth-1)
 
     def push_phase(self, label, implicit=False):
+        """Begin a new labeled progress phase, starting a background refresh thread if needed.
+
+        Args:
+            label (str): Display label for the progress phase.
+            implicit (bool): If True, phase is automatically popped when the next phase is pushed.
+        """
         if self.auto_refresh:
             if self._thread is None:
                 self._thread = threading.Thread(target=self._thread_progress)
@@ -251,9 +257,9 @@ class ProgressIndicator:
         tdelta = (datetime.now() - tstart).total_seconds()
         self._line_reset()
         if label == "":
-            self._line_append("{:0.1f} seconds {}".format(tdelta, next(self._spinner)))
+            self._line_append(f"{tdelta:0.1f} seconds {next(self._spinner)}")
         else:
-            self._line_append("{}: {:0.1f} seconds {}".format(label, tdelta, next(self._spinner)))
+            self._line_append(f"{label}: {tdelta:0.1f} seconds {next(self._spinner)}")
         show_bar = self.total_size > 0
         if self.show_cpu and self._line_remaining > 40:
             cpu_load = min(load_average(), 1.0)

@@ -8,6 +8,7 @@ name: TAU nightly testing
 on:
   schedule:
     - cron: '18 10 * * *' # 10:18 UTC daily, 3:18 Pacific
+  workflow_dispatch:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
@@ -17,6 +18,9 @@ env:
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"
   TZ: "UTC"
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+  OMPI_MCA_rmaps_base_oversubscribe: "true"
 
 jobs:
   Install-taucmdr-minimal:
@@ -25,13 +29,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04] #, ubuntu-20.04
-        python_version: ['3.7']
+        os: [ubuntu-22.04]
     env:
       OS: ${{ matrix.os }}
-      PY_VER: ${{ matrix.python_version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 9999
 
@@ -39,7 +41,7 @@ jobs:
         run: |
           # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran mpi-default-bin mpi-default-dev
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev
 
       - name: System info
         id: info
@@ -54,14 +56,14 @@ jobs:
           echo "matrix.os:         ${{ matrix.os }}"
           echo "Pythons found:"
           type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< $(type -a python)
+          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
           export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "::set-output name=install_dir::${INSTALLDIR}"
+          echo "install_dir=${INSTALLDIR}" >> "${GITHUB_OUTPUT}"
           echo "INSTALLDIR=${INSTALLDIR}" >> "${GITHUB_ENV}"
-          echo "::set-output name=home_dir::${HOME}"
-          echo "::set-output name=taucmdr_system::${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}"
+          echo "home_dir=${HOME}" >> "${GITHUB_OUTPUT}"
+          echo "taucmdr_system=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
           echo "__TAUCMDR_SYSTEM_PREFIX__=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_ENV}"
-          echo "::set-output name=branch::${GITHUB_REF#refs/*/}"
+          echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
           echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
 
@@ -70,27 +72,27 @@ jobs:
       - name: Install TAU Commander
         run: |
           make INSTALLDIR="${INSTALLDIR}" install
-          echo "${INSTALLDIR}/conda/bin" >> $GITHUB_PATH
+          echo "${INSTALLDIR}/conda/bin" >> "${GITHUB_PATH}"
           export PATH="${INSTALLDIR}/conda/bin:${PATH}"
           which python
           which pip
           python -m pip install -U pip
           python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
           cd "${HOME}"
-          zip -vr taucmdr-nightly.zip ${INSTALLDIR##*/} -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
+          zip -vr taucmdr-nightly.zip "${INSTALLDIR##*/}" -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
           type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< $(type -a python)
+          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
 
       - name: Upload TAU Commander install log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
       - name: Upload TAU Commander minimal install
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-installation-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/taucmdr-nightly.zip
@@ -102,7 +104,7 @@ jobs:
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-full-tau-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
@@ -115,18 +117,38 @@ jobs:
           coverage run setup.py test
           coverage xml
 
+      - name: Upload test results to Codecov (TinyDB)
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: TEST-*.xml
+          flags: unittests,CI
+          name: test-results-nightly-${{ matrix.os }}-tinydb
+
       - name: Test TAU Commander with SQLite backend
         run: |
           export __TAUCMDR_DB_BACKEND__=sqlite
           coverage run setup.py test
           coverage xml
 
+      - name: Upload test results to Codecov (SQLite)
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: TEST-*.xml
+          flags: unittests,CI
+          name: test-results-nightly-${{ matrix.os }}-sqlite
+
       - name: Build sphinx docs
         run: python setup.py build_sphinx
 
       - name: Upload TAU Commander unit test log
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-unit-test-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
@@ -136,14 +158,15 @@ jobs:
         run: |
           cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
           printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
-          export TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
+          TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
+          export TAU_VALIDATE_PARALLEL
           ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
           mkdir "${HOME}/tau-tests-validate"
           cp table.html results.html "${HOME}/tau-tests-validate"
 
       - name: Upload nightly TAU validate
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v7
         with:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate

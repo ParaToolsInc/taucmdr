@@ -44,8 +44,8 @@ from taucmdr.cf.compiler.host import CC, CXX, PGI, NVHPC, GNU
 
 LOGGER = logger.get_logger(__name__)
 
-REPOS = {None: ['http://ftp.gnu.org/gnu/binutils/binutils-2.27.tar.gz',
-                'http://fs.paratools.com/tau-mirror/binutils-2.27.tar.gz']}
+REPOS = {None: ['https://ftp.gnu.org/gnu/binutils/binutils-2.40.tar.gz',
+                'https://fs.paratools.com/tau-mirror/binutils-2.40.tar.gz']}
 
 LIBRARIES = {None: ['libbfd.a']}
 
@@ -67,6 +67,10 @@ class BinutilsInstallation(AutotoolsInstallation):
     def configure(self, flags):
         from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
         flags.extend(['--disable-nls', '--disable-werror'])
+        # We don't need these and they force a dependency on texinfo
+        flags.extend(['--disable-gas', '--disable-gprof', '--disable-gprofng'])
+        # Score-P requires shared library
+        flags.extend(['--enable-shared'])
         for var in 'CPP', 'CC', 'CXX', 'FC', 'F77', 'F90':
             os.environ.pop(var, None)
         if self.target_os is DARWIN:

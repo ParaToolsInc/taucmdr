@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2025, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,30 +24,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""SQLite3 software installation management.
+"""GOTCHA software installation management.
 
-SQLite3 is a single-file relational database. It can be optionally used by TAU
-to store profile data in such a database.
+GOTCHA is required for Score-P 9.0 and later.
 """
 
-from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr import logger
+from taucmdr.cf.software.installation import CMakeInstallation
+from taucmdr.cf.compiler.host import CC, CXX
 
+
+
+LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: [
-    'https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/sos/sqlite-autoconf-3210000.tar.gz',
-    'https://fs.paratools.com/tau-mirror/sqlite-autoconf-3210000.tar.gz'
+    'https://fs.paratools.com/tau-mirror/GOTCHA-1.0.8.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libsqlite3.a', 'libsqlite3.la', 'libsqlite3.so']}
+LIBRARIES = {None: ['libgotcha.so']}
 
-HEADERS = {None: ['sqlite3.h', 'sqlite3ext.h']}
-
-COMMANDS = {None: ['sqlite3']}
+HEADERS = {None: ['gotcha/gotcha.h']}
 
 
-class Sqlite3Installation(AutotoolsInstallation):
-    """Encapsulates a SQLite3 installation."""
+class GotchaInstallation(CMakeInstallation):
+    """Encapsulates a GOTCHA installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        super().__init__('sqlite3', 'SQLite3', sources,
-                         target_arch, target_os, compilers, REPOS, COMMANDS, LIBRARIES, HEADERS)
+        super().__init__('gotcha', 'gotcha', sources, target_arch, target_os,
+                                               compilers, REPOS, None, LIBRARIES, HEADERS)
+
+    def cmake(self, flags):
+        flags.extend(['-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path,
+                      '-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path,
+                      '-DCMAKE_BUILD_TYPE=Release'])
+        return super().cmake(flags)
+
+    def make(self, flags):
+        return super().make(flags)

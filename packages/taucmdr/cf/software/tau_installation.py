@@ -446,6 +446,11 @@ class TauInstallation(Installation):
         self.uses_sqlite3 = not minimal and (self.profile == 'sqlite')
         self.uses_cuda = not minimal and (self.cuda_prefix and (self.cuda_support or self.opencl_support))
         self.uses_level_zero = not minimal and self.measure_level_zero and 'level_zero' in sources
+        self.cupti_prefix = self._find_cupti_prefix() if self.uses_cuda else None
+        if self.uses_cuda and not self.cupti_prefix:
+            LOGGER.warning("CUDA toolkit at '%s' does not contain CUPTI headers. "
+                           "GPU kernel profiling via CUPTI will not be available.",
+                           self.cuda_prefix)
         if 'TIME' not in self.metrics[0]:
             # TAU assumes the first metric is always some kind of wallclock timer
             # so move the first wallclock metric to the front of the list
@@ -507,6 +512,33 @@ class TauInstallation(Installation):
         if os.environ.get('PE_ENV', '').lower() == 'cray':
             raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
                                      "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, PrgEnv-nvidia, or PrgEnv-pgi and try again.")
+
+    def _find_cupti_prefix(self):
+        """Find the CUPTI installation directory within the CUDA toolkit.
+
+        Checks the same paths that TAU's configure script checks when
+        auto-detecting CUPTI from a -cuda=<dir> argument.
+
+        Returns:
+            str: Path to the CUPTI base directory, or None if not found.
+        """
+        if not self.cuda_prefix:
+            return None
+        cuda = self.cuda_prefix
+        arch = platform.machine()
+        osname = platform.system().lower()
+        candidates = [
+            os.path.join(cuda, 'extras', 'CUPTI'),
+            os.path.join(cuda, 'targets', f'{arch}-{osname}'),
+            cuda,
+            os.path.join(cuda, 'extras', 'CUPTI.orig'),
+        ]
+        for base in candidates:
+            header = os.path.join(base, 'include', 'cupti_events.h')
+            if os.path.isfile(header):
+                LOGGER.debug("Found CUPTI headers at %s", header)
+                return base
+        return None
 
     def uid_items(self):
         uid_parts = [self.target_arch.name, self.target_os.name]
@@ -864,8 +896,10 @@ class TauInstallation(Installation):
             pythoninc = get_command_output(
                 [python_path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
 
+        tag = self.uid
+
         flags = [flag for flag in
-                 ['-tag=%s' % self.uid,
+                 ['-tag=%s' % tag,
                   '-arch=%s' % self.tau_magic.name,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
@@ -884,6 +918,7 @@ class TauInstallation(Installation):
                   '-mpilib=%s' % mpilib if mpilib else None,
                   '-mpilibrary=%s' % mpilibrary if mpilibrary else None,
                   '-cuda=%s' % self.cuda_prefix if self.uses_cuda else None,
+                  '-cupti=%s' % self.cupti_prefix if self.cupti_prefix else None,
                   '-opencl=%s' % self.opencl_prefix if self.opencl_prefix else None,
                   '-shmem' if self.shmem_support else None,
                   '-shmeminc=%s' % shmeminc if shmeminc else None,
@@ -951,6 +986,11 @@ class TauInstallation(Installation):
             raise SoftwarePackageError('TAU configure failed')
 
     def make_install_minimal(self):
+        """Build and install only the TraceInput library and TAU utilities.
+
+        Unlike :meth:`make_install`, this does not compile all of TAU.
+        Utility build failures are ignored since only a subset may be needed.
+        """
         cmd = ['make'] + parallel_make_flags()
         LOGGER.info('Compiling trace input library...')
         util.create_subprocess(
@@ -1112,7 +1152,7 @@ class TauInstallation(Installation):
             tags.add('mpi')
         if self.openacc_support:
             tags.add('acc')
-        if self.cuda_support or self.opencl_support:
+        if self.cupti_prefix:
             tags.add('cupti')
         if self.shmem_support:
             tags.add('shmem')
@@ -1404,7 +1444,7 @@ class TauInstallation(Installation):
             opts.append('-v')
         if self.sample:
             opts.append('-ebs')
-        if self.measure_cuda:
+        if self.measure_cuda and self.cupti_prefix:
             opts.append('-cupti')
         if self.openacc_support:
             opts.append('-openacc')
@@ -1917,6 +1957,16 @@ class TauInstallation(Installation):
         return metrics
 
     def rewrite(self, rewrite_package, executable, inst_file):
+        """Use a binary rewriting tool to instrument an executable.
+
+        Args:
+            rewrite_package (str): Rewriting backend ('dyninst', 'pebil', or 'maqao').
+            executable (str): Path to the executable to instrument.
+            inst_file (str): Path for the instrumented output file.
+
+        Raises:
+            ConfigurationError: The rewriting tool failed to instrument the executable.
+        """
         makefile = self.get_makefile()
         tags = self._makefile_tags(makefile)
         if not self.mpi_support:

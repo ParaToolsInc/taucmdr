@@ -182,8 +182,11 @@ class TestCase(unittest.TestCase):
         # pylint: disable=attribute-defined-outside-init
         assert result is not None
         self._result_stream = result.stream
-        LOGGER.debug(f"Running {self} in {get_test_workdir()}.")
-        return super().run(result)
+        LOGGER.debug(f"Running test {self} in {get_test_workdir()}.")
+        test_result = super().run(result)
+        LOGGER.debug(f"Finished test {self} in {get_test_workdir()}.")
+        return test_result
+
 
     def reset_project_storage(self, init_args=None):
         """Delete and recreate project storage.
@@ -292,7 +295,7 @@ class TestCase(unittest.TestCase):
             return inf['path']
         else :
             return None
-    
+
     def assertCompiler(self, role, target_name='targ1'):
         path = self.getCompiler(role, target_name)
         if path is not None :
