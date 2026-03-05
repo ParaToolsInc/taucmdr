@@ -237,7 +237,7 @@ class _SQLiteJsonTable:
         where_clause = join_string.join(
             ["json_extract(data, '$.{}') == {}".format(key, (
                 int(val) if isinstance(val, int) else json.dumps(val) if isinstance(val, str) else
-                "json('{}')".format(json.dumps(val)))) for (key, val) in keys.items()])
+                f"json('{json.dumps(val)}')")) for (key, val) in keys.items()])
         if where_clause:
             where_clause = f"WHERE {where_clause}"
         return where_clause
@@ -312,14 +312,14 @@ class _SQLiteJsonTable:
             return
         if unset:
             if not isinstance(fields, (list, tuple)):
-                raise ValueError('fields must be a collection type but was {}'.format(type(fields)))
+                raise ValueError(f'fields must be a collection type but was {type(fields)}')
             json_set_expr = "json_remove(data{})".format("".join([f", '$.{key}'" for key in fields]))
         else:
             if not isinstance(fields, dict):
-                raise ValueError('fields must be a dictionary but was {}'.format(type(fields)))
+                raise ValueError(f'fields must be a dictionary but was {type(fields)}')
             json_set_expr = "json_set(data{})".format(
                 "".join(
-                    [", '$.{}', json('{}')".format(key, json.dumps(value)) for (key, value) in fields.items()]))
+                    [f", '$.{key}', json('{json.dumps(value)}')" for (key, value) in fields.items()]))
 
         # Then construct the WHERE clause to match either the EIDs provided
         # or the keys provided.
@@ -592,7 +592,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
             return self.get(keys, table_name=table_name, match_any=match_any) is not None
         else:
             raise ValueError(
-                '"keys" must be dict, list, tuple, or {}, but was {}'.format(self.Record.eid_type, type(keys)))
+                f'"keys" must be dict, list, tuple, or {self.Record.eid_type}, but was {type(keys)}')
 
     def insert(self, data, table_name=None):
         """Create a new record.
@@ -635,7 +635,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
             table.update(fields, eids=keys)
         else:
             raise ValueError(
-                '"keys" must be dict, list, tuple, or {}, but was {}'.format(self.Record.eid_type, type(keys)))
+                f'"keys" must be dict, list, tuple, or {self.Record.eid_type}, but was {type(keys)}')
 
     def unset(self, fields, keys, table_name=None, match_any=False):
         """Update records by unsetting fields.

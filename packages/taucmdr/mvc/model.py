@@ -112,7 +112,7 @@ class Model(StorageRecord, metaclass=ModelMeta):
         deprecated = [attr for attr in record if attr not in self.attributes]
         if deprecated:
             try:
-                title = "{} '{}'".format(self.name, record[self.key_attribute])
+                title = f"{self.name} '{record[self.key_attribute]}'"
             except (KeyError, ModelError):
                 title = "%s" % self.name
             LOGGER.debug("Ignoring deprecated attributes %s in %s", deprecated, title)

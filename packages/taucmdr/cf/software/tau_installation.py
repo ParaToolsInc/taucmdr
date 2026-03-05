@@ -529,7 +529,7 @@ class TauInstallation(Installation):
         osname = platform.system().lower()
         candidates = [
             os.path.join(cuda, 'extras', 'CUPTI'),
-            os.path.join(cuda, 'targets', '%s-%s' % (arch, osname)),
+            os.path.join(cuda, 'targets', f'{arch}-{osname}'),
             cuda,
             os.path.join(cuda, 'extras', 'CUPTI.orig'),
         ]
