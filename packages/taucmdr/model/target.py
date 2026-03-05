@@ -124,6 +124,7 @@ def papi_source_default():
     return 'download'
 
 def level_zero_source_default():
+    """Locate the oneAPI Level Zero library path, or None if unavailable."""
     try:
         ld_lib_paths = os.environ['LD_LIBRARY_PATH'].split(':')
     except KeyError:

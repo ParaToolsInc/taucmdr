@@ -52,6 +52,12 @@ def valid(context, record):
     return True in [_has(req, record) for req in context]
 
 def contextualize(function):
+    """Decorator that filters a controller method's returned records by context requirements.
+
+    Wraps the decorated function so that its result (a dict or list of records)
+    is filtered to include only records matching the controller's active context.
+    Context is a list of (key, value) requirements checked via :func:`valid`.
+    """
     def wrapper(*args, **kwargs):
         self = args[0]
         context = kwargs.pop("context", self.context)

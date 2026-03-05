@@ -271,6 +271,13 @@ class _SQLiteJsonTable:
         return self._get(keys=keys, eid=eid, match_any=match_any, remove=True)
 
     def search(self, cond, match_any=False):
+        """Return all records in this table matching the given conditions.
+
+        Args:
+            cond (dict): Field-value pairs to match against stored JSON records.
+            match_any (bool): If True, match records satisfying any condition (OR);
+                otherwise all conditions must match (AND).
+        """
         if cond is None:
             cond = {}
         cursor = self.database.cursor()
@@ -290,6 +297,15 @@ class _SQLiteJsonTable:
         return len(matches)
 
     def update(self, fields, keys=None, eids=None, match_any=False, unset=False):
+        """Update or remove fields in records matching the given keys or element IDs.
+
+        Args:
+            fields: Field-value dict to set, or a list/tuple of field names to remove if *unset*.
+            keys (dict): Field-value pairs identifying records to update.
+            eids: Element ID or list of element IDs identifying records to update.
+            match_any (bool): If True, match records satisfying any key (OR); otherwise AND.
+            unset (bool): If True, remove the named fields instead of setting them.
+        """
         # Construct the json_set expression
         if not fields:
             # We were asked to update no fields, which is a no-op

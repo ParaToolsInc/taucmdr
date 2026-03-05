@@ -71,6 +71,7 @@ class ModelMeta(type):
 
     @property
     def key_attribute(cls):
+        """Return the name of the attribute marked as the primary key, caching the result."""
         # pylint: disable=attribute-defined-outside-init
         try:
             return cls._key_attribute

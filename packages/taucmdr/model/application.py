@@ -47,6 +47,14 @@ from taucmdr.cf.compiler.caf import CAF_COMPILERS
 LOGGER = logger.get_logger(__name__)
 
 def attributes():
+    """Construct attributes dictionary for the application model.
+
+    We build the attributes in a function so that classes like ``taucmdr.model.project.Project``
+    are fully initialized and usable in the returned dictionary.
+
+    Returns:
+        dict: Attributes dictionary.
+    """
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement

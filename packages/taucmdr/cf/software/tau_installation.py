@@ -990,6 +990,11 @@ class TauInstallation(Installation):
             raise SoftwarePackageError('TAU configure failed')
 
     def make_install_minimal(self):
+        """Build and install only the TraceInput library and TAU utilities.
+
+        Unlike :meth:`make_install`, this does not compile all of TAU.
+        Utility build failures are ignored since only a subset may be needed.
+        """
         cmd = ['make'] + parallel_make_flags()
         LOGGER.info('Compiling trace input library...')
         util.create_subprocess(
@@ -1956,6 +1961,16 @@ class TauInstallation(Installation):
         return metrics
 
     def rewrite(self, rewrite_package, executable, inst_file):
+        """Use a binary rewriting tool to instrument an executable.
+
+        Args:
+            rewrite_package (str): Rewriting backend ('dyninst', 'pebil', or 'maqao').
+            executable (str): Path to the executable to instrument.
+            inst_file (str): Path for the instrumented output file.
+
+        Raises:
+            ConfigurationError: The rewriting tool failed to instrument the executable.
+        """
         makefile = self.get_makefile()
         tags = self._makefile_tags(makefile)
         if not self.mpi_support:

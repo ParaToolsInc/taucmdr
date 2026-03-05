@@ -175,6 +175,12 @@ class ProgressIndicator:
         self._phase_base = max(self._phase_base, self._phase_depth-1)
 
     def push_phase(self, label, implicit=False):
+        """Begin a new labeled progress phase, starting a background refresh thread if needed.
+
+        Args:
+            label (str): Display label for the progress phase.
+            implicit (bool): If True, phase is automatically popped when the next phase is pushed.
+        """
         if self.auto_refresh:
             if self._thread is None:
                 self._thread = threading.Thread(target=self._thread_progress)

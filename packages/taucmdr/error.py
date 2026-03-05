@@ -73,6 +73,7 @@ class Error(Exception):
 
     @property
     def message(self) -> str:
+        """Format the error message by combining the message template with hints and context fields."""
         fields = dict(self.message_fields, value=self.value)
         if not self.hints:
             hints_str = ''

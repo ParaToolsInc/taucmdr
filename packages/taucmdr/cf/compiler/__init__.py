@@ -660,6 +660,17 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
 
     @classmethod
     def find_any(cls, role):
+        """Find any installed compiler that can fill the given role.
+
+        Iterates through all known compiler families and probes for an installed
+        compiler matching the specified role.
+
+        Args:
+            role (_CompilerRole): The compiler role to fill (e.g. CC, CXX, FC).
+
+        Raises:
+            ConfigurationError: No installed compiler found for the role.
+        """
         for family in role.kbase.iterfamilies():
             for info in family.members[role]:
                 try:

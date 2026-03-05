@@ -62,6 +62,14 @@ STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 
 
 def highest_writable_storage():
+    """Return the highest-priority writable storage level, caching the result.
+
+    Searches :data:`ORDERED_LEVELS` in reverse (system, user, project) and returns
+    the first writable level found.
+
+    Raises:
+        StorageError: No writable storage levels are available.
+    """
     try:
         return highest_writable_storage.value
     except AttributeError as err:
