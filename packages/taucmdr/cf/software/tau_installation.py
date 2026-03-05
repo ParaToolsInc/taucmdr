@@ -897,10 +897,6 @@ class TauInstallation(Installation):
                 [python_path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
 
         tag = self.uid
-        if (not self.pthreads_support and self.openmp_support
-                and self.measure_openmp == 'ompt'
-                and not self.uses_ompt_tr6 and not self.uses_ompt_tr4):
-            tag += '-v5'
 
         flags = [flag for flag in
                  ['-tag=%s' % tag,
