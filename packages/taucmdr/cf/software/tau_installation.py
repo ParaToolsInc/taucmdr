@@ -368,7 +368,7 @@ class TauInstallation(Installation):
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
         self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
         self._lib_subdir = os.path.join(self.tau_magic.name, 'lib')
-        self.verbose = (logger.LOG_LEVEL == 'DEBUG')
+        self.verbose = logger.LOG_LEVEL == 'DEBUG'
         self.minimal = minimal
         self.application_linkage = application_linkage
         self.openmp_support = openmp_support
@@ -433,10 +433,12 @@ class TauInstallation(Installation):
         self.unwind_depth = unwind_depth
         self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
-        self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources and self.unwinder == 'libunwind'
+        self.uses_libunwind = (not minimal and (self.target_os is not DARWIN)
+                               and 'libunwind' in sources and self.unwinder == 'libunwind')
         self.uses_libelf = not minimal and (self.target_os is not DARWIN) and 'libelf' in sources
-        self.uses_libdwarf = not minimal and (self.target_os is not DARWIN) and 'libdwarf' in sources and self.uses_libelf
-        self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
+        self.uses_libdwarf = (not minimal and (self.target_os is not DARWIN)
+                              and 'libdwarf' in sources and self.uses_libelf)
+        self.uses_papi = not minimal and any('PAPI' in met for met in self.metrics)
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
@@ -463,8 +465,11 @@ class TauInstallation(Installation):
         for met in self.metrics:
             mets.extend(met.split(','))
         self.metrics = mets
-        uses = lambda pkg: sources.get(pkg, False) if forced_makefile else getattr(self, 'uses_'+pkg)
-        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'sqlite3', 'level_zero':
+        def uses(pkg):
+            return sources.get(pkg, False) if forced_makefile else getattr(self, 'uses_' + pkg)
+
+        for pkg in ('binutils', 'libunwind', 'libelf', 'libdwarf', 'papi',
+                     'pdt', 'ompt', 'libotf2', 'sqlite3', 'level_zero'):
             if uses(pkg):
                 self.add_dependency(pkg, sources)
         if uses('scorep'):
@@ -486,7 +491,8 @@ class TauInstallation(Installation):
         try:
             target_compilers = target_family.installation()
         except ConfigurationError as err:
-            raise SoftwarePackageError("%s compilers (required to build TAU) could not be found." % target_family) from err
+            raise SoftwarePackageError(
+                "%s compilers (required to build TAU) could not be found." % target_family) from err
         for role in TAU_MINIMAL_COMPILERS:
             if role not in target_compilers:
                 raise SoftwarePackageError("A %s compiler (required to build TAU) could not be found." % role.language)
@@ -508,8 +514,10 @@ class TauInstallation(Installation):
             raise ConfigurationError("TAU cannot be used with darshan. ",
                                      "Unload the darshan module and try again.")
         if os.environ.get('PE_ENV', '').lower() == 'cray':
-            raise ConfigurationError("TAU Commander cannot be used with Cray compilers. ",
-                                     "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, PrgEnv-nvidia, or PrgEnv-pgi and try again.")
+            raise ConfigurationError(
+                "TAU Commander cannot be used with Cray compilers. ",
+                "Replace PrgEnv-cray with PrgEnv-intel, PrgEnv-gnu, "
+                "PrgEnv-nvidia, or PrgEnv-pgi and try again.")
 
     def _find_cupti_prefix(self):
         """Find the CUPTI installation directory within the CUDA toolkit.
@@ -543,8 +551,9 @@ class TauInstallation(Installation):
         # TAU changes if any compiler changes.
         uid_parts.extend(sorted(comp.uid for comp in self.compilers.values()))
         # TAU changes if any dependencies change.
-        for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3', 'level_zero':
-            if getattr(self, 'uses_'+pkg):
+        for pkg in ('binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt',
+                    'ompt', 'libotf2', 'scorep', 'sqlite3', 'level_zero'):
+            if getattr(self, 'uses_' + pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
@@ -606,7 +615,7 @@ class TauInstallation(Installation):
 
     def _verify_dependency_paths(self, tau_makefile):
         LOGGER.debug("Checking dependency paths in '%s'", tau_makefile)
-        with open(tau_makefile) as fin:
+        with open(tau_makefile, encoding='utf-8') as fin:
             for line in fin:
                 if line.startswith('#'):
                     continue
@@ -1057,7 +1066,7 @@ class TauInstallation(Installation):
             try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):
-                    LOGGER.info(f'Installing {self.title} to:\n    {self.install_prefix}')
+                    LOGGER.info('Installing %s to:\n    %s', self.title, self.install_prefix)
                     try:
                         shutil.move(self._prepare_src(), self.install_prefix)
                     except Exception as err:
@@ -1262,7 +1271,8 @@ class TauInstallation(Installation):
         Returns:
             dict: `env` without TAU environment variables.
         """
-        is_tau_var = lambda x: x.startswith('TAU_') or x.startswith('SCOREP_') or x in ('PROFILEDIR', 'TRACEDIR')
+        def is_tau_var(x):
+            return x.startswith('TAU_') or x.startswith('SCOREP_') or x in ('PROFILEDIR', 'TRACEDIR')
         dirt = {key: val for key, val in env.items() if is_tau_var(key)}
         if dirt:
             LOGGER.info("\nIgnoring TAU environment variables set in user's environment:\n%s\n",
@@ -1539,7 +1549,8 @@ class TauInstallation(Installation):
             raise InternalError(f"None of '{appfile_flags}' found in '{cmd}'")
         tau_appfile = os.path.join(util.mkdtemp().name, appfile+".tau")
         LOGGER.debug("Rewriting '%s' as '%s'", appfile, tau_appfile)
-        with open(tau_appfile, 'w') as fout, open(appfile) as fin:
+        with open(tau_appfile, 'w', encoding='utf-8') as fout, \
+                open(appfile, encoding='utf-8') as fin:
             for lineno, line in enumerate(fin, 1):
                 line = line.strip()
                 if not line or line.startswith('#'):

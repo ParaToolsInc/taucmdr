@@ -159,13 +159,13 @@ def tau_source_default():
         str: Path to TAU or "download".
     """
     try:
-        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source')) as fin:
+        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source'), encoding='utf-8') as fin:
             path = fin.read()
     except OSError:
         return 'download'
     path = path.strip()
     if not (os.path.isdir(path) and util.path_accessible(path)):
-        LOGGER.warning("'%s' does not exist or is not accessible.")
+        LOGGER.warning("'%s' does not exist or is not accessible.", path)
         return 'download'
     return path
 
@@ -676,7 +676,8 @@ class Target(Model):
             InstalledCompilerSet: Collection of installed compilers used by this target.
         """
         if not self._compilers:
-            # We use the paths to the compilers as unique identifiers since the EIDs for the records may come from different tables, and so may not be unique
+            # We use the paths to the compilers as unique identifiers since the EIDs
+            # for the records may come from different tables, and so may not be unique
             paths = []
             compilers = {}
             for role in Knowledgebase.all_roles():
@@ -721,7 +722,7 @@ class Target(Model):
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)
         found = []
-        known_compilers = [comp for comp in self.compilers().values()]
+        known_compilers = list(self.compilers().values())
         for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
                 compiler_record = self.populate(info.role.keyword)
