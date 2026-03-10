@@ -439,8 +439,6 @@ class TauInstallation(Installation):
         self.uses_papi = not minimal and bool(len([met for met in self.metrics if 'PAPI' in met]))
         self.uses_scorep = not minimal and (self.profile == 'cubex')
         self.uses_ompt = not minimal and (self.measure_openmp == 'ompt')
-        self.uses_ompt_tr4 = self.uses_ompt and sources['ompt'] == 'download-tr4'
-        self.uses_ompt_tr6 = self.uses_ompt and sources['ompt'] == 'download-tr6'
         self.uses_opari = not minimal and (self.measure_openmp == 'opari')
         self.uses_libotf2 = not minimal and (self.trace == 'otf2')
         self.uses_sqlite3 = not minimal and (self.profile == 'sqlite')
@@ -951,10 +949,6 @@ class TauInstallation(Installation):
                             flags.append('-ompt-v5')
                         else:
                             flags.append('-ompt=%s' % ompt.install_prefix)
-                    if self.uses_ompt_tr4:
-                        flags.append('-ompt-tr4')
-                    elif self.uses_ompt_tr6:
-                        flags.append('-ompt-tr6')
                 elif self.measure_openmp == 'opari':
                     flags.append('-opari')
                 else:
@@ -976,6 +970,10 @@ class TauInstallation(Installation):
         useropts.extend(['-DTAU_MAX_THREADS=%d' % self._get_max_threads(),
                          '-DTAU_MAX_METRICS=%d' % self._get_max_metrics(),
                          '-DTAU_MAX_COUNTERS=%d' % self._get_max_metrics()])
+        # Work around TAU configure not propagating the OMPT include path
+        # to generated Makefiles (needed for omp-tools.h).
+        if ompt:
+            useropts.append('-I%s' % ompt.include_path)
         # -useropt flag uses '#' as an argument separator
         flags.append('-useropt=' + '#'.join(useropts))
 
@@ -1136,12 +1134,6 @@ class TauInstallation(Installation):
                 tags.add('openmp')
                 if self.measure_openmp == 'ompt':
                     tags.add('ompt')
-                    if self.uses_ompt_tr6:
-                        tags.add('tr6')
-                    elif self.uses_ompt_tr4:
-                        tags.add('tr4')
-                    else:
-                        tags.add('v5')
                 elif self.measure_openmp == 'opari':
                     tags.add('opari')
                 else:
@@ -1187,7 +1179,6 @@ class TauInstallation(Installation):
             tags.add('openmp')
             tags.add('opari')
             tags.add('ompt')
-            tags.add('tr6')
             tags.add('gomp')
         if not self.uses_scorep:
             tags.add('scorep')
@@ -1454,8 +1445,6 @@ class TauInstallation(Installation):
             opts.append('-opencl')
         if self.measure_openmp == 'ompt':
             opts.append('-ompt')
-        if self.uses_ompt_tr6:
-            env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'
         if self.uses_ompt:
             env['TAU_OMPT_SUPPORT_LEVEL'] = 'full'
             env['TAU_OMPT_RESOLVE_ADDRESS_EAGERLY'] = '1'

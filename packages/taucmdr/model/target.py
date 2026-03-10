@@ -517,7 +517,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
