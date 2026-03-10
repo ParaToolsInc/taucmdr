@@ -187,25 +187,11 @@ jobs:
           flags: unittests,CI
           name: test-results-${{ matrix.os }}-${{ matrix.backend }}
 
-      - name: Archive Sphinx docs for GitHub Pages
-        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' || github.ref == 'refs/heads/fix-doc-deployment') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
-        run: |
-          tar \
-            --dereference --hard-dereference \
-            --directory ./build/sphinx/html \
-            -cvf "$RUNNER_TEMP/artifact.tar" \
-            --exclude=.git \
-            --exclude=.github \
-            .
-
       - name: Upload Sphinx docs for GitHub Pages
         if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' || github.ref == 'refs/heads/fix-doc-deployment') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-pages-artifact@v4
         with:
-          name: github-pages
-          path: ${{ runner.temp }}/artifact.tar
-          retention-days: 1
-          if-no-files-found: error
+          path: ./build/sphinx/html
 
       - name: tau_validate
         if: always()
