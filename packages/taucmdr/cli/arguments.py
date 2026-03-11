@@ -470,6 +470,10 @@ class ParsePackagePathAction(argparse.Action):
             namespace (object): Namespace to receive parsed value via setattr.
             value (str): Value parsed from the command line.
         """
+        if value.lower() in ('download-tr4', 'download-tr6'):
+            raise argparse.ArgumentError(
+                self, "'%s' is no longer supported. Upstream TAU removed TR4/TR6 "
+                "differentiation in favor of OMPT 5.0. Use 'download' instead." % value)
         try:
             value_as_bool = util.parse_bool(value, additional_true=['download', 'nightly'])
         except TypeError as err:
