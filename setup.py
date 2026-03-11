@@ -256,11 +256,9 @@ class Test(TestCommand):
             return TestCommand.run_tests(self)
         finally:
             if self.system_sandbox:
-                shutil.rmtree(tmp_system_prefix, ignore_errors=True)
-                del tmp_system_prefix
+                tmp_system_prefix.cleanup()
             if self.user_sandbox:
-                shutil.rmtree(tmp_user_prefix, ignore_errors=True)
-                del tmp_user_prefix
+                tmp_user_prefix.cleanup()
 
 
 class InstallLib(InstallLibCommand):

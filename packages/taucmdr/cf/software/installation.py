@@ -164,6 +164,8 @@ class Installation:
             raise ConfigurationError("download-tr4 is not a valid source for %s" % self.title)
         else:
             self.src = src
+            self.srcs = []
+            self.srcs_avail = [self.src]
         self.unmanaged = os.path.isdir(self.src)
 
     def uid_items(self):

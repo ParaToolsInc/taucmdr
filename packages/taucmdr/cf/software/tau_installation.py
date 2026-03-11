@@ -364,6 +364,7 @@ class TauInstallation(Installation):
         self._all_sources = sources
         if self.src == 'nightly':
             self.src = NIGHTLY
+            self.srcs_avail = [NIGHTLY]
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
         self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
