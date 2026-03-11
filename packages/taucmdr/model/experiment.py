@@ -235,7 +235,12 @@ class Experiment(Model):
             return os.path.join(self.populate('project').prefix, self['name'])
 
     def verify(self):
-        """Checks all components of the experiment for mutual compatibility."""
+        """Checks all components of the experiment for mutual compatibility.
+
+        This is a pre-flight check that does not require TAU to be installed.
+        Version-gated deprecation checks are performed separately in
+        verify_post_install() once the installed TAU version is known.
+        """
         populated = self.populate()
         proj = populated['project']
         targ = populated['target']
@@ -248,26 +253,38 @@ class Experiment(Model):
         for lhs in [targ, app, meas]:
             for rhs in [targ, app, meas]:
                 lhs.check_compatibility(rhs)
-        self._check_deprecated_values(targ, app, meas)
 
-    def _check_deprecated_values(self, *components):
+    def verify_post_install(self, tau_ver):
+        """Check component attributes for deprecated values against the installed TAU version.
+
+        Separate from verify() because deprecation status depends on the installed TAU
+        version, which is only known after tau.install(). Called from configure().
+
+        Args:
+            tau_ver (tuple): Installed TAU version as a tuple of ints, e.g. (2, 33, 2).
+        """
+        populated = self.populate()
+        targ = populated['target']
+        app = populated['application']
+        meas = populated['measurement']
+        self._check_deprecated_values(targ, app, meas, tau_ver=tau_ver)
+
+    def _check_deprecated_values(self, *components, tau_ver):
         """Check component attributes for deprecated or removed values.
 
         Attribute definitions may include a 'deprecated' key mapping values
         to (deprecated_version, removed_version) tuples, where versions are
         upstream TAU version strings (e.g. '2.32'). Empty string means N/A.
-        """
-        record = self.controller(self.storage).search(self.eid)
-        if not record:
-            return
-        tau_ver_str = record[0].get('tau_version')
-        if not tau_ver_str:
-            return
-        try:
-            tau_ver = tuple(int(x) for x in tau_ver_str.split('.'))
-        except (ValueError, AttributeError):
-            return
 
+        Note: this check requires the installed TAU version. Experiments that have
+        never been configured (no tau.install() run yet) will not trigger this check;
+        the CLI guards in arguments.py enforce restrictions at creation time for new
+        configurations.
+
+        Args:
+            *components: Model records (target, application, measurement) to inspect.
+            tau_ver (tuple): Installed TAU version as a tuple of ints, e.g. (2, 33, 2).
+        """
         for comp in components:
             for attr, props in comp.attributes.items():
                 deprecated_map = props.get('deprecated')
@@ -415,7 +432,8 @@ class Experiment(Model):
                 {'tau_version': '.'.join(str(x) for x in tau_ver)}, self.eid)
         if not baseline:
             self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
-        self.verify()
+        if tau_ver:
+            self.verify_post_install(tau_ver)
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):
