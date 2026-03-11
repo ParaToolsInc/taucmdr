@@ -519,7 +519,11 @@ def attributes():
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
-            'rebuild_required': True
+            'rebuild_required': True,
+            'deprecated': {
+                'download-tr4': ('2.29.1', '2.32'),
+                'download-tr6': ('2.29.1', '2.32'),
+            },
         },
         'libotf2_source': {
             'type': 'string',

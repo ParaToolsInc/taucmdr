@@ -1989,6 +1989,25 @@ class TauInstallation(Installation):
             raise ConfigurationError("TAU was unable rewrite the executable.")
         return retval
 
+    def get_tau_version(self):
+        """Read TAU Performance System version from installed headers.
+
+        Returns:
+            tuple: Version as tuple of ints (e.g. (2, 33, 2)), or None.
+        """
+        header = os.path.join(self.install_prefix, 'include', 'TAU.h.default')
+        try:
+            with open(header, encoding='utf-8') as fh:
+                for line in fh:
+                    if '#define TAU_VERSION' in line:
+                        ver = line.split('"')[1]
+                        if ver.endswith('-git'):
+                            ver = ver[:-4]
+                        return tuple(int(x) for x in ver.split('.'))
+        except (OSError, IndexError, ValueError):
+            LOGGER.debug("Could not read TAU version from %s", header)
+        return None
+
     def get_python_version(self, python_path):
         cmd = [python_path, '--version']
         out = util.get_command_output(cmd)
