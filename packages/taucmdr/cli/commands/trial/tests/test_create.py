@@ -112,6 +112,7 @@ class CreateTest(tests.TestCase):
         #self.assertInLastTrialData("Heap Allocate")
         #self.assertInLastTrialData("malloc")
 
+    @tests.skipIf(HOST_OS is DARWIN, "Source instrumentation (PDT) unavailable on modern macOS")
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
@@ -200,6 +201,7 @@ class CreateTest(tests.TestCase):
         self.assertIn("Selected experiment 'targ1-app1-sample'", stdout)
         self.assertFalse(stderr)
 
+    @tests.skipIf(HOST_OS is DARWIN, "Source instrumentation (PDT) unavailable on modern macOS")
     def test_system_load_profile(self):
         """Test TAU_TRACK_LOAD w/ profiling"""
         self.reset_project_storage()

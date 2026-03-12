@@ -44,6 +44,7 @@ from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
 from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from taucmdr.cf.storage.storage_dispatch import AVAILABLE_BACKENDS
@@ -188,6 +189,11 @@ class InitializeCommand(AbstractCommand):
             self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
             args.sample = False
             args.compiler_inst = 'never'
+            if HOST_OS is DARWIN:
+                # PDT's pre-built parser (edgcpfe) is a 32-bit (i386/ppc) binary and cannot
+                # run on macOS 10.15+ which dropped 32-bit support.
+                self.logger.info("PDT source parser incompatible with modern macOS: disabling source instrumentation")
+                args.source_inst = 'never'
 
         # Create default measurements
         measurements = []
