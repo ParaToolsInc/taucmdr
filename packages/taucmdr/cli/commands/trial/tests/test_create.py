@@ -175,12 +175,15 @@ class CreateTest(tests.TestCase):
         self.assertIn("TAU_EBS_RESOLUTION="+option, stdout)
         self.assertFalse(stderr)
 
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling requires libunwind which does not build on Darwin")
     def test_sample_resolution_file(self):
         self.sample_resolution_helper('file')
 
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling requires libunwind which does not build on Darwin")
     def test_sample_resolution_function(self):
         self.sample_resolution_helper('function')
 
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling requires libunwind which does not build on Darwin")
     def test_sample_resolution_line(self):
         self.sample_resolution_helper('line')
 
