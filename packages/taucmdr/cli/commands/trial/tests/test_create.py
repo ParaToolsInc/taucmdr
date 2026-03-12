@@ -135,10 +135,14 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("<attribute><name>TAU_TRACK_HEAP</name><value>on</value></attribute>")
         self.assertInLastTrialData("Heap Memory Used (KB) at Entry")
         self.assertInLastTrialData("Heap Memory Used (KB) at Exit")
-        self.assertInLastTrialData("Heap Allocate")
-        self.assertInLastTrialData("compute_interchange")
-        self.assertInLastTrialData("compute")
-        self.assertInLastTrialData("malloc")
+        if HOST_OS is not DARWIN:
+            # On macOS with runtime-only instrumentation (tau_exec, no source/compiler inst),
+            # TAU cannot profile individual functions — only heap tracking events are captured.
+            # TAU bug: the dynamic malloc wrapper (e.g. tau_exec -memory) doesn't always capture malloc().
+            self.assertInLastTrialData("compute_interchange")
+            self.assertInLastTrialData("compute")
+            self.assertInLastTrialData("Heap Allocate")
+            self.assertInLastTrialData("malloc")
 
     def test_without_libelf(self):
         self.reset_project_storage(['--libelf', 'none'])
