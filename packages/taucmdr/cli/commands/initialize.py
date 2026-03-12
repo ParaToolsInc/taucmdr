@@ -208,20 +208,33 @@ class InitializeCommand(AbstractCommand):
                 measurements.append(self._create_measurement(
                     'sample', args, profile=args.profile, trace='none',
                     sample=True, source_inst='never', compiler_inst='never'))
-            if args.source_inst != 'never' or args.compiler_inst != 'never':
+            if HOST_OS is DARWIN:
+                # On macOS, PDT's edgcpfe parser is a 32-bit (i386/ppc) binary and cannot
+                # run on macOS 10.15+. Create 'profile' with runtime-only instrumentation
+                # (tau_exec) so that experiments using 'profile' can still be created and
+                # managed, and trials will work when TAU is properly installed.
+                measurements.append(self._create_measurement(
+                    'profile', args, profile=args.profile, trace='none',
+                    sample=False, source_inst='never', compiler_inst='never'))
+            elif args.source_inst != 'never' or args.compiler_inst != 'never':
                 measurements.append(self._create_measurement(
                     'profile', args, profile=args.profile, trace='none',
                     sample=False, source_inst=args.source_inst, compiler_inst=args.compiler_inst))
-            if args.source_inst != 'never':
-                measurements.append(self._create_measurement(
-                    'source-inst', args, profile=args.profile, trace='none',
-                    sample=False, source_inst=args.source_inst, compiler_inst='never'))
-            if args.compiler_inst != 'never':
-                measurements.append(self._create_measurement(
-                    'compiler-inst', args, profile=args.profile, trace='none',
-                    sample=False, source_inst='never', compiler_inst='always'))
+                if args.source_inst != 'never':
+                    measurements.append(self._create_measurement(
+                        'source-inst', args, profile=args.profile, trace='none',
+                        sample=False, source_inst=args.source_inst, compiler_inst='never'))
+                if args.compiler_inst != 'never':
+                    measurements.append(self._create_measurement(
+                        'compiler-inst', args, profile=args.profile, trace='none',
+                        sample=False, source_inst='never', compiler_inst='always'))
         if args.trace != 'none':
-            if args.source_inst != 'never' or args.compiler_inst != 'never':
+            if HOST_OS is DARWIN:
+                # Same rationale as 'profile' above: create 'trace' without source instrumentation.
+                measurements.append(self._create_measurement(
+                    'trace', args, profile='none', trace=args.trace, callpath=0,
+                    sample=False, source_inst='never', compiler_inst='never'))
+            elif args.source_inst != 'never' or args.compiler_inst != 'never':
                 measurements.append(self._create_measurement(
                     'trace', args, profile='none', trace=args.trace, callpath=0,
                     sample=False, source_inst=args.source_inst, compiler_inst=args.compiler_inst))
