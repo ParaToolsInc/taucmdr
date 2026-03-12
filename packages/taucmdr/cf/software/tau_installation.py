@@ -1396,8 +1396,8 @@ class TauInstallation(Installation):
         elif self.profile == 'sqlite':
             # Disable regular TAU Profile output when using SQLite plugin
             env['TAU_PROFILE'] = '0'
-            # This may need to be changed for macOS which uses .dylib
-            tau_plugins.append('libTAU-sqlite3-plugin.so')
+            shlibx = '.dylib' if self.target_os is DARWIN else '.so'
+            tau_plugins.append('libTAU-sqlite3-plugin' + shlibx)
         else:
             env['TAU_PROFILE'] = '0'
             env['SCOREP_ENABLE_PROFILING'] = 'false'

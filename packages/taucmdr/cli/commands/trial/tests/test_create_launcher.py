@@ -34,6 +34,7 @@ from taucmdr import tests, util
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.compiler.caf import CAF_FC
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 
 class CreateLauncherTest(tests.TestCase):
@@ -42,6 +43,7 @@ class CreateLauncherTest(tests.TestCase):
     https://github.com/ParaToolsInc/taucmdr/issues/210
     """
 
+    @tests.skipIf(HOST_OS is DARWIN, "On macOS, DYLD_INSERT_LIBRARIES is stripped by bash when tau_exec wraps a shell script launcher")
     def test_foo_launcher_simple(self):
         self.reset_project_storage()
         self.copy_testfile('foo_launcher')
@@ -66,6 +68,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertIn("Done", stdout)
         self.assertRegex(stdout, r'./foo_launcher tau_exec .* ./a.out')
 
+    @tests.skipIf(HOST_OS is DARWIN, "On macOS, DYLD_INSERT_LIBRARIES is stripped by bash when tau_exec wraps a shell script launcher")
     def test_invalid_exe(self):
         self.reset_project_storage()
         self.copy_testfile('foo_launcher')
