@@ -68,6 +68,7 @@ class CreateTest(tests.TestCase):
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI metrics require papi_source which is None on macOS")
     def test_no_time_metric(self):
         self.reset_project_storage()
         argv = ['meas_no_time', '--metrics', 'PAPI_L2_DCM', '--source-inst', 'never']
