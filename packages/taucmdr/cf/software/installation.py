@@ -376,11 +376,16 @@ class Installation:
                 raise SoftwarePackageError("'%s' exists but is not executable" % path)
         for lib in self.verify_libraries:
             path = os.path.join(self.lib_path, lib)
-            if not util.path_accessible(path):
-                # Some systems (e.g. SuSE) append the machine bitwidth to the library path
-                path = os.path.join(self.lib_path+'64', lib)
-                if not util.path_accessible(path):
-                    raise SoftwarePackageError("'%s' is not accessible" % path)
+            if util.path_accessible(path):
+                continue
+            # Some systems (e.g. SuSE) append the machine bitwidth to the library path
+            if util.path_accessible(os.path.join(self.lib_path + '64', lib)):
+                continue
+            # macOS uses .dylib instead of .so
+            if HOST_OS is DARWIN and lib.endswith('.so'):
+                if util.path_accessible(os.path.join(self.lib_path, lib[:-3] + '.dylib')):
+                    continue
+            raise SoftwarePackageError("'%s' is not accessible" % path)
         for header in self.verify_headers:
             path = os.path.join(self.include_path, header)
             if not util.path_accessible(path):
