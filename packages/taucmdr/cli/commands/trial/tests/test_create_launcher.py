@@ -116,6 +116,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertIn("produced 4 profile files", stdout)
         self.assertRegex(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
 
+    @tests.skipIf(HOST_OS is DARWIN, "OpenCoarray/cafrun does not produce profiles on macOS")
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
     def test_cafrun(self):
@@ -127,6 +128,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertRegex(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
 
+    @tests.skipIf(HOST_OS is DARWIN, "OpenCoarray/cafrun does not produce profiles on macOS")
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
     def test_cafrun_with_flag(self):
