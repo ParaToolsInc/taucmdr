@@ -37,7 +37,7 @@ jobs:
       OS: ${{ matrix.os }}
       __TAUCMDR_DB_BACKEND__: ${{ matrix.backend }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 9999
 
@@ -55,8 +55,8 @@ jobs:
           mount
           df -h
           gcc --version
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref:        ${{ github.ref }}"
+          echo "github.event_name: ${GITHUB_EVENT_NAME}"
+          echo "github.ref:        ${GITHUB_REF}"
           echo "matrix.os:         ${{ matrix.os }}"
           echo "Pythons found:"
           type -a python
@@ -70,7 +70,7 @@ jobs:
           echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
           echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
-          BASEREF=${{ github.base_ref }}
+          BASEREF=${GITHUB_BASE_REF}
           if [ "${BASEREF}" ]; then
             echo "baseref=${BASEREF#refs/*/}" >> "${GITHUB_OUTPUT}"
             echo "BASEREF: ${BASEREF#/refs/*/}"
@@ -80,7 +80,7 @@ jobs:
           fi
 
       - name: Cache TAU sources
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.info.outputs.taucmdr_system}}/src
           key: ${{ matrix.os }}-system-src-${{ github.sha }}
@@ -88,7 +88,7 @@ jobs:
             ${{ matrix.os }}-system-src
 
       - name: Cache pylint directory
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.info.outputs.home_dir }}/.pylint.d
           key: ${{ matrix.os }}-pylint-cache-${{ steps.info.outputs.branch }}-${{ github.sha }}
@@ -161,7 +161,7 @@ jobs:
 
       - name: Pylint PR Comment
         if: env.ACT != 'true' && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: pylint-comment
           path: ./pylint.md
@@ -169,7 +169,7 @@ jobs:
 
       - name: Upload Coverage info
         if: always() && env.ACT != 'true'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests,CI
@@ -179,7 +179,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: always() && env.ACT != 'true'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
@@ -189,7 +189,7 @@ jobs:
 
       - name: Upload Sphinx docs for GitHub Pages
         if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./build/sphinx/html
 
@@ -224,8 +224,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
