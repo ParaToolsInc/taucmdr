@@ -97,3 +97,64 @@ class TauInstallationTest(tests.TestCase):
         """No cuda_prefix: returns None without touching filesystem."""
         result = TauInstallation._find_cupti_prefix(self._fake_self(None))
         self.assertIsNone(result)
+
+
+class TauVersionTest(tests.TestCase):
+    """Tests for TauInstallation.get_tau_version() header parsing."""
+
+    def setUp(self):
+        super().setUp()
+        self._prefix = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self._prefix, ignore_errors=True)
+        super().tearDown()
+
+    def _write_header(self, *lines):
+        """Write include/TAU.h.default under the per-test install prefix."""
+        inc = os.path.join(self._prefix, 'include')
+        os.makedirs(inc, exist_ok=True)
+        with open(os.path.join(inc, 'TAU.h.default'), 'w', encoding='utf-8') as fh:
+            fh.write('\n'.join(lines) + '\n')
+
+    def _fake_self(self):
+        class _FakeSelf:
+            pass
+        fs = _FakeSelf()
+        fs.install_prefix = self._prefix
+        return fs
+
+    def test_release_version(self):
+        """Plain release string parses to a tuple of ints."""
+        self._write_header('#ifndef TAU_H_DEFAULT', '#define TAU_VERSION "2.33.2"', '#endif')
+        self.assertEqual(TauInstallation.get_tau_version(self._fake_self()), (2, 33, 2))
+
+    def test_git_suffix_stripped(self):
+        """Nightly builds carry a -git suffix that must not break parsing."""
+        self._write_header('#define TAU_VERSION "2.35.1-git"')
+        self.assertEqual(TauInstallation.get_tau_version(self._fake_self()), (2, 35, 1))
+
+    def test_two_component_version(self):
+        """Major.minor only is a valid, comparable tuple."""
+        self._write_header('#define TAU_VERSION "2.32"')
+        self.assertEqual(TauInstallation.get_tau_version(self._fake_self()), (2, 32))
+
+    def test_missing_header_returns_none(self):
+        """No TAU.h.default under the prefix: returns None instead of raising."""
+        self.assertIsNone(TauInstallation.get_tau_version(self._fake_self()))
+
+    def test_header_without_version_returns_none(self):
+        """Header present but no TAU_VERSION define: returns None."""
+        self._write_header('#define TAU_MAX_THREADS 128')
+        self.assertIsNone(TauInstallation.get_tau_version(self._fake_self()))
+
+    def test_malformed_version_returns_none(self):
+        """Non-numeric version string is swallowed and reported as None."""
+        self._write_header('#define TAU_VERSION "unknown"')
+        self.assertIsNone(TauInstallation.get_tau_version(self._fake_self()))
+
+    def test_unquoted_version_returns_none(self):
+        """Define without quotes cannot be split on '"' and is reported as None."""
+        self._write_header('#define TAU_VERSION 2.33.2')
+        self.assertIsNone(TauInstallation.get_tau_version(self._fake_self()))
