@@ -799,6 +799,39 @@ class TauInstallation(Installation):
 
         return selected_inc, selected_lib, selected_library
 
+    @staticmethod
+    def _find_python_library(stdlib, shlib_suffix):
+        """Locate the shared libpython that belongs to a Python standard library directory.
+
+        Searches ``stdlib`` recursively, then its parent directory, for ``libpython*.<suffix>*``.
+
+        Args:
+            stdlib (str): ``sysconfig.get_path("stdlib")`` as reported by the target interpreter.
+            shlib_suffix (str): 'dylib' on Darwin, 'so' elsewhere.
+
+        Returns:
+            tuple: ``(libdir, libname)``.  ``libdir`` is the directory holding the library, for
+                TAU's ``-pythonlib``.  ``libname`` is the unversioned file name (e.g.
+                ``libpython3.14.dylib``) for TAU's ``-pythonlibrary``, or None when only
+                versioned names such as ``libpython3.12.so.1.0`` exist.  TAU's FixMakefile
+                strips a single extension from ``-pythonlibrary`` to form the ``-l`` flag, so a
+                versioned name must never be passed.
+
+        Raises:
+            ConfigurationError: No shared libpython found near ``stdlib``.
+        """
+        pattern = '**/libpython*.' + shlib_suffix + '*'
+        for root in (stdlib, os.path.dirname(stdlib)):
+            matches = sorted(glob.glob(os.path.join(root, pattern), recursive=True))
+            if not matches:
+                continue
+            for path in matches:
+                if path.endswith('.' + shlib_suffix):
+                    return os.path.dirname(path), os.path.basename(path)
+            return os.path.dirname(matches[0]), None
+        raise ConfigurationError("Unable to find libpython*.%s in %s or its parent directory" %
+                                 (shlib_suffix, stdlib))
+
     def configure(self):
         """Configures TAU
 
@@ -883,24 +916,16 @@ class TauInstallation(Installation):
                                    self.compilers[SHMEM_FC])
 
         if self.uses_python:
-            # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
+            # Build TAU with -pythoninc, -pythonlib, and -pythonlibrary derived from the target's
+            # interpreter.  -pythonlibrary is passed explicitly because TAU's configure otherwise
+            # derives the file name from sysconfig LDLIBRARY, which on framework builds of Python
+            # (e.g. Homebrew on macOS) is 'Python.framework/Versions/3.X/Python' and does not
+            # exist under the lib directory, so configure aborts.
             python_path = self.compilers[PY].absolute_path
-            _pythonlib = get_command_output(
+            python_stdlib = get_command_output(
                 [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
-            dylib_suffix = 'dylib' if platform.system() == 'Darwin' else 'so'
-            for g in glob.iglob(os.path.join(_pythonlib, '**/libpython*.'+dylib_suffix+'*'), recursive=True):
-                pythonlib = os.path.dirname(g)
-                break
-            else:  # Try searching in the parent directory of stdlib
-                for g in glob.iglob(
-                    os.path.join(os.path.dirname(_pythonlib), '**/libpython*.'+dylib_suffix+'*'),
-                    recursive=True
-                ):
-                    pythonlib = os.path.dirname(g)
-                    break
-                else:
-                    raise ConfigurationError(
-                        f"Unable to find libpython in {_pythonlib} for {python_path}")
+            shlib_suffix = 'dylib' if self.target_os is DARWIN else 'so'
+            pythonlib, pythonlibrary = self._find_python_library(python_stdlib, shlib_suffix)
             pythoninc = get_command_output(
                 [python_path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
 
@@ -934,6 +959,7 @@ class TauInstallation(Installation):
                   '-shmemlibrary=%s' % shmemlibrary if shmemlibrary else None,
                   '-pythoninc=%s' % pythoninc if self.uses_python else None,
                   '-pythonlib=%s' % pythonlib if self.uses_python else None,
+                  '-pythonlibrary=%s' % pythonlibrary if self.uses_python and pythonlibrary else None,
                   '-otf=%s' % libotf2.install_prefix if libotf2 else None,
                   '-sqlite3=%s' % sqlite3.install_prefix if sqlite3 else None,
                   '-level_zero=%s' %level_zero.install_prefix if level_zero else None,
