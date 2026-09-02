@@ -33,6 +33,7 @@ import os
 from taucmdr import tests, util, EXIT_SUCCESS
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 from taucmdr.cli.commands.trial.export import COMMAND as trial_export_cmd
 from taucmdr.model.project import Project
@@ -83,6 +84,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipIf(HOST_OS is DARWIN, "Score-P does not build on macOS so scorep_source is None")
     def test_export_cubex(self):
         self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
         if util.which('nvc') and self.getCompiler(CC) == util.which('nvc') :
