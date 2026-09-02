@@ -42,6 +42,8 @@ class CreateLauncherTest(tests.TestCase):
 
     https://github.com/ParaToolsInc/taucmdr/issues/210
     """
+    # On Darwin TAU is linked into MPI applications instead of injected by tau_exec.
+    _TAU_EXEC = '' if HOST_OS is DARWIN else 'tau_exec .* '
 
     @tests.skipIf(HOST_OS is DARWIN, "On macOS, DYLD_INSERT_LIBRARIES is stripped by bash when tau_exec wraps a shell script launcher")
     def test_foo_launcher_simple(self):
@@ -88,7 +90,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
-        self.assertRegex(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
+        self.assertRegex(stdout, rf'mpirun -np 4 {self._TAU_EXEC}./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
@@ -100,7 +102,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
-        self.assertRegex(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
+        self.assertRegex(stdout, rf'mpirun -np 4 {self._TAU_EXEC}./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
@@ -114,7 +116,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
-        self.assertRegex(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
+        self.assertRegex(stdout, rf'mpirun -np 2 {self._TAU_EXEC}./a.out : -np 2 {self._TAU_EXEC}./b.out')
 
     @tests.skipIf(HOST_OS is DARWIN, "OpenCoarray/cafrun does not produce profiles on macOS")
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")

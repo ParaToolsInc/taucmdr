@@ -31,7 +31,10 @@ Functions used for unit tests of tau_installation.py.
 
 import os
 import tempfile
+from types import SimpleNamespace
 from taucmdr import tests
+from taucmdr.cf.compiler.mpi import MPI_CC
+from taucmdr.cf.platforms import DARWIN, LINUX
 from taucmdr.cf.software.tau_installation import TauInstallation
 
 
@@ -158,3 +161,105 @@ class TauVersionTest(tests.TestCase):
         """Define without quotes cannot be split on '"' and is reported as None."""
         self._write_header('#define TAU_VERSION 2.33.2')
         self.assertIsNone(TauInstallation.get_tau_version(self._fake_self()))
+
+
+class _FakeRuntimeInstallation:
+    """Stand-in for TauInstallation exposing only what the wrapper and launch gates read.
+
+    The real predicate is borrowed so the gates and the rule they share are tested together.
+    """
+    # pylint: disable=too-few-public-methods,protected-access
+
+    _links_tau_on_darwin = TauInstallation._links_tau_on_darwin
+
+    def __init__(self, target_os, mpi_support):
+        self.target_os = target_os
+        self.mpi_support = mpi_support
+        self.baseline = False
+        self.uses_python = False
+        self.unmanaged = False
+        self.uid = 'deadbeef'
+        self.application_linkage = 'dynamic'
+        self.source_inst = 'never'
+        self.compiler_inst = 'never'
+        self.measure_openmp = 'ignore'
+        self.measure_opencl = False
+        self.tbb_support = False
+        self.pthreads_support = False
+        self.profile = 'tau'
+        self.trace = 'none'
+
+    def install(self):
+        """No-op: nothing to install for a fake."""
+
+    @staticmethod
+    def runtime_config():
+        """No tau_exec options and no environment changes."""
+        return [], {}
+
+    @staticmethod
+    def get_makefile():
+        """Any makefile name; tags are supplied by _makefile_tags()."""
+        return 'Makefile.tau-deadbeef-mpi'
+
+    def _makefile_tags(self, _makefile):
+        return {'deadbeef', 'mpi'} if self.mpi_support else {'deadbeef'}
+
+
+class RuntimeInstrumentationOnDarwinTest(tests.TestCase):
+    """MPI with runtime-only instrumentation on Darwin must link TAU in, not inject it with tau_exec.
+
+    dyld on macOS 12 and later ignores DYLD_FORCE_FLAT_NAMESPACE, so tau_exec never intercepts MPI
+    calls in a two-level-namespace binary. Linking with tau_cc.sh -optLinkOnly sidesteps dyld.
+    """
+
+    _COMPILER = SimpleNamespace(info=SimpleNamespace(role=MPI_CC), absolute_path='/opt/mpi/bin/mpicc')
+
+    def _compiler_command(self, fake):
+        return TauInstallation.get_compiler_command(fake, self._COMPILER)
+
+    @staticmethod
+    def _launch_command(fake):
+        cmd, _ = TauInstallation.get_application_command(fake, ['mpirun', '-np', '4'], [['./a.out']])
+        return cmd
+
+    def test_darwin_mpi_links_with_wrapper(self):
+        """Darwin + MPI + no source/compiler instrumentation compiles through tau_cc.sh."""
+        fake = _FakeRuntimeInstallation(DARWIN, mpi_support=True)
+        self.assertEqual(self._compiler_command(fake), 'tau_cc.sh')
+
+    def test_linux_mpi_uses_plain_compiler(self):
+        """Same configuration on Linux keeps the plain compiler; tau_exec works there."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        self.assertEqual(self._compiler_command(fake), self._COMPILER.absolute_path)
+
+    def test_darwin_serial_uses_plain_compiler(self):
+        """Darwin without MPI keeps the plain compiler; nothing to interpose."""
+        fake = _FakeRuntimeInstallation(DARWIN, mpi_support=False)
+        self.assertEqual(self._compiler_command(fake), self._COMPILER.absolute_path)
+
+    def test_darwin_mpi_static_linkage_still_uses_wrapper(self):
+        """Static linkage already forced the wrapper; the Darwin rule must not undo that."""
+        fake = _FakeRuntimeInstallation(DARWIN, mpi_support=True)
+        fake.application_linkage = 'static'
+        self.assertEqual(self._compiler_command(fake), 'tau_cc.sh')
+
+    def test_darwin_mpi_launches_without_tau_exec(self):
+        """Darwin + MPI + no source/compiler instrumentation runs the linked binary directly."""
+        fake = _FakeRuntimeInstallation(DARWIN, mpi_support=True)
+        self.assertEqual(self._launch_command(fake), ['mpirun', '-np', '4', './a.out'])
+
+    def test_linux_mpi_launches_with_tau_exec(self):
+        """Same configuration on Linux still wraps the application in tau_exec."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        cmd = self._launch_command(fake)
+        self.assertEqual(cmd[:3], ['mpirun', '-np', '4'])
+        self.assertEqual(cmd[3], 'tau_exec')
+        self.assertEqual(cmd[-1], './a.out')
+
+    def test_darwin_serial_launches_with_tau_exec(self):
+        """Darwin without MPI still uses tau_exec; no MPI symbols need interposing."""
+        fake = _FakeRuntimeInstallation(DARWIN, mpi_support=False)
+        cmd = self._launch_command(fake)
+        self.assertEqual(cmd[3], 'tau_exec')
+        self.assertIn('serial', cmd[5])
