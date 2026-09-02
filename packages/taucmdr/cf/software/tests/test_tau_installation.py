@@ -30,9 +30,11 @@ Functions used for unit tests of tau_installation.py.
 """
 
 import os
+import shutil
 import tempfile
 from types import SimpleNamespace
 from taucmdr import tests
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.platforms import DARWIN, LINUX
 from taucmdr.cf.software.tau_installation import TauInstallation
@@ -263,3 +265,79 @@ class RuntimeInstrumentationOnDarwinTest(tests.TestCase):
         cmd = self._launch_command(fake)
         self.assertEqual(cmd[3], 'tau_exec')
         self.assertIn('serial', cmd[5])
+
+
+class PythonLibraryTest(tests.TestCase):
+    """Tests for TauInstallation._find_python_library() shared-library discovery.
+
+    TAU's configure derives the Python library file name from sysconfig LDLIBRARY. On
+    Homebrew's framework Python that is ``Python.framework/Versions/3.X/Python``, which
+    does not exist under the lib directory, so configure aborts. Passing
+    ``-pythonlibrary=libpython3.X.dylib`` explicitly sidesteps that lookup.
+    """
+    # pylint: disable=protected-access
+
+    def setUp(self):
+        super().setUp()
+        self._prefix = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self._prefix, ignore_errors=True)
+        super().tearDown()
+
+    def _layout(self, stdlib, *libs):
+        """Create <prefix>/<stdlib>/ and touch each lib path given relative to <prefix>.
+
+        Returns the absolute stdlib path, as sysconfig.get_path("stdlib") would report it.
+        """
+        os.makedirs(os.path.join(self._prefix, stdlib), exist_ok=True)
+        for lib in libs:
+            path = os.path.join(self._prefix, lib)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, 'w', encoding='utf-8'):
+                pass
+        return os.path.join(self._prefix, stdlib)
+
+    def _lib(self, *parts):
+        return os.path.join(self._prefix, *parts)
+
+    def test_homebrew_framework_layout(self):
+        """libpython beside the stdlib dir (Homebrew framework): lib dir plus unversioned name."""
+        stdlib = self._layout('lib/python3.14', 'lib/libpython3.14.dylib')
+        self.assertEqual(TauInstallation._find_python_library(stdlib, 'dylib'),
+                         (self._lib('lib'), 'libpython3.14.dylib'))
+
+    def test_library_inside_stdlib_tree(self):
+        """libpython under the stdlib tree (config-* dir) wins over the parent directory."""
+        config = 'lib/python3.12/config-3.12-x86_64-linux-gnu'
+        stdlib = self._layout('lib/python3.12', config + '/libpython3.12.so', 'lib/libpython3.12.so')
+        self.assertEqual(TauInstallation._find_python_library(stdlib, 'so'),
+                         (self._lib(config), 'libpython3.12.so'))
+
+    def test_versioned_only_no_name(self):
+        """Only libpython3.12.so.1.0 present: the dir is usable, but no name is reported.
+
+        FixMakefile strips one extension from -pythonlibrary to build the -l flag, so a
+        versioned name would link against a nonexistent 'python3.12.so.1'.
+        """
+        stdlib = self._layout('lib/python3.12', 'lib/libpython3.12.so.1.0')
+        self.assertEqual(TauInstallation._find_python_library(stdlib, 'so'),
+                         (self._lib('lib'), None))
+
+    def test_prefers_unversioned_name(self):
+        """Both versioned and unversioned present: the unversioned name is reported."""
+        stdlib = self._layout('lib/python3.12', 'lib/libpython3.12.so.1.0', 'lib/libpython3.12.so')
+        self.assertEqual(TauInstallation._find_python_library(stdlib, 'so'),
+                         (self._lib('lib'), 'libpython3.12.so'))
+
+    def test_wrong_suffix_not_matched(self):
+        """A .so is not a candidate when the target wants .dylib."""
+        stdlib = self._layout('lib/python3.14', 'lib/libpython3.14.so')
+        with self.assertRaises(ConfigurationError):
+            TauInstallation._find_python_library(stdlib, 'dylib')
+
+    def test_missing_library_raises(self):
+        """No libpython anywhere near the stdlib: ConfigurationError."""
+        stdlib = self._layout('lib/python3.14')
+        with self.assertRaises(ConfigurationError):
+            TauInstallation._find_python_library(stdlib, 'dylib')

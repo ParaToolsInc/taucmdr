@@ -267,11 +267,6 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("first_prime_after")
 
     @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
-    # TAU configure fails to locate the Python library when Python is installed
-    # via Homebrew on macOS (nested .framework layout confuses TAU's configure).
-    # Revisit when upstream TAU patches the Python library detection.
-    # See: tau-python-macos-configure-bug.md
-    @tests.skipIf(HOST_OS is DARWIN, "TAU configure fails with Homebrew Python on macOS (upstream bug)")
     def test_run_python3(self):
         self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])
         self.copy_testfile('firstprime.py')
