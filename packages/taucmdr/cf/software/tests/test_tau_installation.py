@@ -33,10 +33,13 @@ import os
 import shutil
 import tempfile
 from types import SimpleNamespace
+from unittest import mock
 from taucmdr import tests
-from taucmdr.error import ConfigurationError
+from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler.mpi import MPI_CC
+from taucmdr.cf.compiler.python import PY
 from taucmdr.cf.platforms import DARWIN, LINUX
+from taucmdr.cf.software import tau_installation
 from taucmdr.cf.software.tau_installation import TauInstallation
 
 
@@ -50,7 +53,6 @@ class TauInstallationTest(tests.TestCase):
         self._cuda_tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        import shutil
         shutil.rmtree(self._cuda_tmpdir, ignore_errors=True)
         super().tearDown()
 
@@ -62,14 +64,12 @@ class TauInstallationTest(tests.TestCase):
         """Create a fake cupti_events.h under the per-test cuda tmpdir."""
         inc = os.path.join(self._cuda_tmpdir, *path_parts, 'include')
         os.makedirs(inc, exist_ok=True)
-        open(os.path.join(inc, 'cupti_events.h'), 'w').close()
-
-    def _fake_self(self, cuda_prefix):
-        class _FakeSelf:
+        with open(os.path.join(inc, 'cupti_events.h'), 'w', encoding='utf-8'):
             pass
-        fs = _FakeSelf()
-        fs.cuda_prefix = cuda_prefix
-        return fs
+
+    @staticmethod
+    def _fake_self(cuda_prefix):
+        return SimpleNamespace(cuda_prefix=cuda_prefix)
 
     # ------------------------------------------------------------------ #
     # _find_cupti_prefix                                                   #
@@ -112,7 +112,6 @@ class TauVersionTest(tests.TestCase):
         self._prefix = tempfile.mkdtemp()
 
     def tearDown(self):
-        import shutil
         shutil.rmtree(self._prefix, ignore_errors=True)
         super().tearDown()
 
@@ -124,11 +123,7 @@ class TauVersionTest(tests.TestCase):
             fh.write('\n'.join(lines) + '\n')
 
     def _fake_self(self):
-        class _FakeSelf:
-            pass
-        fs = _FakeSelf()
-        fs.install_prefix = self._prefix
-        return fs
+        return SimpleNamespace(install_prefix=self._prefix)
 
     def test_release_version(self):
         """Plain release string parses to a tuple of ints."""
@@ -173,6 +168,7 @@ class _FakeRuntimeInstallation:
     # pylint: disable=too-few-public-methods,protected-access
 
     _links_tau_on_darwin = TauInstallation._links_tau_on_darwin
+    _rewrite_launcher_appfile_cmd = TauInstallation._rewrite_launcher_appfile_cmd
 
     def __init__(self, target_os, mpi_support):
         self.target_os = target_os
@@ -181,6 +177,7 @@ class _FakeRuntimeInstallation:
         self.uses_python = False
         self.unmanaged = False
         self.uid = 'deadbeef'
+        self.compilers = {}
         self.application_linkage = 'dynamic'
         self.source_inst = 'never'
         self.compiler_inst = 'never'
@@ -341,3 +338,235 @@ class PythonLibraryTest(tests.TestCase):
         stdlib = self._layout('lib/python3.14')
         with self.assertRaises(ConfigurationError):
             TauInstallation._find_python_library(stdlib, 'dylib')
+
+
+class EnvironmentTest(tests.TestCase):
+    """Tests for environment sanitizing and environment compatibility checks."""
+    # pylint: disable=protected-access
+
+    def test_sanitize_environment_strips_tau_variables(self):
+        """TAU_*, SCOREP_*, PROFILEDIR and TRACEDIR are dropped and reported; everything else survives."""
+        env = {'TAU_METRICS': 'TIME', 'SCOREP_TOTAL_MEMORY': '1G', 'PROFILEDIR': '/p',
+               'TRACEDIR': '/t', 'PATH': '/bin', 'HOME': '/h'}
+        with self.assertLogs(tau_installation.LOGGER, level='INFO') as logs:
+            clean = TauInstallation._sanitize_environment(env)
+        self.assertEqual(clean, {'PATH': '/bin', 'HOME': '/h'})
+        self.assertIn('TAU_METRICS=TIME', logs.output[0])
+        self.assertIn('TRACEDIR=/t', logs.output[0])
+
+    def test_sanitize_environment_is_silent_when_clean(self):
+        """Nothing to strip means nothing is logged; a TAU prefix without underscore is not a TAU variable."""
+        env = {'PATH': '/bin', 'TAUCMDR_HOME': '/x'}
+        with mock.patch.object(tau_installation.LOGGER, 'info') as info:
+            self.assertEqual(TauInstallation._sanitize_environment(env), env)
+        info.assert_not_called()
+
+    def test_check_env_compat_rejects_darshan(self):
+        """Darshan preloaded or loaded as a module is incompatible with TAU."""
+        with mock.patch.dict(os.environ, {'DARSHAN_PRELOAD': '/opt/darshan/lib/libdarshan.so'}):
+            with self.assertRaises(ConfigurationError):
+                TauInstallation.check_env_compat()
+        with mock.patch.dict(os.environ, {'LOADEDMODULES': 'gcc/12.2:Darshan/3.4.0'}):
+            with self.assertRaises(ConfigurationError):
+                TauInstallation.check_env_compat()
+
+    def test_check_env_compat_rejects_cray_compilers(self):
+        """PrgEnv-cray is rejected regardless of case."""
+        with mock.patch.dict(os.environ, {'PE_ENV': 'CRAY'}):
+            with self.assertRaises(ConfigurationError) as ctx:
+                TauInstallation.check_env_compat()
+        self.assertIn('Cray', str(ctx.exception))
+
+    def test_check_env_compat_accepts_clean_environment(self):
+        """No darshan and a non-Cray programming environment pass."""
+        env = {key: val for key, val in os.environ.items()
+               if key not in ('DARSHAN_PRELOAD', 'LOADEDMODULES', 'PE_ENV')}
+        env['PE_ENV'] = 'GNU'
+        with mock.patch.dict(os.environ, env, clear=True):
+            TauInstallation.check_env_compat()
+
+
+class LauncherAppfileTest(tests.TestCase):
+    """Tests for rewriting launcher application files (mpirun --app, srun --multi-prog) to use tau_exec."""
+    # pylint: disable=protected-access
+
+    _TAU_EXEC = ['tau_exec', '-T', 'mpi']
+
+    @staticmethod
+    def _write_appfile(*lines):
+        path = os.path.abspath('app.cfg')
+        with open(path, 'w', encoding='utf-8') as fout:
+            fout.write('\n'.join(lines) + '\n')
+        return path
+
+    @staticmethod
+    def _read_lines(path):
+        with open(path, encoding='utf-8') as fin:
+            return [line.split() for line in fin if line.strip()]
+
+    def test_mpirun_appfile_rewritten(self):
+        """Each command line gets tau_exec in front of its executable; comments and blank lines are dropped."""
+        appfile = self._write_appfile('# rank layout', '', '-np 2 ls -l', '-np 1 hostname')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--app', appfile], self._TAU_EXEC)
+        self.assertEqual(cmd[:2], ['mpirun', '--app'])
+        self.assertEqual(len(cmd), 3)
+        self.assertNotEqual(cmd[2], appfile)
+        self.assertTrue(cmd[2].endswith('.tau'))
+        self.assertEqual(self._read_lines(cmd[2]),
+                         [['-np', '2'] + self._TAU_EXEC + ['ls', '-l'],
+                          ['-np', '1'] + self._TAU_EXEC + ['hostname']])
+
+    def test_srun_multi_prog_inserts_after_rank_spec(self):
+        """Slurm multi-prog lines start with a task range, so tau_exec always goes in second position."""
+        appfile = self._write_appfile('0 ls', '1-3 hostname -s')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['srun', '-n', '4', '--multi-prog', appfile, '--label'], self._TAU_EXEC)
+        self.assertEqual(cmd[:4], ['srun', '-n', '4', '--multi-prog'])
+        self.assertEqual(cmd[5:], ['--label'])
+        self.assertEqual(self._read_lines(cmd[4]),
+                         [['0'] + self._TAU_EXEC + ['ls'],
+                          ['1-3'] + self._TAU_EXEC + ['hostname', '-s']])
+
+    def test_unknown_launcher_rejected(self):
+        """Launchers without a known application-file flag cannot be rewritten."""
+        appfile = self._write_appfile('-np 2 ls')
+        for launcher in ('aprun', 'my_launcher'):
+            with self.assertRaises(InternalError):
+                TauInstallation._rewrite_launcher_appfile_cmd(None, [launcher, '--app', appfile], self._TAU_EXEC)
+
+    def test_missing_appfile_flag_rejected(self):
+        """A launcher command with no application-file flag cannot be rewritten."""
+        with self.assertRaises(InternalError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-np', '4'], self._TAU_EXEC)
+
+    def test_line_without_executable_rejected(self):
+        """A command line that names no executable is a configuration error, not silently passed through."""
+        appfile = self._write_appfile('-np 2 no_such_program_for_taucmdr_tests')
+        with self.assertRaises(ConfigurationError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-app', appfile], self._TAU_EXEC)
+
+
+class ApplicationCommandTest(tests.TestCase):
+    """Tests for get_application_command() paths that need no real TAU installation."""
+    # pylint: disable=protected-access
+
+    _LAUNCHER = ['mpirun', '-np', '4']
+
+    @staticmethod
+    def _launch(fake, launcher, apps):
+        cmd, _ = TauInstallation.get_application_command(fake, list(launcher), apps)
+        return cmd
+
+    def test_baseline_uses_tau_baseline(self):
+        """Baseline measurements run everything under tau_baseline without touching the makefile."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        fake.baseline = True
+        cmd = self._launch(fake, self._LAUNCHER, [['./a.out', '-x'], [':', '-np', '2', './b.out']])
+        self.assertEqual(cmd, ['tau_baseline', 'mpirun', '-np', '4', './a.out', '-x', ':', '-np', '2', './b.out'])
+
+    def test_site_launcher_args_appended(self):
+        """Site-specific launcher arguments from the environment follow the launcher, ahead of tau_exec."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        with mock.patch.dict(os.environ, {'__TAUCMDR_LAUNCHER_ARGS__': '--bind-to core'}):
+            cmd = self._launch(fake, self._LAUNCHER, [['./a.out']])
+        self.assertEqual(cmd[:5], ['mpirun', '-np', '4', '--bind-to', 'core'])
+        self.assertEqual(cmd[5], 'tau_exec')
+
+    def test_mpmd_wraps_each_executable(self):
+        """Every MPMD command gets its own tau_exec; launcher flags between commands are untouched."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        cmd = self._launch(fake, self._LAUNCHER, [['ls', '-l'], [':', '-np', '2', 'hostname']])
+        tags = cmd[5]
+        self.assertEqual(set(tags.split(',')), {'deadbeef', 'mpi'})
+        self.assertEqual(cmd, ['mpirun', '-np', '4', 'tau_exec', '-T', tags, 'ls', '-l',
+                               ':', '-np', '2', 'tau_exec', '-T', tags, 'hostname'])
+
+    def test_mpmd_command_without_executable_rejected(self):
+        """An MPMD command that names no executable cannot be wrapped."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        with self.assertRaises(InternalError):
+            self._launch(fake, self._LAUNCHER, [['./a.out'], [':', '-np', '2', 'no_such_program_for_taucmdr_tests']])
+
+    def test_appfile_launch_rewrites_appfile(self):
+        """With no application command the launcher's application file is rewritten instead."""
+        appfile = os.path.abspath('app.cfg')
+        with open(appfile, 'w', encoding='utf-8') as fout:
+            fout.write('-np 2 ls\n')
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        cmd = self._launch(fake, ['mpirun', '--app', appfile], [])
+        self.assertEqual(cmd[:2], ['mpirun', '--app'])
+        self.assertTrue(cmd[2].endswith('.tau'))
+        with open(cmd[2], encoding='utf-8') as fin:
+            self.assertIn('tau_exec -T', fin.read())
+
+    def test_unmanaged_makefile_without_uid_warns(self):
+        """A hand-built TAU whose makefile lacks our UID is used, with a warning."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        fake.unmanaged = True
+        fake._makefile_tags = lambda _: {'mpi'}
+        with self.assertLogs(tau_installation.LOGGER, level='WARNING') as logs:
+            cmd = self._launch(fake, self._LAUNCHER, [['./a.out']])
+        self.assertIn('runtime compatibility', logs.output[0])
+        self.assertEqual(cmd[3:5], ['tau_exec', '-T'])
+
+    def test_managed_makefile_without_uid_is_silent(self):
+        """The compatibility warning is reserved for unmanaged installations."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        fake._makefile_tags = lambda _: {'mpi'}
+        with mock.patch.object(tau_installation.LOGGER, 'warning') as warn:
+            cmd = self._launch(fake, self._LAUNCHER, [['./a.out']])
+        warn.assert_not_called()
+        self.assertEqual(cmd[3:5], ['tau_exec', '-T'])
+
+    def test_python_uses_tau_python(self):
+        """Python applications run under tau_python with the target interpreter and the python tag stripped."""
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=False)
+        fake.uses_python = True
+        fake.compilers = {PY: SimpleNamespace(absolute_path='/opt/py/bin/python3')}
+        fake._makefile_tags = lambda _: {'deadbeef', 'python'}
+        cmd = self._launch(fake, [], [['script.py', '--flag']])
+        self.assertEqual(cmd[:2], ['tau_python', '-T'])
+        self.assertEqual(set(cmd[2].split(',')), {'deadbeef', 'serial'})
+        self.assertEqual(cmd[3], '-tau-python-interpreter=/opt/py/bin/python3')
+        self.assertEqual(cmd[4:], ['script.py', '--flag'])
+
+    def test_instrumented_binary_runs_directly(self):
+        """Source instrumentation, static linkage, or no measurement at all: tau_exec is not needed."""
+        for attr, value in (('source_inst', 'automatic'), ('compiler_inst', 'always'),
+                            ('application_linkage', 'static')):
+            fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+            setattr(fake, attr, value)
+            self.assertEqual(self._launch(fake, self._LAUNCHER, [['./a.out']]), ['mpirun', '-np', '4', './a.out'])
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        fake.profile = 'none'
+        fake.trace = 'none'
+        self.assertEqual(self._launch(fake, self._LAUNCHER, [['./a.out']]), ['mpirun', '-np', '4', './a.out'])
+
+
+class DataFormatTest(tests.TestCase):
+    """Tests for guessing performance data formats from file names."""
+
+    def test_directory_is_tau_profile(self):
+        """A directory of profile.* files is TAU's native profile format."""
+        self.assertEqual(TauInstallation.get_data_format(os.getcwd()), 'tau')
+
+    def test_extensions(self):
+        """Known extensions map to their formats, including gzipped merged profiles."""
+        for ext, fmt in (('.ppk', 'ppk'), ('.xml', 'merged'), ('.cubex', 'cubex'), ('.slog2', 'slog2'),
+                         ('.otf2', 'otf2'), ('.xml.gz', 'merged'), ('.db', 'sqlite')):
+            self.assertEqual(TauInstallation.get_data_format('trial' + ext), fmt)
+
+    def test_unknown_extension_rejected(self):
+        """Unknown extensions, gzipped or not, are configuration errors."""
+        for name in ('trial.txt', 'trial.tar.gz', 'trial'):
+            with self.assertRaises(ConfigurationError):
+                TauInstallation.get_data_format(name)
+
+    def test_format_classification(self):
+        """Every format is either a profile or a trace, never both."""
+        for fmt in ('tau', 'ppk', 'merged', 'cubex', 'sqlite'):
+            self.assertTrue(TauInstallation.is_profile_format(fmt))
+            self.assertFalse(TauInstallation.is_trace_format(fmt))
+        for fmt in ('slog2', 'otf2'):
+            self.assertFalse(TauInstallation.is_profile_format(fmt))
+            self.assertTrue(TauInstallation.is_trace_format(fmt))
