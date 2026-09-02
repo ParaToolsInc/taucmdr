@@ -1575,7 +1575,7 @@ class TauInstallation(Installation):
             raise InternalError("Application configuration file flags for '%s' are unknown" % launcher)
         for i, flag in enumerate(cmd[1:], 1):
             try:
-                flag, appfile = str(flag.split('='))
+                flag, appfile = flag.split('=', 1)
                 with_equals = True
             except ValueError:
                 try:

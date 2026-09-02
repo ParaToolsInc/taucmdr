@@ -427,6 +427,32 @@ class LauncherAppfileTest(tests.TestCase):
                          [['0'] + self._TAU_EXEC + ['ls'],
                           ['1-3'] + self._TAU_EXEC + ['hostname', '-s']])
 
+    def test_appfile_flag_with_equals(self):
+        """The --flag=file spelling is rewritten in place, keeping the equals form."""
+        appfile = self._write_appfile('-np 2 ls')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['mpirun', '-np', '2', '--app=' + appfile, '--verbose'], self._TAU_EXEC)
+        self.assertEqual(cmd[:3], ['mpirun', '-np', '2'])
+        self.assertEqual(cmd[4:], ['--verbose'])
+        self.assertTrue(cmd[3].startswith('--app='))
+        self.assertTrue(cmd[3].endswith('.tau'))
+        self.assertEqual(self._read_lines(cmd[3][len('--app='):]), [['-np', '2'] + self._TAU_EXEC + ['ls']])
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['srun', '--multi-prog=' + appfile], self._TAU_EXEC)
+        self.assertEqual(len(cmd), 2)
+        self.assertTrue(cmd[1].startswith('--multi-prog='))
+        self.assertTrue(cmd[1].endswith('.tau'))
+
+    def test_other_flags_with_equals_ignored(self):
+        """A --key=value flag that is not the application-file flag is skipped, not mistaken for it."""
+        appfile = self._write_appfile('-np 2 ls')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['mpirun', '--mca=btl=tcp', '--app', appfile], self._TAU_EXEC)
+        self.assertEqual(cmd[:3], ['mpirun', '--mca=btl=tcp', '--app'])
+        self.assertTrue(cmd[3].endswith('.tau'))
+        with self.assertRaises(InternalError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--mca=btl=tcp'], self._TAU_EXEC)
+
     def test_unknown_launcher_rejected(self):
         """Launchers without a known application-file flag cannot be rewritten."""
         appfile = self._write_appfile('-np 2 ls')
