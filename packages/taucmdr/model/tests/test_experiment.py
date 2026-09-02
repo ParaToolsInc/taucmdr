@@ -33,10 +33,14 @@ from unittest import mock
 
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
+from taucmdr.cf.software.tau_installation import TauInstallation
 from taucmdr.cf.storage import StorageRecord
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.model import experiment
 from taucmdr.model.experiment import Experiment
+from taucmdr.model.project import Project
 from taucmdr.model.target import Target
+from taucmdr.mvc.controller import Controller
 
 
 # Attribute definitions exercising every branch of the deprecation map:
@@ -230,3 +234,53 @@ class ExperimentDeprecationTest(tests.TestCase):
         with mock.patch.object(experiment.LOGGER, 'warning') as warn:
             Experiment.verify_post_install(_DetachedExperiment(populated), (2, 35, 1))
         warn.assert_not_called()
+
+
+class ExperimentConfigureTest(tests.TestCase):
+    """Tests for what configure() records and checks once the installed TAU version is known."""
+
+    def _experiment(self):
+        self.reset_project_storage()
+        return Project.selected().experiment()
+
+    def test_configure_records_tau_version(self):
+        """The installed TAU version is stored on the experiment as a dotted string."""
+        expr = self._experiment()
+        tau = expr.configure()
+        version = tau.get_tau_version()
+        self.assertIsNotNone(version)
+        self.assertEqual(Project.selected().experiment()['tau_version'], '.'.join(str(x) for x in version))
+
+    def test_configure_without_tau_version(self):
+        """An unreadable TAU version records nothing and skips the version-gated checks."""
+        expr = self._experiment()
+        with mock.patch.object(TauInstallation, 'get_tau_version', return_value=None), \
+                mock.patch.object(Experiment, 'verify_post_install') as post_install, \
+                mock.patch.object(Controller, 'update', autospec=True) as update:
+            expr.configure()
+        post_install.assert_not_called()
+        self.assertEqual([set(call[0][1]) for call in update.call_args_list], [{'tau_makefile'}])
+
+    def test_configure_rejects_removed_ompt_source(self):
+        """A target record that still says download-tr4 fails configure() once TAU 2.32 or later is installed."""
+        expr = self._experiment()
+        if not experiment._version_ge(expr.configure().get_tau_version(), (2, 32)):
+            self.skipTest('installed TAU predates the removal of download-tr4')
+        targ_ctrl = Target.controller(PROJECT_STORAGE)
+        targ_ctrl.update({'ompt_source': 'download-tr4'}, targ_ctrl.one({'name': 'targ1'}).eid)
+        with self.assertRaises(ConfigurationError) as ctx:
+            Project.selected().experiment().configure()
+        self.assertIn('download-tr4', str(ctx.exception))
+        self.assertIn('--ompt', str(ctx.exception))
+        self.assertIn('removed in TAU 2.32', str(ctx.exception))
+
+    def test_configure_warns_on_deprecated_ompt_source(self):
+        """Against a TAU that only deprecates download-tr6, configure() warns and records that version."""
+        self._experiment()
+        targ_ctrl = Target.controller(PROJECT_STORAGE)
+        targ_ctrl.update({'ompt_source': 'download-tr6'}, targ_ctrl.one({'name': 'targ1'}).eid)
+        with mock.patch.object(TauInstallation, 'get_tau_version', return_value=(2, 30)):
+            with self.assertLogs(experiment.LOGGER, level='WARNING') as logs:
+                Project.selected().experiment().configure()
+        self.assertTrue(any('download-tr6' in line and 'deprecated' in line for line in logs.output))
+        self.assertEqual(Project.selected().experiment()['tau_version'], '2.30')
