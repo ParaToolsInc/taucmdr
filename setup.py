@@ -255,12 +255,17 @@ class Test(TestCommand):
             print(f"Running tests with database backend {db_backend}")
             return TestCommand.run_tests(self)
         finally:
+            # cleanup() detaches the finalizer, so nothing runs again at interpreter exit.
             if self.system_sandbox:
-                shutil.rmtree(tmp_system_prefix, ignore_errors=True)
-                del tmp_system_prefix
+                try:
+                    tmp_system_prefix.cleanup()
+                except OSError:
+                    pass
             if self.user_sandbox:
-                shutil.rmtree(tmp_user_prefix, ignore_errors=True)
-                del tmp_user_prefix
+                try:
+                    tmp_user_prefix.cleanup()
+                except OSError:
+                    pass
 
 
 class InstallLib(InstallLibCommand):

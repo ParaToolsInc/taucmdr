@@ -49,7 +49,7 @@ class EditTest(tests.TestCase):
     def test_invalid_experiment_name(self):
         self.reset_project_storage()
         stdout, stderr = self.assertNotCommandReturnValue(0, EXPERIMENT_EDIT_COMMAND,
-                                                          ['targ1-app2-profile', '--measurement', 'trace'])
+                                                          ['targ1-app2-profile', '--measurement', 'profile'])
         self.assertIn("No project-level experiment with name='targ1-app2-profile'.", stderr)
         self.assertFalse(stdout)
 

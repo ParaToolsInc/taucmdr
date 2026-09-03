@@ -29,9 +29,34 @@
 Functions used for unit tests of target.py.
 """
 
-
+import os
+from unittest import mock
 from taucmdr import tests
+from taucmdr.model import target
+from taucmdr.model.target import tau_source_default
 
-@tests.not_implemented
-class TargetTest(tests.TestCase):
-    pass
+
+class TauSourceDefaultTest(tests.TestCase):
+    """Tests for the system-wide TAU source override file."""
+
+    @staticmethod
+    def _override(contents):
+        """Patch the override file read in tau_source_default() to return `contents`."""
+        return mock.patch('taucmdr.model.target.open', mock.mock_open(read_data=contents), create=True)
+
+    def test_download_without_override_file(self):
+        """No override file: managed TAU is downloaded."""
+        with mock.patch('taucmdr.model.target.open', side_effect=FileNotFoundError, create=True):
+            self.assertEqual(tau_source_default(), 'download')
+
+    def test_existing_directory_used(self):
+        """The override file names an accessible directory: that TAU is used, whitespace stripped."""
+        with self._override(f'  {os.getcwd()}\n'):
+            self.assertEqual(tau_source_default(), os.getcwd())
+
+    def test_inaccessible_path_warns_and_downloads(self):
+        """The override file names a missing directory: warn, naming the path, and download instead."""
+        with self._override('/no/such/tau\n'):
+            with self.assertLogs(target.LOGGER, level='WARNING') as logs:
+                self.assertEqual(tau_source_default(), 'download')
+        self.assertIn('/no/such/tau', logs.output[0])

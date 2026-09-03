@@ -68,6 +68,7 @@ class CreateTest(tests.TestCase):
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI metrics require papi_source which is None on macOS")
     def test_no_time_metric(self):
         self.reset_project_storage()
         argv = ['meas_no_time', '--metrics', 'PAPI_L2_DCM', '--source-inst', 'never']
@@ -134,10 +135,14 @@ class CreateTest(tests.TestCase):
         self.assertInLastTrialData("<attribute><name>TAU_TRACK_HEAP</name><value>on</value></attribute>")
         self.assertInLastTrialData("Heap Memory Used (KB) at Entry")
         self.assertInLastTrialData("Heap Memory Used (KB) at Exit")
-        self.assertInLastTrialData("Heap Allocate")
-        self.assertInLastTrialData("compute_interchange")
-        self.assertInLastTrialData("compute")
-        self.assertInLastTrialData("malloc")
+        if HOST_OS is not DARWIN:
+            # On macOS with runtime-only instrumentation (tau_exec, no source/compiler inst),
+            # TAU cannot profile individual functions — only heap tracking events are captured.
+            # TAU bug: the dynamic malloc wrapper (e.g. tau_exec -memory) doesn't always capture malloc().
+            self.assertInLastTrialData("compute_interchange")
+            self.assertInLastTrialData("compute")
+            self.assertInLastTrialData("Heap Allocate")
+            self.assertInLastTrialData("malloc")
 
     def test_without_libelf(self):
         self.reset_project_storage(['--libelf', 'none'])
@@ -175,12 +180,15 @@ class CreateTest(tests.TestCase):
         self.assertIn("TAU_EBS_RESOLUTION="+option, stdout)
         self.assertFalse(stderr)
 
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling requires libunwind which does not build on Darwin")
     def test_sample_resolution_file(self):
         self.sample_resolution_helper('file')
 
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling requires libunwind which does not build on Darwin")
     def test_sample_resolution_function(self):
         self.sample_resolution_helper('function')
 
+    @tests.skipIf(HOST_OS is DARWIN, "Sampling requires libunwind which does not build on Darwin")
     def test_sample_resolution_line(self):
         self.sample_resolution_helper('line')
 

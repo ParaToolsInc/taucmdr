@@ -52,6 +52,10 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 LOGGER = logger.get_logger(__name__)
 
+# Reason shown when a retired --ompt keyword is given on the command line.
+_OMPT_TR_REJECTED = ("is no longer supported. Upstream TAU removed TR4/TR6 differentiation "
+                     "in favor of OMPT 5.0. Use 'download' instead.")
+
 
 def _require_compiler_family(family, *hints):
     """Creates a compatibility callback to check a compiler family.
@@ -159,13 +163,13 @@ def tau_source_default():
         str: Path to TAU or "download".
     """
     try:
-        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source')) as fin:
+        with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source'), encoding='utf-8') as fin:
             path = fin.read()
     except OSError:
         return 'download'
     path = path.strip()
     if not (os.path.isdir(path) and util.path_accessible(path)):
-        LOGGER.warning("'%s' does not exist or is not accessible.")
+        LOGGER.warning("'%s' does not exist or is not accessible.", path)
         return 'download'
     return path
 
@@ -517,9 +521,15 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
-                         'action': ParsePackagePathAction},
-            'rebuild_required': True
+                         'metavar': '(<path>|<url>|download|None)',
+                         'action': ParsePackagePathAction,
+                         'rejected': {'download-tr4': _OMPT_TR_REJECTED,
+                                      'download-tr6': _OMPT_TR_REJECTED}},
+            'rebuild_required': True,
+            'deprecated': {
+                'download-tr4': ('2.29.1', '2.32'),
+                'download-tr6': ('2.29.1', '2.32'),
+            },
         },
         'libotf2_source': {
             'type': 'string',
@@ -676,7 +686,8 @@ class Target(Model):
             InstalledCompilerSet: Collection of installed compilers used by this target.
         """
         if not self._compilers:
-            # We use the paths to the compilers as unique identifiers since the EIDs for the records may come from different tables, and so may not be unique
+            # We use the paths to the compilers as unique identifiers since the EIDs
+            # for the records may come from different tables, and so may not be unique
             paths = []
             compilers = {}
             for role in Knowledgebase.all_roles():
@@ -721,7 +732,7 @@ class Target(Model):
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)
         found = []
-        known_compilers = [comp for comp in self.compilers().values()]
+        known_compilers = list(self.compilers().values())
         for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
                 compiler_record = self.populate(info.role.keyword)

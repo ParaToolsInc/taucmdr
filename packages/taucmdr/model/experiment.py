@@ -46,6 +46,18 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE, highest_writable_storage
 LOGGER = logger.get_logger(__name__)
 
 
+def _version_ge(installed, threshold):
+    """True if `installed` >= `threshold`, zero-padding the shorter tuple.
+
+    Plain tuple comparison ranks (2, 34) below (2, 34, 0), so a TAU header
+    reporting "2.34" would never match a threshold written as '2.34.0'.
+    """
+    width = max(len(installed), len(threshold))
+    installed = installed + (0,) * (width - len(installed))
+    threshold = threshold + (0,) * (width - len(threshold))
+    return installed >= threshold
+
+
 def attributes():
     from taucmdr.model.target import Target
     from taucmdr.model.application import Application
@@ -92,6 +104,10 @@ def attributes():
         'tau_makefile': {
             'type': 'string',
             'description': 'TAU Makefile used during this experiment, if any.'
+        },
+        'tau_version': {
+            'type': 'string',
+            'description': 'TAU version used during this experiment'
         },
         'record_output': {
             'type': 'boolean',
@@ -219,7 +235,12 @@ class Experiment(Model):
             return os.path.join(self.populate('project').prefix, self['name'])
 
     def verify(self):
-        """Checks all components of the experiment for mutual compatibility."""
+        """Checks all components of the experiment for mutual compatibility.
+
+        This is a pre-flight check that does not require TAU to be installed.
+        Version-gated deprecation checks are performed separately in
+        verify_post_install() once the installed TAU version is known.
+        """
         populated = self.populate()
         proj = populated['project']
         targ = populated['target']
@@ -232,6 +253,61 @@ class Experiment(Model):
         for lhs in [targ, app, meas]:
             for rhs in [targ, app, meas]:
                 lhs.check_compatibility(rhs)
+
+    def verify_post_install(self, tau_ver):
+        """Check component attributes for deprecated values against the installed TAU version.
+
+        Separate from verify() because deprecation status depends on the installed TAU
+        version, which is only known after tau.install(). Called from configure().
+
+        Args:
+            tau_ver (tuple): Installed TAU version as a tuple of ints, e.g. (2, 33, 2).
+        """
+        components = [self.populate(attr) for attr in ('target', 'application', 'measurement')]
+        self._check_deprecated_values(*components, tau_ver=tau_ver)
+
+    def _check_deprecated_values(self, *components, tau_ver):
+        """Check component attributes for deprecated or removed values.
+
+        Attribute definitions may include a 'deprecated' key mapping values
+        to (deprecated_version, removed_version) tuples, where versions are
+        upstream TAU version strings (e.g. '2.32'). Empty string means N/A.
+
+        Note: this check requires the installed TAU version. Experiments that have
+        never been configured (no tau.install() run yet) will not trigger this check;
+        the CLI guards in arguments.py enforce restrictions at creation time for new
+        configurations.
+
+        Args:
+            *components: Model records (target, application, measurement) to inspect.
+            tau_ver (tuple): Installed TAU version as a tuple of ints, e.g. (2, 33, 2).
+        """
+        for comp in components:
+            for attr, props in comp.attributes.items():
+                deprecated_map = props.get('deprecated')
+                if not deprecated_map:
+                    continue
+                try:
+                    value = comp[attr]
+                except KeyError:
+                    continue
+                if value not in deprecated_map:
+                    continue
+                dep_str, rem_str = deprecated_map[value]
+                if rem_str:
+                    rem = tuple(int(x) for x in rem_str.split('.'))
+                    if _version_ge(tau_ver, rem):
+                        raise ConfigurationError(
+                            "'%s' for --%s was removed in TAU %s. "
+                            "Please update this setting."
+                            % (value, attr.replace('_source', ''), rem_str))
+                if dep_str:
+                    dep = tuple(int(x) for x in dep_str.split('.'))
+                    if _version_ge(tau_ver, dep):
+                        LOGGER.warning(
+                            "'%s' for --%s is deprecated since TAU %s "
+                            "and will be removed in a future release.",
+                            value, attr.replace('_source', ''), dep_str)
 
     def on_create(self):
         self.verify()
@@ -347,8 +423,19 @@ class Experiment(Model):
             unwinder=target.get_or_default('unwinder'),
             unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
+        tau_ver = tau.get_tau_version()
+        fields = {}
+        if tau_ver:
+            fields['tau_version'] = '.'.join(str(x) for x in tau_ver)
+        else:
+            LOGGER.warning("Could not read the TAU version from the headers under '%s'; "
+                           "skipping deprecation checks for this experiment.", tau.install_prefix)
         if not baseline:
-            self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
+            fields['tau_makefile'] = os.path.basename(tau.get_makefile())
+        if fields:
+            self.controller(self.storage).update(fields, self.eid)
+        if tau_ver:
+            self.verify_post_install(tau_ver)
         return tau
 
     def managed_build(self, compiler_cmd, compiler_args):

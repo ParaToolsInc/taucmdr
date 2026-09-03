@@ -65,6 +65,17 @@ PYLINT_REPORT_TEMPLATE = \
 </details>
 """
 REPORT_START = re.compile(r'^ *[Rr]eport *[\r\n] *====== *$', re.MULTILINE)
+# Benign pylint stderr patterns: config file path (<=2.13), PYLINTHOME migration (>=2.14),
+# cache write failures, or empty output
+BENIGN_STDERR = re.compile(
+    r'^('
+    r' *[Uu]sing config file .*pylintrc.*'
+    r'|PYLINTHOME .*'
+    r'|Unable to create file .*'
+    r"|Can't write the file .*"
+    r'| *'
+    r')$'
+)
 ROW_SEPARATOR = re.compile(r'^ *([+]-{5,}[+]?)+ *$', re.MULTILINE)
 HEADER_SEPARATOR = re.compile(r'^ *[+](={5,}[+])+ *$', re.MULTILINE)
 MODULE_DETAIL_HEADER = re.compile(r'^ *[*]{3,25} +Module +taucmdr([.]\w+)* *$', re.MULTILINE)
@@ -78,7 +89,12 @@ class PylintTest(tests.TestCase):
     @staticmethod
     def _format_pylint_report(stdout, stderr):
         """Formats pylint output as pretty markdown"""
-        _details, _report = REPORT_START.split(stdout, maxsplit=1)
+        parts = REPORT_START.split(stdout, maxsplit=1)
+        if len(parts) == 2:
+            _details, _report = parts
+        else:
+            _details = stdout
+            _report = ""
         _report = PYLINT_H2.sub(r'#### \g<header>', _report)
         _report_lines = []
         for line in _report.splitlines():
@@ -109,9 +125,15 @@ class PylintTest(tests.TestCase):
                                    shell=False, env=env, universal_newlines=True)
         return process.communicate()
 
+    def _check_benign_stderr(self, stderr):
+        """Assert that pylint stderr contains only benign messages."""
+        for line in stderr.splitlines():
+            self.assertRegex(line, BENIGN_STDERR,
+                             "Unexpected pylint stderr line:\n%s" % line)
+
     def test_pylint_version(self):
         stdout, stderr = self.run_pylint('--version')
-        self.assertRegex(stderr, '(^ *[Uu]sing config file .*pylintrc.*)|(^$)')
+        self._check_benign_stderr(stderr)
         try:
             if re.search(r'__main__.py', stdout):
                 version_parts = stdout.split(',')[0].split('__main__.py ')[1].split('.')
@@ -130,7 +152,7 @@ class PylintTest(tests.TestCase):
                 lint_msg_file.write(str(lint_msg))
             finally:
                 lint_msg_file.close()
-        self.assertRegex(stderr, '(^ *[Uu]sing config file .*pylintrc.*)|(^$)')
+        self._check_benign_stderr(stderr)
         self.assertIn('Your code has been rated at', stdout)
         score = float(stdout.split('Your code has been rated at')[1].split('/10')[0])
         self.assertGreaterEqual(

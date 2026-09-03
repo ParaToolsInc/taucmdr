@@ -1,7 +1,7 @@
 Continuous Integration
 ======================
 
-.. image:: https://github.com/ParaToolsInc/taucmdr/workflows/CI/badge.svg?branch=master&event=push
+.. image:: https://github.com/ParaToolsInc/taucmdr/actions/workflows/CI.yml/badge.svg?branch=unstable
    :target: https://github.com/ParaToolsInc/taucmdr/actions
    :alt: CI Status
 

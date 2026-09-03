@@ -30,9 +30,9 @@ OMPT is used for performance analysis of OpenMP codes.
 """
 
 from taucmdr import logger
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.software.installation import CMakeInstallation
 from taucmdr.cf.compiler.host import CC, CXX
-
 
 
 LOGGER = logger.get_logger(__name__)
@@ -44,25 +44,20 @@ REPOS = {None: [
 
 LIBRARIES = {None: ['libomp.so']}
 
-HEADERS = {None: ['omp.h', 'ompt.h']}
+HEADERS = {None: ['omp.h', 'ompt.h', 'omp-tools.h']}
 
 
 class OmptInstallation(CMakeInstallation):
     """Encapsulates an OMPT installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        if sources['ompt'] == 'download-tr6':
-            sources['ompt'] = [
-                'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz',
-                'http://fs.paratools.com/tau-mirror/LLVM-openmp-ompt-tr6.tar.gz'
-            ]
-        elif sources['ompt'] == 'download-tr4':
-            sources['ompt'] = [
-                'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz',
-                'https://fs.paratools.com/tau-mirror/LLVM-openmp-0.2.tar.gz'
-            ]
+        if sources['ompt'] in ('download-tr4', 'download-tr6'):
+            raise ConfigurationError(
+                "OMPT source '%s' is no longer supported. "
+                "Upstream TAU removed TR4/TR6 differentiation in favor of OMPT 5.0. "
+                "Use '--ompt download' instead." % sources['ompt'])
         super().__init__('ompt', 'ompt', sources, target_arch, target_os,
-                                               compilers, REPOS, None, LIBRARIES, HEADERS)
+                         compilers, REPOS, None, LIBRARIES, HEADERS)
 
     def cmake(self, flags):
         flags.extend(['-DCMAKE_C_COMPILER=' + self.compilers[CC].unwrap().absolute_path,
