@@ -1504,19 +1504,34 @@ class TauInstallation(Installation):
             env['TAU_PLUGINS'] = ':'.join(tau_plugins)  # TAU plugins as colon-separated list
         return list(set(opts)), env
 
+    def _tau_exec_applies(self):
+        """True when tau_exec is how TAU gets into the application, on any platform.
+
+        The Darwin exception in :any:`_links_tau_on_darwin` is not considered here.
+        """
+        return (self.application_linkage != 'static' and
+                (self.profile != 'none' or self.trace != 'none') and
+                ((self.source_inst == 'never' and self.compiler_inst == 'never') or
+                 self.measure_opencl or
+                 self.tbb_support or
+                 self.pthreads_support) and
+                not self.uses_python)
+
     def _links_tau_on_darwin(self):
         """True when TAU must be linked into the application instead of injected by tau_exec.
 
-        dyld on macOS 12 and later ignores DYLD_FORCE_FLAT_NAMESPACE, so a libTAU inserted by
-        tau_exec never shadows the MPI symbols of a two-level-namespace binary and no MPI events
-        are recorded.  Linking through the TAU compiler wrapper with ``-optLinkOnly`` pulls in
-        the static MPI wrappers at link time and needs no help from dyld.
+        This is the Darwin exception to :any:`_tau_exec_applies`: MPI applications with no
+        source or compiler instrumentation are linked through the TAU compiler wrapper with
+        ``-optLinkOnly`` instead.  dyld on macOS 12 and later ignores DYLD_FORCE_FLAT_NAMESPACE,
+        so a libTAU inserted by tau_exec never shadows the MPI symbols of a two-level-namespace
+        binary and no MPI events are recorded.  Linking pulls in the static MPI wrappers at link
+        time and needs no help from dyld.
         """
         return (self.target_os is DARWIN and
                 self.mpi_support and
                 self.source_inst == 'never' and
                 self.compiler_inst == 'never' and
-                not self.uses_python)
+                self._tau_exec_applies())
 
     def get_compiler_command(self, compiler):
         """Get the compiler wrapper command for the given compiler.
@@ -1647,13 +1662,7 @@ class TauInstallation(Installation):
             for application_cmd in application_cmds:
                 cmd.extend(application_cmd)
             return cmd, env
-        use_tau_exec = (self.application_linkage != 'static' and
-                        (self.profile != 'none' or self.trace != 'none') and
-                        ((self.source_inst == 'never' and self.compiler_inst == 'never') or
-                         self.measure_opencl or
-                         self.tbb_support or
-                         self.pthreads_support) and not self.uses_python and
-                        not self._links_tau_on_darwin())
+        use_tau_exec = self._tau_exec_applies() and not self._links_tau_on_darwin()
         if not use_tau_exec:
             tau_exec = []
             if self.uses_python:

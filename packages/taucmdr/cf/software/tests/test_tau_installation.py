@@ -163,10 +163,11 @@ class TauVersionTest(tests.TestCase):
 class _FakeRuntimeInstallation:
     """Stand-in for TauInstallation exposing only what the wrapper and launch gates read.
 
-    The real predicate is borrowed so the gates and the rule they share are tested together.
+    The real predicates are borrowed so the gates and the rules they share are tested together.
     """
     # pylint: disable=too-few-public-methods,protected-access
 
+    _tau_exec_applies = TauInstallation._tau_exec_applies
     _links_tau_on_darwin = TauInstallation._links_tau_on_darwin
     _rewrite_launcher_appfile_cmd = TauInstallation._rewrite_launcher_appfile_cmd
 
@@ -243,6 +244,14 @@ class RuntimeInstrumentationOnDarwinTest(tests.TestCase):
         fake.application_linkage = 'static'
         self.assertEqual(self._compiler_command(fake), 'tau_cc.sh')
 
+    def test_darwin_mpi_measuring_nothing_uses_plain_compiler(self):
+        """No profile and no trace means tau_exec would not run, so nothing needs linking in either."""
+        fake = _FakeRuntimeInstallation(DARWIN, mpi_support=True)
+        fake.profile = 'none'
+        fake.trace = 'none'
+        self.assertEqual(self._compiler_command(fake), self._COMPILER.absolute_path)
+        self.assertEqual(self._launch_command(fake), ['mpirun', '-np', '4', './a.out'])
+
     def test_darwin_mpi_launches_without_tau_exec(self):
         """Darwin + MPI + no source/compiler instrumentation runs the linked binary directly."""
         fake = _FakeRuntimeInstallation(DARWIN, mpi_support=True)
@@ -262,6 +271,42 @@ class RuntimeInstrumentationOnDarwinTest(tests.TestCase):
         cmd = self._launch_command(fake)
         self.assertEqual(cmd[3], 'tau_exec')
         self.assertIn('serial', cmd[5])
+
+
+class TauExecAppliesTest(tests.TestCase):
+    """Tests for the platform-independent tau_exec rule that the Darwin link rule builds on."""
+    # pylint: disable=protected-access
+
+    @staticmethod
+    def _fake(**overrides):
+        fake = _FakeRuntimeInstallation(LINUX, mpi_support=True)
+        for name, value in overrides.items():
+            setattr(fake, name, value)
+        return fake
+
+    def test_runtime_only_applies(self):
+        """Dynamic linkage, some output, no source or compiler instrumentation: tau_exec."""
+        self.assertTrue(self._fake()._tau_exec_applies())
+
+    def test_static_linkage_excluded(self):
+        """A static binary cannot be preloaded."""
+        self.assertFalse(self._fake(application_linkage='static')._tau_exec_applies())
+
+    def test_no_output_excluded(self):
+        """Neither profiles nor traces requested: nothing to measure."""
+        self.assertFalse(self._fake(profile='none', trace='none')._tau_exec_applies())
+        self.assertTrue(self._fake(profile='none', trace='otf2')._tau_exec_applies())
+
+    def test_python_excluded(self):
+        """Python applications go through tau_python instead."""
+        self.assertFalse(self._fake(uses_python=True)._tau_exec_applies())
+
+    def test_compile_time_inst_alone_excluded(self):
+        """Compiler instrumentation links TAU in; tau_exec is only added for runtime wrappers."""
+        self.assertFalse(self._fake(compiler_inst='always')._tau_exec_applies())
+        for wrapper in ('measure_opencl', 'tbb_support', 'pthreads_support'):
+            with self.subTest(wrapper=wrapper):
+                self.assertTrue(self._fake(compiler_inst='always', **{wrapper: True})._tau_exec_applies())
 
 
 class PythonLibraryTest(tests.TestCase):
