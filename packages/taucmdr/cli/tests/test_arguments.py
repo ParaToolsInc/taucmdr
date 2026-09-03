@@ -58,14 +58,21 @@ class ParsePackagePathActionTest(tests.TestCase):
         for value in ('None', 'false', 'F', 'no', '0'):
             self.assertIsNone(self._parse(value))
 
-    def test_tr4_tr6_rejected(self):
-        """The retired OMPT TR4/TR6 keywords are rejected with a hint, regardless of case."""
-        for value in ('download-tr4', 'download-tr6', 'Download-TR6'):
+    def test_rejected_keywords(self):
+        """Values listed in `rejected` are refused with the given reason, regardless of case."""
+        action = ParsePackagePathAction(option_strings=['--widget'], dest='widget',
+                                        rejected={'download-old': "is no longer supported. Use 'download' instead."})
+        for value in ('download-old', 'Download-OLD'):
             with self.assertRaises(argparse.ArgumentError) as ctx:
-                self._parse(value)
-            self.assertIn(value, str(ctx.exception))
-            self.assertIn('no longer supported', str(ctx.exception))
+                action(None, self._namespace, value)
+            self.assertIn("'%s' is no longer supported" % value, str(ctx.exception))
             self.assertIn("Use 'download' instead", str(ctx.exception))
+
+    def test_unlisted_keyword_is_a_path(self):
+        """Without a `rejected` entry an unknown keyword is just a path that does not exist."""
+        with self.assertRaises(argparse.ArgumentError) as ctx:
+            self._parse('download-old')
+        self.assertIn('Keyword, valid path, or URL required', str(ctx.exception))
 
     def test_url_kept_verbatim(self):
         """URLs are not touched, so nothing is checked on the local filesystem."""

@@ -455,8 +455,17 @@ class ParsePackagePathAction(argparse.Action):
     3) A URL to an archive file containing the software package.
     4) The magic word "download" or value that parses to True via :any:`taucmdr.util.parse_bool`.
     5) A value that parses to False via :any:`parse_bool`.
+
+    Args:
+        rejected (dict): Optional mapping of lower-case values that must not be accepted, e.g. keywords
+            an earlier release understood, to the reason they are rejected.  The reason follows the
+            quoted value in the error message, so it should read "is no longer supported. ...".
     """
     # pylint: disable=too-few-public-methods
+
+    def __init__(self, option_strings, dest, rejected=None, **kwargs):
+        super().__init__(option_strings, dest, **kwargs)
+        self.rejected = dict(rejected or {})
 
     def __call__(self, parser, namespace, value, unused_option_string=None):
         """Sets the `self.dest` attribute in `namespace` to the parsed value of `value`.
@@ -470,10 +479,9 @@ class ParsePackagePathAction(argparse.Action):
             namespace (object): Namespace to receive parsed value via setattr.
             value (str): Value parsed from the command line.
         """
-        if value.lower() in ('download-tr4', 'download-tr6'):
-            raise argparse.ArgumentError(
-                self, "'%s' is no longer supported. Upstream TAU removed TR4/TR6 "
-                "differentiation in favor of OMPT 5.0. Use 'download' instead." % value)
+        reason = self.rejected.get(value.lower())
+        if reason:
+            raise argparse.ArgumentError(self, f"'{value}' {reason}")
         try:
             value_as_bool = util.parse_bool(value, additional_true=['download', 'nightly'])
         except TypeError as err:

@@ -52,6 +52,10 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 LOGGER = logger.get_logger(__name__)
 
+# Reason shown when a retired --ompt keyword is given on the command line.
+_OMPT_TR_REJECTED = ("is no longer supported. Upstream TAU removed TR4/TR6 differentiation "
+                     "in favor of OMPT 5.0. Use 'download' instead.")
+
 
 def _require_compiler_family(family, *hints):
     """Creates a compatibility callback to check a compiler family.
@@ -518,7 +522,9 @@ def attributes():
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction},
+                         'action': ParsePackagePathAction,
+                         'rejected': {'download-tr4': _OMPT_TR_REJECTED,
+                                      'download-tr6': _OMPT_TR_REJECTED}},
             'rebuild_required': True,
             'deprecated': {
                 'download-tr4': ('2.29.1', '2.32'),

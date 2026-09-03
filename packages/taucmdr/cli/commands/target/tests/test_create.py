@@ -52,6 +52,14 @@ class CreateTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, [])
         self.assertIn('error: the following arguments are required', stderr)
 
+    def test_ompt_tr4_tr6_rejected(self):
+        """The retired --ompt download-tr4/download-tr6 keywords are refused at parse time with a hint."""
+        self.reset_project_storage()
+        for value in ('download-tr4', 'download-tr6'):
+            _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['targ02', '--ompt', value])
+            self.assertIn("argument --ompt: '%s' is no longer supported" % value, stderr)
+            self.assertIn("Use 'download' instead", stderr)
+
     def test_h_arg(self):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, create_cmd, ['-h'])
