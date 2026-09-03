@@ -40,7 +40,6 @@ from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompilerSet
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN, LINUX, X86_64, PPC64LE
 from taucmdr.cf.software import SoftwarePackageError
-from taucmdr.cf.software import installation
 from taucmdr.cf.software.installation import Installation, parallel_make_flags
 
 
@@ -142,11 +141,12 @@ class InstallationVerifyTest(tests.TestCase):
             os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR)
         return path
 
-    def _widget(self, commands=(), libraries=(), headers=()):
+    def _widget(self, commands=(), libraries=(), headers=(), target_os=HOST_OS):
         return _widget(self._prefix,
                        commands={None: list(commands)},
                        libraries={None: list(libraries)},
-                       headers={None: list(headers)})
+                       headers={None: list(headers)},
+                       target_os=target_os)
 
     def test_complete_installation_verifies(self):
         """Executable commands, libraries, and headers in the usual places pass."""
@@ -187,22 +187,17 @@ class InstallationVerifyTest(tests.TestCase):
         self.assertIn('not accessible', str(ctx.exception))
 
     def test_dylib_accepted_on_darwin(self):
-        """On Darwin a .so listed for verification may exist as a .dylib instead."""
+        """A .so listed for verification may exist as a .dylib when the target OS is Darwin."""
         self._touch('lib', 'libwidget.dylib')
-        inst = self._widget(libraries=['libwidget.so'])
-        with mock.patch.object(installation, 'HOST_OS', DARWIN):
-            inst.verify()
-        with mock.patch.object(installation, 'HOST_OS', LINUX):
-            with self.assertRaises(SoftwarePackageError):
-                inst.verify()
+        self._widget(libraries=['libwidget.so'], target_os=DARWIN).verify()
+        with self.assertRaises(SoftwarePackageError):
+            self._widget(libraries=['libwidget.so'], target_os=LINUX).verify()
 
     def test_dylib_fallback_only_for_shared_objects(self):
         """A static library is never satisfied by a .dylib, even on Darwin."""
         self._touch('lib', 'libwidget.dylib')
-        inst = self._widget(libraries=['libwidget.a'])
-        with mock.patch.object(installation, 'HOST_OS', DARWIN):
-            with self.assertRaises(SoftwarePackageError):
-                inst.verify()
+        with self.assertRaises(SoftwarePackageError):
+            self._widget(libraries=['libwidget.a'], target_os=DARWIN).verify()
 
     def test_missing_header_rejected(self):
         """A missing header fails verification."""

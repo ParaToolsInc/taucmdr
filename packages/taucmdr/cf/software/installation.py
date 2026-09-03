@@ -382,7 +382,7 @@ class Installation:
             if util.path_accessible(os.path.join(self.lib_path + '64', lib)):
                 continue
             # macOS uses .dylib instead of .so
-            if HOST_OS is DARWIN and lib.endswith('.so'):
+            if self.target_os is DARWIN and lib.endswith('.so'):
                 if util.path_accessible(os.path.join(self.lib_path, lib[:-3] + '.dylib')):
                     continue
             raise SoftwarePackageError("'%s' is not accessible" % path)
