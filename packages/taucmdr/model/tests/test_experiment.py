@@ -86,9 +86,9 @@ class _DetachedExperiment:
     def __init__(self, populated):
         self._populated = populated
 
-    def populate(self):
-        """Return the pre-built target/application/measurement mapping."""
-        return self._populated
+    def populate(self, attribute=None):
+        """Return the pre-built mapping, or one of its target/application/measurement entries."""
+        return self._populated[attribute] if attribute else self._populated
 
 
 def _detached_target(**fields):
@@ -244,21 +244,25 @@ class ExperimentConfigureTest(tests.TestCase):
         return Project.selected().experiment()
 
     def test_configure_records_tau_version(self):
-        """The installed TAU version is stored on the experiment as a dotted string."""
+        """The installed TAU version and makefile are stored on the experiment in a single update."""
         expr = self._experiment()
-        tau = expr.configure()
+        with mock.patch.object(Controller, 'update', autospec=True, side_effect=Controller.update) as update:
+            tau = expr.configure()
         version = tau.get_tau_version()
         self.assertIsNotNone(version)
+        self.assertEqual([set(call[0][1]) for call in update.call_args_list], [{'tau_version', 'tau_makefile'}])
         self.assertEqual(Project.selected().experiment()['tau_version'], '.'.join(str(x) for x in version))
 
     def test_configure_without_tau_version(self):
-        """An unreadable TAU version records nothing and skips the version-gated checks."""
+        """An unreadable TAU version warns, records nothing, and skips the version-gated checks."""
         expr = self._experiment()
         with mock.patch.object(TauInstallation, 'get_tau_version', return_value=None), \
                 mock.patch.object(Experiment, 'verify_post_install') as post_install, \
-                mock.patch.object(Controller, 'update', autospec=True) as update:
+                mock.patch.object(Controller, 'update', autospec=True) as update, \
+                self.assertLogs(experiment.LOGGER, level='WARNING') as logs:
             expr.configure()
         post_install.assert_not_called()
+        self.assertTrue(any('TAU version' in line and 'deprecation checks' in line for line in logs.output))
         self.assertEqual([set(call[0][1]) for call in update.call_args_list], [{'tau_makefile'}])
 
     def test_configure_rejects_removed_ompt_source(self):

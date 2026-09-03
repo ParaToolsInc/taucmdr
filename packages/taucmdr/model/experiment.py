@@ -263,11 +263,8 @@ class Experiment(Model):
         Args:
             tau_ver (tuple): Installed TAU version as a tuple of ints, e.g. (2, 33, 2).
         """
-        populated = self.populate()
-        targ = populated['target']
-        app = populated['application']
-        meas = populated['measurement']
-        self._check_deprecated_values(targ, app, meas, tau_ver=tau_ver)
+        components = [self.populate(attr) for attr in ('target', 'application', 'measurement')]
+        self._check_deprecated_values(*components, tau_ver=tau_ver)
 
     def _check_deprecated_values(self, *components, tau_ver):
         """Check component attributes for deprecated or removed values.
@@ -427,11 +424,16 @@ class Experiment(Model):
             unwind_depth=measurement.get_or_default('unwind_depth'))
         tau.install()
         tau_ver = tau.get_tau_version()
+        fields = {}
         if tau_ver:
-            self.controller(self.storage).update(
-                {'tau_version': '.'.join(str(x) for x in tau_ver)}, self.eid)
+            fields['tau_version'] = '.'.join(str(x) for x in tau_ver)
+        else:
+            LOGGER.warning("Could not read the TAU version from the headers under '%s'; "
+                           "skipping deprecation checks for this experiment.", tau.install_prefix)
         if not baseline:
-            self.controller(self.storage).update({'tau_makefile': os.path.basename(tau.get_makefile())}, self.eid)
+            fields['tau_makefile'] = os.path.basename(tau.get_makefile())
+        if fields:
+            self.controller(self.storage).update(fields, self.eid)
         if tau_ver:
             self.verify_post_install(tau_ver)
         return tau
