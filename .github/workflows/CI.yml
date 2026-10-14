@@ -139,11 +139,13 @@ jobs:
       - name: Test TAU Commander
         run: |
           rm -f ./coverage.xml || true
-          coverage run setup.py test
+          PYTHONPATH=packages coverage run scripts/run_tests.py
           coverage xml
 
       - name: Build sphinx docs
-        run: python setup.py build_sphinx
+        run: |
+          python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr
+          python -m sphinx -b html docs build/sphinx/html
 
       - name: Upload TAU Commander unit test log
         if: always()
