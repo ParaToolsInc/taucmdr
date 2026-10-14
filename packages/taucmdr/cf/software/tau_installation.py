@@ -1609,8 +1609,7 @@ class TauInstallation(Installation):
                         (self.profile != 'none' or self.trace != 'none') and
                         ((self.source_inst == 'never' and self.compiler_inst == 'never') or
                          self.measure_opencl or
-                         self.tbb_support or
-                         self.pthreads_support) and not self.uses_python)
+                         self.tbb_support) and not self.uses_python)
         if not use_tau_exec:
             tau_exec = []
             if self.uses_python:
