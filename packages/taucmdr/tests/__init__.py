@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ import unittest
 from unittest import skipIf, skipUnless
 from taucmdr.util import get_command_output, tmpfs_prefix
 from io import StringIO
-from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
+from taucmdr import logger, TAUCMDR_HOME
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
@@ -335,19 +335,3 @@ class TestCase(unittest.TestCase):
         else:
             raise NotImplementedError
         self.fail("'{}' not found in '{}'".format(value, '\n'.join(data)))
-
-
-class TestRunner(unittest.TextTestRunner):
-    """Test suite runner."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.buffer = True
-
-    def run(self, test):
-        result = super().run(test)
-        for item in _NOT_IMPLEMENTED:
-            print("WARNING: %s" % item)
-        if result.wasSuccessful():
-            return EXIT_SUCCESS
-        return EXIT_FAILURE
