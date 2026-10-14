@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -223,17 +223,20 @@ class _CompilerFamily(TrackedInstance):
         library_path_flags (list): Command line flags that add a directory to the compiler's library path, e.g. '-L'.
         link_library_flags (list): Command line flags that link a library, e.g. '-l'.
         show_wrapper_flags (list): Command line flags that show the wrapped compiler's command line, e.g. '-show'.
+        optional_wrapper (bool): If True then a command that rejects :any:`show_wrapper_flags` is treated as
+                                 a compiler that doesn't wrap another compiler instead of as an error.
         members (dict): Compilers in this family indexed by role.
     """
 
     _probe_cache = {}
 
-    def __init__(self, kbase, name, members,
+    def __init__(self, kbase, name, members,  # pylint: disable=too-many-arguments
                  version_flags=None,
                  include_path_flags=None,
                  library_path_flags=None,
                  link_library_flags=None,
                  show_wrapper_flags=None,
+                 optional_wrapper=False,
                  family_regex=None):
         self.kbase = kbase
         self.name = name
@@ -243,6 +246,7 @@ class _CompilerFamily(TrackedInstance):
         self.library_path_flags = library_path_flags or ['-L']
         self.link_library_flags = link_library_flags or ['-l']
         self.show_wrapper_flags = show_wrapper_flags or []
+        self.optional_wrapper = optional_wrapper
         self.members = {}
         self.commands = set()
         for role, commands in members.items():
@@ -546,6 +550,10 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         try:
             stdout = util.get_command_output(cmd)
         except CalledProcessError as err:
+            if self.info.family.optional_wrapper:
+                LOGGER.debug("'%s' doesn't accept arguments %s so assuming it doesn't wrap another compiler",
+                             self.absolute_path, self.info.family.show_wrapper_flags)
+                return None
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
