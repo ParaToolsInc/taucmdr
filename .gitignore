@@ -123,5 +123,9 @@ id_rsa_Travis2GH.pub
 test-timings*.csv
 TEST-*.xml
 
+# sphinx-apidoc output (see docs/documentation.rst)
+/docs/modules.rst
+/docs/taucmdr*.rst
+
 # JetBrains settings
 .idea

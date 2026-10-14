@@ -23,7 +23,6 @@ TAUCMDR_HOME = os.path.realpath(os.path.abspath('..'))
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.join(TAUCMDR_HOME, 'packages'))
-sys.path.insert(0, os.path.join(TAUCMDR_HOME, 'packages', 'tau'))
 
 # Set environment variables to let TAU Commander know we're using Sphinx
 os.environ['__TAUCMDR_HOME__'] = TAUCMDR_HOME
@@ -81,11 +80,11 @@ release = version
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
-today = datetime.datetime.utcnow().strftime("%b %d, %Y at %H:%M:%S UTC")
+today = datetime.datetime.now(datetime.timezone.utc).strftime("%b %d, %Y at %H:%M:%S UTC")
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
 
@@ -385,4 +384,4 @@ epub_exclude_files = ['search.html']
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
