@@ -136,8 +136,8 @@ class TauMagic(KeyedRecord):
     """Maps (architecture, operating system) tuples to TAU's magic words.
 
     The key is a (Architecture, OperatingSystem) tuple since TAU's architecture mapping is not one-to-one.
-    For example, TAU uses the magic word 'craycnl' for every Cray system, whatever its CPU.  TAU Commander needs to know the "real" CPU
-    architecture and operating system so it can chose the right compilers and dependencies for TAU.
+    For example, TAU uses the magic word 'craycnl' for every Cray system, whatever its CPU.  TAU Commander needs to
+    know the "real" CPU architecture and operating system so it can chose the right compilers and dependencies for TAU.
 
     Attributes:
         name (str): Name of the TAU architecture (the magic word)
