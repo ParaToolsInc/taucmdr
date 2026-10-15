@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Unit tests for :any:`taucmdr.model.compiler`."""
+"""Unit tests for :py:mod:`taucmdr.model.compiler`."""
 
 from taucmdr import tests
 from taucmdr.error import ConfigurationError

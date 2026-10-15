@@ -3,8 +3,8 @@ Contains the :class:`database <tinydb.database.TinyDB>` and
 :class:`tables <tinydb.database.Table>` implementation.
 """
 import warnings
-from tinydb import JSONStorage
-from tinydb.utils import LRUCache
+from . import JSONStorage
+from .utils import LRUCache
 
 
 class Element(dict):

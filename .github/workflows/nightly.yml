@@ -145,7 +145,7 @@ jobs:
 
       - name: Build sphinx docs
         run: |
-          python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr
+          python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr packages/taucmdr/_vendor
           python -m sphinx -b html docs build/sphinx/html
 
       - name: Upload TAU Commander unit test log

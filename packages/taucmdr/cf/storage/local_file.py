@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,9 @@ import copy
 import os
 import json
 import tempfile
-import tinydb
-from tinydb import operations
-from tinydb.middlewares import CachingMiddleware
+from taucmdr._vendor import tinydb
+from taucmdr._vendor.tinydb import operations
+from taucmdr._vendor.tinydb.middlewares import CachingMiddleware
 from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import AbstractStorage, StorageRecord, StorageError

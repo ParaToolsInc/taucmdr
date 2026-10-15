@@ -21,8 +21,8 @@ Usage example:
 5
 """
 
-from tinydb.queries import where
-from tinydb.storages import Storage, JSONStorage
-from tinydb.database import TinyDB
+from .queries import where
+from .storages import Storage, JSONStorage
+from .database import TinyDB
 
 __all__ = ('TinyDB', 'Storage', 'JSONStorage', 'where')

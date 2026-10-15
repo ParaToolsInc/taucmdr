@@ -5,12 +5,7 @@ default_language_version:
 fail_fast: true
 exclude: >
   (?x)^(
-  packages/fasteners/.*|
-  packages/six/.*|
-  packages/termcolor/.*|
-  packages/texttable/.*|
-  packages/tinydb/.*|
-  packages/unidecode/.*
+  packages/taucmdr/_vendor/.*
   )$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks

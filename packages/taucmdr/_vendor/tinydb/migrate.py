@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from tinydb.storages import JSONStorage
+from .storages import JSONStorage
 
 
 def migrate(*args, **kwargs):
