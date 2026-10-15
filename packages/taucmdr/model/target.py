@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -636,10 +636,36 @@ class Target(Model):
         return selected['target'] == self.eid
 
     def architecture(self):
-        return Architecture.find(self['host_arch'])
+        """Get this target's host architecture.
+
+        Returns:
+            Architecture: The architecture specified by this target's ``host_arch``.
+
+        Raises:
+            ConfigurationError: ``host_arch`` specifies an architecture this version of TAU Commander doesn't support.
+        """
+        try:
+            return Architecture.find(self['host_arch'])
+        except KeyError as err:
+            raise ConfigurationError(f"Target '{self['name']}' has host architecture '{self['host_arch']}', "
+                                     "which this version of TAU Commander doesn't support.",
+                                     "Create a new target for this system with `tau target create`.") from err
 
     def operating_system(self):
-        return OperatingSystem.find(self['host_os'])
+        """Get this target's host operating system.
+
+        Returns:
+            OperatingSystem: The operating system specified by this target's ``host_os``.
+
+        Raises:
+            ConfigurationError: ``host_os`` specifies an operating system this version of TAU Commander doesn't support.
+        """
+        try:
+            return OperatingSystem.find(self['host_os'])
+        except KeyError as err:
+            raise ConfigurationError(f"Target '{self['name']}' has host operating system '{self['host_os']}', "
+                                     "which this version of TAU Commander doesn't support.",
+                                     "Create a new target for this system with `tau target create`.") from err
 
     def sources(self):
         """Get paths to all source packages known to this target.

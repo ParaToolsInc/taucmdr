@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,14 +24,24 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
-
-Functions used for unit tests of compiler.py.
-"""
-
+"""Unit tests for :any:`taucmdr.model.compiler`."""
 
 from taucmdr import tests
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.model.compiler import Compiler
 
-@tests.not_implemented
+
 class CompilerTest(tests.TestCase):
-    pass
+    """Tests for :any:`taucmdr.model.compiler.Compiler`."""
+
+    def test_unknown_family(self):
+        """A compiler record from a family this version doesn't know gives a clear error."""
+        self.reset_project_storage(['--bare'])
+        comp = Compiler.controller(PROJECT_STORAGE).create({'uid': 'stale-record',
+                                                            'path': '/opt/old/bin/oldcc',
+                                                            'family': 'NoSuchFamily',
+                                                            'role': CC.keyword})
+        with self.assertRaisesRegex(ConfigurationError, 'NoSuchFamily'):
+            comp.installation()

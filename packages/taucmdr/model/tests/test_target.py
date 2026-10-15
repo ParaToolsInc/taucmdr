@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,14 +24,34 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
-
-Functions used for unit tests of target.py.
-"""
-
+"""Unit tests for :any:`taucmdr.model.target`."""
 
 from taucmdr import tests
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cli.commands.target.list import COMMAND as target_list_cmd
+from taucmdr.model.target import Target
 
-@tests.not_implemented
+
 class TargetTest(tests.TestCase):
-    pass
+    """Tests for :any:`taucmdr.model.target.Target`."""
+
+    def _target_with(self, data):
+        self.reset_project_storage()
+        ctrl = Target.controller(PROJECT_STORAGE)
+        ctrl.update(data, {'name': 'targ1'})
+        return ctrl.one({'name': 'targ1'})
+
+    def test_unknown_host_arch(self):
+        """A target saved with an architecture this version doesn't know gives a clear error."""
+        targ = self._target_with({'host_arch': 'NoSuchArch'})
+        self.assertCommandReturnValue(0, target_list_cmd, [])
+        with self.assertRaisesRegex(ConfigurationError, 'NoSuchArch'):
+            targ.architecture()
+
+    def test_unknown_host_os(self):
+        """A target saved with an operating system this version doesn't know gives a clear error."""
+        targ = self._target_with({'host_os': 'NoSuchOS'})
+        self.assertCommandReturnValue(0, target_list_cmd, [])
+        with self.assertRaisesRegex(ConfigurationError, 'NoSuchOS'):
+            targ.operating_system()
