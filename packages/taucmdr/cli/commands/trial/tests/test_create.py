@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -230,7 +230,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_list_cmd, [])
         self.assertIn('test desc', stdout)
 
-    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
+    @tests.skipUnless(util.which('python'), "Python 3 required for this test")
     def test_run_python(self):
         self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
         self.copy_testfile('firstprime.py')
@@ -241,20 +241,6 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertRegex(stdout, '-tau-python-interpreter=/.*/python[23]?(\r\n?|\n| )')
-        self.assertFalse(stderr)
-        self.assertInLastTrialData("first_prime_after")
-
-    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
-    def test_run_python2(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
-        self.copy_testfile('firstprime.py')
-        test_dir = os.getcwd()
-        stdout, stderr = self.assertCommandReturnValue(
-            0, trial_create_cmd, ['python2', os.path.join(test_dir, 'firstprime.py')]
-        )
-        self.assertIn('Trial 0 produced', stdout)
-        self.assertIn('profile files', stdout)
-        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 

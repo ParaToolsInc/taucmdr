@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -175,15 +175,3 @@ class CreateTest(tests.TestCase):
         for role, expected in (CUDA_CXX, ''), (CUDA_FC, ''):
             path = targ2.populate(role.keyword)['path']
             self.assertEqual(path, expected, f"Target[{role}] is '{path}', not '{expected}'")
-
-#    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
-#    def test_python_init(self):
-#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
-
-#    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
-#    def test_python2_init(self):
-#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
-
-#    @tests.skipUnless(util.which('python3'), "Python 3 required for this test")
-#    def test_python3_init(self):
-#        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python3'])

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, ParaTools, Inc.
+# Copyright (c) 2019-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,6 @@ from taucmdr.cf.compiler import Knowledgebase
 PYTHON_INTERPRETERS = Knowledgebase('python', 'Compilers targeting different versions of Python',
                                     PY=('python', 'PYTHON')  # language: python, envars: PYTHON
                                    )
-
-PYTHON2 = PYTHON_INTERPRETERS.add('PY2_INTERPRETER',
-                                  family_regex=r'^Python 2',
-                                  version_flags=['--version'],
-                                  PY=('python2', 'python2.7', 'python'))
 
 PYTHON3 = PYTHON_INTERPRETERS.add('PY3_INTERPRETER',
                                   family_regex=r'^Python 3',
