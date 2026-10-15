@@ -24,16 +24,19 @@ Updating the Developer Documentation
 ------------------------------------
 
 The TAU Commander developer documentation is hosted on the project's
-`github page <http://github.com/ParaToolsInc/taucmdr>`_.  Use the setup.py script
-to update these pages from the master branch.
+`github page <https://github.com/ParaToolsInc/taucmdr>`_.  CI rebuilds and
+deploys it on every push to ``master`` or ``unstable``.
+You'll see the new documentation at https://paratoolsinc.github.io/taucmdr.
 
-::
+To build the docs locally, run these commands from the
+repository root with ``requirements-dev.txt`` installed::
 
-  $ python setup.py build_sphinx
-  # Check for errors
-  $ python setup.py build_sphinx --update-gh-pages
+  $ python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr
+  $ python -m sphinx -b html docs build/sphinx/html
 
-You'll see the new documentation at http://paratoolsinc.github.io/taucmdr.
+The first command generates the API reference pages. The second builds
+the rest of the documentation, writing the output to ``build/sphinx/html``.
+
 
 
 File Header

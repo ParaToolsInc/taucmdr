@@ -7,9 +7,19 @@ expected with unit testing.
 Running unit tests
 ------------------
 
-Run the setup.py script to execute all unit tests::
+Run every unit test from the repository root::
 
-   python setup.py test
+   PYTHONPATH=packages python scripts/run_tests.py
+
+Run one package, module, class or method by its dotted name::
+
+   PYTHONPATH=packages python scripts/run_tests.py taucmdr.cli.commands.tests.test_initialize
+
+Other options:
+
+* ``-v`` prints each test's name as it runs.
+* ``--list`` prints the selected test IDs without running them.
+* ``-U`` and ``-S`` point user and system storage at temporary directories.
 
 Writing new unit tests
 ----------------------
