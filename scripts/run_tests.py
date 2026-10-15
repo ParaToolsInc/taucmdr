@@ -39,6 +39,7 @@ Usage::
 """
 
 import argparse
+import importlib
 import os
 import shutil
 import sys
@@ -56,7 +57,7 @@ def _parse_args(argv):
                         help="Print each test's name as it runs.")
     parser.add_argument('--list', action='store_true', help="Print the selected test IDs without running them.")
     parser.add_argument('tests', nargs='*', metavar='TEST',
-                        help="List of tests to run by fully-qualified name, e.g., "
+                        help="Tests to run, by dotted name of a package, module, class or method, e.g., "
                              "taucmdr.cli.commands.tests.test_initialize.  Default: run every test.")
     return parser.parse_args(argv)
 
@@ -69,14 +70,44 @@ def _iter_test_ids(suite):
             yield test.id()
 
 
+def _load_name(loader, name, top_level_dir):
+    # loadTestsFromName() doesn't look inside packages, so discover the tests under a package ourselves.
+    try:
+        module = importlib.import_module(name)
+    except ImportError:
+        module = None
+    if module is not None and hasattr(module, '__path__'):
+        return loader.discover(os.path.dirname(os.path.abspath(module.__file__)), pattern='test*.py',
+                               top_level_dir=top_level_dir)
+    return loader.loadTestsFromName(name)
+
+
 def _load_tests(names):
+    """Load the named tests, or every test if no names are given.
+
+    Args:
+        names (list): Dotted names of packages, modules, classes or methods.
+
+    Returns:
+        unittest.TestSuite: The selected tests.
+
+    Raises:
+        ValueError: A name selected no tests.
+    """
     # Can't import at top level because env vars have to be set first.
     import taucmdr  # pylint: disable=import-outside-toplevel
     loader = unittest.TestLoader()
-    if names:
-        return loader.loadTestsFromNames(names)
     package_dir = os.path.dirname(os.path.abspath(taucmdr.__file__))
-    return loader.discover(package_dir, pattern='test*.py', top_level_dir=os.path.dirname(package_dir))
+    top_level_dir = os.path.dirname(package_dir)
+    if not names:
+        return loader.discover(package_dir, pattern='test*.py', top_level_dir=top_level_dir)
+    suite = unittest.TestSuite()
+    for name in names:
+        tests = _load_name(loader, name, top_level_dir)
+        if not tests.countTestCases():
+            raise ValueError(f"'{name}' doesn't contain any tests")
+        suite.addTests(tests)
+    return suite
 
 
 def _make_runner(verbosity):
@@ -110,7 +141,11 @@ def main(argv=None):
             sandboxes.append(path)
             print(f"Sandboxing {label} storage: {path}")
     try:
-        suite = _load_tests(args.tests)
+        try:
+            suite = _load_tests(args.tests)
+        except ValueError as err:
+            print(f"ERROR: {err}")
+            return 1
         if args.list:
             for test_id in _iter_test_ids(suite):
                 print(test_id)
