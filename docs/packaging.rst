@@ -32,17 +32,6 @@ TAU Commander.  The important ones are:
 :test:
    Run all unit tests and pylint.
 
-:release:
-   Generate distributable release packages in the ``dist`` directory.
-   See the ``--web`` and ``--all`` flags.  You probably want the ``--all`` flag.
-   E.g. for a new version release:
-
-   .. code-block:: bash
-
-      git tag v1.3.1
-      make clean
-      python setup.py release --all
-
 :install:
    Install a TAU Commander distribution. End users must **NEVER** use ``python setup.py install``!  TAU Commander needs
    its own, private, un-shared Python installation to avoid environment contamination when profiling a user's code.

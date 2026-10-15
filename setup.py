@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -96,18 +96,14 @@ CLASSIFIERS = [
 import os
 import sys
 import shutil
-import pickle
 import fnmatch
 import tempfile
-import fileinput
 import subprocess
 from typing import List, Tuple, Optional
 import setuptools
-from setuptools import Command
 from setuptools.command.test import test as TestCommand
 from setuptools.command.install import install as InstallCommand
 from setuptools.command.install_lib import install_lib as InstallLibCommand
-from setuptools.command.sdist import sdist as SDistCommand
 
 # Don't show `setup.py` as the root command
 os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
@@ -309,257 +305,6 @@ class Install(InstallCommand):
                     os.path.join(self.prefix, 'system', 'configure'))
 
 
-class Release(SDistCommand):
-    """Build release packages."""
-
-    description = "Build release packages."
-
-    user_options = (SDistCommand.user_options +
-                    [('target-arch=', None, "Target architecture"),
-                     ('target-os=', None, "Target operating system"),
-                     ('web', None, "Build a web-based distribution"),
-                     ('all', None, "Build all-in-one packages for all supported (arch, os) combinations")])
-
-    def initialize_options(self):
-        SDistCommand.initialize_options(self)
-        self.target_arch = None
-        self.target_os = None
-        self.web = False
-        self.all = False
-
-    def finalize_options(self):
-        # Distuilts defines attributes in the initialize_options() method
-        # pylint: disable=attribute-defined-outside-init
-        SDistCommand.finalize_options(self)
-        from taucmdr.cf.platforms import Architecture, OperatingSystem, HOST_ARCH, HOST_OS
-        if self.all and (self.web or self.target_arch or self.target_os):
-            print('--all must not be used with any other arguments')
-            sys.exit(-1)
-        elif self.web and (self.all or self.target_arch or self.target_os):
-            print('--web must not be used with any other arguments')
-            sys.exit(-1)
-        else:
-            try:
-                self.target_arch = Architecture.find(self.target_arch or str(HOST_ARCH))
-            except KeyError:
-                print('Invalid architecture: %s' % self.target_arch)
-                print('Known architectures: %s' % list(Architecture.keys()))
-                sys.exit(-1)
-            try:
-                self.target_os = OperatingSystem.find(self.target_os or str(HOST_OS))
-            except KeyError:
-                print('Invalid operating system: %s' % self.target_os)
-                print('Known operating system: %s' % list(OperatingSystem.keys()))
-                sys.exit(-1)
-
-    def _software_packages(self):
-        import taucmdr.cf.software
-        packages = []
-        assert isinstance(taucmdr.cf.software.__path__, list)
-        for module_file in os.listdir(taucmdr.cf.software.__path__[0]):
-            if module_file.endswith('_installation.py'):
-                packages.append(module_file[:-16])
-        return packages
-
-    def _download(self, pkg):
-        from taucmdr import util
-        module_name = pkg + '_installation'
-        repos = getattr(__import__('.'.join(('taucmdr', 'cf', 'software', module_name)),
-                                   globals(), locals(), ['REPOS'], 0), 'REPOS')
-        default = repos[None]
-        try:
-            arch_dct = repos[self.target_arch]
-        except KeyError:
-            srcs = default
-        else:
-            srcs = arch_dct.get(self.target_os, arch_dct.get(None, default))
-        if not isinstance(srcs, list):
-            srcs = [srcs]
-        success = False
-        while srcs and not success:
-            try:
-                src = srcs.pop(0)
-                pkg = os.path.basename(src)
-                cache_dir = tempfile.gettempdir()
-                cache_db = os.path.join(cache_dir, 'taucmdr.setup_py.downloads')
-                cache_pkg = os.path.join(cache_dir, pkg)
-                try:
-                    with open(cache_db, 'rb') as fin:
-                        cache = pickle.load(fin)
-                except OSError:
-                    cache = {}
-                if not os.path.exists(cache_pkg) or src != cache.get(cache_pkg):
-                    print(f"Downloading '{pkg}' for ({self.target_arch}, {self.target_os})")
-                    util.download(src, cache_pkg)
-                cache[cache_pkg] = src
-                with open(cache_db, 'wb') as fout:
-                    pickle.dump(cache, fout)
-                util.download(cache_pkg, os.path.join('system', 'src', pkg))
-                success = True
-            except OSError:
-                print(f"Failed to download {pkg} from URL {src}; falling back to next mirror.")
-                pass
-        if not success:
-            raise OSError(f"Unable to download {pkg} from any mirror.")
-
-
-    def _download_python(self):
-        from taucmdr.cf.platforms import X86_64, INTEL_KNC, INTEL_KNL, IBM64, PPC64LE, ARM64
-        from taucmdr.cf.platforms import DARWIN, LINUX
-        from taucmdr.cf.platforms import Architecture, OperatingSystem
-        make_arch = self.target_arch
-        make_os = self.target_os
-        arch_map = {X86_64: 'x86_64',
-                    INTEL_KNC: 'x86_64',
-                    INTEL_KNL: 'x86_64',
-                    IBM64: 'ppc64le',
-                    PPC64LE: 'ppc64le',
-                    ARM64: 'armv71'}
-        os_map = {DARWIN: 'Darwin',
-                  LINUX: 'Linux'}
-        try:
-            assert isinstance(self.target_arch, Architecture)
-            make_arch = arch_map[self.target_arch]
-        except (KeyError, AssertionError):
-            return
-        try:
-            assert isinstance(self.target_os, OperatingSystem)
-            make_os = os_map[self.target_os]
-        except (KeyError, AssertionError):
-            return
-        # Use `make` to download Python because we keep the Tau/Anaconda target translation in the Makefile
-        subprocess.call(['make', 'python_download', 'HOST_ARCH='+make_arch, 'HOST_OS='+make_os])
-
-    def _build_web_release(self):
-        SDistCommand.run(self)
-        for path in self.archive_files:
-            print("Wrote '%s'" % path)
-
-    def _build_target_release(self):
-        self._download_python()
-        for pkg in self._software_packages():
-            self._download(pkg)
-        SDistCommand.run(self)
-        dist_name = self.distribution.get_fullname()
-        for src in self.archive_files:
-            ext = os.path.basename(src).split(dist_name)[1]
-            dest = '-'.join([dist_name, str(self.target_os), str(self.target_arch)]) + ext
-            dest = os.path.join(self.dist_dir, dest)
-            shutil.move(src, dest)
-            print("Wrote '%s'" % dest)
-
-    def _build_all(self):
-        from taucmdr.cf.platforms import TauMagic
-        targets = {(magic.architecture, magic.operating_system) for magic in TauMagic.all()}
-        for target in targets:
-            targ_arch, targ_os = target
-            # Setuptools is a dirty, stateful animal.
-            # Have to create a new subprocess to hack around setuptools' stateful implementation of sdist.
-            subprocess.call(['python', 'setup.py', 'release',
-                             '--target-arch', str(targ_arch),
-                             '--target-os', str(targ_os)])
-        subprocess.call(['python', 'setup.py', 'release', '--web'])
-
-    def run(self):
-        from taucmdr import util
-        util.rmtree('system', ignore_errors=True)
-        # Update package version number
-        for line in fileinput.input(os.path.join(PACKAGE_TOPDIR, "packages", "taucmdr", "__init__.py"), inplace=True):
-            # fileinput.input with inplace=True redirects stdout to the input file ... freaky
-            sys.stdout.write('__version__ = "%s"\n' % self.distribution.get_version()
-                             if line.startswith('__version__') else line)
-        if self.web:
-            self._build_web_release()
-        elif self.all:
-            self._build_all()
-        else:
-            self._build_target_release()
-
-
-class BuildMarkdown(Command):
-    """Generate markdown documentation files for each TAU Commander command"""
-
-    description = "Generate markdown documentation files for each TAU Commander command"
-
-    user_options = [('dest=', None, "Directory in which to write markdown files")]
-
-    def initialize_options(self):
-        # Distuilts defines attributes outside __init__
-        # pylint: disable=attribute-defined-outside-init
-        self.dest = None
-
-    def finalize_options(self):
-        # Distuilts defines attributes outside __init__
-        # pylint: disable=attribute-defined-outside-init
-        if self.dest is None:
-            build = self.get_finalized_command('build')
-            self.dest = os.path.join(os.path.abspath(build.build_base), 'markdown')
-            self.mkpath(self.dest)
-
-    def run(self):
-        from unidecode import unidecode
-        from taucmdr import cli
-        cli.USAGE_FORMAT = "markdown"
-        os.environ['ANSI_COLORS_DISABLED'] = '1'
-        #setup toc file
-        assert self.dest is not None
-        tocfilename = os.path.join(self.dest, 'tau-commander-user-manual-toc.md')
-        with open(tocfilename, 'w') as tocfile:
-            usemanpath = 'http://taucommander.paratools.com/tau-commander-user-manual/'
-            #write preliminary entries not based on commands
-            tocfile.write('TAU Commander User Manual\n')
-            tocfile.write('Table of Contents\n\n')
-
-            tocfile.write('<a href="')
-            tocfile.write(usemanpath)
-            tocfile.write('introduction')
-            tocfile.write('">')
-            tocfile.write('TAU Commander User Manual Introduction')
-            tocfile.write('</a>\n')
-
-            tocfile.write('<a href="')
-            tocfile.write(usemanpath)
-            tocfile.write('tau-commander-installation-2')
-            tocfile.write('">')
-            tocfile.write('TAU Commander Installation')
-            tocfile.write('</a>\n')
-            indentspace = ''
-            bs = 1
-            for cmd_name in cli.get_all_commands():
-                name = cli.command_from_module_name(cmd_name)
-                if name.count(' ') > bs:
-                    indentspace = ': '
-                    bs = name.count(' ')
-                if name.count(' ') == 1:
-                    if bs > 1:
-                        bs = 1
-                        indentspace = ''
-                        tocfile.write('\n')
-                cmd_obj = cli.find_command(name.split()[1:])
-                tocname = cmd_name.replace('taucmdr.cli.commands.', 'tau-commander-')
-                tocfile.write(indentspace)
-                tocfile.write('<a href="')
-                tocfile.write(usemanpath)
-                tocfile.write(tocname.replace('.', '-'))
-                tocfile.write('">')
-                tocname = tocname.replace('tau-commander-', '')
-
-                tocname = tocname.replace('.', ' ')
-                tocfile.write(tocname.capitalize())
-                tocfile.write('</a>\n')
-                parts = [cmd_obj.help_page,
-                         "", "",
-                         "Command Line Usage",
-                         "==================",
-                         "", "",
-                         cmd_obj.usage]
-                filename = os.path.join(self.dest, cmd_name.replace('.', '_')+'.md')
-                with open(filename, 'w') as fout:
-                    fout.write(unidecode('\n'.join(parts)))
-                print('wrote %s' % filename)
-                indentspace = ''
-
-
 def _version():
     # type: () -> str
     version_file = os.path.join(PACKAGE_TOPDIR, "VERSION")
@@ -629,12 +374,9 @@ setuptools.setup(
     data_files=_data_files(),
     # Testing
     test_suite='taucmdr',
-    tests_require=['backports.functools_lru_cache'],
     # Custom commands
     cmdclass={'install': Install,
               'install_lib': InstallLib,
               'test': Test,
-              'build_sphinx': BuildSphinx,
-              'release': Release,
-              'build_markdown': BuildMarkdown}
+              'build_sphinx': BuildSphinx}
 )

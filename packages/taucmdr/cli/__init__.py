@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,12 +53,6 @@ LOGGER = logger.get_logger(__name__)
 SCRIPT_COMMAND = os.path.basename(TAUCMDR_SCRIPT)
 
 COMMANDS_PACKAGE_NAME = __name__ + '.commands'
-
-USAGE_FORMAT = "console"
-"""Specify usage formatting:
-    console: colorized and formatted to fit current console dimensions.
-    markdown: plain text markdown.
-"""
 
 _COMMANDS = {SCRIPT_COMMAND: {}}
 
@@ -176,7 +170,6 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
     Returns:
         str: Help string describing all commands found at or below `root`.
     """
-    usage_fmt = USAGE_FORMAT.lower()
     groups = {}
     commands = sorted([i for i in _get_commands(package_name).items() if i[0] != '__module__'])
     for cmd, topcmd in commands:
@@ -187,21 +180,12 @@ def commands_description(package_name=COMMANDS_PACKAGE_NAME):
             continue
         descr = command_obj.summary.split('\n')[0]
         group = command_obj.group
-        if usage_fmt == 'console':
-            line = '  {}{}'.format(util.color_text(f'{cmd:<14}', 'green'), descr)
-        elif usage_fmt == 'markdown':
-            line = '  {} | {}'.format(f'{cmd:<28}', descr)
-        else:
-            line = ''
+        line = '  {}{}'.format(util.color_text(f'{cmd:<14}', 'green'), descr)
         groups.setdefault(group, []).append(line)
     parts = []
     for group, members in groups.items():
         title = group.title() + ' Subcommands' if group else 'Subcommands'
-        if usage_fmt == 'console':
-            parts.append(util.color_text(title+':', attrs=['bold']))
-        elif usage_fmt == 'markdown':
-            parts.extend(['', ' ', f'{title:<30}' + ' | Description',
-                          '{}:| {}'.format('-'*30, '-'*len('Description'))])
+        parts.append(util.color_text(title+':', attrs=['bold']))
         parts.extend(members)
         parts.append('')
     return '\n'.join(parts)
