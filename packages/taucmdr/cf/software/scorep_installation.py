@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2025, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ from taucmdr import logger, util
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler import host, mpi, shmem
-from taucmdr.cf.platforms import X86_64, IBM64, PPC64, PPC64LE
+from taucmdr.cf.platforms import X86_64, PPC64LE
 
 
 LOGGER = logger.get_logger(__name__)
@@ -133,7 +133,7 @@ class ScorepInstallation(AutotoolsInstallation):
     def _get_flags(self):
         flags = ['--enable-shared', '--without-otf2', '--without-opari2', '--without-cube',
                  '--without-gui', '--disable-gcc-plugin', '--disable-dependency-tracking']
-        if self.target_arch in (X86_64, IBM64, PPC64, PPC64LE):
+        if self.target_arch in (X86_64, PPC64LE):
             suites = {host.INTEL: 'intel', host.IBM: 'ibm', host.PGI: 'pgi', host.GNU: 'gcc'}
             suite = suites.get(self.compilers[host.CC].unwrap().info.family)
             flags.append('--with-nocross-compiler-suite' + ('='+suite if suite else ''))

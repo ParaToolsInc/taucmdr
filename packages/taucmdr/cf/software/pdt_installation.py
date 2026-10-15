@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK,\
-    ARM64
+from taucmdr.cf.platforms import TauMagic, X86_64, PPC64LE, LINUX, DARWIN, ARM64
 from taucmdr.cf.compiler.host import CC, CXX, PGI, NVHPC, GNU, INTEL
 
 
@@ -53,9 +52,7 @@ PDT_LITE_REPOS = [
 
 REPOS = {None: PDT_REPOS,
          X86_64: {None: PDT_REPOS,
-                  LINUX: PDT_LITE_REPOS},
-         INTEL_KNL: {None: PDT_REPOS,
-                     LINUX: PDT_LITE_REPOS}}
+                  LINUX: PDT_LITE_REPOS}}
 
 COMMANDS = {None:
             ['cparse',
@@ -102,29 +99,6 @@ COMMANDS = {None:
               'pdtf90disp',
               'pdtflint',
               'taucpdisp',
-              'xmlgen']},
-            IBM_BGQ:
-            {IBM_CNK:
-             ['cparse',
-              'cxxparse',
-              'edg44-c-roseparse',
-              'edg44-cxx-roseparse',
-              'edg44-upcparse',
-              'edgcpfe',
-              'f90fe',
-              'f90parse',
-              'f95parse',
-              'gfparse',
-              'pdbcomment',
-              'pdbconv',
-              'pdbhtml',
-              'pdbmerge',
-              'pdbstmt',
-              'pdbtree',
-              'pdtf90disp',
-              'pdtflint',
-              'taucpdisp',
-              'tau_instrumentor',
               'xmlgen']},
             PPC64LE:
             {LINUX:

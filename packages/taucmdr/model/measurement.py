@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.application import Application
-    from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
+    from taucmdr.cf.platforms import HOST_OS, DARWIN
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -136,7 +136,7 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': HOST_OS not in (DARWIN, IBM_CNK),
+            'default': HOST_OS is not DARWIN,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation'},

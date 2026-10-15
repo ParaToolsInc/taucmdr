@@ -45,7 +45,7 @@ from taucmdr.mvc.controller import Controller
 from taucmdr.model.compiler import Compiler
 from taucmdr.cf import software
 from taucmdr.cf.platforms import Architecture, OperatingSystem
-from taucmdr.cf.platforms import HOST_ARCH, INTEL_KNC, HOST_OS, DARWIN, CRAY_CNL, PPC64LE
+from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN, CRAY_CNL, PPC64LE
 from taucmdr.cf.compiler import Knowledgebase, InstalledCompilerSet
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
@@ -94,24 +94,6 @@ def _require_compiler_family(family, *hints):
             if given_family_name != family.name:
                 raise ConfigurationError(f"{msg} but it is a {given_family_name} compiler", *hints)
     return callback
-
-def knc_require_k1om(*_):
-    """Compatibility checking callback for use with data models.
-
-    Requires that the Intel k1om tools be installed if the host architecture is KNC.
-
-    Raises:
-        ConfigurationError: Invalid compiler family specified in target configuration.
-    """
-    k1om_ar = util.which('x86_64-k1om-linux-ar')
-    if not k1om_ar:
-        for path in glob.glob('/usr/linux-k1om-*'):
-            k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
-            if k1om_ar:
-                break
-        else:
-            raise ConfigurationError('k1om tools not found', 'Try installing on compute node', 'Install MIC SDK')
-
 
 def papi_source_default():
     """Choose the best default PAPI source."""
@@ -180,19 +162,13 @@ def attributes():
     """
     from taucmdr.model.project import Project
     from taucmdr.cli.arguments import ParsePackagePathAction
-    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, INTEL, PGI, NVHPC, GNU
-    from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC, INTEL as INTEL_MPI
+    from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, PGI, NVHPC, GNU
+    from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
     from taucmdr.cf.compiler.caf import CAF_FC
     from taucmdr.cf.compiler.python import PY
 
-    knc_intel_only = _require_compiler_family(INTEL,
-                                              "You must use Intel compilers to target the Xeon Phi (KNC)",
-                                              "Try adding `--compilers=Intel` to the command line")
-    knc_intel_mpi_only = _require_compiler_family(INTEL_MPI,
-                                                  "You must use Intel MPI compilers to target the Xeon Phi (KNC)",
-                                                  "Try adding `--mpi-wrappers=Intel` to the command line")
     gnu_only = _require_compiler_family([PGI, NVHPC, GNU],
                                               "You must use GNU compilers to use the backtrace unwinder",
                                               "Try adding `--compilers=GNU` to the command line")
@@ -229,14 +205,6 @@ def attributes():
                          'group': 'host',
                          'metavar': '<arch>',
                          'choices': list(Architecture.keys())},
-            'compat': {str(INTEL_KNC):
-                       (Target.require('host_arch', knc_require_k1om),
-                        Target.require(CC.keyword, knc_intel_only),
-                        Target.require(CXX.keyword, knc_intel_only),
-                        Target.require(FC.keyword, knc_intel_only),
-                        Target.require(MPI_CC.keyword, knc_intel_mpi_only),
-                        Target.require(MPI_CXX.keyword, knc_intel_mpi_only),
-                        Target.require(MPI_FC.keyword, knc_intel_mpi_only))},
             'rebuild_required': True
         },
         CC.keyword: {
@@ -717,32 +685,24 @@ class Target(Model):
             self._compilers = InstalledCompilerSet('_'.join([str(x) for x in sorted(paths)]), **compilers)
         return self._compilers
 
-    def check_compiler(self, compiler_cmd, compiler_args):
-        """Checks a compiler command its arguments for compatibility with this target configuration.
+    def check_compiler(self, compiler_cmd):
+        """Checks a compiler command for compatibility with this target configuration.
 
         Checks that the given compiler matches at least one, **but possibly more**, of the compilers
-        used in the target. Also performs any special checks for invalid compiler arguments,
-        e.g. -mmic is only for native KNC.
+        used in the target.
 
-        If the given compiler command and arguments are compatible with this target then information about
+        If the given compiler command is compatible with this target then information about
         matching compiler installations is returned as a list of n :any:`InstalledCompiler` instances.
 
         Args:
             compiler_cmd (str): The compiler command as passed by the user.
-            compiler_args (list): Compiler command line arguments.
 
         Returns:
             list: Information about matching installed compilers as :any:`Compiler` instances.
 
         Raises:
-            ConfigurationError: The compiler or command line arguments are incompatible with this target.
+            ConfigurationError: The compiler is incompatible with this target.
         """
-        if '-mmic' in compiler_args and self['host_arch'] != str(INTEL_KNC):
-            raise ConfigurationError("Host architecture of target '%s' is '%s'"
-                                     " but the '-mmic' compiler argument requires '%s'" %
-                                     (self['name'], self['host_arch'], INTEL_KNC),
-                                     "Select a different target",
-                                     "Create a new target with host architecture '%s'" % INTEL_KNC)
         compiler_ctrl = Compiler.controller(self.storage)
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)

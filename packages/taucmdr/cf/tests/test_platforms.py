@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -40,3 +40,23 @@ class PlatformsTest(TestCase):
 
     def test_tau_magic_detect(self):
         self.assertTrue(TauMagic.detect())
+
+    def test_supported_platforms(self):
+        """Each supported host platform maps to the expected TAU magic word."""
+        expected = {('x86_64', 'Linux'): 'x86_64',
+                    ('x86_64', 'CNL'): 'craycnl',
+                    ('x86_64', 'Darwin'): 'apple',
+                    ('aarch64', 'Linux'): 'arm64_linux',
+                    ('ppc64le', 'Linux'): 'ibm64linux'}
+        for (arch, opsys), magic in expected.items():
+            found = TauMagic.find((Architecture.find(arch), OperatingSystem.find(opsys)))
+            self.assertEqual(found.name, magic, f"({arch}, {opsys})")
+
+    def test_removed_platforms(self):
+        """Architectures and operating systems that TAU Commander doesn't support aren't defined."""
+        for arch in ('KNC', 'KNL', 'BGL', 'BGP', 'BGQ', 'ibm64', 'ppc64', 'aarch32'):
+            with self.assertRaises(KeyError, msg=arch):
+                Architecture.find(arch)
+        for opsys in ('CNK', 'Android'):
+            with self.assertRaises(KeyError, msg=opsys):
+                OperatingSystem.find(opsys)

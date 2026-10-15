@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,7 @@ from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
 from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.compiler.python import PY
-from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, IBM_BGL, IBM_BGP, IBM_BGQ, HOST_ARCH, HOST_OS
-from taucmdr.cf.platforms import INTEL_KNL, INTEL_KNC
+from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
 
 
 LOGGER = logger.get_logger(__name__)
@@ -559,9 +558,6 @@ class TauInstallation(Installation):
         if self.max_threads:
             return self.max_threads
         if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
-            if self.target_arch in (INTEL_KNC, INTEL_KNL):
-                nprocs = 72 # Assume minimum 1 rank per quadrant w/ 4HTs
-                return nprocs
             nprocs = multiprocessing.cpu_count()
             # Assume 2 HTs/core
             return max(64, 2*nprocs)
@@ -844,8 +840,7 @@ class TauInstallation(Installation):
                             host_compilers.NVHPC: 'nvfortran',
                             host_compilers.CRAY: 'cray',
                             host_compilers.IBM: 'ibm',
-                            host_compilers.ARM: 'armflang',
-                            host_compilers.IBM_BG: 'ibm'}
+                            host_compilers.ARM: 'armflang'}
             try:
                 fortran_magic = fc_magic_map[fc_family]
                 if self.caf_support:
@@ -1410,16 +1405,11 @@ class TauInstallation(Installation):
         env['TAU_SAMPLING'] = str(int(self.sample))
         if self.sample:
             env['TAU_EBS_RESOLUTION'] = self.sample_resolution
-            # Based on periods shown in TauEnv.cpp as of tau2/e481b2bbc98c014a225d79bc4d0959b203d840d4
-            arch_period = {INTEL_KNC: 100000,
-                           INTEL_KNL: 100000,
-                           IBM_BGL: 20000,
-                           IBM_BGP: 20000,
-                           IBM_BGQ: 50000}
             if self.sampling_period > 0:
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
             else:
-                self.sampling_period = arch_period.get(self.target_arch, 10000)
+                # TAU's default sampling period (see TauEnv.cpp)
+                self.sampling_period = 10000
                 env['TAU_EBS_PERIOD'] = str(self.sampling_period)
         env['TAU_TRACK_HEAP'] = str(int(self.measure_heap_usage))
         env['TAU_TRACK_LOAD'] = str(int(self.measure_system_load))
@@ -1947,12 +1937,6 @@ class TauInstallation(Installation):
             metrics.extend([("CRAY_TIMERS", "Cray high resolution clock."),
                             ("ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/energy"),
                             ("ACCEL_ENERGY", "Cray Power Monitoring: /sys/cray/pm_counters/accel_energy")])
-        if self.target_arch is IBM_BGL:
-            metrics.append(("BGL_TIMERS", "BlueGene/L high resolution clock."))
-        elif self.target_arch is IBM_BGP:
-            metrics.append(("BGP_TIMERS", "BlueGene/P high resolution clock."))
-        elif self.target_arch is IBM_BGQ:
-            metrics.append(("BGQ_TIMERS", "BlueGene/Q high resolution clock."))
         return metrics
 
     def rewrite(self, rewrite_package, executable, inst_file):

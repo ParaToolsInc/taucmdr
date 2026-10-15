@@ -32,7 +32,7 @@ Functions used for unit tests of create.py.
 import os
 import tempfile
 from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cf.compiler.host import CC, NVHPC
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.trial.list import COMMAND as trial_list_cmd
@@ -47,7 +47,6 @@ from taucmdr import util
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_create(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')

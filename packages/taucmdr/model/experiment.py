@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -370,7 +370,7 @@ class Experiment(Model):
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         application = self.populate('application')
-        target_compilers = target.check_compiler(compiler_cmd, compiler_args)
+        target_compilers = target.check_compiler(compiler_cmd)
         try:
             found_compiler = application.check_compiler(target_compilers)
         except ConfigurationError as err:

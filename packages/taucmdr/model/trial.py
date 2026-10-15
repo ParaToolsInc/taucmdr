@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -138,34 +138,6 @@ class TrialController(Controller):
         LOGGER.info(headline)
         return timestamp
 
-    def _perform_bluegene(self, expr, trial, cmd, cwd, env):
-        if os.path.basename(cmd[0]) != 'qsub':
-            raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
-        # Move TAU environment parameters to the command line
-        env_parts = {}
-        for key, val in env.items():
-            if key not in os.environ:
-                env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.items()])
-        cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
-        cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
-        env = dict(os.environ)
-        try:
-            self.update({'phase': 'executing'}, trial.eid)
-            retval = trial.queue_command(expr, cmd, cwd, env)
-        except:
-            self.delete(trial.eid)
-            raise
-        if retval != 0:
-            raise TrialError("Failed to add job to the queue.",
-                             "Verify that the right input parameters were specified.",
-                             "Check the program output for error messages.",
-                             "Does the selected application configuration correctly describe this program?",
-                             "Does the selected measurement configuration specify the right measurement methods?",
-                             "Does the selected target configuration match the runtime environment?")
-        LOGGER.info("The job has been added to the queue.")
-        return retval
-
     def _perform_interactive(self, expr, trial, cmd, cwd, env, record_output=False):
         begin_time = self._mark_time('BEGIN', expr)
         retval = None
@@ -239,19 +211,15 @@ class TrialController(Controller):
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
         b64env = base64.standard_b64encode(repr(env).encode()).decode()
-        is_bluegene = expr.populate('target').architecture().is_bluegene()
         is_cray_login = expr.populate('target').operating_system().is_cray_login()
         if is_cray_login:
             LOGGER.warning('Running on a Cray head node. This may produce incorrect results. '
                            'Try running on a compute node.')
         try:
-            if is_bluegene:
-                retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
+            if record_output:
+                retval, _ = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
             else:
-                if record_output:
-                    retval, _ = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
-                else:
-                    retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
+                retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
         except Exception as err:
             try:
                 self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
@@ -491,40 +459,6 @@ class Trial(Model):
         elif trace_fmt != 'none':
             raise InternalError("Unhandled trace format '%s'" % trace_fmt)
         return data
-
-    def queue_command(self, expr, cmd, cwd, env):
-        """Execute a command as part of an experiment trial.
-
-        Creates a new subprocess for the command and checks for TAU data files
-        when the subprocess exits.
-
-        Args:
-            expr (Experiment): Experiment data.
-            cmd (str): Command to profile, with command line arguments.
-            cwd (str): Working directory to perform trial in.
-            env (dict): Environment variables to set before performing the trial.
-
-        Returns:
-            int: Subprocess return code.
-        """
-        cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted(f'{key}={val}' for key, val in env.items()
-                              if (key.startswith('TAU_') or
-                                  key.startswith('SCOREP_') or
-                                  key in ('PROFILEDIR', 'TRACEDIR')))
-        LOGGER.info('\n'.join(tau_env_opts))
-        LOGGER.info(cmd_str)
-        try:
-            retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
-        except OSError as err:
-            target = expr.populate('target')
-            errno_hint = {errno.EPERM: "Check filesystem permissions",
-                          errno.ENOENT: "Check paths and command line arguments",
-                          errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None)) from err
-        if retval:
-            LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        return retval
 
     def execute_command(self, expr, cmd, cwd, env, record_output=False):
         """Execute a command as part of an experiment trial.

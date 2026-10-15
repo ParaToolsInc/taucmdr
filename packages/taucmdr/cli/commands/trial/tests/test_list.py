@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@ Functions used for unit tests of list.py.
 """
 
 from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cli.commands.trial.list import COMMAND as LIST_COMMAND
 from taucmdr.cli.commands.trial.create import COMMAND as CREATE_COMMAND
@@ -51,7 +50,6 @@ class ListTest(tests.TestCase):
         self.assertIn("No trial with number='100'", stderr)
         self.assertFalse(stdout)
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
@@ -62,7 +60,6 @@ class ListTest(tests.TestCase):
         self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_one(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
@@ -73,7 +70,6 @@ class ListTest(tests.TestCase):
         self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_multiple(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
@@ -87,7 +83,6 @@ class ListTest(tests.TestCase):
         self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_multiple_subset(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
@@ -102,7 +97,6 @@ class ListTest(tests.TestCase):
         self.assertIn('Selected experiment:', stdout)
         self.assertFalse(stderr)
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_list_one_invalid(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')

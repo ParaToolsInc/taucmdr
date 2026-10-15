@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018, ParaTools, Inc.
+# Copyright (c) 2018-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@ Functions used for unit tests of edit.py.
 import os
 
 from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.trial.renumber import COMMAND as RENUMBER_COMMAND
@@ -46,7 +45,6 @@ from taucmdr.model.trial import Trial
 class RenumberTest(tests.TestCase):
     """Tests for :any:`trial.renumber`."""
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_newtrial(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
@@ -85,7 +83,6 @@ class RenumberTest(tests.TestCase):
             new_profile_contents = f.read()
         self.assertEqual(old_profile_contents, new_profile_contents, "Profiles should be identical after renumber")
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_swaptrials(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
