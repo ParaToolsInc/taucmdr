@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,6 @@ import atexit
 import subprocess
 import errno
 import shutil
-import pkgutil
 import tarfile
 import gzip
 import tempfile
@@ -758,18 +757,6 @@ def uncolor_text(text):
         str: The text without control chars.
     """
     return re.sub(_COLOR_CONTROL_RE, '', text)
-
-
-def _iter_modules(paths, prefix):
-    # pylint: disable=no-member
-    yielded = {}
-    for path in paths:
-        importer = pkgutil.get_importer(path)
-        iter_importer_modules = importer.iter_modules
-        for name, ispkg in iter_importer_modules(prefix):
-            if name not in yielded:
-                yielded[name] = True
-                yield importer, name, ispkg
 
 
 def get_binary_linkage(cmd):
