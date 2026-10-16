@@ -50,7 +50,6 @@ from zipfile import ZipFile
 import termcolor
 from unidecode import unidecode
 from taucmdr import logger
-from taucmdr.cf.storage.levels import highest_writable_storage
 from taucmdr.error import InternalError, ConfigurationError
 from taucmdr.progress import ProgressIndicator
 
@@ -607,7 +606,7 @@ def get_command_output(cmd):
     else:
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
-    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)
     get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
@@ -785,6 +784,8 @@ def tmpfs_prefix():
             and all its contents **will be deleted** when the program exits if it installs
             correctly.
     """
+    # The storage modules import this module, so importing the storage levels at the top would be circular.
+    from taucmdr.cf.storage.levels import highest_writable_storage  # pylint: disable=import-outside-toplevel
     candidate = None
     for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
         try:
