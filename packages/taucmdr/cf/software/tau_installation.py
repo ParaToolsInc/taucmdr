@@ -163,6 +163,34 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'cafrun': []}
 
 
+def python_build_paths(python_path):
+    """Find the C header and ``libpython`` directories of a Python interpreter.
+
+    TAU's Python support compiles against the interpreter's headers and links against its ``libpython``.
+
+    Args:
+        python_path (str): Absolute path to a Python interpreter.
+
+    Returns:
+        tuple: (include_dir, lib_dir).
+
+    Raises:
+        ConfigurationError: The interpreter's ``libpython`` couldn't be found.
+    """
+    stdlib = get_command_output(
+        [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))']).strip()
+    # INCLUDEPY is the build-time location, which is wrong for a relocated Python such as a python-build-standalone
+    # build, so ask for the headers' installed location instead.
+    include_dir = get_command_output(
+        [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("include"))']).strip()
+    dylib_suffix = 'dylib' if HOST_OS is DARWIN else 'so'
+    # Search the standard library first, then the directory that holds it.
+    for search_dir in stdlib, os.path.dirname(stdlib):
+        for path in glob.iglob(os.path.join(search_dir, '**', 'libpython*.' + dylib_suffix + '*'), recursive=True):
+            return include_dir, os.path.dirname(path)
+    raise ConfigurationError(f"Unable to find libpython in {stdlib} for {python_path}")
+
+
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
 
@@ -550,8 +578,10 @@ class TauInstallation(Installation):
         # TAU changes if any of its hard-coded limits change
         uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
         if self.uses_python:
-            python_version = self.get_python_version(self.compilers[PY].absolute_path)
-            uid_parts.extend([self.compilers[PY].absolute_path, python_version])
+            python_path = self.compilers[PY].absolute_path
+            python_version = self.get_python_version(python_path)
+            # TAU's Python support is built for the interpreter python_path resolves to.
+            uid_parts.extend([python_path, os.path.realpath(python_path), python_version])
         return uid_parts
 
     def _get_max_threads(self):
@@ -871,25 +901,7 @@ class TauInstallation(Installation):
 
         if self.uses_python:
             # build TAU with --pythoninc and --pythonlib options using python-interpreter from target
-            python_path = self.compilers[PY].absolute_path
-            _pythonlib = get_command_output(
-                [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))'])
-            dylib_suffix = 'dylib' if platform.system() == 'Darwin' else 'so'
-            for g in glob.iglob(os.path.join(_pythonlib, '**/libpython*.'+dylib_suffix+'*'), recursive=True):
-                pythonlib = os.path.dirname(g)
-                break
-            else:  # Try searching in the parent directory of stdlib
-                for g in glob.iglob(
-                    os.path.join(os.path.dirname(_pythonlib), '**/libpython*.'+dylib_suffix+'*'),
-                    recursive=True
-                ):
-                    pythonlib = os.path.dirname(g)
-                    break
-                else:
-                    raise ConfigurationError(
-                        f"Unable to find libpython in {_pythonlib} for {python_path}")
-            pythoninc = get_command_output(
-                [python_path, '-c', 'import sysconfig; print(sysconfig.get_config_var("INCLUDEPY"))'])
+            pythoninc, pythonlib = python_build_paths(self.compilers[PY].absolute_path)
 
         tag = self.uid
 
@@ -959,7 +971,9 @@ class TauInstallation(Installation):
         if self.dyninst:
             flags.append('-dyninst=download')
         if self.uses_python:
-            flags.append('-python')
+            # TAU builds its Python support for this interpreter.  It finds the interpreter's installation from
+            # the interpreter's location, so pass the real file, not a symbolic link such as a virtualenv's.
+            flags.append('-python=%s' % os.path.realpath(self.compilers[PY].absolute_path))
         if self.mpit:
             flags.append('-mpit')
         if self.measure_level_zero and not level_zero:
@@ -1051,6 +1065,11 @@ class TauInstallation(Installation):
             pkg.install(force_reinstall)
         LOGGER.info("Installing %s at '%s'", self.title, self.install_prefix)
         with new_os_environ(), util.umask(0o02):
+            if self.uses_python:
+                # CMake looks for Python in an active conda environment or virtualenv before the installation
+                # TAU's configure points it at.
+                for var in 'CONDA_PREFIX', 'VIRTUAL_ENV':
+                    os.environ.pop(var, None)
             try:
                 # Keep reconfiguring the same source because that's how TAU works
                 if not (self.include_path and os.path.isdir(self.include_path)):

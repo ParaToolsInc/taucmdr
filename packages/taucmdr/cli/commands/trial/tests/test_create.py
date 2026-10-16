@@ -29,8 +29,12 @@
 Functions used for unit tests of create.py.
 """
 
+import functools
 import os
+import subprocess
+import sys
 import tempfile
+from unittest import mock
 from taucmdr import tests
 from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cf.compiler.host import CC, NVHPC
@@ -43,6 +47,21 @@ from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_
 from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_cmd
 from taucmdr.model.project import Project
 from taucmdr import util
+
+
+@functools.lru_cache(maxsize=None)
+def _older_python():
+    """Return the path of a Python 3 older than this one that has its C headers, or None."""
+    check = ('import os, sysconfig; '
+             'print(os.path.exists(os.path.join(sysconfig.get_path("include"), "Python.h")))')
+    for minor in range(sys.version_info[1] - 1, 7, -1):
+        path = util.which(f'python3.{minor}')
+        if path:
+            proc = subprocess.run([path, '-c', check], stdout=subprocess.PIPE, text=True, check=False)
+            if proc.stdout.strip() == 'True':
+                return path
+    return None
+
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
@@ -254,6 +273,23 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
+        self.assertFalse(stderr)
+        self.assertInLastTrialData("first_prime_after")
+
+    @tests.skipUnless(_older_python(), "An older Python 3 with C headers is required for this test")
+    def test_run_older_python(self):
+        """A Python application runs under an older Python than the one running TAU Commander."""
+        # TAU Commander recognizes Python interpreters named python3 or python.
+        interpreter = os.path.join(tempfile.mkdtemp(dir=os.getcwd()), 'python3')
+        os.symlink(_older_python(), interpreter)
+        # An active conda environment holding a different Python must not change which Python TAU is built for.
+        with mock.patch.dict(os.environ, {'CONDA_PREFIX': sys.base_prefix}):
+            self.reset_project_storage(['--python', 'T', '--python-interpreter', interpreter])
+            self.copy_testfile('firstprime.py')
+            stdout, stderr = self.assertCommandReturnValue(
+                0, trial_create_cmd, [interpreter, os.path.join(os.getcwd(), 'firstprime.py')]
+            )
+        self.assertIn('Trial 0 produced', stdout)
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 

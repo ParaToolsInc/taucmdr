@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,10 +29,12 @@
 Functions used for unit tests of tau_installation.py.
 """
 
+import glob
 import os
+import sys
 import tempfile
 from taucmdr import tests
-from taucmdr.cf.software.tau_installation import TauInstallation
+from taucmdr.cf.software.tau_installation import TauInstallation, python_build_paths
 
 
 class TauInstallationTest(tests.TestCase):
@@ -97,3 +99,21 @@ class TauInstallationTest(tests.TestCase):
         """No cuda_prefix: returns None without touching filesystem."""
         result = TauInstallation._find_cupti_prefix(self._fake_self(None))
         self.assertIsNone(result)
+
+
+class PythonBuildPathsTest(tests.TestCase):
+    """Tests for :any:`python_build_paths`."""
+
+    def test_python_build_paths(self):
+        """The header and library directories of the running Python and of /usr/bin/python3 are found."""
+        interpreters = [sys.executable]
+        system_python = '/usr/bin/python3'
+        if os.path.exists(system_python) and os.path.realpath(system_python) != os.path.realpath(sys.executable):
+            interpreters.append(system_python)
+        for interpreter in interpreters:
+            with self.subTest(interpreter=interpreter):
+                include_dir, lib_dir = python_build_paths(interpreter)
+                self.assertEqual(include_dir, include_dir.strip())
+                self.assertEqual(lib_dir, lib_dir.strip())
+                self.assertTrue(os.path.isfile(os.path.join(include_dir, 'Python.h')), include_dir)
+                self.assertTrue(glob.glob(os.path.join(lib_dir, 'libpython*')), lib_dir)
