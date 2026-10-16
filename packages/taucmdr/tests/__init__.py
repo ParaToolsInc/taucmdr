@@ -35,7 +35,7 @@ import tempfile
 import time
 import unittest
 from unittest import skipIf, skipUnless
-from taucmdr.util import get_command_output, tmpfs_prefix
+from taucmdr.util import get_command_output, rmtree, tmpfs_prefix
 from io import StringIO
 from taucmdr import logger, TAUCMDR_HOME
 from taucmdr.error import ConfigurationError, InternalError
@@ -51,15 +51,18 @@ TIMING_FILE = os.path.join(TAUCMDR_HOME, f"test-timings-{int(time.time())}.csv")
 LOGGER = logger.get_logger(__name__)
 
 
+def _report_cleanup_error(_, path, exc):
+    sys.stderr.write(f"\nERROR: Failed to clean up testing directory {path}: {exc}\n")
+
+
 def _destroy_test_workdir(path):
-    onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
     dir = path.name
     try:
         del path
     except FileNotFoundError:
         pass
     if os.path.isdir(dir):
-        shutil.rmtree(dir, ignore_errors=True, onerror=onerror)
+        rmtree(dir, onexc=_report_cleanup_error)
 
 
 def push_test_workdir():

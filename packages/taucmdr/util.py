@@ -139,7 +139,7 @@ def mkdirp(*args):
 def add_error_stack(path):
     _DTEMP_ERROR_STACK.append(str(path))
 
-def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
+def rmtree(path, ignore_errors=False, onexc=None, attempts=5):
     """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
 
     Tries repeatedly to recursively remove `path` and sleeps between attempts.
@@ -148,8 +148,8 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         path (str): A directory but not a symbolic link to a directory.
         ignore_errors (bool): If True then errors resulting from failed removals will be ignored.
                               If False or omitted, such errors are handled by calling a handler
-                              specified by `onerror` or, if that is omitted, they raise an exception.
-        onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
+                              specified by `onexc` or, if that is omitted, they raise an exception.
+        onexc: Callable that accepts function, path, and the exception.  See :any:`shutil.rmtree`.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
     """
     if not os.path.exists(path):
@@ -161,9 +161,23 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
             LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
     try:
-        shutil.rmtree(path, ignore_errors, onerror)
+        _rmtree(path, ignore_errors, onexc)
     except FileNotFoundError:
         pass
+
+
+def _rmtree(path, ignore_errors, onexc):
+    """Call :any:`shutil.rmtree` with an `onexc` handler on any Python version. """
+    # Python 3.12 deprecated shutil.rmtree's onerror argument, whose handler
+    # receives sys.exc_info, and added `onexc`, whose handler receives the exception.
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, ignore_errors=ignore_errors, onexc=onexc)
+    elif onexc is None:
+        shutil.rmtree(path, ignore_errors=ignore_errors)
+    else:
+        # Fallback for older Python versions
+        shutil.rmtree(path, ignore_errors=ignore_errors,
+                      onerror=lambda function, failed, exc_info: onexc(function, failed, exc_info[1]))
 
 
 @contextmanager
@@ -401,6 +415,22 @@ def _show_extract_progress(members):
             progress_bar.update(i)
             yield member
 
+def _extract_all(archive, dest, members=None):
+    """Extract members of the open tar file `archive` into `dest`.
+
+    Args:
+        archive (tarfile.TarFile): Open tar file.
+        dest (str): Destination folder.
+        members: Members to extract, or None for all of them.
+    """
+    # Uses tarfile's 'data' filter if supported by this Python version.
+    # The filter refuses files or links that would be created outside dest.
+    if hasattr(tarfile, 'data_filter'):
+        archive.extractall(dest, members=members, filter='data')
+    else:
+        archive.extractall(dest, members=members)
+
+
 def extract_archive(archive, dest, show_progress=True):
     """Extracts archive file to dest.
 
@@ -415,21 +445,24 @@ def extract_archive(archive, dest, show_progress=True):
         str: Full path to extracted files.
 
     Raises:
-        IOError: Failed to extract archive.
+        OSError: Failed to extract archive, or the archive has members that would be unsafe to extract.
     """
     topdir = archive_toplevel(archive)
     full_dest = os.path.join(dest, topdir)
     mkdirp(dest)
     with tarfile.open(archive) as fin:
-        if show_progress:
-            LOGGER.info("Checking contents of '%s'", archive)
-            with ProgressIndicator("Extracting archive", show_cpu=False):
-                members = fin.getmembers()
-            LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
-            fin.extractall(dest, members=_show_extract_progress(members))
-        else:
-            LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
-            fin.extractall(dest)
+        try:
+            if show_progress:
+                LOGGER.info("Checking contents of '%s'", archive)
+                with ProgressIndicator("Extracting archive", show_cpu=False):
+                    members = fin.getmembers()
+                LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
+                _extract_all(fin, dest, members=_show_extract_progress(members))
+            else:
+                LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
+                _extract_all(fin, dest)
+        except tarfile.TarError as err:
+            raise OSError(f"Cannot extract '{archive}': {err}") from err
     if not os.path.isdir(full_dest):
         raise OSError(f"Extracting '{archive}' does not create '{full_dest}'")
     return full_dest

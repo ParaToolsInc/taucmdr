@@ -36,7 +36,7 @@ import glob
 import errno
 import base64
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 import shutil
 
@@ -133,7 +133,8 @@ class TrialController(Controller):
 
     @staticmethod
     def _mark_time(mark, expr):
-        timestamp = str(datetime.utcnow())
+        # Trial records store naive UTC timestamps, and experiments compare them as strings.
+        timestamp = str(datetime.now(timezone.utc).replace(tzinfo=None))
         headline = '\n{:=<{}}\n'.format('== {} {} at {} =='.format(mark, expr['name'], timestamp), logger.LINE_WIDTH)
         LOGGER.info(headline)
         return timestamp

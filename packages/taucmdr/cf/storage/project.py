@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -103,9 +103,9 @@ class ProjectStorage(LocalFileStorage):
         """
         self.disconnect_filesystem(*args, **kwargs)
         ignore_errors = kwargs.pop('ignore_errors', False)
-        onerror = kwargs.pop('onerror', None)
+        onexc = kwargs.pop('onexc', None)
         if self._prefix:
-            util.rmtree(self._prefix, ignore_errors=ignore_errors, onerror=onerror)
+            util.rmtree(self._prefix, ignore_errors=ignore_errors, onexc=onexc)
             self._prefix = None
 
     @property
