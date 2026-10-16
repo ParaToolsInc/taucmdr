@@ -30,6 +30,7 @@ Extensions to :any:`argparse` to support the TAU Commander command line interfac
 """
 
 import os
+import sys
 import copy
 import argparse
 import textwrap
@@ -57,6 +58,11 @@ STORAGE_LEVEL_FLAG = "@"
 """Command line flag that indicates storage level."""
 
 _DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
+
+_POSITIONAL_TITLE = 'positional arguments'
+
+_OPTIONAL_TITLES = ('options', 'optional arguments')
+"""Title for group of argparse optional arguments: 'optional arguments' for Python <= 3.9; 'options' for >= 3.10."""
 
 
 
@@ -114,7 +120,9 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
         formatter.add_text(self.description)
         for action_group in self._sorted_groups():
-            title = ' '.join(x[0].upper() + x[1:] for x in action_group.title.split())
+            # Ensure consistent title for optional arguments across Python versions
+            group_title = _OPTIONAL_TITLES[0] if action_group.title in _OPTIONAL_TITLES else action_group.title
+            title = ' '.join(x[0].upper() + x[1:] for x in group_title.split())
             formatter.start_section(title)
             formatter.add_text(action_group.description)
             formatter.add_arguments(sorted(action_group._group_actions, key=attrgetter('option_strings')))
@@ -124,19 +132,17 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
 
     def _sorted_groups(self):
         """Iterate over action groups."""
-        positional_title = 'positional arguments'
-        optional_title = 'optional arguments'
         groups = sorted(self._action_groups, key=lambda x: x.title.lower())
         for group in groups:
-            if group.title == positional_title:
+            if group.title == _POSITIONAL_TITLE:
                 yield group
                 break
         for group in groups:
-            if group.title == optional_title:
+            if group.title in _OPTIONAL_TITLES:
                 yield group
                 break
         for group in groups:
-            if group.title not in [positional_title, optional_title]:
+            if group.title != _POSITIONAL_TITLE and group.title not in _OPTIONAL_TITLES:
                 yield group
 
     def merge(self, parser, group_title=None, include_positional=False, include_optional=True, include_storage=False,
@@ -264,7 +270,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
             default = action.dest.upper()
             args_string = self._format_args(action, default)
             for option_string in action.option_strings:
-                parts.append('{} {}'.format(self._format_optional(option_string), args_string))
+                parts.append(f'{self._format_optional(option_string)} {args_string}')
         return ', '.join(parts)
 
 
@@ -408,11 +414,16 @@ def get_parser(prog=None, usage=None, description=None, epilog=None):
     Returns:
         MutableArgumentGroupParser: The customized argument parser object.
     """
+    kwargs = {}
+    if sys.version_info >= (3, 14):
+        # TAU Commander colors its own help text, so turn off argparse's colors.
+        kwargs['color'] = False
     return MutableArgumentGroupParser(prog=prog,
                                       usage=usage,
                                       description=description,
                                       epilog=epilog,
-                                      formatter_class=ConsoleHelpFormatter)
+                                      formatter_class=ConsoleHelpFormatter,
+                                      **kwargs)
 
 
 def get_parser_from_model(model, use_defaults=True, prog=None, usage=None, description=None, epilog=None):

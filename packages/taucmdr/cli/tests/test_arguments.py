@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,10 +29,35 @@
 Functions used for unit tests of arguments.py.
 """
 
-
+import os
+from unittest import mock
 from taucmdr import tests
-#from taucmdr.cli import arguments
+from taucmdr.cli import arguments
+
+
+def _help_text(description=None):
+    """Return the help text of a parser with a positional argument, an option and two more groups."""
+    parser = arguments.get_parser(prog='tau example', description=description)
+    parser.add_argument('target', help="target to use")
+    parser.add_argument('--flag', help="turn the flag on", action='store_true')
+    parser.add_argument_group('zebra arguments').add_argument('--zebra', help="a zebra option")
+    parser.add_argument_group('apple arguments').add_argument('--apple', help="an apple option")
+    return parser.format_help()
+
 
 class ArgumentsTest(tests.TestCase):
-    def test_arguments(self):
-        self.assertEqual(1, 1)
+    """Tests for :py:mod:`taucmdr.cli.arguments`."""
+
+    def test_group_order(self):
+        """Help lists positional arguments, then options, then the other groups alphabetically."""
+        headings = [line for line in _help_text().splitlines() if line.endswith(':') and not line.startswith(' ')]
+        self.assertEqual(headings, ['Positional Arguments:', 'Options:', 'Apple Arguments:', 'Zebra Arguments:'])
+
+    def test_no_argparse_colors(self):
+        """Help text has no colors from argparse itself, even where argparse would add them."""
+        env = {key: val for key, val in os.environ.items() if key not in ('NO_COLOR', 'PYTHON_COLORS')}
+        env['FORCE_COLOR'] = '1'
+        with mock.patch.dict(os.environ, env, clear=True):
+            text = _help_text(description="See `tau help` for more.")
+        self.assertNotIn('\x1b[', text)
+        self.assertIn('See `tau help` for more.', text)
