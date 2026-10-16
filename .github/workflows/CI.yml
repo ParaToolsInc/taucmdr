@@ -9,6 +9,12 @@ on:
   push:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      python-versions:
+        description: 'JSON list of Python versions for the venv tests, e.g. ["3.11", "3.14"]'
+        type: string
+        default: '["3.11", "3.12", "3.13", "3.14"]'
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
@@ -21,6 +27,9 @@ env:
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe: "true"
+  # Python versions Test-python-venv runs on push and pull request.  A workflow_dispatch run uses its
+  # python-versions input instead.
+  DEFAULT_PYTHON_VERSIONS: '["3.15"]'
 
 jobs:
   Install-taucmdr-minimal:
@@ -139,13 +148,8 @@ jobs:
       - name: Test TAU Commander
         run: |
           rm -f ./coverage.xml || true
-          PYTHONPATH=packages coverage run scripts/run_tests.py
+          PYTHONPATH="${PWD}/packages" coverage run scripts/run_tests.py
           coverage xml
-
-      - name: Build sphinx docs
-        run: |
-          python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr packages/taucmdr/_vendor
-          python -m sphinx -b html docs build/sphinx/html
 
       - name: Upload TAU Commander unit test log
         if: always()
@@ -160,14 +164,6 @@ jobs:
         with:
           name: taucmdr-pylint-logs-${{ matrix.os }}-${{ matrix.backend }}
           path: pylint.md
-
-      - name: Pylint PR Comment
-        if: env.ACT != 'true' && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: pylint-comment
-          path: ./pylint.md
-          recreate: true
 
       - name: Upload Coverage info
         if: always() && env.ACT != 'true'
@@ -189,12 +185,6 @@ jobs:
           flags: unittests,CI
           name: test-results-${{ matrix.os }}-${{ matrix.backend }}
 
-      - name: Upload Sphinx docs for GitHub Pages
-        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: ./build/sphinx/html
-
       - name: tau_validate
         if: always()
         run: |
@@ -213,9 +203,125 @@ jobs:
           name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ matrix.backend }}-${{ github.sha }}
           path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
 
+  python-versions:
+    name: Choose Python versions
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.pick.outputs.versions }}
+    steps:
+      - name: Use the requested versions, or the default
+        id: pick
+        env:
+          REQUESTED: ${{ inputs.python-versions }}
+        run: echo "versions=${REQUESTED:-$DEFAULT_PYTHON_VERSIONS}" >> "${GITHUB_OUTPUT}"
+
+  Test-python-venv:
+    name: Test on Python ${{ matrix.python }} with tox
+    needs: python-versions
+    runs-on: ${{ matrix.os }}
+    permissions:
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        python: ${{ fromJSON(needs.python-versions.outputs.versions) }}
+        backend: ['tinydb', 'sqlite']
+    env:
+      OS: ${{ matrix.os }}
+      PY_VER: ${{ matrix.python }}
+      __TAUCMDR_DB_BACKEND__: ${{ matrix.backend }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 9999
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -qq || true
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev cmake
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Install an older Python
+        run: |
+          # For the test that profiles an application under a Python older than the one running the tests.
+          uv python install 3.11
+          mkdir -p "${HOME}/.local/bin"
+          ln -sf "$(uv python find 3.11)" "${HOME}/.local/bin/python3.11"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Cache TAU sources
+        uses: actions/cache@v5
+        with:
+          path: system/src
+          key: ${{ matrix.os }}-venv-system-src-${{ github.sha }}
+          restore-keys: |
+            ${{ matrix.os }}-venv-system-src
+
+      - name: Test TAU Commander
+        run: |
+          rm -f ./coverage.xml || true
+          # tox-uv makes tox create its environments with uv, which also provides the Python.
+          # Passing -v instead of tox.ini's default -U lists each test and keeps the debug log in ~/.local/taucmdr.
+          uvx --with tox-uv tox -e "py${PY_VER/./}" -- -v
+
+      - name: Build sphinx docs
+        if: matrix.python == '3.15' && matrix.backend == 'tinydb'
+        run: uvx --with tox-uv tox -e docs
+
+      - name: Upload TAU Commander unit test log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-unit-test-debug-log-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
+          path: ~/.local/taucmdr/debug_log
+
+      - name: Upload Pylint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-pylint-logs-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
+          path: pylint.md
+
+      - name: Pylint PR Comment
+        if: env.ACT != 'true' && github.event_name == 'pull_request' && matrix.python == '3.15' && matrix.backend == 'tinydb'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pylint-comment
+          path: ./pylint.md
+          recreate: true
+
+      - name: Upload Coverage info
+        if: always() && env.ACT != 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests,CI
+          name: codecov-${{ matrix.os }}-py${{ matrix.python }}
+          fail_ci_if_error: true
+          env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
+
+      - name: Upload test results to Codecov
+        if: always() && env.ACT != 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: TEST-*.xml
+          flags: unittests,CI
+          name: test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
+
+      - name: Upload Sphinx docs for GitHub Pages
+        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.python == '3.15' && matrix.backend == 'tinydb'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./build/sphinx/html
+
   deploy-docs:
     name: Deploy Sphinx docs to GitHub Pages
-    needs: Install-taucmdr-minimal
+    needs: [Install-taucmdr-minimal, Test-python-venv]
     if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' )
     runs-on: ubuntu-latest
     permissions:

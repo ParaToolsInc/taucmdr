@@ -114,7 +114,7 @@ jobs:
           rm ~/.local/taucmdr/debug_log || true
           export __TAUCMDR_DB_BACKEND__=tinydb
           rm -f ./coverage.xml || true
-          PYTHONPATH=packages coverage run scripts/run_tests.py
+          PYTHONPATH="${PWD}/packages" coverage run scripts/run_tests.py
           coverage xml
 
       - name: Upload test results to Codecov (TinyDB)
@@ -130,7 +130,7 @@ jobs:
       - name: Test TAU Commander with SQLite backend
         run: |
           export __TAUCMDR_DB_BACKEND__=sqlite
-          PYTHONPATH=packages coverage run scripts/run_tests.py
+          PYTHONPATH="${PWD}/packages" coverage run scripts/run_tests.py
           coverage xml
 
       - name: Upload test results to Codecov (SQLite)
@@ -142,11 +142,6 @@ jobs:
           files: TEST-*.xml
           flags: unittests,CI
           name: test-results-nightly-${{ matrix.os }}-sqlite
-
-      - name: Build sphinx docs
-        run: |
-          python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr packages/taucmdr/_vendor
-          python -m sphinx -b html docs build/sphinx/html
 
       - name: Upload TAU Commander unit test log
         if: always()
