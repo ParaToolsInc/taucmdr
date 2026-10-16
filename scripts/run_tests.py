@@ -45,6 +45,14 @@ import shutil
 import sys
 import tempfile
 import unittest
+import warnings
+
+_FAILED_TEST_PREFIX = 'unittest.loader._FailedTest.'
+"""str: Prefix of the ID unittest gives to a test it couldn't load."""
+
+
+class NoTestsError(Exception):
+    """A test name selected no tests."""
 
 
 def _parse_args(argv):
@@ -76,7 +84,8 @@ def _load_name(loader, name, top_level_dir):
         module = importlib.import_module(name)
     except ImportError:
         module = None
-    if module is not None and hasattr(module, '__path__'):
+    # discover() can't start in a namespace package, which has no __file__
+    if module is not None and hasattr(module, '__path__') and getattr(module, '__file__', None):
         return loader.discover(os.path.dirname(os.path.abspath(module.__file__)), pattern='test*.py',
                                top_level_dir=top_level_dir)
     return loader.loadTestsFromName(name)
@@ -92,7 +101,7 @@ def _load_tests(names):
         unittest.TestSuite: The selected tests.
 
     Raises:
-        ValueError: A name selected no tests.
+        NoTestsError: A name selected no tests.
     """
     # Can't import at top level because env vars have to be set first.
     import taucmdr  # pylint: disable=import-outside-toplevel
@@ -105,7 +114,7 @@ def _load_tests(names):
     for name in names:
         tests = _load_name(loader, name, top_level_dir)
         if not tests.countTestCases():
-            raise ValueError(f"'{name}' doesn't contain any tests")
+            raise NoTestsError(f"'{name}' doesn't contain any tests")
         suite.addTests(tests)
     return suite
 
@@ -114,9 +123,12 @@ def _make_runner(verbosity):
     try:
         import xmlrunner  # pylint: disable=import-outside-toplevel
     except ImportError:
-        return unittest.TextTestRunner(verbosity=verbosity, buffer=True)
-    # JUnit XML goes in the current directory as TEST-*.xml, where CI collects it for Codecov.
-    return xmlrunner.XMLTestRunner(output='.', verbosity=verbosity, buffer=True)
+        runner = unittest.TextTestRunner(verbosity=verbosity, buffer=True)
+    else:
+        # JUnit XML goes in the current directory as TEST-*.xml, where CI collects it for Codecov.
+        runner = xmlrunner.XMLTestRunner(output='.', verbosity=verbosity, buffer=True)
+    runner.warnings = None
+    return runner
 
 
 def main(argv=None):
@@ -126,7 +138,7 @@ def main(argv=None):
         argv (list): Command line arguments.
 
     Returns:
-        int: 0 if every test that ran passed; 1 otherwise.
+        int: 0 if every selected test loaded and every test that ran passed; 1 otherwise.
     """
     args = _parse_args(argv)
     # Ensure that the help text uses the name `tau` instead of the name of this script.
@@ -140,15 +152,26 @@ def main(argv=None):
             os.environ[var] = path
             sandboxes.append(path)
             print(f"Sandboxing {label} storage: {path}")
+    if not sys.warnoptions:
+        warnings.simplefilter('default')
+    # TAU Commander's own code must not use deprecated Python features, so they fail the tests.
+    for category in (DeprecationWarning, PendingDeprecationWarning):
+        warnings.filterwarnings('error', category=category, module=r'taucmdr(\.|$)')
     try:
         try:
             suite = _load_tests(args.tests)
-        except ValueError as err:
+        except NoTestsError as err:
             print(f"ERROR: {err}")
             return 1
         if args.list:
-            for test_id in _iter_test_ids(suite):
+            test_ids = list(_iter_test_ids(suite))
+            for test_id in test_ids:
                 print(test_id)
+            failed = [test_id[len(_FAILED_TEST_PREFIX):] for test_id in test_ids
+                      if test_id.startswith(_FAILED_TEST_PREFIX)]
+            if failed:
+                print(f"ERROR: Couldn't load {', '.join(failed)}")
+                return 1
             return 0
         print(f"Running tests with database backend {os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')}")
         result = _make_runner(args.verbosity).run(suite)
@@ -159,6 +182,8 @@ def main(argv=None):
     finally:
         for path in sandboxes:
             shutil.rmtree(path, ignore_errors=True)
+            if os.path.exists(path):
+                print(f"WARNING: Couldn't delete sandbox directory {path}")
 
 
 if __name__ == '__main__':

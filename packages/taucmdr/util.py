@@ -171,7 +171,7 @@ def _rmtree(path, ignore_errors, onexc):
     # Python 3.12 deprecated shutil.rmtree's onerror argument, whose handler
     # receives sys.exc_info, and added `onexc`, whose handler receives the exception.
     if sys.version_info >= (3, 12):
-        shutil.rmtree(path, ignore_errors=ignore_errors, onexc=onexc)
+        shutil.rmtree(path, ignore_errors=ignore_errors, onexc=onexc)  # pylint: disable=unexpected-keyword-arg
     elif onexc is None:
         shutil.rmtree(path, ignore_errors=ignore_errors)
     else:
