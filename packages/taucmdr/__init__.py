@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -55,21 +55,14 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
-REQUIRED_PYTHON_VERSIONS = [(2, 7), (3, 5), (3, 6), (3, 7)]
-"""list of tuples: Required Python versions for TAU Commander.
-
-A list of tuples (MAJOR, MINOR) directly comparible to :any:`sys.version_info`
-"""
-
-if not sys.version_info[0:2] in REQUIRED_PYTHON_VERSIONS:
+if not (sys.version_info[0:2] == (3, 7) or sys.version_info[0:2] >= (3, 11)):
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
-    EXPECTED = ' or '.join([(str(x) + '.' + str(y)) for (x, y) in REQUIRED_PYTHON_VERSIONS])
     sys.stderr.write("""{}
 {}
 {}
-Your Python version is {} but Python {} is required.
+Your Python version is {} but Python 3.7 or Python 3.11 or newer is required.
 Please install the required Python version or contact {} for support.
-""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
+""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
 TAUCMDR_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__',
