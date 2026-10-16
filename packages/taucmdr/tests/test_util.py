@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,32 @@
 Functions used for unit tests of util.py.
 """
 
-
+import io
+import os
+import tarfile
+import tempfile
+import warnings
+from unittest import mock
 from taucmdr import util, tests
+
+
+def _make_archive(path, links):
+    """Write a gzipped tar file with ``pkg/file.txt`` and the symbolic links `links` ({name: target}) in ``pkg/``."""
+    with tarfile.open(path, 'w:gz') as tar:
+        info = tarfile.TarInfo('pkg')
+        info.type = tarfile.DIRTYPE
+        info.mode = 0o755
+        tar.addfile(info)
+        data = b'hello\n'
+        info = tarfile.TarInfo('pkg/file.txt')
+        info.size = len(data)
+        tar.addfile(info, io.BytesIO(data))
+        for name, target in links.items():
+            info = tarfile.TarInfo('pkg/' + name)
+            info.type = tarfile.SYMTYPE
+            info.linkname = target
+            tar.addfile(info)
+    return path
 
 
 class HumanSizeTest(tests.TestCase):
@@ -131,3 +155,43 @@ class IsCleanContainerTest(tests.TestCase):
         self.assertFalse(util.is_clean_container(('some', 1, b'tuple')))
         self.assertFalse(util.is_clean_container(['some', True, bytearray(b'list')]))
         self.assertFalse(util.is_clean_container({'key': [{b'bad value', 'good value'}]}))
+
+
+class ExtractArchiveTest(tests.TestCase):
+    """Tests for :any:`util.extract_archive`."""
+
+    def test_extract_archive(self):
+        """Extracting an archive creates its top-level directory, without deprecation warnings."""
+        archive = _make_archive(os.path.join(os.getcwd(), 'good.tgz'), {'link.txt': 'file.txt'})
+        dest = tempfile.mkdtemp(dir=os.getcwd())
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            topdir = util.extract_archive(archive, dest, show_progress=False)
+        self.assertEqual(topdir, os.path.join(dest, 'pkg'))
+        with open(os.path.join(topdir, 'link.txt'), encoding='utf-8') as fin:
+            self.assertEqual(fin.read(), 'hello\n')
+
+    @tests.skipUnless(hasattr(tarfile, 'data_filter'), "tarfile extraction filters required")
+    def test_extract_archive_unsafe_link(self):
+        """An archive with a link that points outside the destination raises OSError and isn't extracted."""
+        archive = _make_archive(os.path.join(os.getcwd(), 'unsafe.tgz'), {'passwd': '/etc/passwd'})
+        dest = tempfile.mkdtemp(dir=os.getcwd())
+        with self.assertRaises(OSError):
+            util.extract_archive(archive, dest, show_progress=False)
+        self.assertFalse(os.path.lexists(os.path.join(dest, 'pkg', 'passwd')))
+
+
+class RmtreeTest(tests.TestCase):
+    """Tests for :any:`util.rmtree`."""
+
+    def test_onexc(self):
+        """rmtree passes each failure's exception to `onexc`, without deprecation warnings."""
+        path = tempfile.mkdtemp(dir=os.getcwd())
+        with open(os.path.join(path, 'file'), 'w', encoding='utf-8'):
+            pass
+        failures = []
+        with mock.patch('os.unlink', side_effect=PermissionError('not allowed')), warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            util.rmtree(path, onexc=lambda function, failed, exc: failures.append(exc), attempts=1)
+        self.assertTrue(failures)
+        self.assertIsInstance(failures[0], PermissionError)
