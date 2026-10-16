@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertIn("Multiple executables were found", stdout)
         self.assertIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
-        self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./a.out')
+        self.assertRegex(stdout, r'tau_exec .* ./foo_launcher ./a.out')
 
     def test_launcher_flag(self):
         self.reset_project_storage()
@@ -62,7 +62,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
-        self.assertRegexpMatches(stdout, r'./foo_launcher tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'./foo_launcher tau_exec .* ./a.out')
 
     def test_invalid_exe(self):
         self.reset_project_storage()
@@ -72,7 +72,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER", stdout)
-        self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./invalid')
+        self.assertRegex(stdout, r'tau_exec .* ./foo_launcher ./invalid')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
@@ -83,7 +83,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
-        self.assertRegexpMatches(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
@@ -95,7 +95,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
-        self.assertRegexpMatches(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
@@ -109,7 +109,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
-        self.assertRegexpMatches(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
+        self.assertRegex(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
 
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
@@ -120,7 +120,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
-        self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
@@ -132,4 +132,4 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 9 profile files", stdout)
-        self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'cafrun -np 9 tau_exec .* ./a.out')

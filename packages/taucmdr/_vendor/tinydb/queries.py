@@ -1,4 +1,4 @@
-"""
+r"""
 Contains the querying interface.
 
 Starting with :class:`~tinydb.queries.Query` you can construct complex
@@ -84,7 +84,7 @@ class Query(AndOrMixin):
         self._repr = 'has \'{0}\''.format(key)
 
     def matches(self, regex):
-        """
+        r"""
         Run a regex test against a dict value (whole string has to match).
 
         >>> where('f1').matches(r'^\w+$')
@@ -97,7 +97,7 @@ class Query(AndOrMixin):
         return QueryRegex(self._key, regex, re_method='match')
 
     def contains(self, regex):
-        """
+        r"""
         Run a regex test against a dict value (only substring has to match).
 
         >>> where('f1').contains(r'\d+')

@@ -211,6 +211,7 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         test_dir = os.getcwd()
+        self.addCleanup(os.chdir, test_dir)
         with tempfile.TemporaryDirectory() as path:
             os.chdir(path)
             stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, [test_dir+'/a.out', '--tau-dir', test_dir])
@@ -219,7 +220,6 @@ class CreateTest(tests.TestCase):
             self.assertIn('Trial 0 produced', stdout)
             self.assertIn('profile files', stdout)
             self.assertFalse(stderr)
-            os.chdir(test_dir)
 
     def test_description(self):
         """Test --description option"""

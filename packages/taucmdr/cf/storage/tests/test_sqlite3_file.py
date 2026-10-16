@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ class SQLite3FileStorageTests(tests.TestCase):
             pass
         super().tearDown()
 
-    def test_sqlite_table_insert(self):
+    def _insert_record(self):
         self.database.purge()
         element = {'memory_alloc': False, 'sample': True, 'io': False,
                    'compiler_inst': 'never', 'heap_usage': False,
@@ -85,8 +85,11 @@ class SQLite3FileStorageTests(tests.TestCase):
         self.assertIsNotNone(record.eid, 'The record should have an EID, but does not.')
         return record
 
+    def test_sqlite_table_insert(self):
+        self._insert_record()
+
     def test_sqlite_table_get(self):
-        record_1 = self.test_sqlite_table_insert()
+        record_1 = self._insert_record()
         record_2 = self.database.table('experiment').get(eid=record_1.eid)
         self.assertDictEqual(record_1, record_2,
                              "Record retrieved from database different from record inserted.")

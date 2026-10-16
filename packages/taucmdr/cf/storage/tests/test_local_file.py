@@ -29,6 +29,8 @@
 import os
 import subprocess
 import sys
+import warnings
+import taucmdr
 from taucmdr import tests
 
 
@@ -44,5 +46,16 @@ class LocalFileTest(tests.TestCase):
                 "print(local_file.tinydb.__name__)\n"
                 "print('tinydb' in sys.modules)\n")
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
-        out = subprocess.check_output([sys.executable, '-c', code], env=env, universal_newlines=True)
+        out = subprocess.check_output([sys.executable, '-c', code], env=env, text=True)
         self.assertEqual(out.split()[-2:], ['taucmdr._vendor.tinydb', 'False'])
+
+    def test_vendored_code_compiles(self):
+        """The vendored packages compile without warnings."""
+        vendor_dir = os.path.join(os.path.dirname(os.path.abspath(taucmdr.__file__)), '_vendor')
+        for dirpath, _, filenames in os.walk(vendor_dir):
+            for filename in filenames:
+                if filename.endswith('.py'):
+                    path = os.path.join(dirpath, filename)
+                    with open(path, encoding='utf-8') as fin, warnings.catch_warnings():
+                        warnings.simplefilter('error')
+                        compile(fin.read(), path, 'exec')
