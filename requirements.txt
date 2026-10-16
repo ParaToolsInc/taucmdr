@@ -1,4 +1,4 @@
 fasteners>=0.16
 termcolor>=1.1.0
-texttable>=1.6.3
+texttable>=1.6.3,<1.8
 unidecode>=1.2.0

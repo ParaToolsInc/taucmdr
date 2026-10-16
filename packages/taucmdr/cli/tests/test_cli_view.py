@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,10 +29,49 @@
 Functions used for unit tests of cli_view.py.
 """
 
+import os
+import sys
+from unittest import mock
+import termcolor
+from texttable import Texttable as PlainTexttable
+from taucmdr import tests, util
+from taucmdr.cli.cli_view import Texttable
 
-from taucmdr import tests
-#from taucmdr.cli import cli_view
 
-class CliViewTest(tests.TestCase):
-    def test_cli_view(self):
-        self.assertEqual(1, 1)
+def _clear_color_cache():
+    """Make termcolor check the environment again.  Newer termcolor versions cache whether they can use colors."""
+    can_colorize = getattr(getattr(termcolor, 'termcolor', None), 'can_colorize', None)
+    if hasattr(can_colorize, 'cache_clear'):
+        can_colorize.cache_clear()
+
+
+def _draw(table_class, isatty):
+    """Draw a small table with a header, with stdout reporting `isatty`, and colors forced on."""
+    table = table_class(40)
+    table.set_deco(table_class.HEADER | table_class.VLINES)
+    table.header(['Name', 'Value'])
+    table.add_row(['alpha', 'one'])
+    env = {key: val for key, val in os.environ.items() if key not in ('NO_COLOR', 'ANSI_COLORS_DISABLED')}
+    env['FORCE_COLOR'] = '1'
+    _clear_color_cache()
+    try:
+        with mock.patch.object(sys.stdout, 'isatty', return_value=isatty), \
+                mock.patch.dict(os.environ, env, clear=True):
+            return table.draw(), termcolor.colored('Name', attrs=['bold'])
+    finally:
+        _clear_color_cache()
+
+
+class TexttableTest(tests.TestCase):
+    """Tests for :any:`cli_view.Texttable`, which overrides a private texttable method."""
+
+    def test_plain_layout(self):
+        """Without a terminal, the table is the same as plain texttable draws it."""
+        self.assertEqual(_draw(Texttable, False)[0], _draw(PlainTexttable, False)[0])
+
+    def test_bold_header(self):
+        """On a terminal, header cells are bold and the layout is otherwise unchanged."""
+        drawn, bold_name = _draw(Texttable, True)
+        self.assertNotEqual(bold_name, 'Name', "termcolor didn't use colors")
+        self.assertIn(bold_name, drawn.splitlines()[0])
+        self.assertEqual(util.uncolor_text(drawn), _draw(PlainTexttable, False)[0])

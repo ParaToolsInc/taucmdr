@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -51,10 +51,9 @@ class Texttable(OriginalTexttable):
 
         Draws a line by looping over a single cell length, over all the cells, making any header text bold.
         A better place to implement this would have been `_splitit()` but the logic in texttable does not strip
-        ANSI escape sequences and treats them as printable characters. This may break when texttable is upgraded
-        as it is marked for internal use only. Adapted from texttable v1.6.3:
+        ANSI escape sequences and treats them as printable characters.  Adapted from texttable v1.6.3:
             https://github.com/foutaise/texttable/blob/4073cefdfc4e5c50ed587909875b64b005c70df8/texttable.py#L657-L686
-        """
+        texttable 1.6.3 and 1.7.1 have the same `_draw_line`."""
 
         line = self._splitit(line, isheader)
         space = " "
@@ -501,12 +500,12 @@ class ListCommand(AbstractCliView):
             if len(keys) == 1:
                 records = ctrl.search({key_attr: keys[0]}, context=context)
                 if not records:
-                    self.parser.error("No {} with {}='{}'".format(self.model_name, key_attr, keys[0]))
+                    self.parser.error(f"No {self.model_name} with {key_attr}='{keys[0]}'")
             else:
                 records = ctrl.search([{key_attr: key} for key in keys], context=context)
                 for i, record in enumerate(records):
                     if not record:
-                        self.parser.error("No {} with {}='{}'".format(self.model_name, key_attr, keys[i]))
+                        self.parser.error(f"No {self.model_name} with {key_attr}='{keys[i]}'")
         return records
 
     def _format_records(self, ctrl, style, keys=None, context=True):
