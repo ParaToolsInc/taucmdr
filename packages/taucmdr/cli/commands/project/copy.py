@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -82,11 +82,10 @@ class ProjectCopyCommand(CopyCommand):
         matching = ctrl.search({key_attr: key})
         if not matching:
             self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
-        elif len(matching) > 1:
+        if len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
-        else:
-            found = matching[0]
+        found = matching[0]
         data = dict(found)
         data.pop('experiment', None)
         data.pop('experiments', None)

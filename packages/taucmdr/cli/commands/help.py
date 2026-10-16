@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -174,7 +174,7 @@ class HelpCommand(AbstractCommand):
                 raise UnknownCommandError(cmd, hint)
             raise UnknownCommandError(cmd)
 
-        LOGGER.error("Cannot identify '%s' as a command or filename.")
+        LOGGER.error("Cannot identify '%s' as a command or filename.", cmd)
         return self.exit_with_help('__main__')
 
 COMMAND = HelpCommand(__name__, summary_fmt="Show help for a command or suggest actions for a file.")

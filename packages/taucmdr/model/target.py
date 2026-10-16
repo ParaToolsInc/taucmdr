@@ -147,7 +147,7 @@ def tau_source_default():
         return 'download'
     path = path.strip()
     if not (os.path.isdir(path) and util.path_accessible(path)):
-        LOGGER.warning("'%s' does not exist or is not accessible.")
+        LOGGER.warning("'%s' does not exist or is not accessible.", path)
         return 'download'
     return path
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ Functions used for unit tests of help.py.
 
 
 from taucmdr import tests
+from taucmdr.cli import UnknownCommandError
 from taucmdr.cli.commands.help import COMMAND as help_command
 
 class HelpTest(tests.TestCase):
@@ -50,3 +51,9 @@ class HelpTest(tests.TestCase):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, help_command, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
+
+    def test_unknown_name(self):
+        """Help for a name that isn't a command produces an unknown command error."""
+        with self.assertRaises(UnknownCommandError) as context:
+            help_command.main(['notacommandorfile'])
+        self.assertIn('notacommandorfile', str(context.exception))

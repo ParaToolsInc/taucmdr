@@ -1965,6 +1965,8 @@ class TauInstallation(Installation):
             rewrite_cmd = 'tau_pebil_rewrite'
         elif rewrite_package == 'maqao':
             rewrite_cmd = 'tau_rewrite'
+        else:
+            raise InternalError(f"Unknown rewrite package '{rewrite_package}'")
         cmd = [rewrite_cmd, '-T', ','.join(tags), executable, '-o', inst_file]
         retval = util.create_subprocess(cmd, env=env, stdout=True)
         if retval != 0:

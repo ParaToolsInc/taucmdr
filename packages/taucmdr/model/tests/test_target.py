@@ -26,10 +26,14 @@
 #
 """Unit tests for :py:mod:`taucmdr.model.target`."""
 
+import os
+import tempfile
+from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.target.list import COMMAND as target_list_cmd
+from taucmdr.model import target
 from taucmdr.model.target import Target
 
 
@@ -55,3 +59,14 @@ class TargetTest(tests.TestCase):
         self.assertCommandReturnValue(0, target_list_cmd, [])
         with self.assertRaisesRegex(ConfigurationError, 'NoSuchOS'):
             targ.operating_system()
+
+    def test_tau_source_override_missing(self):
+        """An override_tau_source file with a missing directory produces a warning."""
+        system_prefix = tempfile.mkdtemp(dir=os.getcwd())
+        missing = os.path.join(system_prefix, 'no-such-tau')
+        with open(os.path.join(system_prefix, 'override_tau_source'), 'w', encoding='utf-8') as fout:
+            fout.write(missing)
+        with mock.patch.object(target, 'SYSTEM_STORAGE', mock.Mock(prefix=system_prefix)), \
+                self.assertLogs('taucmdr.model.target', 'WARNING') as logs:
+            self.assertEqual(target.tau_source_default(), 'download')
+        self.assertIn(missing, logs.output[0])

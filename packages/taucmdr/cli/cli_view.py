@@ -471,15 +471,14 @@ class ListCommand(AbstractCliView):
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
 
+        context = True
         if args.project:
             matching = Project.controller().one({'name': args.project})
-            if matching:
-                LOGGER.debug("Using project %s", matching.eid)
-                context = [('project', matching.eid), ('projects', matching.eid)]
-            else:
+            if not matching:
                 LOGGER.debug("Project %s not found", args.project)
-        else:
-            context = True
+                self.parser.error(f"There is no project named '{args.project}'.")
+            LOGGER.debug("Using project %s", matching.eid)
+            context = [('project', matching.eid), ('projects', matching.eid)]
 
         return self._list_records([l.name for l in storage_levels], keys, style, context=context)
 
@@ -584,11 +583,10 @@ class CopyCommand(CreateCommand):
         matching = ctrl.search({key_attr: key})
         if not matching:
             self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
-        elif len(matching) > 1:
+        if len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
-        else:
-            found = matching[0]
+        found = matching[0]
         data = dict(found)
         data.update(updates)
         return self._create_record(store, data)

@@ -309,6 +309,7 @@ class ConsoleHelpFormatter(HelpFormatter):
         action_width = help_position - self._current_indent - 2
         action_header = self._format_action_invocation(action)
         action_header_nocolor = util.uncolor_text(action_header)
+        indent_first = 0
         if not action.help:
             # No help; start on same line and add a final newline
             tup = self._current_indent, '', action_header

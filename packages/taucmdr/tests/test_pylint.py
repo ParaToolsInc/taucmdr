@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -124,6 +124,7 @@ class PylintTest(tests.TestCase):
 
     def test_pylint(self):
         stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
+        self.assertIn('Your code has been rated at', stdout, f"Pylint produced no report:\n{stderr}")
         with open(REPORT_FILE, "w") as lint_msg_file:
             try:
                 lint_msg = self._format_pylint_report(stdout, stderr)

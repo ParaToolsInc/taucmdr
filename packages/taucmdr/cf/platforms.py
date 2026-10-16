@@ -30,15 +30,13 @@ I'd rather call this module "taucmdr.cf.platform" but that would conflict with :
 """
 
 import os
-from taucmdr import logger, util
+from taucmdr import util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import KeyedRecord
 from taucmdr.cf.compiler import host, mpi, shmem
 from taucmdr.cf.compiler.host import HOST_COMPILERS
 from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
-
-LOGGER = logger.get_logger(__name__)
 
 
 class Architecture(KeyedRecord):

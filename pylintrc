@@ -18,17 +18,14 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
-# Use multiple processes to speed up Pylint.
-jobs=4
+# Use one process.  Parallel runs fail on Python 3.15 because dill, which pylint
+# uses to start them parallel jobs, doesn't support 3.15 yet.
+# This can be changed once dill supports 3.15.
+jobs=1
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
 unsafe-load-any-extension=no
-
-# A comma-separated list of package or module names from where C extensions may
-# be loaded. Extensions are loading into the active Python interpreter and may
-# run arbitrary code
-extension-pkg-whitelist=
 
 [MESSAGES CONTROL]
 
@@ -79,10 +76,6 @@ disable=RP0401,RP0402
 
 
 [TYPECHECK]
-
-# Tells whether missing members accessed in mixin class should be ignored. A
-# mixin class is detected if its name ends with "mixin" (case insensitive).
-ignore-mixin-members=yes
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
