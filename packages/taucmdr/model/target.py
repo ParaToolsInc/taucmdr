@@ -707,7 +707,7 @@ class Target(Model):
         absolute_path = util.which(compiler_cmd)
         compiler_cmd = os.path.basename(compiler_cmd)
         found = []
-        known_compilers = [comp for comp in self.compilers().values()]
+        known_compilers = [*self.compilers().values()]
         for info in Knowledgebase.find_compiler(command=compiler_cmd):
             try:
                 compiler_record = self.populate(info.role.keyword)

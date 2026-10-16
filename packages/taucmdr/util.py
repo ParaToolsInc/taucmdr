@@ -91,7 +91,7 @@ def calculate_uid(parts):
     """Create a new unique identifier.
 
     Args:
-        parts (list): **Ordered** list of strings to include in the UID calcuation.
+        parts (list): **Ordered** list of strings to include in the UID calculation.
 
     Returns:
         str: A string of hexadecimal digits uniquely calculated from `parts`.

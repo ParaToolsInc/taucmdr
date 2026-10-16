@@ -173,7 +173,7 @@ class TestCase(unittest.TestCase):
     def tearDown(self) -> None:
         _done = time.time() - self.startTime
         self._result_stream.write(f"{_done:.4g}s ... ")
-        with open(TIMING_FILE, mode='at', encoding='utf-8') as f:
+        with open(TIMING_FILE, mode='a', encoding='utf-8') as f:
             f.write(f"{self.id()}, {_done:.6g}\n")
 
     def run(self, result=None):

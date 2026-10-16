@@ -32,7 +32,10 @@ To build the docs locally, run these commands from the
 repository root with ``requirements-dev.txt`` installed::
 
   $ python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr packages/taucmdr/_vendor
-  $ python -m sphinx -b html docs build/sphinx/html
+  $ python -m sphinx -b html -d build/sphinx/doctrees docs build/sphinx/html
+
+``tox -e docs`` runs the same commands with Python 3.15 and a current Sphinx, after deleting the API pages of the
+previous build.
 
 The first command generates the API reference pages. The second builds
 the rest of the documentation, writing the output to ``build/sphinx/html``.

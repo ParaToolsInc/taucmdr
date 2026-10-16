@@ -51,9 +51,10 @@ class Texttable(OriginalTexttable):
 
         Draws a line by looping over a single cell length, over all the cells, making any header text bold.
         A better place to implement this would have been `_splitit()` but the logic in texttable does not strip
-        ANSI escape sequences and treats them as printable characters.  Adapted from texttable v1.6.3:
+        ANSI escape sequences and treats them as printable characters.  texttable 1.6.3 and 1.7.1 have the same
+        `_draw_line`.  Adapted from texttable v1.6.3:
             https://github.com/foutaise/texttable/blob/4073cefdfc4e5c50ed587909875b64b005c70df8/texttable.py#L657-L686
-        texttable 1.6.3 and 1.7.1 have the same `_draw_line`."""
+        """
 
         line = self._splitit(line, isheader)
         space = " "
@@ -412,7 +413,7 @@ class ListCommand(AbstractCliView):
                                  const='short', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         style_group.add_argument('-d', '--dashboard',
-                                 help="show %(model_name)s data in a fancy dasboard" % self._format_fields,
+                                 help="show %(model_name)s data in a fancy dashboard" % self._format_fields,
                                  const='dashboard', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         style_group.add_argument('-l', '--long',
