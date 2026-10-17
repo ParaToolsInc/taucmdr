@@ -31,6 +31,7 @@ Functions used for unit tests of tau_installation.py.
 
 import glob
 import os
+import subprocess
 import sys
 import tempfile
 from taucmdr import tests
@@ -101,6 +102,13 @@ class TauInstallationTest(tests.TestCase):
         self.assertIsNone(result)
 
 
+def _has_headers(python_path):
+    """Return True if the Python interpreter at `python_path` has its C headers installed."""
+    check = 'import os, sysconfig; print(os.path.exists(os.path.join(sysconfig.get_path("include"), "Python.h")))'
+    proc = subprocess.run([python_path, '-c', check], stdout=subprocess.PIPE, text=True, check=False)
+    return proc.stdout.strip() == 'True'
+
+
 class PythonBuildPathsTest(tests.TestCase):
     """Tests for :any:`python_build_paths`."""
 
@@ -108,7 +116,9 @@ class PythonBuildPathsTest(tests.TestCase):
         """The header and library directories of the running Python and of /usr/bin/python3 are found."""
         interpreters = [sys.executable]
         system_python = '/usr/bin/python3'
-        if os.path.exists(system_python) and os.path.realpath(system_python) != os.path.realpath(sys.executable):
+        # A system Python without its development package can't be used to build TAU, so skip it.
+        if (os.path.exists(system_python) and os.path.realpath(system_python) != os.path.realpath(sys.executable)
+                and _has_headers(system_python)):
             interpreters.append(system_python)
         for interpreter in interpreters:
             with self.subTest(interpreter=interpreter):

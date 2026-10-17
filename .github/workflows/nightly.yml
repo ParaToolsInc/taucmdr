@@ -118,7 +118,7 @@ jobs:
           coverage xml
 
       - name: Upload test results to Codecov (TinyDB)
-        if: always()
+        if: always() && env.ACT != 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -134,7 +134,7 @@ jobs:
           coverage xml
 
       - name: Upload test results to Codecov (SQLite)
-        if: always()
+        if: always() && env.ACT != 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
