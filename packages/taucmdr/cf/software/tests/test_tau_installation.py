@@ -35,6 +35,7 @@ import subprocess
 import sys
 import tempfile
 from taucmdr import tests
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.software.tau_installation import TauInstallation, python_build_paths
 
 
@@ -127,3 +128,23 @@ class PythonBuildPathsTest(tests.TestCase):
                 self.assertEqual(lib_dir, lib_dir.strip())
                 self.assertTrue(os.path.isfile(os.path.join(include_dir, 'Python.h')), include_dir)
                 self.assertTrue(glob.glob(os.path.join(lib_dir, 'libpython*')), lib_dir)
+
+    def test_python_build_paths_no_headers(self):
+        """A Python without C headers, such as a distro Python without the corresponding development package, is refused."""
+        # Create a fake Python interpreter and demonstrate that it produces a ConfigurationError
+        # because it has no correspinding C headers.
+        root = tempfile.mkdtemp(dir=os.getcwd())
+        stdlib = os.path.join(root, 'lib', 'python3.99')
+        include_dir = os.path.join(root, 'include', 'python3.99')
+        os.makedirs(stdlib)
+        os.makedirs(include_dir)
+        with open(os.path.join(stdlib, 'libpython3.99.so'), 'w', encoding='utf-8'):
+            pass
+        interpreter = os.path.join(root, 'python3')
+        with open(interpreter, 'w', encoding='utf-8') as fout:
+            fout.write('#!/bin/sh\n'
+                       f'case "$2" in *stdlib*) echo "{stdlib}" ;; *) echo "{include_dir}" ;; esac\n')
+        os.chmod(interpreter, 0o755)
+        with self.assertRaises(ConfigurationError) as context:
+            python_build_paths(interpreter)
+        self.assertIn('Python.h', str(context.exception))

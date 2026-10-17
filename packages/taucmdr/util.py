@@ -39,6 +39,7 @@ import errno
 import shutil
 import tarfile
 import gzip
+import zlib
 import tempfile
 from stat import S_IRUSR, S_IWUSR, S_IEXEC
 import hashlib
@@ -53,8 +54,16 @@ from taucmdr import logger
 from taucmdr.error import InternalError, ConfigurationError
 from taucmdr.progress import ProgressIndicator
 
+try:
+    import lzma
+except ImportError:
+    lzma = None
+
 
 LOGGER = logger.get_logger(__name__)
+
+_ARCHIVE_ERRORS = (tarfile.TarError, EOFError, zlib.error) + ((lzma.LZMAError,) if lzma else ())
+"""tuple: Exceptions raised while reading a corrupt or truncated archive, such as an interrupted download."""
 
 # Suppress debugging messages in optimized code
 if __debug__:
@@ -338,26 +347,25 @@ def archive_toplevel(archive):
     """
     _heavy_debug("Determining top-level directory name in '%s'", archive)
     try:
-        fin = tarfile.open(archive)
-    except tarfile.ReadError as err:
-        raise OSError from err
-    else:
-        if fin.firstmember.isdir():
-            topdir = str(fin.firstmember.name)
-        else:
-            dirs = [str(d.name) for d in fin.getmembers() if d.isdir()]
-            if dirs:
-                topdir = min(dirs, key=len)
+        with tarfile.open(archive) as fin:
+            if fin.firstmember.isdir():
+                topdir = str(fin.firstmember.name)
             else:
-                names = [str(d.name) for d in fin.getmembers() if d.isfile()]
-                for name in names:
-                    dirname, basename = os.path.split(name)
-                    while dirname:
-                        dirname, basename = os.path.split(dirname)
-                    dirs += [str(basename)]
-                topdir = min(dirs, key=len)
-        LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-        return str(topdir)
+                dirs = [str(d.name) for d in fin.getmembers() if d.isdir()]
+                if dirs:
+                    topdir = min(dirs, key=len)
+                else:
+                    names = [str(d.name) for d in fin.getmembers() if d.isfile()]
+                    for name in names:
+                        dirname, basename = os.path.split(name)
+                        while dirname:
+                            dirname, basename = os.path.split(dirname)
+                        dirs += [str(basename)]
+                    topdir = min(dirs, key=len)
+    except _ARCHIVE_ERRORS as err:
+        raise OSError(f"Cannot read '{archive}': {err}") from err
+    LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
+    return str(topdir)
 
 
 def is_clean_container(obj):
@@ -461,7 +469,7 @@ def extract_archive(archive, dest, show_progress=True):
             else:
                 LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
                 _extract_all(fin, dest)
-        except tarfile.TarError as err:
+        except _ARCHIVE_ERRORS as err:
             raise OSError(f"Cannot extract '{archive}': {err}") from err
     if not os.path.isdir(full_dest):
         raise OSError(f"Extracting '{archive}' does not create '{full_dest}'")

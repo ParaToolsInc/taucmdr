@@ -175,7 +175,7 @@ def python_build_paths(python_path):
         tuple: (include_dir, lib_dir).
 
     Raises:
-        ConfigurationError: The interpreter's ``libpython`` couldn't be found.
+        ConfigurationError: The interpreter has no C headers, or its ``libpython`` couldn't be found.
     """
     stdlib = get_command_output(
         [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))']).strip()
@@ -183,6 +183,11 @@ def python_build_paths(python_path):
     # build, so ask for the headers' installed location instead.
     include_dir = get_command_output(
         [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("include"))']).strip()
+    # If the development package isn't installed, an Ubuntu-provided Python has neither headers nor a libpython link
+    # beside its standard library, and the search below would then walk all of the standard library's parent.
+    if not os.path.isfile(os.path.join(include_dir, 'Python.h')):
+        raise ConfigurationError(f"{python_path} has no C headers: there is no Python.h in {include_dir}",
+                                 "Install the interpreter's development package, e.g. python3-dev or python3-devel.")
     dylib_suffix = 'dylib' if HOST_OS is DARWIN else 'so'
     # Search the standard library first, then the directory that holds it.
     for search_dir in stdlib, os.path.dirname(stdlib):

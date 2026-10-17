@@ -181,6 +181,30 @@ class ExtractArchiveTest(tests.TestCase):
         self.assertFalse(os.path.lexists(os.path.join(dest, 'pkg', 'passwd')))
 
 
+    def test_extract_archive_truncated(self):
+        """A truncated archive, such as an interrupted download, raises OSError."""
+        # Create a tarfile, truncate it, and then attempt to extrac it, requiring
+        # that OSError is raised.
+        for with_dir in True, False:
+            path = os.path.join(os.getcwd(), f'truncated-{with_dir}.tgz')
+            with tarfile.open(path, 'w:gz') as tar:
+                if with_dir:
+                    info = tarfile.TarInfo('pkg')
+                    info.type = tarfile.DIRTYPE
+                    tar.addfile(info)
+                data = os.urandom(64 * 1024)
+                info = tarfile.TarInfo('pkg/data.bin')
+                info.size = len(data)
+                tar.addfile(info, io.BytesIO(data))
+            with open(path, 'r+b') as fout:
+                fout.truncate(os.path.getsize(path) // 2)
+            for show_progress in False, True:
+                with self.subTest(with_dir=with_dir, show_progress=show_progress):
+                    dest = tempfile.mkdtemp(dir=os.getcwd())
+                    with self.assertRaises(OSError):
+                        util.extract_archive(path, dest, show_progress=show_progress)
+
+
 class RmtreeTest(tests.TestCase):
     """Tests for :any:`util.rmtree`."""
 
