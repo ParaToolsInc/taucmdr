@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=77", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taucmdr"
+dynamic = ["version"]
+description = "An intuitive interface for the TAU Performance System"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [{ name = "ParaTools, Inc.", email = "info@paratools.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "fasteners>=0.16",
+    "termcolor>=1.1.0",
+    "texttable>=1.6.3,<1.8",
+    "unidecode>=1.2.0",
+]
+keywords = ["TAU", "performance analysis", "profile", "profiling", "trace", "tracing"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: User Interfaces",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
+
+[project.urls]
+Homepage = "http://www.taucommander.com/"
+Source = "https://github.com/ParaToolsInc/taucmdr"
+
+[tool.setuptools]
+script-files = ["scripts/tau"]
+
+[tool.setuptools.packages.find]
+where = ["packages"]
+include = ["taucmdr*"]
+
+[tool.setuptools_scm]

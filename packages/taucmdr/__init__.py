@@ -34,12 +34,6 @@ It should be as short and simple.
 import os
 import sys
 
-__version__ = "0.0.0"
-"""str: TAU Commander Version"""
-
-TAUCMDR_VERSION = __version__
-"""str: TAU Commander Version"""
-
 EXIT_FAILURE = -100
 """int: Process exit code indicating unrecoverable failure."""
 
@@ -55,15 +49,30 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
-if not (sys.version_info[0:2] == (3, 7) or sys.version_info[0:2] >= (3, 11)):
+if sys.version_info < (3, 11):
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
     sys.stderr.write("""{}
 {}
 {}
-Your Python version is {} but Python 3.7 or Python 3.11 or newer is required.
+Your Python version is {} but Python 3.11 or newer is required.
 Please install the required Python version or contact {} for support.
 """.format(TAUCMDR_URL, sys.executable, sys.version, VERSION, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
+
+# Imported after the version check so that an unsupported Python fails there, not here.
+import importlib.metadata  # pylint: disable=wrong-import-position
+
+def _installed_version():  # type: () -> str
+    try:
+        return importlib.metadata.version('taucmdr')
+    except importlib.metadata.PackageNotFoundError:
+        return "0.0.0"
+
+__version__ = _installed_version()
+"""str: TAU Commander Version, from the installed package's metadata, or ``0.0.0`` if the package isn't installed."""
+
+TAUCMDR_VERSION = __version__
+"""str: TAU Commander Version"""
 
 TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__') or 'tau'
 """str: Script that launched TAU Commander.

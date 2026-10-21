@@ -36,7 +36,7 @@ that module.
 
 Usage::
 
-    PYTHONPATH=packages python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
+    python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
 """
 
 import argparse

@@ -1,6 +1,11 @@
 [run]
 branch = True
-source = packages/taucmdr
+source_pkgs = taucmdr
+
+[paths]
+source =
+    packages/taucmdr
+    */site-packages/taucmdr
 
 [report]
 exclude_lines =

@@ -36,8 +36,7 @@ import textwrap
 import taucmdr
 from taucmdr import tests
 
-_RUN_TESTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(taucmdr.__file__)))),
-                          'scripts', 'run_tests.py')
+_RUN_TESTS = os.path.join(tests.REPO_DIR, 'scripts', 'run_tests.py')
 
 _PASSING_TEST = '''
     import unittest

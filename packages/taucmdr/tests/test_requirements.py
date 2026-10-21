@@ -26,7 +26,7 @@
 #
 """Test functions.
 
-Checks that ``requirements.txt`` lists the third-party packages that are imported
+Checks that ``pyproject.toml`` lists the third-party packages that are imported
 by TAU Commander.
 """
 
@@ -34,10 +34,11 @@ import ast
 import os
 import re
 import sys
+import tomllib
 from taucmdr import tests
 
 _PACKAGE_DIR = os.path.join(tests.REPO_DIR, 'packages', 'taucmdr')
-_REQUIREMENTS = os.path.join(tests.REPO_DIR, 'requirements.txt')
+_PYPROJECT = os.path.join(tests.REPO_DIR, 'pyproject.toml')
 
 
 def _imported_packages():
@@ -63,20 +64,15 @@ def _imported_packages():
 
 
 def _required_packages():
-    """Return the lower-case names of the packages listed in ``requirements.txt``."""
-    names = set()
-    with open(_REQUIREMENTS, encoding='utf-8') as fin:
-        for line in fin:
-            requirement = line.split('#')[0].strip()
-            if requirement:
-                names.add(re.match(r'[A-Za-z0-9_.-]+', requirement).group().lower())
-    return names
+    """Return the lower-case names of the packages in ``pyproject.toml``'s ``[project] dependencies``."""
+    with open(_PYPROJECT, 'rb') as fin:
+        dependencies = tomllib.load(fin)['project']['dependencies']
+    return {re.match(r'[A-Za-z0-9_.-]+', requirement).group().lower() for requirement in dependencies}
 
 
 class RequirementsTest(tests.TestCase):
-    """Tests for ``requirements.txt``."""
+    """Tests for the dependencies in ``pyproject.toml``."""
 
-    @tests.skipUnless(hasattr(sys, 'stdlib_module_names'), "Python 3.10 or newer required")
     def test_requirements_match_imports(self):
-        """requirements.txt lists exactly the third-party packages TAU Commander imports."""
+        """pyproject.toml lists exactly the third-party packages TAU Commander imports."""
         self.assertEqual(_required_packages(), _imported_packages())

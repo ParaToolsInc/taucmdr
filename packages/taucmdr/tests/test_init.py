@@ -29,6 +29,7 @@
 Functions used for unit tests of taucmdr/__init__.py.
 """
 
+import importlib.metadata
 import os
 import subprocess
 import sys
@@ -70,17 +71,28 @@ class PythonVersionTest(tests.TestCase):
     """Tests for the Python version check in :py:mod:`taucmdr`."""
 
     def test_supported_versions(self):
-        for version in ((3, 7), (3, 11), (3, 12), (3, 13), (3, 14), (3, 15), (3, 16)):
+        for version in ((3, 11), (3, 12), (3, 13), (3, 14), (3, 15), (3, 16)):
             with self.subTest(version=version):
                 proc = _import_with_version(version)
                 self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def test_unsupported_versions(self):
-        for version in ((2, 7), (3, 6), (3, 8), (3, 10)):
+        for version in ((2, 7), (3, 7), (3, 8), (3, 10)):
             with self.subTest(version=version):
                 proc = _import_with_version(version)
                 self.assertNotEqual(proc.returncode, 0)
-                self.assertIn('Python 3.7 or Python 3.11 or newer is required', proc.stderr)
+                self.assertIn('Python 3.11 or newer is required', proc.stderr)
+
+
+class VersionTest(tests.TestCase):
+    """Tests for :py:data:`taucmdr.__version__`."""
+
+    def test_installed_version(self):
+        """The version is the installed package's version, derived from a release tag."""
+        self.assertEqual(taucmdr.__version__, importlib.metadata.version('taucmdr'))
+        self.assertNotEqual(taucmdr.__version__, '0.0.0')
+        # setuptools-scm gives 0.1.dev... when it can't see any tags, e.g. in a shallow clone.
+        self.assertFalse(taucmdr.__version__.startswith('0.1.dev'), taucmdr.__version__)
 
 
 class GlobalsTest(tests.TestCase):
