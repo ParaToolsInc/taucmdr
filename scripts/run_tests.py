@@ -34,7 +34,9 @@ variables required by TAU Commander's tests (``__TAUCMDR_SCRIPT__``, ``__TAUCMDR
 when the :py:mod:`taucmdr` module is first loaded, so this must be a standalone script rather than part of
 that module.
 
-Usage::
+If ``__TAUCMDR_SYSTEM_PREFIX__`` isn't set, system storage goes in the ``system`` directory of the checkout.
+
+Usage, with the Python of an environment where TAU Commander is installed, e.g., ``.tox/py315/bin/python``::
 
     python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
 """
@@ -145,7 +147,9 @@ def main(argv=None):
     args = _parse_args(argv)
     # Ensure that the help text uses the name `tau` instead of the name of this script.
     os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
-    os.environ['__TAUCMDR_REPO_DIR__'] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.environ['__TAUCMDR_REPO_DIR__'] = repo_dir
+    os.environ.setdefault('__TAUCMDR_SYSTEM_PREFIX__', os.path.join(repo_dir, 'system'))
     os.environ['__TAUCMDR_DISABLE_PAGER__'] = '1'
     sandboxes = []
     for enabled, var, label in ((args.system_sandbox, '__TAUCMDR_SYSTEM_PREFIX__', 'system'),

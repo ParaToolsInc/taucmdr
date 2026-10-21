@@ -95,6 +95,17 @@ class VersionTest(tests.TestCase):
         self.assertFalse(taucmdr.__version__.startswith('0.1.dev'), taucmdr.__version__)
 
 
+class InstalledPackageTest(tests.TestCase):
+    """Tests that tox tests the installed wheel."""
+
+    @tests.skipUnless(os.environ.get('TOX_ENV_NAME'), "Only checked under tox")
+    def test_tests_use_installed_package(self):
+        """Under tox, the tested taucmdr is the one installed in the environment, not a checkout on `PYTHONPATH`."""
+        package = os.path.realpath(taucmdr.__file__)
+        prefix = os.path.realpath(sys.prefix)
+        self.assertEqual(os.path.commonpath([package, prefix]), prefix, package)
+
+
 class GlobalsTest(tests.TestCase):
     """Tests for the paths and names :py:mod:`taucmdr` defines when it is imported."""
 

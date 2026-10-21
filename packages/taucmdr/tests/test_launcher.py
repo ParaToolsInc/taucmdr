@@ -39,7 +39,7 @@ import sysconfig
 import unittest
 from taucmdr import tests
 
-_PASSED_THROUGH = ('PYTHONPATH', 'PYTHONHOME', 'PYTHONWARNINGS', '__TAUCMDR_SCRIPT__')
+_PASSED_THROUGH = ('PYTHONPATH', 'PYTHONHOME', 'PYTHONWARNINGS', 'PYTHONINSPECT', '__TAUCMDR_SCRIPT__')
 
 _PAGER_SCRIPT = """\
 : > "$1"
@@ -115,7 +115,7 @@ class LauncherTest(tests.TestCase):
 
     def _check_children_see_env(self, env, script):
         seen = self._read_pager_env()
-        for name in ('PYTHONPATH', 'PYTHONHOME', 'PYTHONWARNINGS'):
+        for name in ('PYTHONPATH', 'PYTHONHOME', 'PYTHONWARNINGS', 'PYTHONINSPECT'):
             self.assertEqual(seen[name], env[name])
         self.assertEqual(seen['__TAUCMDR_SCRIPT__'], script)
 

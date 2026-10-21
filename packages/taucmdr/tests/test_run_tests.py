@@ -59,6 +59,16 @@ _LOCKED_DIR_TEST = '''
             os.chmod(locked, 0o500)
 '''
 
+_SYSTEM_PREFIX_TEST = '''
+    import unittest
+
+    class Probe(unittest.TestCase):
+        def test_probe(self):
+            import taucmdr
+            with open('system_prefix.txt', 'w') as fout:
+                fout.write(taucmdr.SYSTEM_PREFIX)
+'''
+
 _WARNING_TEST = '''
     import unittest
     import warnings
@@ -75,8 +85,10 @@ _WARNING_TEST = '''
 class RunTestsTest(tests.TestCase):
     """Tests for ``scripts/run_tests.py``."""
 
-    def _run(self, *args, pythonpath=()):
+    def _run(self, *args, pythonpath=(), unset=()):
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(list(pythonpath) + sys.path))
+        for name in unset:
+            env.pop(name, None)
         proc = subprocess.run([sys.executable, _RUN_TESTS] + list(args), env=env, stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT, text=True, check=False)
         test_ids = [line for line in proc.stdout.splitlines() if line.startswith('taucmdr.')]
@@ -100,11 +112,24 @@ class RunTestsTest(tests.TestCase):
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_repo_dir(self):
         """The runner tells the tests where the checkout is."""
-        repo_dir = os.path.dirname(os.path.dirname(_RUN_TESTS))
+        # The script that started this process, which is the runner even under `coverage run`.
+        runner = sys.modules['__main__'].__file__
+        self.assertEqual(os.path.basename(runner), 'run_tests.py')
+        repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(runner)))
         self.assertEqual(os.path.realpath(os.environ['__TAUCMDR_REPO_DIR__']), os.path.realpath(repo_dir))
         self.assertEqual(os.path.realpath(tests.REPO_DIR), os.path.realpath(repo_dir))
         self.assertTrue(os.path.exists(os.path.join(tests.REPO_DIR, '.testfiles', 'foo_launcher')))
         self.assertTrue(os.path.exists(os.path.join(tests.REPO_DIR, 'pylintrc')))
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_system_prefix_default(self):
+        """Without `__TAUCMDR_SYSTEM_PREFIX__`, the runner puts system storage in the checkout."""
+        root = self._make_modules({'prefixprobe/__init__.py': '', 'prefixprobe/test_probe.py': _SYSTEM_PREFIX_TEST})
+        retval, _, output = self._run('-U', 'prefixprobe.test_probe', pythonpath=[root],
+                                      unset=['__TAUCMDR_SYSTEM_PREFIX__'])
+        self.assertEqual(retval, 0, output)
+        with open('system_prefix.txt', encoding='utf-8') as fin:
+            self.assertEqual(fin.read(), os.path.realpath(os.path.join(tests.REPO_DIR, 'system')))
 
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_prints_tested_package(self):

@@ -1,8 +1,3 @@
-# Unfortunately, there is a lot of duplicated code that could be simplified/eliminated with YAML anchors and aliases,
-# but GitHub Actions does not yet support YAML anchors and aliases.
-# Clever use of global environment variables could help eliminate some of it, but the best options would be to just use
-# aliases and anchors
-
 name: CI
 
 on:

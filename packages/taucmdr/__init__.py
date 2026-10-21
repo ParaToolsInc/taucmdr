@@ -77,7 +77,7 @@ TAUCMDR_VERSION = __version__
 TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__') or 'tau'
 """str: Script that launched TAU Commander.
 
-Mainly used for help messages. The ``tau`` launcher sets it to its own absolute path.
+Appears in help messages, and the compiler wrappers run this path.
 **Do not** change it once it is set.
 """
 
@@ -87,7 +87,7 @@ SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTE
 """str: System-level TAU Commander files.
 
 System-level files default to ``~/.local/taucmdr/system``. The environment variable
-``__TAUCMDR_SYSTEM_PREFIX__`` overrides the default.
+``__TAUCMDR_SYSTEM_PREFIX__`` replaces the default.
 """
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__',

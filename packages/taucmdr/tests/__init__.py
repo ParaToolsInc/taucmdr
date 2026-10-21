@@ -51,8 +51,8 @@ REPO_DIR = os.environ.get('__TAUCMDR_REPO_DIR__') or \
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 """str: Absolute path to the TAU Commander source checkout.
 
-``scripts/run_tests.py`` sets it with the environment variable ``__TAUCMDR_REPO_DIR__``. Without that variable
-it is the checkout containing this file.
+It comes from the environment variable ``__TAUCMDR_REPO_DIR__``, which ``scripts/run_tests.py`` defines.
+Without it, this is the checkout containing this file.
 """
 
 TIMING_FILE = os.path.join(REPO_DIR, f"test-timings-{int(time.time())}.csv")

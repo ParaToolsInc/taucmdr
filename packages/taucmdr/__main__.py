@@ -26,10 +26,8 @@
 #
 """TAU Commander's entry point, run by the ``tau`` launcher as ``python -I -m taucmdr``."""
 
-# The `tau` launcher script runs this as `python -I -m taucmdr`.
-# Restarts Python in an isolated environment, if it wasn't already.
-# Only import standard library modules here so that nothing in taucmdr
-# runs in the wrong interpreter.
+# Without `-I`, Python has already imported `taucmdr/__init__.py` and `importlib.metadata`, both standard library only.
+# Keep it that way: modules shadowing third-party packages on `PYTHONPATH` must not run before the re-exec.
 import os
 import sys
 from contextlib import contextmanager

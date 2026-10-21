@@ -226,7 +226,7 @@ class PageOutputTest(tests.TestCase):
     """Tests for :any:`util.page_output`."""
 
     def test_page_output_uses_pager(self):
-        """The text goes to the program named by ``PAGER``, which may have arguments and a path with a space."""
+        """The text goes to the pager command in ``PAGER``, which may have arguments and a path with a space."""
         pager_dir = tempfile.mkdtemp(prefix='with space', dir=os.getcwd())
         paged = os.path.join(pager_dir, 'paged')
         script = os.path.join(pager_dir, 'pager.sh')

@@ -92,8 +92,7 @@ benchmarks
 # general things to ignore
 /VERSION
 /build
-/dist
-dist/
+/dist/
 /taucmdr-*
 packages/*.sh
 packages/*.tgz
