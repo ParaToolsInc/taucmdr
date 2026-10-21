@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,36 @@ Functions used for unit tests of installed.py.
 """
 
 
+import os
+import subprocess
+from unittest import mock
 from taucmdr import tests
+from taucmdr.cf import compiler
+from taucmdr.cf.compiler.host import CC
+
 
 @tests.not_implemented
 class InstalledTest(tests.TestCase):
     pass
+
+
+class GenerateWrapperTest(tests.TestCase):
+    """Tests for :any:`InstalledCompiler.generate_wrapper`."""
+
+    @tests.skipUnlessHaveCompiler(CC)
+    def test_wrapper_path_with_space(self):
+        """The wrapper runs the TAU Commander script when the script's path contains a space."""
+        script_dir = os.path.join(os.getcwd(), 'with space')
+        os.makedirs(script_dir)
+        script = os.path.join(script_dir, 'tau')
+        args_file = os.path.join(os.getcwd(), 'args')
+        with open(script, 'w', encoding='utf-8') as fout:
+            fout.write(f'#!/bin/sh\nprintf \'%s\\n\' "$@" > "{args_file}"\n')
+        os.chmod(script, 0o755)
+        host_cc = compiler.InstalledCompiler.find_any(CC)
+        with mock.patch.object(compiler, 'TAUCMDR_SCRIPT', script):
+            host_cc.generate_wrapper(os.path.join(os.getcwd(), 'bin'))
+        wrapper = os.path.join(os.getcwd(), 'bin', f'tau_{host_cc.command}')
+        subprocess.run([wrapper, '-c', 'a b.c'], check=True)
+        with open(args_file, encoding='utf-8') as fin:
+            self.assertEqual(fin.read().splitlines(), ['build', host_cc.command, '-c', 'a b.c'])

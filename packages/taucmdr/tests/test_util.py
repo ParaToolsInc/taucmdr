@@ -31,6 +31,7 @@ Functions used for unit tests of util.py.
 
 import io
 import os
+import shlex
 import tarfile
 import tempfile
 import warnings
@@ -183,7 +184,7 @@ class ExtractArchiveTest(tests.TestCase):
 
     def test_extract_archive_truncated(self):
         """A truncated archive, such as an interrupted download, raises OSError."""
-        # Create a tarfile, truncate it, and then attempt to extrac it, requiring
+        # Create a tarfile, truncate it, and then attempt to extract it, requiring
         # that OSError is raised.
         for with_dir in True, False:
             path = os.path.join(os.getcwd(), f'truncated-{with_dir}.tgz')
@@ -219,3 +220,20 @@ class RmtreeTest(tests.TestCase):
             util.rmtree(path, onexc=lambda function, failed, exc: failures.append(exc), attempts=1)
         self.assertTrue(failures)
         self.assertIsInstance(failures[0], PermissionError)
+
+
+class PageOutputTest(tests.TestCase):
+    """Tests for :any:`util.page_output`."""
+
+    def test_page_output_uses_pager(self):
+        """The text goes to the program named by ``PAGER``, which may have arguments and a path with a space."""
+        pager_dir = tempfile.mkdtemp(prefix='with space', dir=os.getcwd())
+        paged = os.path.join(pager_dir, 'paged')
+        script = os.path.join(pager_dir, 'pager.sh')
+        with open(script, 'w', encoding='utf-8') as fout:
+            fout.write('cat > "$1"\n')
+        with mock.patch.dict(os.environ, {'PAGER': f'sh {shlex.quote(script)} {shlex.quote(paged)}'}):
+            del os.environ['__TAUCMDR_DISABLE_PAGER__']
+            util.page_output('h\u00e9llo pager')
+        with open(paged, encoding='utf-8') as fin:
+            self.assertEqual(fin.read(), 'hello pager')

@@ -64,6 +64,7 @@ change from system to system.
 
 import os
 import re
+import shlex
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
@@ -751,7 +752,7 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         with open(script_file, "w+") as fout:
             wrapper = _COMPILER_WRAPPER_TEMPLATE % {'date': str(datetime.now()),
                                                     'user': getpass.getuser(),
-                                                    'taucmdr_script': TAUCMDR_SCRIPT,
+                                                    'taucmdr_script': shlex.quote(TAUCMDR_SCRIPT),
                                                     'command': self.command}
             fout.write(wrapper)
         os.chmod(script_file, os.stat(script_file).st_mode | 0o111)

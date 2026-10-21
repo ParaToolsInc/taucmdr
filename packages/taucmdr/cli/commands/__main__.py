@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -154,7 +154,7 @@ class MainCommand(AbstractCommand):
         LOGGER.debug('No shortcut found for %r', cmd)
 
         # Not sure what to do at this point, so advise the user and exit
-        LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", TAUCMDR_SCRIPT, cmd)
+        LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", os.path.basename(TAUCMDR_SCRIPT), cmd)
         return cli.execute_command(['help'], [cmd])
 
 

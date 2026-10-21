@@ -31,6 +31,7 @@ Handles system manipulation and status tasks, e.g. subprocess management or file
 
 import re
 import os
+import shlex
 import sys
 import time
 import atexit
@@ -668,8 +669,8 @@ def page_output(output_string: str):
     if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
         print(output_string)
     else:
-        pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
-        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
+        pager_cmd = shlex.split(os.environ.get('PAGER', 'less -F -R -S -X -K'))
+        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE, text=True)
         proc.communicate(output_string)
 
 
