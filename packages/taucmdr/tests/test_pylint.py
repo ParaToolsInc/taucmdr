@@ -33,11 +33,10 @@ import os
 import sys
 import subprocess
 import re
-from taucmdr import TAUCMDR_HOME
 from taucmdr import tests
 
 MAX_REPORT_LENGTH = 65500
-REPORT_FILE = os.path.join(TAUCMDR_HOME, "pylint.md")
+REPORT_FILE = os.path.join(tests.REPO_DIR, "pylint.md")
 PYLINT_REPORT_TEMPLATE = \
 """
 ## Pylint Output
@@ -102,7 +101,7 @@ class PylintTest(tests.TestCase):
             stderr=stderr.strip())
 
     def run_pylint(self, *args):
-        cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(TAUCMDR_HOME, "pylintrc")]
+        cmd = [sys.executable, "-m", "pylint", '--rcfile=' + os.path.join(tests.REPO_DIR, "pylintrc")]
         cmd.extend(args)
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -123,7 +122,7 @@ class PylintTest(tests.TestCase):
         self.assertGreaterEqual(version, (1, 5, 2), "Pylint version %s is too old!" % str(version))
 
     def test_pylint(self):
-        stdout, stderr = self.run_pylint(os.path.join(TAUCMDR_HOME, "packages", "taucmdr"))
+        stdout, stderr = self.run_pylint(os.path.join(tests.REPO_DIR, "packages", "taucmdr"))
         self.assertIn('Your code has been rated at', stdout, f"Pylint produced no report:\n{stderr}")
         with open(REPORT_FILE, "w") as lint_msg_file:
             try:

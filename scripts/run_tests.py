@@ -29,9 +29,10 @@
 
 This is a test runner which provides functionality mimicking that provided by the former
 ``python setup.py test`` command removed from setuptools in v72. It sets environment
-variables required by TAU Commander's tests (``__TAUCMDR_SCRIPT__``, ``__TAUCMDR_SYSTEM_PREFIX__``,
-and ``__TAUCMDR_USER_PREFIX__``). These variables must already be set when the :any:`taucmdr`
-module is first loaded, so this must be a standalone script rather than part of that module.
+variables required by TAU Commander's tests (``__TAUCMDR_SCRIPT__``, ``__TAUCMDR_REPO_DIR__``,
+``__TAUCMDR_SYSTEM_PREFIX__``, and ``__TAUCMDR_USER_PREFIX__``). These variables must already be set
+when the :py:mod:`taucmdr` module is first loaded, so this must be a standalone script rather than part of
+that module.
 
 Usage::
 
@@ -107,6 +108,7 @@ def _load_tests(names):
     import taucmdr  # pylint: disable=import-outside-toplevel
     loader = unittest.TestLoader()
     package_dir = os.path.dirname(os.path.abspath(taucmdr.__file__))
+    print(f"Testing taucmdr from {package_dir}")
     top_level_dir = os.path.dirname(package_dir)
     if not names:
         return loader.discover(package_dir, pattern='test*.py', top_level_dir=top_level_dir)
@@ -143,6 +145,7 @@ def main(argv=None):
     args = _parse_args(argv)
     # Ensure that the help text uses the name `tau` instead of the name of this script.
     os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
+    os.environ['__TAUCMDR_REPO_DIR__'] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.environ['__TAUCMDR_DISABLE_PAGER__'] = '1'
     sandboxes = []
     for enabled, var, label in ((args.system_sandbox, '__TAUCMDR_SYSTEM_PREFIX__', 'system'),

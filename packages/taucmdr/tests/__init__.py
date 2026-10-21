@@ -37,7 +37,7 @@ import unittest
 from unittest import skipIf, skipUnless
 from taucmdr.util import get_command_output, rmtree, tmpfs_prefix
 from io import StringIO
-from taucmdr import logger, TAUCMDR_HOME
+from taucmdr import logger
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
@@ -47,7 +47,15 @@ _DIR_STACK = []
 _CWD_STACK = []
 _NOT_IMPLEMENTED = []
 
-TIMING_FILE = os.path.join(TAUCMDR_HOME, f"test-timings-{int(time.time())}.csv")
+REPO_DIR = os.environ.get('__TAUCMDR_REPO_DIR__') or \
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+"""str: Absolute path to the TAU Commander source checkout.
+
+``scripts/run_tests.py`` sets it with the environment variable ``__TAUCMDR_REPO_DIR__``. Without that variable
+it is the checkout containing this file.
+"""
+
+TIMING_FILE = os.path.join(REPO_DIR, f"test-timings-{int(time.time())}.csv")
 LOGGER = logger.get_logger(__name__)
 
 
@@ -75,7 +83,7 @@ def push_test_workdir():
     """
     path = tmpfs_prefix()
     try:
-        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
+        test_src = os.path.join(REPO_DIR, '.testfiles', 'foo_launcher')
         test_dst = os.path.join(path.name, 'foo_launcher')
         shutil.copy(test_src, test_dst)
         get_command_output(os.path.join(path.name, 'foo_launcher'))
@@ -284,7 +292,7 @@ class TestCase(unittest.TestCase):
             logger._STDOUT_HANDLER.stream = orig_stdout
 
     def copy_testfile(self, src, dst=None):
-        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
+        test_src = os.path.join(REPO_DIR, '.testfiles', src)
         test_dst = os.path.join(get_test_workdir(), dst or src)
         LOGGER.info(f"Copying test file {test_src} to {test_dst}")
         shutil.copy(test_src, test_dst)

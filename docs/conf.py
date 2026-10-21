@@ -15,17 +15,15 @@ import sys
 import os
 import datetime
 
-# Since this file is execfile()d with the current directory set to its
-# containing dir, we can safely calculate the TAUCMDR_HOME.
-TAUCMDR_HOME = os.path.realpath(os.path.abspath('..'))
+# The root of the source checkout is the parent of the directory containing this file.
+REPO_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.join(TAUCMDR_HOME, 'packages'))
+sys.path.insert(0, os.path.join(REPO_DIR, 'packages'))
 
 # Set environment variables to let TAU Commander know we're using Sphinx
-os.environ['__TAUCMDR_HOME__'] = TAUCMDR_HOME
 os.environ['__TAUCMDR_SCRIPT__'] = 'sphinx'
 
 # -- General configuration ------------------------------------------------
@@ -70,7 +68,7 @@ author = 'ParaTools, Inc.'
 # built documents.
 #
 # The short X.Y version.
-with open(os.path.join(TAUCMDR_HOME,"VERSION")) as fin:
+with open(os.path.join(REPO_DIR,"VERSION")) as fin:
     version = fin.readline()
 # The full version, including alpha/beta/rc tags.
 release = version
@@ -354,7 +352,7 @@ epub_copyright = copyright
 # The format is a list of tuples containing the path and title.
 #epub_pre_files = []
 
-# HTML files shat should be inserted after the pages created by sphinx.
+# HTML files that should be inserted after the pages created by sphinx.
 # The format is a list of tuples containing the path and title.
 #epub_post_files = []
 

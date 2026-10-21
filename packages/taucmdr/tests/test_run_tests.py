@@ -94,6 +94,26 @@ class RunTestsTest(tests.TestCase):
                 fout.write(textwrap.dedent(source))
         return root
 
+    def test_script_name(self):
+        """The runner makes help messages use the name `tau`."""
+        self.assertEqual(taucmdr.TAUCMDR_SCRIPT, 'tau')
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_repo_dir(self):
+        """The runner tells the tests where the checkout is."""
+        repo_dir = os.path.dirname(os.path.dirname(_RUN_TESTS))
+        self.assertEqual(os.path.realpath(os.environ['__TAUCMDR_REPO_DIR__']), os.path.realpath(repo_dir))
+        self.assertEqual(os.path.realpath(tests.REPO_DIR), os.path.realpath(repo_dir))
+        self.assertTrue(os.path.exists(os.path.join(tests.REPO_DIR, '.testfiles', 'foo_launcher')))
+        self.assertTrue(os.path.exists(os.path.join(tests.REPO_DIR, 'pylintrc')))
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_prints_tested_package(self):
+        """The runner says which copy of taucmdr it is testing."""
+        retval, _, output = self._run('--list', 'taucmdr.tests.test_init')
+        self.assertEqual(retval, 0, output)
+        self.assertIn(f"Testing taucmdr from {os.path.dirname(os.path.abspath(taucmdr.__file__))}", output)
+
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_package_name(self):
         """Listing tests by package name lists the tests in every test module under it."""

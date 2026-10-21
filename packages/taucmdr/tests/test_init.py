@@ -32,15 +32,38 @@ Functions used for unit tests of taucmdr/__init__.py.
 import os
 import subprocess
 import sys
+import tempfile
+import textwrap
+import taucmdr
 from taucmdr import tests
+
+
+def _run_python(args, env=None, cwd=None):
+    """Run the current interpreter with `args` in a new process.
+
+    Args:
+        args (list): Command line arguments for the interpreter.
+        env (dict): Changes to the environment.
+        cwd (str): Working directory of the new process.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    child_env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
+    for key, value in (env or {}).items():
+        if value is None:
+            child_env.pop(key, None)
+        else:
+            child_env[key] = value
+    return subprocess.run([sys.executable] + args, env=child_env, cwd=cwd, capture_output=True, text=True,
+                          check=False)
 
 
 def _import_with_version(version):
     """Import taucmdr in a new interpreter whose ``sys.version_info`` reports `version` (MAJOR, MINOR)."""
     version_info = tuple(version) + (0, 'final', 0)
     code = f"import sys; sys.version_info = {version_info!r}; import taucmdr"
-    env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
-    return subprocess.run([sys.executable, '-c', code], env=env, capture_output=True, text=True, check=False)
+    return _run_python(['-c', code])
 
 
 class PythonVersionTest(tests.TestCase):
@@ -58,3 +81,51 @@ class PythonVersionTest(tests.TestCase):
                 proc = _import_with_version(version)
                 self.assertNotEqual(proc.returncode, 0)
                 self.assertIn('Python 3.7 or Python 3.11 or newer is required', proc.stderr)
+
+
+class GlobalsTest(tests.TestCase):
+    """Tests for the paths and names :py:mod:`taucmdr` defines when it is imported."""
+
+    @staticmethod
+    def _print_system_prefix(env, cwd=None):
+        proc = _run_python(['-c', 'import taucmdr; print(taucmdr.SYSTEM_PREFIX)'], env=env, cwd=cwd)
+        return proc.returncode, proc.stdout.strip(), proc.stderr
+
+    def test_system_prefix_default(self):
+        """The system prefix is under the user's home directory by default."""
+        home = tempfile.mkdtemp(dir=os.getcwd())
+        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': None, 'HOME': home})
+        self.assertEqual(retval, 0, err)
+        self.assertEqual(out, os.path.realpath(os.path.join(home, '.local', 'taucmdr', 'system')))
+
+    def test_system_prefix_override(self):
+        """The system prefix is set by __TAUCMDR_SYSTEM_PREFIX__; a relative path is relative to the working directory."""
+        cwd = tempfile.mkdtemp(dir=os.getcwd())
+        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': 'system'}, cwd=cwd)
+        self.assertEqual(retval, 0, err)
+        self.assertEqual(out, os.path.realpath(os.path.join(cwd, 'system')))
+        absolute = tempfile.mkdtemp(dir=os.getcwd())
+        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': absolute}, cwd=cwd)
+        self.assertEqual(retval, 0, err)
+        self.assertEqual(out, os.path.realpath(absolute))
+
+    def test_no_install_tree(self):
+        """TAU Commander doesn't assume it lives in an install tree."""
+        self.assertFalse(hasattr(taucmdr, 'TAUCMDR_HOME'))
+
+    def test_script_name_default(self):
+        """The script name is `tau` unless the launcher specifies otherwise, however Python was started."""
+        cwd = tempfile.mkdtemp(dir=os.getcwd())
+        os.mkdir(os.path.join(cwd, 'probe'))
+        with open(os.path.join(cwd, 'probe', '__init__.py'), 'w', encoding='utf-8') as fout:
+            fout.write(textwrap.dedent("""\
+                import taucmdr
+                print(taucmdr.TAUCMDR_SCRIPT)
+                """))
+        with open(os.path.join(cwd, 'probe', 'main.py'), 'w', encoding='utf-8'):
+            pass
+        for args in (['-c', 'import taucmdr; print(taucmdr.TAUCMDR_SCRIPT)'], ['-m', 'probe.main']):
+            with self.subTest(args=args):
+                proc = _run_python(args, env={'__TAUCMDR_SCRIPT__': None}, cwd=cwd)
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+                self.assertEqual(proc.stdout.strip(), 'tau')

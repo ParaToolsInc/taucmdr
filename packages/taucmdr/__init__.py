@@ -65,23 +65,21 @@ Please install the required Python version or contact {} for support.
 """.format(TAUCMDR_URL, sys.executable, sys.version, VERSION, HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
-TAUCMDR_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__',
-                                                               os.path.join(os.path.dirname(__file__), '..', '..'))))
-"""str: Absolute path to the top-level TAU Commander directory.
-
-This directory contains at least `bin`, `docs`, and `packages` directories and is the root
-for system-level package installation paths. **Do not** change it once it is set.
-"""
-
-TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__', sys.argv[0] or 'tau')
+TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__') or 'tau'
 """str: Script that launched TAU Commander.
 
-Mainly used for help messages. **Do not** change it once it is set.
+Mainly used for help messages. The ``tau`` launcher sets it to its own absolute path.
+**Do not** change it once it is set.
 """
 
 SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__',
-                                                                os.path.join(TAUCMDR_HOME, 'system'))))
-"""str: System-level TAU Commander files."""
+                                                                os.path.join(os.path.expanduser('~'),
+                                                                             '.local', 'taucmdr', 'system'))))
+"""str: System-level TAU Commander files.
+
+System-level files default to ``~/.local/taucmdr/system``. The environment variable
+``__TAUCMDR_SYSTEM_PREFIX__`` overrides the default.
+"""
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__',
                                                               os.path.join(os.path.expanduser('~'),
@@ -112,7 +110,7 @@ def version_banner(): # type: () -> str
            "Python Impl.   : %(pyimpl)s\n"
            "PYTHONPATH     : %(pythonpath)s\n")
     data = {"url": TAUCMDR_URL,
-            "prefix": TAUCMDR_HOME,
+            "prefix": os.path.dirname(os.path.realpath(__file__)),
             "version": TAUCMDR_VERSION,
             "timestamp": str(datetime.now()),
             "hostname": socket.gethostname(),

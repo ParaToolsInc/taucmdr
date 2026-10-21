@@ -34,12 +34,10 @@ import ast
 import os
 import re
 import sys
-import taucmdr
 from taucmdr import tests
 
-_PACKAGE_DIR = os.path.dirname(os.path.abspath(taucmdr.__file__))
-_REPO_DIR = os.path.dirname(os.path.dirname(_PACKAGE_DIR))
-_REQUIREMENTS = os.path.join(_REPO_DIR, 'requirements.txt')
+_PACKAGE_DIR = os.path.join(tests.REPO_DIR, 'packages', 'taucmdr')
+_REQUIREMENTS = os.path.join(tests.REPO_DIR, 'requirements.txt')
 
 
 def _imported_packages():
@@ -79,7 +77,6 @@ class RequirementsTest(tests.TestCase):
     """Tests for ``requirements.txt``."""
 
     @tests.skipUnless(hasattr(sys, 'stdlib_module_names'), "Python 3.10 or newer required")
-    @tests.skipUnless(os.path.isdir(os.path.join(_REPO_DIR, 'scripts')), "Needs a source checkout")
     def test_requirements_match_imports(self):
         """requirements.txt lists exactly the third-party packages TAU Commander imports."""
         self.assertEqual(_required_packages(), _imported_packages())
