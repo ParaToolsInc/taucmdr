@@ -111,15 +111,33 @@ class GlobalsTest(tests.TestCase):
 
     @staticmethod
     def _print_system_prefix(env, cwd=None):
+        """Print :any:`taucmdr.SYSTEM_PREFIX` in a new process.
+
+        Both system prefix variables are unset unless `env` sets them.
+        """
+        env = dict({'TAUCMDR_SYSTEM_PREFIX': None, '__TAUCMDR_SYSTEM_PREFIX__': None}, **env)
         proc = _run_python(['-c', 'import taucmdr; print(taucmdr.SYSTEM_PREFIX)'], env=env, cwd=cwd)
         return proc.returncode, proc.stdout.strip(), proc.stderr
 
     def test_system_prefix_default(self):
-        """The system prefix is under the user's home directory by default."""
+        """There is no system prefix unless one is set."""
         home = tempfile.mkdtemp(dir=os.getcwd())
-        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': None, 'HOME': home})
+        retval, out, err = self._print_system_prefix({'HOME': home})
         self.assertEqual(retval, 0, err)
-        self.assertEqual(out, os.path.realpath(os.path.join(home, '.local', 'taucmdr', 'system')))
+        self.assertEqual(out, 'None')
+
+    def test_system_prefix_empty(self):
+        """An empty TAUCMDR_SYSTEM_PREFIX means there is no system prefix."""
+        retval, out, err = self._print_system_prefix({'TAUCMDR_SYSTEM_PREFIX': ''})
+        self.assertEqual(retval, 0, err)
+        self.assertEqual(out, 'None')
+
+    def test_system_prefix_public_name(self):
+        """The system prefix is set by TAUCMDR_SYSTEM_PREFIX."""
+        absolute = tempfile.mkdtemp(dir=os.getcwd())
+        retval, out, err = self._print_system_prefix({'TAUCMDR_SYSTEM_PREFIX': absolute})
+        self.assertEqual(retval, 0, err)
+        self.assertEqual(out, os.path.realpath(absolute))
 
     def test_system_prefix_override(self):
         """The system prefix is set by __TAUCMDR_SYSTEM_PREFIX__; a relative path is relative to the working directory."""
@@ -131,6 +149,27 @@ class GlobalsTest(tests.TestCase):
         retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': absolute}, cwd=cwd)
         self.assertEqual(retval, 0, err)
         self.assertEqual(out, os.path.realpath(absolute))
+
+    def test_same_prefix_both_names(self):
+        """Both variables may be set if they lead to the same directory."""
+        real = tempfile.mkdtemp(dir=os.getcwd())
+        link = real + '-link'
+        os.symlink(real, link)
+        retval, out, err = self._print_system_prefix({'TAUCMDR_SYSTEM_PREFIX': link,
+                                                      '__TAUCMDR_SYSTEM_PREFIX__': real + os.sep})
+        self.assertEqual(retval, 0, err)
+        self.assertEqual(out, os.path.realpath(real))
+
+    def test_conflicting_system_prefixes(self):
+        """Both variables set to different directories is an error."""
+        first = tempfile.mkdtemp(dir=os.getcwd())
+        second = tempfile.mkdtemp(dir=os.getcwd())
+        retval, out, err = self._print_system_prefix({'TAUCMDR_SYSTEM_PREFIX': first,
+                                                      '__TAUCMDR_SYSTEM_PREFIX__': second})
+        self.assertEqual(retval, taucmdr.EXIT_FAILURE % 256, out)
+        self.assertIn(first, err)
+        self.assertIn(second, err)
+        self.assertIn('Set only one.', err)
 
     def test_no_install_tree(self):
         """TAU Commander doesn't assume it lives in an install tree."""

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,11 @@
 System-level records are globally readable and writable, depending on the user's
 system access level.  System-level is a good place for software package installations
 and some system-specific configurations, e.g. target or compiler configurations.
+The system level exists only when :any:`SYSTEM_PREFIX` is set.  A system prefix that doesn't
+exist is treated as an empty, read-only level until it is created.
 
 User-level records are readable and writable by (at least) the user.  User-level is also
-where software is installed when the user doesn't have write access to :any:`SYSTEM_PREFIX`.
+where software is installed when there is no system level or the user doesn't have write access to it.
 It's a good place for user-specific records, i.e. preferences or encrypted login credentials.
 
 Project-level records define the project and its member components.  The user may also
@@ -42,11 +44,12 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 
 import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.storage_dispatch import StorageDispatch, ProjectStorageDispatch
 
-SYSTEM_STORAGE = StorageDispatch('system', SYSTEM_PREFIX)
-"""System-level data storage."""
+SYSTEM_STORAGE = StorageDispatch('system', SYSTEM_PREFIX, create_prefix=False) if SYSTEM_PREFIX else None
+"""System-level data storage, or None if there is no system level."""
 
 USER_STORAGE = StorageDispatch('user', USER_PREFIX)
 """User-level data storage."""
@@ -54,11 +57,24 @@ USER_STORAGE = StorageDispatch('user', USER_PREFIX)
 PROJECT_STORAGE = ProjectStorageDispatch()
 """Project-level data storage."""
 
-ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
+ORDERED_LEVELS = tuple(level for level in (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE) if level is not None)
 """All storage levels in their preferred order."""
 
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
+
+
+def require_system_storage():
+    """Return the system storage level.
+
+    Raises:
+        ConfigurationError: No system level exists.
+    """
+    if SYSTEM_STORAGE is None:
+        raise ConfigurationError(
+            "No system-level storage is configured.",
+            "Set the environment variable TAUCMDR_SYSTEM_PREFIX to a directory for shared TAU builds.")
+    return SYSTEM_STORAGE
 
 
 def highest_writable_storage():

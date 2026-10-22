@@ -31,6 +31,7 @@ import sys
 import glob
 import shutil
 import atexit
+import subprocess
 import tempfile
 import time
 import unittest
@@ -122,6 +123,44 @@ def cleanup():
 
 
 atexit.register(cleanup)
+
+
+def tau_subprocess_env(backend, user_prefix, system_prefix=None):
+    """Return an environment for running TAU Commander in a new process with the given storage.
+
+    Args:
+        backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to leave it unset.
+        user_prefix (str): User-level storage prefix. ``HOME`` is set to it too, so nothing reaches the real one.
+        system_prefix (str): System-level storage prefix, or None for no system level.
+
+    Returns:
+        dict: The environment.
+    """
+    env = dict(os.environ, __TAUCMDR_USER_PREFIX__=user_prefix, HOME=user_prefix)
+    for var in 'TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__', '__TAUCMDR_DB_BACKEND__':
+        env.pop(var, None)
+    if system_prefix is not None:
+        env['TAUCMDR_SYSTEM_PREFIX'] = env['__TAUCMDR_SYSTEM_PREFIX__'] = system_prefix
+    if backend is not None:
+        env['__TAUCMDR_DB_BACKEND__'] = backend
+    return env
+
+
+def run_tau_subprocess(args, backend, cwd, user_prefix, system_prefix=None):
+    """Run ``tau`` in a new process with the given storage.
+
+    Args:
+        args (list): Arguments to ``tau``.
+        backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to leave it unset.
+        cwd (str): Working directory of the new process.
+        user_prefix (str): User-level storage prefix.
+        system_prefix (str): System-level storage prefix, or None for no system level.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    return subprocess.run([sys.executable, '-I', '-m', 'taucmdr', *args], cwd=cwd, capture_output=True, text=True,
+                          env=tau_subprocess_env(backend, user_prefix, system_prefix), check=False)
 
 
 def not_implemented(cls):
@@ -228,7 +267,8 @@ class TestCase(unittest.TestCase):
             argv.extend(['--backend', default_backend])
         if init_args is not None:
             argv.extend(init_args)
-        if '--bare' in argv or glob.glob(os.path.join(SYSTEM_STORAGE.prefix, 'tau', 'tau-nightly-*')):
+        built_prefix = (SYSTEM_STORAGE if SYSTEM_STORAGE is not None else USER_STORAGE).prefix
+        if '--bare' in argv or glob.glob(os.path.join(built_prefix, 'tau', 'tau-nightly-*')):
             initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
@@ -240,7 +280,7 @@ class TestCase(unittest.TestCase):
             tstart = time.time()
             thread.start()
             self._result_stream.write("\nInitializing TAU and dependencies:\n")
-            self._result_stream.write("    @SYSTEM='%s'\n" % SYSTEM_STORAGE.prefix)
+            self._result_stream.write("    @SYSTEM='%s'\n" % (SYSTEM_STORAGE.prefix if SYSTEM_STORAGE is not None else '<none>'))
             self._result_stream.write("    @USER='%s'\n" % USER_STORAGE.prefix)
             while thread.is_alive():
                 time.sleep(5)

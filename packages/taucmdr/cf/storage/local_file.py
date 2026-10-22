@@ -62,24 +62,49 @@ class _JsonFileStorage(tinydb.JSONStorage):
     """Allow read-only as well as read-write access to the JSON file.
 
     TinyDB's default storage (:any:`tinydb.JSONStorage`) assumes write access to the JSON file.
-    This isn't the case for system-level storage and possibly others.
+    This isn't the case for system-level storage and possibly others.  A file that doesn't exist
+    and can't be created is treated as an empty, read-only database.
     """
     def __init__(self, path):
         try:
             super().__init__(path)
         except OSError:
             self.path = str(path)
-            self._handle = open(path)
             self.readonly = True
-            LOGGER.debug("'%s' opened read-only", path)
+            try:
+                self._handle = open(path)
+            except FileNotFoundError:
+                self._handle = None
+                LOGGER.debug("'%s' doesn't exist and can't be created; treating as empty and read-only", path)
+            else:
+                LOGGER.debug("'%s' opened read-only", path)
         else:
             self.readonly = False
             LOGGER.debug("'%s' opened read-write", path)
+
+    def read(self):
+        if self._handle is None:
+            raise ValueError
+        return super().read()
 
     def write(self, *args, **kwargs):
         if self.readonly:
             raise ConfigurationError("Cannot write to '%s'" % self.path, "Check that you have `write` access.")
         super().write(*args, **kwargs)
+
+
+class _CachingMiddleware(CachingMiddleware):
+    """Write back only if something changed, so that closing a read-only database isn't an error."""
+    # TinyDB's CachingMiddleware writes its cache back whenever it's flushed or deleted even when nothing changed.
+    def flush(self):
+        if not self._cache_modified_count:
+            return
+        try:
+            super().flush()
+        except ConfigurationError:
+            self.cache = None
+            self._cache_modified_count = 0
+            raise
 
 
 class LocalFileStorage(AbstractStorage):
@@ -93,12 +118,13 @@ class LocalFileStorage(AbstractStorage):
 
     Record = _JsonRecord
 
-    def __init__(self, name, prefix):
+    def __init__(self, name, prefix, create_prefix=True):
         super().__init__(name)
         self._transaction_count = 0
         self._db_copy = None
         self._database = None
         self._prefix = prefix
+        self._create_prefix = create_prefix
 
     def __len__(self):
         return self.count()
@@ -145,10 +171,18 @@ class LocalFileStorage(AbstractStorage):
         Attempts to create and delete a file in ``prefix``.
         See https://github.com/ParaToolsInc/taucmdr/issues/231.
 
+        A prefix that doesn't exist is created first, unless this storage was told not to create it.
+
         Returns:
             bool: True if a file could be created and deleted in ``prefix``, False otherwise.
         """
-        self.connect_filesystem()
+        if not os.path.isdir(self.prefix):
+            if not self._create_prefix:
+                return False
+            try:
+                self.connect_filesystem()
+            except StorageError:
+                return False
         if not os.access(self.prefix, os.W_OK):
             return False
         try:
@@ -173,18 +207,26 @@ class LocalFileStorage(AbstractStorage):
         """Disconnects the store filesystem."""
         self.disconnect_database()
 
-    def connect_database(self, *args, **kwargs):
-        """Open the database for reading and writing."""
-        if self._database is None:
-            util.mkdirp(self.prefix)
+    def _make_prefix(self):
+        """Create the prefix if it's missing and this storage may create it."""
+        if self._create_prefix:
             try:
-                storage = CachingMiddleware(_JsonFileStorage)
+                util.mkdirp(self.prefix)
+            except OSError as err:
+                LOGGER.debug("Cannot create %s prefix '%s': %s", self.name, self.prefix, err)
+
+    def connect_database(self, *args, **kwargs):
+        """Open the database for reading and writing, or only for reading if it can't be written."""
+        if self._database is None:
+            self._make_prefix()
+            try:
+                storage = _CachingMiddleware(_JsonFileStorage)
                 storage.WRITE_CACHE_SIZE = 0
                 self._database = tinydb.TinyDB(self.dbfile, storage=storage)
             except OSError as err:
                 raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
                                    "Check that you have `write` access") from err
-            if not util.path_accessible(self.dbfile):
+            if os.path.exists(self.dbfile) and not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
             LOGGER.debug("Initialized TinyDB %s database '%s'", self.name, self.dbfile)

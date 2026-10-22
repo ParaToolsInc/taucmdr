@@ -258,7 +258,6 @@ class Experiment(Model):
                 return i
         return len(trials)
 
-    @fasteners.interprocess_locked(os.path.join(highest_writable_storage().prefix, '.lock'))
     def configure(self):
         """Sets up the Experiment for a new trial.
 
@@ -268,6 +267,11 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
+        # The lock goes where packages are installed, which is decided at the time of the call.
+        with fasteners.InterProcessLock(os.path.join(highest_writable_storage().prefix, '.lock')):
+            return self._configure()
+
+    def _configure(self):
         from taucmdr.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self['name'])
         with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):

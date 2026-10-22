@@ -122,7 +122,6 @@ class ProjectStorage(LocalFileStorage):
             ProjectStorageError: Neither the current directory nor any of its parent directories contain
                                  a TAU Commander project directory.
         """
-        from taucmdr.cf.storage.levels import USER_STORAGE, SYSTEM_STORAGE
         if self._prefix:
             return self._prefix
         cwd = os.getcwd()
@@ -130,8 +129,8 @@ class ProjectStorage(LocalFileStorage):
             # Only check current working directory for project directory
             prefix = os.path.realpath(os.path.join(cwd, PROJECT_DIR))
             if os.path.isdir(prefix):
-                for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                for level_name in 'user', 'system':
+                    if os.path.exists(os.path.join(prefix, level_name + ".json")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)
@@ -147,8 +146,8 @@ class ProjectStorage(LocalFileStorage):
         while root and root != lastroot:
             prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
             if os.path.isdir(prefix):
-                for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                for level_name in 'user', 'system':
+                    if os.path.exists(os.path.join(prefix, level_name + ".json")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)

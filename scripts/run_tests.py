@@ -29,14 +29,13 @@
 
 This is a test runner which provides functionality mimicking that provided by the former
 ``python setup.py test`` command removed from setuptools in v72. It sets environment
-variables required by TAU Commander's tests (``__TAUCMDR_SCRIPT__``, ``__TAUCMDR_REPO_DIR__``,
-``__TAUCMDR_SYSTEM_PREFIX__``, and ``__TAUCMDR_USER_PREFIX__``). These variables must already be set
-when the :py:mod:`taucmdr` module is first loaded, so this must be a standalone script rather than part of
-that module.
+variables required by TAU Commander's tests. These variables must already be set when the
+:py:mod:`taucmdr` module is first loaded, so this must be a standalone script rather 
+than part of that module.
 
-If ``__TAUCMDR_SYSTEM_PREFIX__`` isn't set, system storage goes in the ``system`` directory of the checkout.
+The system prefix comes from ``TAUCMDR_SYSTEM_PREFIX`` or ``__TAUCMDR_SYSTEM_PREFIX__``.
 
-Usage, with the Python of an environment where TAU Commander is installed, e.g., ``.tox/py315/bin/python``::
+Usage::
 
     python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
 """
@@ -149,14 +148,21 @@ def main(argv=None):
     os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
     repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.environ['__TAUCMDR_REPO_DIR__'] = repo_dir
-    os.environ.setdefault('__TAUCMDR_SYSTEM_PREFIX__', os.path.join(repo_dir, 'system'))
+    system_prefix = (os.environ.get('TAUCMDR_SYSTEM_PREFIX') or os.environ.get('__TAUCMDR_SYSTEM_PREFIX__')
+                     or os.path.join(repo_dir, 'system'))
+    system_prefix = os.path.abspath(system_prefix)
+    # The tests need a system level; create one explicitly
+    os.makedirs(system_prefix, exist_ok=True)
+    os.environ['TAUCMDR_SYSTEM_PREFIX'] = os.environ['__TAUCMDR_SYSTEM_PREFIX__'] = system_prefix
     os.environ['__TAUCMDR_DISABLE_PAGER__'] = '1'
     sandboxes = []
-    for enabled, var, label in ((args.system_sandbox, '__TAUCMDR_SYSTEM_PREFIX__', 'system'),
-                                (args.user_sandbox, '__TAUCMDR_USER_PREFIX__', 'user')):
+    for enabled, variables, label in ((args.system_sandbox, ('TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__'),
+                                       'system'),
+                                      (args.user_sandbox, ('__TAUCMDR_USER_PREFIX__',), 'user')):
         if enabled:
             path = tempfile.mkdtemp(prefix=f'taucmdr-{label}-')
-            os.environ[var] = path
+            for var in variables:
+                os.environ[var] = path
             sandboxes.append(path)
             print(f"Sandboxing {label} storage: {path}")
     if not sys.warnoptions:

@@ -64,9 +64,13 @@ _SYSTEM_PREFIX_TEST = '''
 
     class Probe(unittest.TestCase):
         def test_probe(self):
+            import os
             import taucmdr
-            with open('system_prefix.txt', 'w') as fout:
-                fout.write(taucmdr.SYSTEM_PREFIX)
+            with open(os.path.join(os.environ['PROBE_OUTPUT'], 'system_prefix.txt'), 'w') as fout:
+                fout.write(taucmdr.SYSTEM_PREFIX + '\\n')
+                fout.write(os.environ.get('TAUCMDR_SYSTEM_PREFIX', '') + '\\n')
+                fout.write(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__', '') + '\\n')
+                fout.write(str(os.path.isdir(taucmdr.SYSTEM_PREFIX)) + '\\n')
 '''
 
 _WARNING_TEST = '''
@@ -85,12 +89,13 @@ _WARNING_TEST = '''
 class RunTestsTest(tests.TestCase):
     """Tests for ``scripts/run_tests.py``."""
 
-    def _run(self, *args, pythonpath=(), unset=()):
+    def _run(self, *args, pythonpath=(), unset=(), setenv=None, cwd=None):
         env = dict(os.environ, PYTHONPATH=os.pathsep.join(list(pythonpath) + sys.path))
         for name in unset:
             env.pop(name, None)
+        env.update(setenv or {})
         proc = subprocess.run([sys.executable, _RUN_TESTS] + list(args), env=env, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, text=True, check=False)
+                              stderr=subprocess.STDOUT, text=True, check=False, cwd=cwd)
         test_ids = [line for line in proc.stdout.splitlines() if line.startswith('taucmdr.')]
         return proc.returncode, test_ids, proc.stdout
 
@@ -121,15 +126,51 @@ class RunTestsTest(tests.TestCase):
         self.assertTrue(os.path.exists(os.path.join(tests.REPO_DIR, '.testfiles', 'foo_launcher')))
         self.assertTrue(os.path.exists(os.path.join(tests.REPO_DIR, 'pylintrc')))
 
+    def _probe_system_prefix(self, setenv=None, cwd=None):
+        """Run a probe test under the runner and return what it saw.
+
+        Returns:
+            tuple: ``taucmdr.SYSTEM_PREFIX``, the values of ``TAUCMDR_SYSTEM_PREFIX`` and
+            ``__TAUCMDR_SYSTEM_PREFIX__`` in the probe's environment, and whether the prefix directory exists.
+        """
+        root = self._make_modules({'prefixprobe/__init__.py': '', 'prefixprobe/test_probe.py': _SYSTEM_PREFIX_TEST})
+        output_dir = tempfile.mkdtemp(dir=os.getcwd())
+        retval, _, output = self._run('-U', 'prefixprobe.test_probe', pythonpath=[root],
+                                      unset=['TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__'],
+                                      setenv=dict(setenv or {}, PROBE_OUTPUT=output_dir), cwd=cwd)
+        self.assertEqual(retval, 0, output)
+        with open(os.path.join(output_dir, 'system_prefix.txt'), encoding='utf-8') as fin:
+            return tuple(fin.read().splitlines())
+
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_system_prefix_default(self):
-        """Without `__TAUCMDR_SYSTEM_PREFIX__`, the runner puts system storage in the checkout."""
-        root = self._make_modules({'prefixprobe/__init__.py': '', 'prefixprobe/test_probe.py': _SYSTEM_PREFIX_TEST})
-        retval, _, output = self._run('-U', 'prefixprobe.test_probe', pythonpath=[root],
-                                      unset=['__TAUCMDR_SYSTEM_PREFIX__'])
-        self.assertEqual(retval, 0, output)
-        with open('system_prefix.txt', encoding='utf-8') as fin:
-            self.assertEqual(fin.read(), os.path.realpath(os.path.join(tests.REPO_DIR, 'system')))
+        """Without a system prefix variable, the runner puts system storage in the checkout."""
+        expected = os.path.realpath(os.path.join(tests.REPO_DIR, 'system'))
+        prefix, _, _, _ = self._probe_system_prefix()
+        self.assertEqual(prefix, expected)
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_system_prefix_public_name(self):
+        """The runner takes the system prefix from TAUCMDR_SYSTEM_PREFIX."""
+        directory = os.path.realpath(tempfile.mkdtemp(dir=os.getcwd()))
+        prefix, _, _, _ = self._probe_system_prefix({'TAUCMDR_SYSTEM_PREFIX': directory})
+        self.assertEqual(prefix, directory)
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_system_prefix_absolute(self):
+        """The runner exports a relative system prefix as an absolute path, under both names."""
+        cwd = os.path.realpath(tempfile.mkdtemp(dir=os.getcwd()))
+        expected = os.path.join(cwd, 'rel')
+        self.assertEqual(self._probe_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': 'rel'}, cwd=cwd)[:3],
+                         (expected, expected, expected))
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_system_prefix_created(self):
+        """The runner creates a system prefix that doesn't exist yet, so the tests have a system level."""
+        cwd = os.path.realpath(tempfile.mkdtemp(dir=os.getcwd()))
+        prefix, _, _, exists = self._probe_system_prefix({'TAUCMDR_SYSTEM_PREFIX': os.path.join(cwd, 'new')})
+        self.assertEqual(prefix, os.path.join(cwd, 'new'))
+        self.assertEqual(exists, 'True')
 
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_prints_tested_package(self):

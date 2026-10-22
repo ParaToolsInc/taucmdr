@@ -12,7 +12,7 @@ on:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
-  __TAUCMDR_SYSTEM_PREFIX__: "system"
+  TAUCMDR_SYSTEM_PREFIX: "system"
   CI: "ON"
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"
@@ -70,7 +70,7 @@ jobs:
           echo "Pythons installed by uv:"
           uv python list --only-installed
           echo "home_dir=${HOME}" >> "${GITHUB_OUTPUT}"
-          echo "taucmdr_system=${GITHUB_WORKSPACE}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
+          echo "taucmdr_system=${GITHUB_WORKSPACE}/${TAUCMDR_SYSTEM_PREFIX}" >> "${GITHUB_OUTPUT}"
           echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
           echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"

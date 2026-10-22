@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import os
 import json
 import re
 import sqlite3
+import urllib.parse
 from taucmdr import logger, util
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage import StorageRecord, StorageError
@@ -93,9 +94,10 @@ class SQLiteDatabase:
         dbfile (str): Path to database file
     """
 
-    def __init__(self, dbfile, storage=None):
+    def __init__(self, dbfile, storage=None, readonly=False):
         self.dbfile = dbfile
         self.storage = storage
+        self.readonly = readonly
         self._connection = None
         self._transaction_level = 0
 
@@ -107,7 +109,13 @@ class SQLiteDatabase:
         def execute(self, sql, parameters=(), log=True):
             if log:
                 _heavy_debug(f"{self._dbfile}: Executing `{sql}` with parameters {parameters}")
-            return self._cursor.execute(sql, parameters)
+            try:
+                return self._cursor.execute(sql, parameters)
+            except sqlite3.OperationalError as err:
+                if 'readonly' in str(err):
+                    raise StorageError(f"Cannot write to '{self._dbfile}': {err}",
+                                       "Check that you have `write` access.") from err
+                raise
 
         def fetchone(self):
             return self._cursor.fetchone()
@@ -129,8 +137,21 @@ class SQLiteDatabase:
             # check_same_thread = False allows connection to be used from a different thread than the one that
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
-            self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
-            LOGGER.debug(f"Connected to SQLite database at {self.dbfile}")
+            if self.readonly:
+                # A read-only file can lack tables that would be implicitly craeted by reading them; open a copy
+                # in memory so they can be created without having to write to the file
+                self._connection = sqlite3.connect(':memory:', isolation_level=None, check_same_thread=False)
+                if os.path.exists(self.dbfile):
+                    uri = f"file:{urllib.parse.quote(self.dbfile)}?mode=ro"
+                    source = sqlite3.connect(uri, uri=True)
+                    try:
+                        source.backup(self._connection)
+                    finally:
+                        source.close()
+                LOGGER.debug("Opened SQLite database at %s read-only", self.dbfile)
+            else:
+                self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
+                LOGGER.debug(f"Connected to SQLite database at {self.dbfile}")
 
     def close(self):
         """Close the database connection"""
@@ -143,6 +164,11 @@ class SQLiteDatabase:
         if self._connection is None:
             raise SQLiteStorageError('Database connection is not open')
         return self._LoggingCursor(self.dbfile, self._connection.cursor())
+
+    def check_writable(self):
+        """Raise :any:`StorageError` if the database is read-only."""
+        if self.readonly:
+            raise StorageError(f"Cannot write to '{self.dbfile}'", "Check that you have `write` access.")
 
     def start_transaction(self):
         """Begin a transaction, which can be reverted with :any:`_SQLiteDatabase.revert_transaction`
@@ -225,6 +251,7 @@ class _SQLiteJsonTable:
         cursor.close()
 
     def insert(self, element):
+        self.database.check_writable()
         cursor = self.database.cursor()
         cursor.execute(f"INSERT INTO {self.name} (data) VALUES(?)", [json.dumps(element)])
         result = _SQLiteJsonRecord(self.database.storage, element, eid=cursor.lastrowid)
@@ -245,6 +272,8 @@ class _SQLiteJsonTable:
     def _get(self, keys=None, eid=None, match_any=False, remove=False):
         db_row = None
         result = None
+        if remove:
+            self.database.check_writable()
         cursor = self.database.cursor()
         command = 'DELETE' if remove else 'SELECT id, data'
 
@@ -306,6 +335,7 @@ class _SQLiteJsonTable:
             match_any (bool): If True, match records satisfying any key (OR); otherwise AND.
             unset (bool): If True, remove the named fields instead of setting them.
         """
+        self.database.check_writable()
         # Construct the json_set expression
         if not fields:
             # We were asked to update no fields, which is a no-op
@@ -357,6 +387,7 @@ class _SQLiteJsonTable:
         return result
 
     def purge(self):
+        self.database.check_writable()
         cursor = self.database.cursor()
         cursor.execute(f'DROP TABLE IF EXISTS {self.name};')
         cursor.close()
@@ -374,8 +405,8 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
     Record = _SQLiteJsonRecord
 
-    def __init__(self, name, prefix):
-        super().__init__(name, prefix)
+    def __init__(self, name, prefix, create_prefix=True):
+        super().__init__(name, prefix, create_prefix)
         self._database = None
 
     @property
@@ -388,18 +419,24 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         except StorageError:
             return False
 
+    def _database_writable(self):
+        if os.path.exists(self.dbfile):
+            return os.access(self.dbfile, os.W_OK) and os.access(self.prefix, os.W_OK)
+        return os.path.isdir(self.prefix) and os.access(self.prefix, os.W_OK)
+
     def connect_database(self, *args, **kwargs):
-        """Open the database for reading and writing."""
+        """Open the database for reading and writing, or only for reading if it can't be written."""
 
         if self._database is None:
-            util.mkdirp(self.prefix)
+            self._make_prefix()
             try:
-                self._database = SQLiteDatabase(self.dbfile, storage=self)
+                self._database = SQLiteDatabase(self.dbfile, storage=self, readonly=not self._database_writable())
                 self._database.open()
-            except OSError as err:
+            except (OSError, sqlite3.Error) as err:
+                self._database = None
                 raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
                                    "Check that you have `write` access") from err
-            if not util.path_accessible(self.dbfile):
+            if os.path.exists(self.dbfile) and not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
             LOGGER.debug("Initialized connection to SQLite database `%s` at '%s'", self.name, self.dbfile)

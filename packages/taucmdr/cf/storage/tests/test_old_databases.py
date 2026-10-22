@@ -31,8 +31,6 @@ Checks that project and user databases written by TAU Commander v1.6.0 still ope
 
 import os
 import shutil
-import subprocess
-import sys
 import tempfile
 from taucmdr import tests
 
@@ -40,33 +38,11 @@ _FIXTURES = os.path.join(tests.REPO_DIR, '.testfiles', 'storage', 'v1.6.0')
 
 _BACKENDS = ('tinydb', 'sqlite')
 
+_run_tau = tests.run_tau_subprocess
+
 
 class OldDatabaseTest(tests.TestCase):
     """Opens, lists and changes records in v1.6.0 databases under both backends."""
-
-    @staticmethod
-    def _run_tau(args, backend, cwd, user_prefix, system_prefix=None):
-        """Run ``tau`` in a new process.
-
-        Args:
-            args (list): Arguments to ``tau``.
-            backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to leave it unset.
-            cwd (str): Working directory of the new process.
-            user_prefix (str): User-level storage prefix.
-            system_prefix (str): System-level storage prefix, or None for no system prefix variables.
-
-        Returns:
-            subprocess.CompletedProcess: The finished process, with text output captured.
-        """
-        env = dict(os.environ, __TAUCMDR_USER_PREFIX__=user_prefix)
-        for var in 'TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__', '__TAUCMDR_DB_BACKEND__':
-            env.pop(var, None)
-        if system_prefix is not None:
-            env['__TAUCMDR_SYSTEM_PREFIX__'] = system_prefix
-        if backend is not None:
-            env['__TAUCMDR_DB_BACKEND__'] = backend
-        return subprocess.run([sys.executable, '-I', '-m', 'taucmdr', *args], env=env, cwd=cwd,
-                              capture_output=True, text=True, check=False)
 
     def _check_each_fixture(self, check):
         """Call `check` on a fresh copy of each backend's fixture, in a subtest for each case.
@@ -87,25 +63,25 @@ class OldDatabaseTest(tests.TestCase):
 
     def test_project_from_v160(self):
         def check(backend_var, project, user, system):
-            proc = self._run_tau(['dashboard'], backend_var, project, user, system)
+            proc = _run_tau(['dashboard'], backend_var, project, user, system)
             self._assert_success(proc)
             for name in 'oldproj', 'oldtarg', 'oldapp', 'oldmeas':
                 self.assertIn(name, proc.stdout)
-            self._assert_success(self._run_tau(['experiment', 'list'], backend_var, project, user, system))
+            self._assert_success(_run_tau(['experiment', 'list'], backend_var, project, user, system))
         self._check_each_fixture(check)
 
     def test_user_records_from_v160(self):
         def check(backend_var, project, user, system):
-            proc = self._run_tau(['target', 'list', '-s', '-@', 'user'], backend_var, project, user, system)
+            proc = _run_tau(['target', 'list', '-s', '-@', 'user'], backend_var, project, user, system)
             self._assert_success(proc)
             self.assertIn('usertarg', proc.stdout)
         self._check_each_fixture(check)
 
     def test_project_from_v160_writable(self):
         def check(backend_var, project, user, system):
-            self._assert_success(self._run_tau(['measurement', 'copy', 'oldmeas', 'newmeas'],
-                                               backend_var, project, user, system))
-            proc = self._run_tau(['measurement', 'list', '-s'], backend_var, project, user, system)
+            self._assert_success(_run_tau(['measurement', 'copy', 'oldmeas', 'newmeas'],
+                                          backend_var, project, user, system))
+            proc = _run_tau(['measurement', 'list', '-s'], backend_var, project, user, system)
             self._assert_success(proc)
             self.assertIn('newmeas', proc.stdout)
         self._check_each_fixture(check)

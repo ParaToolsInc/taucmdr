@@ -442,9 +442,9 @@ class ListCommand(AbstractCliView):
 
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
-        system_ctl = self.model.controller(SYSTEM_STORAGE)
+        system_ctl = self.model.controller(SYSTEM_STORAGE) if SYSTEM_STORAGE is not None else None
 
-        system = SYSTEM_STORAGE.name in storage_levels
+        system = 'system' in storage_levels
         user = USER_STORAGE.name in storage_levels
         project = PROJECT_STORAGE.name in storage_levels or not (user or system)
 
@@ -457,7 +457,7 @@ class ListCommand(AbstractCliView):
             parts.extend(self._format_records(project_ctl, style, keys, context=context))
         if style == 'dashboard':
             # Show record counts (not the records themselves) for other storage levels
-            if not system:
+            if not system and system_ctl is not None:
                 parts.extend(self._count_records(system_ctl))
             if not user:
                 parts.extend(self._count_records(user_ctl))

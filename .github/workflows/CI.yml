@@ -13,7 +13,7 @@ on:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
-  __TAUCMDR_SYSTEM_PREFIX__: "system"
+  TAUCMDR_SYSTEM_PREFIX: "system"
   CI: "ON"
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"

@@ -140,6 +140,8 @@ def tau_source_default():
     Returns:
         str: Path to TAU or "download".
     """
+    if SYSTEM_STORAGE is None:
+        return 'download'
     try:
         with open(os.path.join(SYSTEM_STORAGE.prefix, 'override_tau_source')) as fin:
             path = fin.read()

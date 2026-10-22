@@ -82,13 +82,20 @@ Appears in help messages, and the compiler wrappers run this path.
 **Do not** change it once it is set.
 """
 
-SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__',
-                                                                os.path.join(os.path.expanduser('~'),
-                                                                             '.local', 'taucmdr', 'system'))))
-"""str: System-level TAU Commander files.
+def _system_prefix():  # type: () -> str | None
+    values = {var: os.environ.get(var) for var in ('TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__')}
+    paths = {var: os.path.realpath(os.path.abspath(value)) for var, value in values.items() if value}
+    if len(set(paths.values())) > 1:
+        sys.stderr.write(f"TAUCMDR_SYSTEM_PREFIX ('{values['TAUCMDR_SYSTEM_PREFIX']}') and __TAUCMDR_SYSTEM_PREFIX__ "
+                         f"('{values['__TAUCMDR_SYSTEM_PREFIX__']}') point to different directories. Set only one.\n")
+        sys.exit(EXIT_FAILURE)
+    return next(iter(paths.values()), None)
 
-System-level files default to ``~/.local/taucmdr/system``. The environment variable
-``__TAUCMDR_SYSTEM_PREFIX__`` replaces the default.
+SYSTEM_PREFIX = _system_prefix()
+"""str: System-level TAU Commander files, or None if there is no system level.
+
+The system level is set by the environment variable ``TAUCMDR_SYSTEM_PREFIX``, or by its older name
+``__TAUCMDR_SYSTEM_PREFIX__``. It is unset or empty for no system level.
 """
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__',
