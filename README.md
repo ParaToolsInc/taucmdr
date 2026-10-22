@@ -41,6 +41,7 @@ Install TAU Commander from a checkout with [uv](https://docs.astral.sh/uv/) or [
   - or `pipx install /path/to/taucmdr`
 
 TAU and its dependencies are built on demand.
+For shared and offline installs, see [Installing TAU Commander](http://paratoolsinc.github.io/taucmdr/install.html).
 
 Initialize a new TAU project:
 

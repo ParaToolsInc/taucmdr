@@ -50,6 +50,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
 
+   install
    design
    style
    documentation

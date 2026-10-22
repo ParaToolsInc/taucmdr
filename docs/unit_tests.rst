@@ -29,8 +29,9 @@ Options:
 * ``-U`` points user storage at a temporary directory.
 * ``-S`` points system storage at a temporary directory, so TAU and its dependencies are built from scratch.
 
-Test runs keep system storage in the checkout's ``system/`` directory, unless ``__TAUCMDR_SYSTEM_PREFIX__``
-is set.
+Test runs keep system storage in the checkout's ``system/`` directory, unless ``TAUCMDR_SYSTEM_PREFIX``
+(or its older name, ``__TAUCMDR_SYSTEM_PREFIX__``) is set.  The test runner creates the directory if it
+doesn't exist, so the tests always have a system level.
 
 Writing new unit tests
 ----------------------
