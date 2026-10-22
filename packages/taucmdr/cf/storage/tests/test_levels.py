@@ -31,8 +31,6 @@ Functions used for unit tests of levels.py.
 
 import os
 import stat
-import subprocess
-import sys
 import tempfile
 from taucmdr import tests
 
@@ -81,17 +79,16 @@ class LevelsTest(tests.TestCase):
         return root, user, project
 
     def _python(self, code, backend, user, system=None):
-        proc = subprocess.run([sys.executable, '-I', '-c', code], capture_output=True, text=True,
-                              env=tests.tau_subprocess_env(backend, user, system), check=False)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        proc = tests.run_python_subprocess(['-c', code], env=tests.storage_env(backend, user, system))
+        self.assertSucceeded(proc)
         return proc.stdout.splitlines()
 
     def _tau(self, args, backend, cwd, user, system=None, *, expect_success=True):
         proc = tests.run_tau_subprocess(args, backend, cwd, user, system)
-        for text in 'Traceback', 'Exception ignored':
-            self.assertNotIn(text, proc.stderr)
         if expect_success:
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertSucceeded(proc)
+        else:
+            self.assertCleanExit(proc)
         return proc
 
     def test_no_system_level(self):

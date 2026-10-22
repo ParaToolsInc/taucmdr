@@ -125,8 +125,32 @@ def cleanup():
 atexit.register(cleanup)
 
 
-def tau_subprocess_env(backend, user_prefix, system_prefix=None):
-    """Return an environment for running TAU Commander in a new process with the given storage.
+def run_python_subprocess(args, env=None, cwd=None, isolated=True):
+    """Run this Python interpreter in a new process.
+
+    Args:
+        args (list): Arguments to the interpreter.
+        env (dict): Changes to the environment.  A value of None unsets the variable.
+        cwd (str): Working directory of the new process.
+        isolated (bool): If True, run in isolated mode (``-I``), as the ``tau`` launcher does.  Otherwise
+                         ``PYTHONPATH`` is set to this interpreter's ``sys.path``, so the new process imports
+                         the same :py:mod:`taucmdr`.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    child_env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
+    for key, value in (env or {}).items():
+        if value is None:
+            child_env.pop(key, None)
+        else:
+            child_env[key] = value
+    cmd = [sys.executable, '-I', *args] if isolated else [sys.executable, *args]
+    return subprocess.run(cmd, env=child_env, cwd=cwd, capture_output=True, text=True, check=False)
+
+
+def storage_env(backend, user_prefix, system_prefix=None):
+    """Return environment changes that give a new TAU Commander process the given storage.
 
     Args:
         backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to leave it unset.
@@ -134,19 +158,16 @@ def tau_subprocess_env(backend, user_prefix, system_prefix=None):
         system_prefix (str): System-level storage prefix, or None for no system level.
 
     Returns:
-        dict: The environment.
+        dict: Changes for :any:`run_python_subprocess`'s `env`.
     """
-    env = dict(os.environ, __TAUCMDR_USER_PREFIX__=user_prefix, HOME=user_prefix)
-    for var in 'TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__', '__TAUCMDR_DB_BACKEND__':
-        env.pop(var, None)
-    if system_prefix is not None:
-        env['TAUCMDR_SYSTEM_PREFIX'] = env['__TAUCMDR_SYSTEM_PREFIX__'] = system_prefix
-    if backend is not None:
-        env['__TAUCMDR_DB_BACKEND__'] = backend
-    return env
+    return {'__TAUCMDR_USER_PREFIX__': user_prefix,
+            'HOME': user_prefix,
+            'TAUCMDR_SYSTEM_PREFIX': system_prefix,
+            '__TAUCMDR_SYSTEM_PREFIX__': system_prefix,
+            '__TAUCMDR_DB_BACKEND__': backend}
 
 
-def run_tau_subprocess(args, backend, cwd, user_prefix, system_prefix=None):
+def run_tau_subprocess(args, backend, cwd, user_prefix, system_prefix=None, env=None):
     """Run ``tau`` in a new process with the given storage.
 
     Args:
@@ -155,12 +176,13 @@ def run_tau_subprocess(args, backend, cwd, user_prefix, system_prefix=None):
         cwd (str): Working directory of the new process.
         user_prefix (str): User-level storage prefix.
         system_prefix (str): System-level storage prefix, or None for no system level.
+        env (dict): Further changes to the environment, as for :any:`run_python_subprocess`.
 
     Returns:
         subprocess.CompletedProcess: The finished process, with text output captured.
     """
-    return subprocess.run([sys.executable, '-I', '-m', 'taucmdr', *args], cwd=cwd, capture_output=True, text=True,
-                          env=tau_subprocess_env(backend, user_prefix, system_prefix), check=False)
+    return run_python_subprocess(['-m', 'taucmdr', *args], cwd=cwd,
+                                 env=dict(storage_env(backend, user_prefix, system_prefix), **(env or {})))
 
 
 def not_implemented(cls):
@@ -280,7 +302,8 @@ class TestCase(unittest.TestCase):
             tstart = time.time()
             thread.start()
             self._result_stream.write("\nInitializing TAU and dependencies:\n")
-            self._result_stream.write("    @SYSTEM='%s'\n" % (SYSTEM_STORAGE.prefix if SYSTEM_STORAGE is not None else '<none>'))
+            system_prefix = SYSTEM_STORAGE.prefix if SYSTEM_STORAGE is not None else '<none>'
+            self._result_stream.write("    @SYSTEM='%s'\n" % system_prefix)
             self._result_stream.write("    @USER='%s'\n" % USER_STORAGE.prefix)
             while thread.is_alive():
                 time.sleep(5)
@@ -353,6 +376,16 @@ class TestCase(unittest.TestCase):
             return path
         else :
             self.fail(f"No {role} compiler in target '{target_name}'")
+
+    def assertCleanExit(self, proc):
+        """Check that a process from :any:`run_python_subprocess` printed no Python traceback."""
+        for text in 'Traceback', 'Exception ignored':
+            self.assertNotIn(text, proc.stderr)
+
+    def assertSucceeded(self, proc):
+        """Check that a process from :any:`run_python_subprocess` exited with status 0 and no traceback."""
+        self.assertCleanExit(proc)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)

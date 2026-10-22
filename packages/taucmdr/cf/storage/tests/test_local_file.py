@@ -27,8 +27,6 @@
 """Unit tests for :py:mod:`taucmdr.cf.storage.local_file`."""
 
 import os
-import subprocess
-import sys
 import warnings
 import taucmdr
 from taucmdr import tests
@@ -45,9 +43,9 @@ class LocalFileTest(tests.TestCase):
                 "from taucmdr.cf.storage import local_file\n"
                 "print(local_file.tinydb.__name__)\n"
                 "print('tinydb' in sys.modules)\n")
-        env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
-        out = subprocess.check_output([sys.executable, '-c', code], env=env, text=True)
-        self.assertEqual(out.split()[-2:], ['taucmdr._vendor.tinydb', 'False'])
+        proc = tests.run_python_subprocess(['-c', code], isolated=False)
+        self.assertSucceeded(proc)
+        self.assertEqual(proc.stdout.split()[-2:], ['taucmdr._vendor.tinydb', 'False'])
 
     def test_vendored_code_compiles(self):
         """The vendored packages compile without warnings."""

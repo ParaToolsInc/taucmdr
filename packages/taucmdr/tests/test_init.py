@@ -31,7 +31,6 @@ Functions used for unit tests of taucmdr/__init__.py.
 
 import importlib.metadata
 import os
-import subprocess
 import sys
 import tempfile
 import textwrap
@@ -39,32 +38,11 @@ import taucmdr
 from taucmdr import tests
 
 
-def _run_python(args, env=None, cwd=None):
-    """Run the current interpreter with `args` in a new process.
-
-    Args:
-        args (list): Command line arguments for the interpreter.
-        env (dict): Changes to the environment.
-        cwd (str): Working directory of the new process.
-
-    Returns:
-        subprocess.CompletedProcess: The finished process, with text output captured.
-    """
-    child_env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
-    for key, value in (env or {}).items():
-        if value is None:
-            child_env.pop(key, None)
-        else:
-            child_env[key] = value
-    return subprocess.run([sys.executable] + args, env=child_env, cwd=cwd, capture_output=True, text=True,
-                          check=False)
-
-
 def _import_with_version(version):
     """Import taucmdr in a new interpreter whose ``sys.version_info`` reports `version` (MAJOR, MINOR)."""
     version_info = tuple(version) + (0, 'final', 0)
     code = f"import sys; sys.version_info = {version_info!r}; import taucmdr"
-    return _run_python(['-c', code])
+    return tests.run_python_subprocess(['-c', code], isolated=False)
 
 
 class PythonVersionTest(tests.TestCase):
@@ -116,7 +94,8 @@ class GlobalsTest(tests.TestCase):
         Both system prefix variables are unset unless `env` sets them.
         """
         env = dict({'TAUCMDR_SYSTEM_PREFIX': None, '__TAUCMDR_SYSTEM_PREFIX__': None}, **env)
-        proc = _run_python(['-c', 'import taucmdr; print(taucmdr.SYSTEM_PREFIX)'], env=env, cwd=cwd)
+        proc = tests.run_python_subprocess(['-c', 'import taucmdr; print(taucmdr.SYSTEM_PREFIX)'], env=env, cwd=cwd,
+                                           isolated=False)
         return proc.returncode, proc.stdout.strip(), proc.stderr
 
     def test_system_prefix_default(self):
@@ -160,7 +139,7 @@ class GlobalsTest(tests.TestCase):
         self.assertEqual(retval, 0, err)
         self.assertEqual(out, os.path.realpath(real))
 
-    def test_conflicting_system_prefixes(self):
+    def test_system_prefix_conflict(self):
         """Both variables set to different directories is an error."""
         first = tempfile.mkdtemp(dir=os.getcwd())
         second = tempfile.mkdtemp(dir=os.getcwd())
@@ -188,6 +167,6 @@ class GlobalsTest(tests.TestCase):
             pass
         for args in (['-c', 'import taucmdr; print(taucmdr.TAUCMDR_SCRIPT)'], ['-m', 'probe.main']):
             with self.subTest(args=args):
-                proc = _run_python(args, env={'__TAUCMDR_SCRIPT__': None}, cwd=cwd)
+                proc = tests.run_python_subprocess(args, env={'__TAUCMDR_SCRIPT__': None}, cwd=cwd, isolated=False)
                 self.assertEqual(proc.returncode, 0, proc.stderr)
                 self.assertEqual(proc.stdout.strip(), 'tau')

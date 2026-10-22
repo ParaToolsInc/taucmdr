@@ -38,7 +38,6 @@ _FIXTURES = os.path.join(tests.REPO_DIR, '.testfiles', 'storage', 'v1.6.0')
 
 _BACKENDS = ('tinydb', 'sqlite')
 
-_run_tau = tests.run_tau_subprocess
 
 
 class OldDatabaseTest(tests.TestCase):
@@ -58,30 +57,27 @@ class OldDatabaseTest(tests.TestCase):
                     check(backend_var, os.path.join(root, 'project'), os.path.join(root, 'user'),
                           os.path.join(root, 'system'))
 
-    def _assert_success(self, proc):
-        self.assertEqual(proc.returncode, 0, msg=proc.stdout + proc.stderr)
-
     def test_project_from_v160(self):
         def check(backend_var, project, user, system):
-            proc = _run_tau(['dashboard'], backend_var, project, user, system)
-            self._assert_success(proc)
+            proc = tests.run_tau_subprocess(['dashboard'], backend_var, project, user, system)
+            self.assertSucceeded(proc)
             for name in 'oldproj', 'oldtarg', 'oldapp', 'oldmeas':
                 self.assertIn(name, proc.stdout)
-            self._assert_success(_run_tau(['experiment', 'list'], backend_var, project, user, system))
+            self.assertSucceeded(tests.run_tau_subprocess(['experiment', 'list'], backend_var, project, user, system))
         self._check_each_fixture(check)
 
     def test_user_records_from_v160(self):
         def check(backend_var, project, user, system):
-            proc = _run_tau(['target', 'list', '-s', '-@', 'user'], backend_var, project, user, system)
-            self._assert_success(proc)
+            proc = tests.run_tau_subprocess(['target', 'list', '-s', '-@', 'user'], backend_var, project, user, system)
+            self.assertSucceeded(proc)
             self.assertIn('usertarg', proc.stdout)
         self._check_each_fixture(check)
 
     def test_project_from_v160_writable(self):
         def check(backend_var, project, user, system):
-            self._assert_success(_run_tau(['measurement', 'copy', 'oldmeas', 'newmeas'],
-                                          backend_var, project, user, system))
-            proc = _run_tau(['measurement', 'list', '-s'], backend_var, project, user, system)
-            self._assert_success(proc)
+            args = ['measurement', 'copy', 'oldmeas', 'newmeas']
+            self.assertSucceeded(tests.run_tau_subprocess(args, backend_var, project, user, system))
+            proc = tests.run_tau_subprocess(['measurement', 'list', '-s'], backend_var, project, user, system)
+            self.assertSucceeded(proc)
             self.assertIn('newmeas', proc.stdout)
         self._check_each_fixture(check)
