@@ -14,7 +14,6 @@ env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
   __TAUCMDR_SYSTEM_PREFIX__: "system"
   CI: "ON"
-  INSTALLDIR: "taucmdr"
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"
   TZ: "UTC"
@@ -35,13 +34,27 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 9999
+          fetch-depth: 0
 
       - name: Install system packages
         run: |
           # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
           sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev cmake
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Install Python
+        run: uv python install 3.15
+
+      - name: Install an older Python
+        run: |
+          # For the test that profiles an application under a Python older than the one running the tests.
+          uv python install 3.11
+          mkdir -p "${HOME}/.local/bin"
+          ln -sf "$(uv python find 3.11)" "${HOME}/.local/bin/python3.11"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
 
       - name: System info
         id: info
@@ -54,15 +67,10 @@ jobs:
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref:        ${{ github.ref }}"
           echo "matrix.os:         ${{ matrix.os }}"
-          echo "Pythons found:"
-          type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "install_dir=${INSTALLDIR}" >> "${GITHUB_OUTPUT}"
-          echo "INSTALLDIR=${INSTALLDIR}" >> "${GITHUB_ENV}"
+          echo "Pythons installed by uv:"
+          uv python list --only-installed
           echo "home_dir=${HOME}" >> "${GITHUB_OUTPUT}"
-          echo "taucmdr_system=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
-          echo "__TAUCMDR_SYSTEM_PREFIX__=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_ENV}"
+          echo "taucmdr_system=${GITHUB_WORKSPACE}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
           echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
           echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
@@ -71,17 +79,14 @@ jobs:
 
       - name: Install TAU Commander
         run: |
-          make INSTALLDIR="${INSTALLDIR}" install
-          echo "${INSTALLDIR}/conda/bin" >> "${GITHUB_PATH}"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-          which python
-          which pip
-          python -m pip install -U pip
-          python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
-          cd "${HOME}"
-          zip -vr taucmdr-nightly.zip "${INSTALLDIR##*/}" -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
-          type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
+          uv tool install --python 3.15 .
+          echo "$(uv tool dir --bin)" >> "${GITHUB_PATH}"
+          "$(uv tool dir --bin)/tau" --version
+
+      - name: Install minimal TAU
+        run: |
+          # scripts/system_configure isn't installed with the package, so run it with the installed Python.
+          "$(uv tool dir)/taucmdr/bin/python" scripts/system_configure --tau-config=minimal
 
       - name: Upload TAU Commander install log
         if: always()
@@ -90,17 +95,10 @@ jobs:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
-      - name: Upload TAU Commander minimal install
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}/taucmdr-nightly.zip
-
       - name: Install Full TAU
         run: |
           rm ~/.local/taucmdr/debug_log || true
-          TAU=full ${{ steps.info.outputs.taucmdr_system }}/configure
+          "$(uv tool dir)/taucmdr/bin/python" scripts/system_configure --tau-config=full
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
@@ -114,8 +112,7 @@ jobs:
           rm ~/.local/taucmdr/debug_log || true
           export __TAUCMDR_DB_BACKEND__=tinydb
           rm -f ./coverage.xml || true
-          PYTHONPATH="${PWD}/packages" coverage run scripts/run_tests.py
-          coverage xml
+          uvx --with tox-uv tox -e py315 -- -v
 
       - name: Upload test results to Codecov (TinyDB)
         if: always() && env.ACT != 'true'
@@ -130,8 +127,7 @@ jobs:
       - name: Test TAU Commander with SQLite backend
         run: |
           export __TAUCMDR_DB_BACKEND__=sqlite
-          PYTHONPATH="${PWD}/packages" coverage run scripts/run_tests.py
-          coverage xml
+          uvx --with tox-uv tox -e py315 -- -v
 
       - name: Upload test results to Codecov (SQLite)
         if: always() && env.ACT != 'true'
