@@ -28,8 +28,8 @@ The TAU Commander developer documentation is hosted on the project's
 deploys it on every push to ``master`` or ``unstable``.
 You'll see the new documentation at https://paratoolsinc.github.io/taucmdr.
 
-To build the docs locally, run these commands from the
-repository root with ``requirements-dev.txt`` installed::
+To build the docs locally, run these commands from the repository root, in an environment with
+TAU Commander and ``requirements-dev.txt`` installed.  Sphinx needs Python 3.12 or newer::
 
   $ python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr packages/taucmdr/_vendor
   $ python -m sphinx -b html -d build/sphinx/doctrees docs build/sphinx/html

@@ -7,19 +7,30 @@ expected with unit testing.
 Running unit tests
 ------------------
 
-Run every unit test from the repository root::
+Run every unit test from the repository root with tox::
 
-   PYTHONPATH=packages python scripts/run_tests.py
+   tox -e py315
 
-Run one package, module, class or method by its dotted name::
+The argument can be replace with ``py311`` to ``py314`` test the other supported Python versions. 
+When run, tox will build a wheel, install it into ``.tox/py315`` and run ``scripts/run_tests.py`` there.
+Arguments after ``--`` will be passed through to ``scripts/run_tests.py``.  Without them, tox passes ``-U``.
 
-   PYTHONPATH=packages python scripts/run_tests.py taucmdr.cli.commands.tests.test_initialize
+For quicker runs, a previously built environment can be used::
 
-Other options:
+   .tox/py315/bin/python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
+
+The ``TEST`` list is the dotted name of a package, module, class or method; for example, 
+``taucmdr.cli.commands.tests.test_initialize``. Giving a package name will runs every test module under it.
+
+Options:
 
 * ``-v`` prints each test's name as it runs.
 * ``--list`` prints the selected test IDs without running them.
-* ``-U`` and ``-S`` point user and system storage at temporary directories.
+* ``-U`` points user storage at a temporary directory.
+* ``-S`` points system storage at a temporary directory, so TAU and its dependencies are built from scratch.
+
+Test runs keep system storage in the checkout's ``system/`` directory, unless ``__TAUCMDR_SYSTEM_PREFIX__``
+is set.
 
 Writing new unit tests
 ----------------------
