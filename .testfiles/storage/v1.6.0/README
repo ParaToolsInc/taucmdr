@@ -1,0 +1,2 @@
+Project and user databases written by TAU Commander v1.6.0 (Python 3.7), one for tinydb and one for sqlite
+Used to test backwards compatibility of future versions with older projects.

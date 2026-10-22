@@ -32,7 +32,7 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "http://www.taucommander.com/"
+Homepage = "https://taucommander.paratools.com"
 Source = "https://github.com/ParaToolsInc/taucmdr"
 
 [tool.setuptools]
