@@ -50,7 +50,9 @@ def _module_names():
 def _import_alone(name):
     """Import one module in a new interpreter, treating deprecation warnings as errors."""
     env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
-    proc = subprocess.run([sys.executable, '-W', 'error::DeprecationWarning', '-c', f'import {name}'], env=env,
+    # By name, because a module can be named after a keyword, e.g. the `tau system import` command.
+    code = f'import importlib; importlib.import_module({name!r})'
+    proc = subprocess.run([sys.executable, '-W', 'error::DeprecationWarning', '-c', code], env=env,
                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
     return name, proc.returncode, proc.stdout
 

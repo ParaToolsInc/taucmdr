@@ -42,6 +42,7 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 
+import contextlib
 import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.error import ConfigurationError
@@ -96,3 +97,36 @@ def highest_writable_storage():
         else:
             raise StorageError("No writable storage levels") from err
         return highest_writable_storage.value
+
+
+def search_levels():
+    """Return the storage levels to search for installed software packages and their source archives.
+
+    This is :data:`ORDERED_LEVELS`, or only the level given to :any:`build_level` while that is active.
+    """
+    return getattr(search_levels, 'only', ORDERED_LEVELS)
+
+
+@contextlib.contextmanager
+def build_level(storage):
+    """Find, download and install software packages only in `storage` while the context is active.
+
+    Packages already installed at other levels are ignored, so everything the context builds ends up in `storage`.
+
+    Args:
+        storage: The storage level, e.g. :any:`SYSTEM_STORAGE`.
+    """
+    missing = object()
+    old_writable = getattr(highest_writable_storage, 'value', missing)
+    old_only = getattr(search_levels, 'only', missing)
+    highest_writable_storage.value = storage
+    search_levels.only = (storage,)
+    try:
+        yield storage
+    finally:
+        for func, attr, old in ((highest_writable_storage, 'value', old_writable),
+                                (search_levels, 'only', old_only)):
+            if old is missing:
+                delattr(func, attr)
+            else:
+                setattr(func, attr, old)

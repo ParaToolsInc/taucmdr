@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator
 from taucmdr.cf.storage import StorageError
-from taucmdr.cf.storage.levels import ORDERED_LEVELS
-from taucmdr.cf.storage.levels import highest_writable_storage
+from taucmdr.cf.storage.levels import highest_writable_storage, search_levels
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
@@ -195,7 +194,7 @@ class Installation:
             else:
                 tag = self._get_install_tag()
                 # Search the storage hierarchy for an existing installation
-                for storage in reversed(ORDERED_LEVELS):
+                for storage in reversed(search_levels()):
                     try:
                         self._set_install_prefix(str(os.path.join(storage.prefix, self.name, tag)))
                         self.verify()
@@ -267,7 +266,7 @@ class Installation:
     def _acquire_source(self, reuse_archive):
         archive_file = os.path.basename(self.src)
         if reuse_archive:
-            for storage in ORDERED_LEVELS:
+            for storage in search_levels():
                 try:
                     archive = os.path.join(storage.prefix, "src", archive_file)
                 except StorageError:

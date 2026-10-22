@@ -29,6 +29,7 @@
 Functions used for unit tests of tau_installation.py.
 """
 
+import datetime
 import glob
 import os
 import subprocess
@@ -36,7 +37,7 @@ import sys
 import tempfile
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.software.tau_installation import TauInstallation, python_build_paths
+from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names, python_build_paths
 
 
 class TauInstallationTest(tests.TestCase):
@@ -108,6 +109,45 @@ def _has_headers(python_path):
     check = 'import os, sysconfig; print(os.path.exists(os.path.join(sysconfig.get_path("include"), "Python.h")))'
     proc = subprocess.run([python_path, '-c', check], stdout=subprocess.PIPE, text=True, check=False)
     return proc.stdout.strip() == 'True'
+
+
+class CompleteNightlyNamesTest(tests.TestCase):
+    """Tests for :any:`complete_nightly_names`."""
+
+    @staticmethod
+    def _src(**files):
+        src = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        for name, data in files.items():
+            with open(os.path.join(src, name), 'w', encoding='utf-8') as fout:
+                fout.write(data)
+        return src
+
+    @staticmethod
+    def _contents(src):
+        result = {}
+        for name in sorted(os.listdir(src)):
+            with open(os.path.join(src, name), encoding='utf-8') as fin:
+                result[name] = fin.read()
+        return result
+
+    def test_complete_nightly_names(self):
+        today = datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')
+        src = self._src(**{'tau-nightly.tgz': 'new'})
+        self.assertEqual(complete_nightly_names(src), [today])
+        self.assertEqual(self._contents(src), {'tau-nightly.tgz': 'new', today: 'new'})
+
+        src = self._src(**{'tau-nightly-2026-01-02.tgz': 'older', 'tau-nightly-2026-03-04.tgz': 'newer'})
+        self.assertEqual(complete_nightly_names(src), ['tau-nightly.tgz'])
+        self.assertEqual(self._contents(src)['tau-nightly.tgz'], 'newer')
+
+        files = {'tau-nightly.tgz': 'a', 'tau-nightly-2026-01-02.tgz': 'a'}
+        src = self._src(**files)
+        self.assertEqual(complete_nightly_names(src), [])
+        self.assertEqual(self._contents(src), files)
+
+        src = self._src()
+        self.assertEqual(complete_nightly_names(src), [])
+        self.assertEqual(complete_nightly_names(os.path.join(src, 'missing')), [])
 
 
 class PythonBuildPathsTest(tests.TestCase):

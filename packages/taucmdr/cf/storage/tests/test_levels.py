@@ -29,8 +29,11 @@
 Functions used for unit tests of levels.py.
 """
 
+import json
 import os
+import shutil
 import stat
+import tarfile
 import tempfile
 from taucmdr import tests
 
@@ -44,6 +47,49 @@ print(levels.SYSTEM_STORAGE is None)
 print(levels.highest_writable_storage().name)
 '''
 
+
+# Prints, as JSON, where a package would be found or installed, where its source archive comes from,
+# and which level is the highest writable one, outside and inside build_level(SYSTEM_STORAGE).
+_BUILD_LEVEL = '''
+import json, os
+from taucmdr.cf.compiler import InstalledCompilerSet
+from taucmdr.cf.compiler.host import CC, CXX, GNU
+from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
+from taucmdr.cf.software.installation import Installation
+from taucmdr.cf.storage import levels
+from taucmdr.model.experiment import Experiment
+
+archive = os.path.join(os.path.dirname(os.environ['__TAUCMDR_USER_PREFIX__']), 'dist', 'fake.tgz')
+found = GNU.installation()
+compilers = InstalledCompilerSet('fake', Host_CC=found[CC], Host_CXX=found[CXX])
+
+def state():
+    inst = Installation('fake', 'Fake', {'fake': 'download'}, HOST_ARCH, HOST_OS, compilers,
+                        {None: [archive]}, None, {None: ['libfake.a']}, None)
+    return {'install': inst.install_prefix, 'source': inst.acquire_source(),
+            'writable': levels.highest_writable_storage().prefix}
+
+class FakeExperiment:
+    def _configure(self):
+        return None
+
+result = {'uid': Installation('fake', 'Fake', {'fake': 'download'}, HOST_ARCH, HOST_OS, compilers,
+                              {None: [archive]}, None, None, None).uid}
+if os.environ.get('FAKE_SEEDED'):
+    result['before'] = state()
+    levels.SYSTEM_STORAGE.connect_filesystem()
+    with levels.build_level(levels.SYSTEM_STORAGE):
+        result['inside'] = state()
+        Experiment.configure(FakeExperiment())
+    result['after'] = state()
+    try:
+        with levels.build_level(levels.SYSTEM_STORAGE):
+            raise RuntimeError
+    except RuntimeError:
+        pass
+    result['after_error'] = [levels.highest_writable_storage().name, [lvl.name for lvl in levels.search_levels()]]
+print(json.dumps(result))
+'''
 
 class LevelsTest(tests.TestCase):
     """Tests for the storage levels with and without a system level."""
@@ -78,8 +124,9 @@ class LevelsTest(tests.TestCase):
         os.mkdir(project)
         return root, user, project
 
-    def _python(self, code, backend, user, system=None):
-        proc = tests.run_python_subprocess(['-c', code], env=tests.storage_env(backend, user, system))
+    def _python(self, code, backend, user, system=None, env=None):
+        env = dict(tests.storage_env(backend, user, system), **(env or {}))
+        proc = tests.run_python_subprocess(['-c', code], env=env)
         self.assertSucceeded(proc)
         return proc.stdout.splitlines()
 
@@ -145,6 +192,50 @@ class LevelsTest(tests.TestCase):
                 _, user, _ = self._dirs()
                 code = 'from taucmdr.model.target import tau_source_default; print(tau_source_default())'
                 self.assertEqual(self._python(code, backend, user), ['download'])
+
+    def _build_level_result(self, backend, user, system, install_in_user):
+        """Run :data:`_BUILD_LEVEL` with a source archive in the user level, and optionally an installation there.
+
+        Returns:
+            tuple: The package UID and the parsed result.
+        """
+        dist = os.path.join(os.path.dirname(user), 'dist')
+        os.makedirs(os.path.join(dist, 'fake-1.0'))
+        with tarfile.open(os.path.join(dist, 'fake.tgz'), 'w:gz') as archive:
+            archive.add(os.path.join(dist, 'fake-1.0'), arcname='fake-1.0')
+        os.makedirs(os.path.join(user, 'src'))
+        shutil.copy(os.path.join(dist, 'fake.tgz'), os.path.join(user, 'src'))
+        uid = json.loads(self._python(_BUILD_LEVEL, backend, user, system)[-1])['uid']
+        if install_in_user:
+            lib = os.path.join(user, 'fake', uid, 'lib')
+            os.makedirs(lib)
+            with open(os.path.join(lib, 'libfake.a'), 'w', encoding='utf-8'):
+                pass
+        return uid, json.loads(self._python(_BUILD_LEVEL, backend, user, system, {'FAKE_SEEDED': '1'})[-1])
+
+    def test_build_level_only(self):
+        """Inside build_level, packages are found, downloaded and installed only in the chosen level."""
+        for backend in _BACKENDS:
+            with self.subTest(backend=backend):
+                root, user, _ = self._dirs()
+                system = os.path.join(root, 'sys')
+                uid, result = self._build_level_result(backend, user, system, install_in_user=True)
+                in_user = {'install': os.path.join(user, 'fake', uid),
+                           'source': os.path.join(user, 'src', 'fake.tgz'),
+                           'writable': user}
+                self.assertEqual(result['before'], in_user)
+                self.assertEqual(result['inside'], {'install': os.path.join(system, 'fake', uid),
+                                                    'source': os.path.join(system, 'src', 'fake.tgz'),
+                                                    'writable': system})
+                self.assertEqual(result['after'], in_user)
+                self.assertTrue(os.path.exists(os.path.join(system, '.lock')))
+                self.assertFalse(os.path.exists(os.path.join(user, '.lock')))
+
+    def test_build_level_error(self):
+        """Leaving build_level because of an exception restores the levels."""
+        root, user, _ = self._dirs()
+        _, result = self._build_level_result(None, user, os.path.join(root, 'sys'), install_in_user=False)
+        self.assertEqual(result['after_error'], ['user', ['project', 'user', 'system']])
 
     def test_import_computes_no_level(self):
         """Importing the experiment model doesn't look for a writable storage level."""

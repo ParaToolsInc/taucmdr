@@ -55,6 +55,7 @@ local.properties
 registry
 installed
 system
+!/packages/taucmdr/cli/commands/system/
 .tau
 !/.testfiles/storage/*/*/project/.tau/
 

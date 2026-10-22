@@ -196,6 +196,32 @@ def python_build_paths(python_path):
     raise ConfigurationError(f"Unable to find libpython in {stdlib} for {python_path}")
 
 
+def complete_nightly_names(src_dir):
+    """Ensure `src_dir` contains the TAU nightly archive under both of the names TAU Commander can look for.
+
+    Args:
+        src_dir (str): A storage level's source archive directory.
+
+    Returns:
+        list: Names of the files created.
+    """
+
+    # A TAU nightly build looks for ``tau-nightly.tgz`` and then for a dated copy, ``tau-nightly-<YYYY-MM-DD>.tgz``,
+    # beside it.  Without the plain name it downloads a new nightly, while without a dated copy it renames the archive,
+    # which fails in a directory that isn't writable. Ensure both copies are present.
+    plain = os.path.join(src_dir, 'tau-nightly.tgz')
+    dated = sorted(glob.glob(os.path.join(src_dir, 'tau-nightly-*.tgz')))
+    if os.path.exists(plain) and not dated:
+        copy = os.path.join(src_dir, datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz'))
+        shutil.copy2(plain, copy)
+    elif dated and not os.path.exists(plain):
+        copy = plain
+        shutil.copy2(dated[-1], copy)
+    else:
+        return []
+    return [os.path.basename(copy)]
+
+
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
 

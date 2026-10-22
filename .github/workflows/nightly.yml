@@ -85,8 +85,7 @@ jobs:
 
       - name: Install minimal TAU
         run: |
-          # scripts/system_configure isn't installed with the package, so run it with the installed Python.
-          "$(uv tool dir)/taucmdr/bin/python" scripts/system_configure --tau-config=minimal
+          tau system configure --tau-config=minimal
 
       - name: Upload TAU Commander install log
         if: always()
@@ -98,7 +97,7 @@ jobs:
       - name: Install Full TAU
         run: |
           rm ~/.local/taucmdr/debug_log || true
-          "$(uv tool dir)/taucmdr/bin/python" scripts/system_configure --tau-config=full
+          tau system configure --tau-config=full
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
