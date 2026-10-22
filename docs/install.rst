@@ -4,7 +4,12 @@ Installing TAU Commander
 TAU Commander needs Python 3.11 or newer.  It installs into its own virtual environment with
 `uv <https://docs.astral.sh/uv/>`_ or `pipx <https://pipx.pypa.io/>`_.  Don't install it into a
 Python environment you use for other work: when TAU Commander profiles Python code, packages in that
-environment could conflict with its own. 
+environment could conflict with its own.
+
+TAU Commander builds TAU and the packages it uses from source, so it needs C, C++ and Fortran
+compilers, ``make``, ``cmake`` and ``m4``.  Installing from a checkout also needs ``git``.  On Ubuntu::
+
+   sudo apt install gcc g++ gfortran make cmake m4 git
 
 Most people want a :ref:`per-user-install`.  In a :ref:`shared-install`, a system administrator installs
 TAU Commander once and builds TAU for all users.  Either kind works without internet access after an
@@ -24,12 +29,14 @@ or, with pipx::
 
    pipx install /path/to/taucmdr
 
-Either one puts ``tau`` on your ``PATH``.  Then initialize a project in the directory with your code::
+Either one installs ``tau`` in ``~/.local/bin``.  If that directory isn't on your ``PATH``,
+``uv tool update-shell`` (or ``pipx ensurepath``) adds it.  Then initialize a project in the directory
+with your code::
 
    cd /path/to/your/code
    tau initialize
 
-It is not necessary to configure anything head of time.  The first time a project needs TAU or packages it depends upon,
+It is not necessary to configure anything ahead of time.  The first time a project needs TAU or packages it depends upon,
 TAU Commander downloads and builds them, and later projects reuse them.
 
 
@@ -63,7 +70,10 @@ Adapt these steps for your own system.
       export UV_PYTHON_INSTALL_DIR=/opt/taucmdr/python
       uv tool install --python 3.12 /path/to/taucmdr
 
-3. Write a module file.  For Lmod, ``taucmdr.lua``:
+   uv warns that ``/opt/taucmdr/bin`` isn't on your ``PATH``; the module file created in the next step adds it.
+
+3. Write a module file in a directory of module files, here ``/opt/taucmdr/modulefiles``.  For Lmod,
+   ``taucmdr.lua``:
 
    .. code-block:: lua
 
@@ -80,6 +90,7 @@ Adapt these steps for your own system.
 
 4. Build the TAU configurations with the module loaded::
 
+      module use /opt/taucmdr/modulefiles
       module load taucmdr
       tau system configure --tau-config=minimal
 
@@ -88,11 +99,11 @@ Adapt these steps for your own system.
    allow, and takes much longer to complete.  The other
    ``tau initialize`` options choose the compilers and packages, e.g. ``--mpi-wrappers``.
 
-5. Make the installation read-only for everyone else::
+5. As root, make the installation read-only for everyone else::
 
       chmod -R a+rX,o-w /opt/taucmdr
 
-Users then run ``module load taucmdr`` and ``tau initialize`` as usual.
+Users then load the module and run ``tau initialize`` as usual.
 
 To use an existing TAU installation by default instead of the ones TAU Commander builds, give its
 path::
@@ -146,8 +157,9 @@ On the computer without internet access:
 
       tau system import bundle
 
-   For a per-user install, set ``TAUCMDR_SYSTEM_PREFIX`` to a directory of your own (for example in
-   ``~/.bashrc``) and import the archives there::
+   For a per-user install, set ``TAUCMDR_SYSTEM_PREFIX`` to a directory of your own and import the
+   archives there.  Set it in a startup file read by every shell so that
+   scripts and batch jobs get it too::
 
       export TAUCMDR_SYSTEM_PREFIX=$HOME/taucmdr-system
       tau system import bundle
