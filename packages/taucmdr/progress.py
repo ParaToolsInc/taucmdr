@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -267,11 +267,9 @@ class ProgressIndicator:
             width = (self._line_remaining//4) if show_bar else (self._line_remaining-2)
             self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
             self._line_append("]")
-        if show_bar and self._line_remaining > 20:
-            self._line_append(" ")
+        if show_bar:
             completed = float(self.count*self.block_size)
             percent = max(min(completed / self.total_size, 1.0), 0.0)
-            self._line_append("[%0.1f%% " % (100*percent))
             if completed == 0:
                 eta = '(unknown)'
             else:
@@ -279,9 +277,13 @@ class ProgressIndicator:
                 etadate = datetime.now() + timedelta(seconds=time_remaining)
                 eta = '%s-%s-%s %02d:%02d' % (
                     etadate.year, etadate.month, etadate.day, etadate.hour, etadate.minute)
-            width = self._line_remaining - 4 - len(eta)
-            self._draw_bar(percent, width, '>', 'green', 'on_green')
-            self._line_append("] %s" % eta)
+            head = " [%0.1f%% " % (100*percent)
+            tail = "] %s" % eta
+            width = self._line_remaining - len(head) - len(tail)
+            if width > 0:
+                self._line_append(head)
+                self._draw_bar(percent, width, '>', 'green', 'on_green')
+                self._line_append(tail)
         self._line_flush()
 
 

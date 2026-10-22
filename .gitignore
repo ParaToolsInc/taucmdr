@@ -87,6 +87,8 @@ benchmarks
 
 # Python coverage data
 .coverage
+.coverage.*
+coverage.xml
 
 # Python packaging files
 # general things to ignore

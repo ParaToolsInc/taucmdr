@@ -11,7 +11,7 @@ Run every unit test from the repository root with tox::
 
    tox -e py315
 
-The argument can be replace with ``py311`` to ``py314`` test the other supported Python versions. 
+The argument can be replaced with ``py311`` to ``py314`` to test the other supported Python versions.
 When run, tox will build a wheel, install it into ``.tox/py315`` and run ``scripts/run_tests.py`` there.
 Arguments after ``--`` will be passed through to ``scripts/run_tests.py``.  Without them, tox passes ``-U``.
 
@@ -19,8 +19,8 @@ For quicker runs, a previously built environment can be used::
 
    .tox/py315/bin/python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
 
-The ``TEST`` list is the dotted name of a package, module, class or method; for example, 
-``taucmdr.cli.commands.tests.test_initialize``. Giving a package name will runs every test module under it.
+The ``TEST`` list is the dotted name of a package, module, class or method; for example,
+``taucmdr.cli.commands.tests.test_initialize``. Giving a package name will run every test module under it.
 
 Options:
 

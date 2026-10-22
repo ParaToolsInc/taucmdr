@@ -43,3 +43,13 @@ where = ["packages"]
 include = ["taucmdr*"]
 
 [tool.setuptools_scm]
+
+# uv reuses its cached build of a local directory until a cache key changes
+[tool.uv]
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "README.md" },
+    { file = "scripts/tau" },
+    { file = "packages/**/*.py" },
+    { git = { commit = true, tags = true } },
+]
