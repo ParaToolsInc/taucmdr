@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ class ExperimentEditCommand(EditCommand):
             if attr in data:
                 record = model.controller(proj_ctrl.storage).one({'name': data[attr]})
                 if record is None:
-                    self.parser.error("Invalid {}: {}".format(attr, data[attr]))
+                    self.parser.error(f"Invalid {attr}: {data[attr]}")
                 data[attr] = record.eid
 
         key_attr = self.model.key_attribute

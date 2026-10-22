@@ -61,8 +61,7 @@ _DEFAULT_STORAGE_LEVEL = ORDERED_LEVELS[0].name
 
 _POSITIONAL_TITLE = 'positional arguments'
 
-_OPTIONAL_TITLES = ('options', 'optional arguments')
-"""Title for group of argparse optional arguments: 'optional arguments' for Python <= 3.9; 'options' for >= 3.10."""
+_OPTIONAL_TITLE = 'options'
 
 
 
@@ -120,9 +119,7 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
         formatter.add_text(self.description)
         for action_group in self._sorted_groups():
-            # Ensure consistent title for optional arguments across Python versions
-            group_title = _OPTIONAL_TITLES[0] if action_group.title in _OPTIONAL_TITLES else action_group.title
-            title = ' '.join(x[0].upper() + x[1:] for x in group_title.split())
+            title = ' '.join(x[0].upper() + x[1:] for x in action_group.title.split())
             formatter.start_section(title)
             formatter.add_text(action_group.description)
             formatter.add_arguments(sorted(action_group._group_actions, key=attrgetter('option_strings')))
@@ -138,11 +135,11 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
                 yield group
                 break
         for group in groups:
-            if group.title in _OPTIONAL_TITLES:
+            if group.title == _OPTIONAL_TITLE:
                 yield group
                 break
         for group in groups:
-            if group.title != _POSITIONAL_TITLE and group.title not in _OPTIONAL_TITLES:
+            if group.title not in (_POSITIONAL_TITLE, _OPTIONAL_TITLE):
                 yield group
 
     def merge(self, parser, group_title=None, include_positional=False, include_optional=True, include_storage=False,

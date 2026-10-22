@@ -49,7 +49,8 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
-if sys.version_info < (3, 11):
+# Sliced so that pyupgrade --py311-plus doesn't delete the check as dead code.
+if sys.version_info[:2] < (3, 11):
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
     sys.stderr.write("""{}
 {}

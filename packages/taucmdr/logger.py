@@ -171,7 +171,7 @@ def _get_term_size_posix():
         except:     # pylint: disable=bare-except
             return None
         # pylint: disable=invalid-sequence-index
-        result = cast(Optional[Tuple[int, int]], dims)
+        result = cast(Optional[tuple[int, int]], dims)
         return result
     dims = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
     if not dims:

@@ -49,7 +49,7 @@ from taucmdr.model.project import Project
 from taucmdr import util
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _older_python():
     """Return the path of a Python 3 older than this one that has its C headers, or None."""
     check = ('import os, sysconfig; '

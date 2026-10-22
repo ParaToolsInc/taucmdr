@@ -80,7 +80,7 @@ language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
-today = datetime.datetime.now(datetime.timezone.utc).strftime("%b %d, %Y at %H:%M:%S UTC")
+today = datetime.datetime.now(datetime.UTC).strftime("%b %d, %Y at %H:%M:%S UTC")
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
 

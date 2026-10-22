@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -118,7 +118,7 @@ class TargetCreateCommand(CreateCommand):
                 if line.startswith('#'):
                     continue
                 try:
-                    key, val = [x.strip() for x in line.split('=', 1)]
+                    key, val = (x.strip() for x in line.split('=', 1))
                 except ValueError:
                     continue
                 if key == 'TAU_R':
