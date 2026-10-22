@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,16 @@ REPOS = {None: [
     'http://fs.paratools.com/tau-mirror/LLVM-openmp-8.0.tar.gz'
 ]}
 
+TR6_REPOS = [
+    'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz',
+    'http://fs.paratools.com/tau-mirror/LLVM-openmp-ompt-tr6.tar.gz'
+]
+
+TR4_REPOS = [
+    'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz',
+    'https://fs.paratools.com/tau-mirror/LLVM-openmp-0.2.tar.gz'
+]
+
 LIBRARIES = {None: ['libomp.so']}
 
 HEADERS = {None: ['omp.h', 'ompt.h']}
@@ -52,15 +62,9 @@ class OmptInstallation(CMakeInstallation):
 
     def __init__(self, sources, target_arch, target_os, compilers):
         if sources['ompt'] == 'download-tr6':
-            sources['ompt'] = [
-                'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz',
-                'http://fs.paratools.com/tau-mirror/LLVM-openmp-ompt-tr6.tar.gz'
-            ]
+            sources['ompt'] = list(TR6_REPOS)
         elif sources['ompt'] == 'download-tr4':
-            sources['ompt'] = [
-                'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz',
-                'https://fs.paratools.com/tau-mirror/LLVM-openmp-0.2.tar.gz'
-            ]
+            sources['ompt'] = list(TR4_REPOS)
         super().__init__('ompt', 'ompt', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 

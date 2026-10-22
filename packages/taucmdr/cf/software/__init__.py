@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,9 @@
 #
 """Software management common objects."""
 
+import importlib
+import os
+import pkgutil
 from taucmdr import util
 from taucmdr.error import ConfigurationError
 
@@ -43,3 +46,34 @@ def get_installation(name):
     cls_name = util.camelcase(module_name)
     pkg = __import__(__name__+'.'+module_name, globals(), locals(), [cls_name])
     return getattr(pkg, cls_name)
+
+
+def _repos_urls(repos):
+    """Yield every URL in a ``REPOS`` dictionary whose values are URL lists or dictionaries of them."""
+    for value in repos.values():
+        if isinstance(value, dict):
+            yield from _repos_urls(value)
+        else:
+            yield from value
+
+
+def all_sources():
+    """Return every source archive that a software package installation can download for every platform.
+
+    Returns:
+        dict: Archive file names mapped to lists of their URLs, in the order mirrors are tried.
+    """
+    # Imported here to avoid circular dependency, as the installation modules import this package.
+    from taucmdr.cf.software import ompt_installation, tau_installation  # pylint: disable=import-outside-toplevel
+    url_lists = [ompt_installation.TR6_REPOS, ompt_installation.TR4_REPOS, [tau_installation.NIGHTLY]]
+    for info in pkgutil.iter_modules(__path__):
+        if info.name.endswith('_installation'):
+            module = importlib.import_module(f'{__name__}.{info.name}')
+            url_lists.append(list(_repos_urls(getattr(module, 'REPOS', None) or {})))
+    sources = {}
+    for urls in url_lists:
+        for url in urls:
+            mirrors = sources.setdefault(os.path.basename(url), [])
+            if url not in mirrors:
+                mirrors.append(url)
+    return sources

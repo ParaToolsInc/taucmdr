@@ -33,7 +33,6 @@ import glob
 import os
 import shutil
 import tempfile
-import unittest
 import taucmdr
 from taucmdr import tests
 
@@ -82,7 +81,6 @@ class NoSystemLevelTest(tests.TestCase):
         self.assertIn('produced', self._tau(['trial', 'create', './a.out']).stdout)
         self.assertTrue(glob.glob(os.path.join(self.project, '.tau', '**', 'profile.*'), recursive=True))
 
-    @unittest.expectedFailure
     def test_system_commands_refused(self):
         """The commands that write to the system level say how to configure one."""
         empty = tempfile.mkdtemp(dir=tests.get_test_workdir())
