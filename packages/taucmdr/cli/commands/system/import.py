@@ -39,7 +39,7 @@ from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cf.software import all_sources
 from taucmdr.cf.software.tau_installation import complete_nightly_names
-from taucmdr.cf.storage.levels import require_system_storage
+from taucmdr.cf.storage.levels import writable_system_storage
 
 
 LOGGER = logger.get_logger(__name__)
@@ -58,6 +58,18 @@ def _same_file(path1, path2):
     return digests[0] == digests[1]
 
 
+def _copy_into_place(source, target):
+    # Installations read the archive under its own name, so a copy that fails partway must not leave one there.
+    part = target + '.part'
+    try:
+        shutil.copy2(source, part)
+        os.replace(part, target)
+    except BaseException:
+        if os.path.exists(part):
+            os.remove(part)
+        raise
+
+
 def import_sources(bundle, src_dir):
     """Copy the source archives in a directory into a storage level's source archive directory.
 
@@ -73,7 +85,7 @@ def import_sources(bundle, src_dir):
         list: Names of the files added to `src_dir`.
 
     Raises:
-        ConfigurationError: `bundle` isn't a directory, or an archive can't be read.  Nothing has been copied.
+        ConfigurationError: `bundle` isn't a directory or an archive can't be read.
     """
     if not os.path.isdir(bundle):
         raise ConfigurationError(f"'{bundle}' isn't a directory.")
@@ -87,25 +99,30 @@ def import_sources(bundle, src_dir):
             LOGGER.warning("Skipped '%s', which isn't a source package TAU Commander uses.", path)
             continue
         try:
-            util.archive_toplevel(path)
+            util.verify_archive(path)
         except OSError as err:
             raise ConfigurationError(f"'{path}' isn't a readable archive: {err}",
                                      "Copy it again, or download it again with `tau system fetch`.") from err
         archives.append(name)
-    util.mkdirp(src_dir)
     added = []
-    for name in archives:
-        source, target = os.path.join(bundle, name), os.path.join(src_dir, name)
-        if os.path.exists(target):
-            if _same_file(source, target):
-                LOGGER.info("'%s' is already in '%s'", name, src_dir)
-            else:
-                LOGGER.warning("Kept the existing '%s', which differs from '%s'.", target, source)
-            continue
-        shutil.copy2(source, target)
-        LOGGER.info("Imported '%s'", name)
-        added.append(name)
-    return added + complete_nightly_names(src_dir)
+    try:
+        util.mkdirp(src_dir)
+        for name in archives:
+            source, target = os.path.join(bundle, name), os.path.join(src_dir, name)
+            if os.path.exists(target):
+                if _same_file(source, target):
+                    LOGGER.info("'%s' is already in '%s'", name, src_dir)
+                else:
+                    LOGGER.warning("Kept the existing '%s', which differs from '%s'.", target, source)
+                continue
+            _copy_into_place(source, target)
+            LOGGER.info("Imported '%s'", name)
+            added.append(name)
+        added.extend(complete_nightly_names(src_dir))
+    except OSError as err:
+        raise ConfigurationError(f"Cannot copy source packages to '{src_dir}': {err}",
+                                 "Check that you have `write` access and enough free space.") from err
+    return added
 
 
 class ImportCommand(AbstractCommand):
@@ -120,8 +137,7 @@ class ImportCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
-        storage = require_system_storage()
-        storage.connect_filesystem()
+        storage = writable_system_storage()
         src_dir = os.path.join(storage.prefix, 'src')
         added = import_sources(os.path.abspath(args.directory), src_dir)
         self.logger.info("Added %d files to '%s'", len(added), src_dir)

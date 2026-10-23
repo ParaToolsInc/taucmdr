@@ -369,6 +369,26 @@ def archive_toplevel(archive):
     return str(topdir)
 
 
+def verify_archive(archive):
+    """Check that an archive can be read to its end.
+
+    Reading only an archive's first members doesn't catch an archive that was cut short, such as by an
+    interrupted copy, so this reads the whole file.
+
+    Args:
+        archive (str): Path to archive file.
+
+    Raises:
+        IOError: `archive` could not be read.
+    """
+    try:
+        with tarfile.open(archive) as fin:
+            for _ in fin:
+                pass
+    except _ARCHIVE_ERRORS as err:
+        raise OSError(f"Cannot read '{archive}': {err}") from err
+
+
 def is_clean_container(obj):
     """Recursively checks a container for bytes, bytearray and memory view objects in keys and values.
     Care must be taken to avoid infinite loops caused by cycles in a dictionary with cycles.

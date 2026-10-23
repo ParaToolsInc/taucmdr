@@ -74,6 +74,23 @@ class ConfigureTest(tests.TestCase):
             self.assertEqual(fin.read(), tau_dir)
         self.assertEqual(os.listdir(cwd), [])
 
+    @tests.skipIf(os.geteuid() == 0, "File permissions don't stop root from writing")
+    def test_readonly_prefix(self):
+        """Configuring a system prefix that isn't writable is an error, not a crash."""
+        root = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        cwd, user, tau_dir, system = (os.path.join(root, name) for name in ('cwd', 'user', 'tau', 'sys'))
+        for path in cwd, user, tau_dir, system:
+            os.mkdir(path)
+        os.chmod(system, 0o555)
+        try:
+            proc = tests.run_tau_subprocess(['system', 'configure', '--tau-config', tau_dir], None, cwd, user, system)
+        finally:
+            os.chmod(system, 0o755)
+        self.assertCleanExit(proc)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn('write', proc.stdout + proc.stderr)
+        self.assertFalse(os.path.exists(os.path.join(system, 'override_tau_source')))
+
     def test_minimal_from_empty_directory(self):
         cwd = tempfile.mkdtemp(dir=tests.get_test_workdir())
         os.chdir(cwd)

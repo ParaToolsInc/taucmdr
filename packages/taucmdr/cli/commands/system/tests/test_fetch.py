@@ -39,12 +39,18 @@ from taucmdr import tests
 from taucmdr.cli.commands.system import fetch
 
 
-def make_archive(path, toplevel='pkg-1.0'):
-    """Write a small gzipped tar archive rooted in `toplevel` to `path`, and return `path`."""
+def make_archive(path, toplevel='pkg-1.0', size=0):
+    """Write a gzipped tar archive rooted in `toplevel` to `path`, and return `path`.
+
+    The archive holds a README and, if `size` is given, that many bytes of random data.
+    """
     root = tempfile.mkdtemp(dir=tests.get_test_workdir())
     os.mkdir(os.path.join(root, toplevel))
     with open(os.path.join(root, toplevel, 'README'), 'w', encoding='utf-8') as fout:
         fout.write(path)
+    if size:
+        with open(os.path.join(root, toplevel, 'data.bin'), 'wb') as fout:
+            fout.write(os.urandom(size))
     with tarfile.open(path, 'w:gz') as archive:
         archive.add(os.path.join(root, toplevel), arcname=toplevel)
     return path
@@ -86,7 +92,19 @@ class FetchTest(tests.TestCase):
         self.assertTrue(tarfile.is_tarfile(os.path.join(self.dest, 'tau.tgz')))
         dest = self.dest + '-only-error'
         self.assertEqual(fetch.fetch_sources(dest, {'tau.tgz': [error_page]}), ['tau.tgz'])
-        self.assertFalse(os.path.exists(os.path.join(dest, 'tau.tgz')))
+        self.assertEqual(os.listdir(dest), [])
+
+    def test_fetch_keeps_good_archive(self):
+        """Fetching again keeps an archive that's already there, even if no mirror answers."""
+        os.makedirs(self.dest)
+        existing = make_archive(os.path.join(self.dest, 'tau.tgz'))
+        with open(existing, 'rb') as fin:
+            before = fin.read()
+        missing = 'file://' + os.path.join(self.mirror, 'missing', 'tau.tgz')
+        self.assertEqual(fetch.fetch_sources(self.dest, {'tau.tgz': [missing]}), [])
+        with open(existing, 'rb') as fin:
+            self.assertEqual(fin.read(), before)
+        self.assertEqual(os.listdir(self.dest), ['tau.tgz'])
 
     def test_fetch_reports_failures(self):
         missing = 'file://' + os.path.join(self.mirror, 'missing', 'pdt.tgz')

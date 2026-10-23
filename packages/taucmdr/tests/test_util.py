@@ -206,6 +206,28 @@ class ExtractArchiveTest(tests.TestCase):
                         util.extract_archive(path, dest, show_progress=show_progress)
 
 
+class VerifyArchiveTest(tests.TestCase):
+    """Tests for :any:`util.verify_archive`."""
+
+    def test_verify_archive_truncated(self):
+        """An archive cut short after its first members is refused, though its top-level directory can be read."""
+        path = os.path.join(os.getcwd(), 'large.tgz')
+        with tarfile.open(path, 'w:gz') as tar:
+            info = tarfile.TarInfo('pkg')
+            info.type = tarfile.DIRTYPE
+            tar.addfile(info)
+            data = os.urandom(512 * 1024)
+            info = tarfile.TarInfo('pkg/data.bin')
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+        util.verify_archive(path)
+        with open(path, 'r+b') as fout:
+            fout.truncate(os.path.getsize(path) * 3 // 4)
+        self.assertEqual(util.archive_toplevel(path), 'pkg')
+        with self.assertRaises(OSError):
+            util.verify_archive(path)
+
+
 class RmtreeTest(tests.TestCase):
     """Tests for :any:`util.rmtree`."""
 

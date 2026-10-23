@@ -78,6 +78,21 @@ def require_system_storage():
     return SYSTEM_STORAGE
 
 
+def writable_system_storage():
+    """Return the system storage level for a command, creating its prefix if needed.
+    Guarantees that a returned level is writable, or else raises an error.
+
+    Raises:
+        ConfigurationError: No system level exists, or it can't be written.
+    """
+    storage = require_system_storage()
+    storage.connect_filesystem()
+    if not storage.is_writable():
+        raise ConfigurationError(f"Cannot write to system-level storage in '{storage.prefix}'.",
+                                 "Check that you have `write` access, e.g. as a member of the group that owns it.")
+    return storage
+
+
 def highest_writable_storage():
     """Return the highest-priority writable storage level, caching the result.
 

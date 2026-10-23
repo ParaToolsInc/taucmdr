@@ -92,12 +92,14 @@ Adapt these steps for your own system.
 
       module use /opt/taucmdr/modulefiles
       module load taucmdr
-      tau system configure --tau-config=minimal
+      tau system configure
 
-   ``--tau-config=minimal`` builds one small configuration.  ``--tau-config=full`` builds the
-   configurations for every combination of PAPI, OpenMP, MPI, SHMEM and CUDA that the compilers
-   allow, and takes much longer to complete.  The other
+   This builds the packages TAU uses, and TAU configurations for every combination of PAPI, OpenMP,
+   MPI, SHMEM and CUDA that the compilers allow.  Users' projects reuse those packages, and TAU
+   Commander builds any other TAU configuration a project needs in the user's own storage.  The other
    ``tau initialize`` options choose the compilers and packages, e.g. ``--mpi-wrappers``.
+   ``--tau-config=minimal`` builds only one small TAU configuration, which is quicker for checking
+   the installation, but then each user's installation will build the packages TAU requires.
 
 5. As root, make the installation read-only for everyone else::
 

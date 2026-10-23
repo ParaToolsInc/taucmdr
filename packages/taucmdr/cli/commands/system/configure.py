@@ -37,7 +37,7 @@ from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.measurement.copy import COMMAND as measurement_copy_cmd
 from taucmdr.model.project import Project
 from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names
-from taucmdr.cf.storage.levels import PROJECT_STORAGE, build_level, require_system_storage
+from taucmdr.cf.storage.levels import PROJECT_STORAGE, build_level, writable_system_storage
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.platforms import HOST_OS, DARWIN
 
@@ -231,9 +231,8 @@ class ConfigureCommand(AbstractCommand):
 
     def main(self, argv):
         args = self._parse_args(argv)
-        storage = require_system_storage()
+        storage = writable_system_storage()
         TauInstallation.check_env_compat()
-        storage.connect_filesystem()
         self.logger.info("Building TAU configurations in '%s'", storage.prefix)
         cwd = os.getcwd()
         try:

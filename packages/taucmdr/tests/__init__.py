@@ -378,9 +378,13 @@ class TestCase(unittest.TestCase):
             self.fail(f"No {role} compiler in target '{target_name}'")
 
     def assertCleanExit(self, proc):
-        """Check that a process from :any:`run_python_subprocess` printed no Python traceback."""
-        for text in 'Traceback', 'Exception ignored':
-            self.assertNotIn(text, proc.stderr)
+        """Check that a process from :any:`run_python_subprocess` printed no Python traceback.
+
+        TAU Commander's own report of an unexpected exception goes to stdout, so both streams are checked.
+        """
+        output = proc.stdout + proc.stderr
+        for text in 'Traceback', 'Exception ignored', 'This is a bug in TAU Commander':
+            self.assertNotIn(text, output)
 
     def assertSucceeded(self, proc):
         """Check that a process from :any:`run_python_subprocess` exited with status 0 and no traceback."""

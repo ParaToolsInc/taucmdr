@@ -38,39 +38,59 @@ from taucmdr.cf.software import all_sources
 LOGGER = logger.get_logger(__name__)
 
 
+def _readable(path):
+    try:
+        util.verify_archive(path)
+    except OSError:
+        return False
+    return True
+
+
 def fetch_sources(dest, sources):
     """Download source archives into a directory, trying each archive's mirrors in order.
 
     A download that isn't a readable archive, such as a server's error page, counts as a failed mirror.
-    The TAU nightly archive is also stored in a copy with today's date.
+    The TAU nightly archive changes every day, so it's downloaded again and stored in a copy with today's date.
 
     Args:
         dest (str): Directory to download into.  It's created if it doesn't exist.
         sources (dict): Archive file names mapped to lists of URLs, as from :any:`all_sources`.
 
     Returns:
-        list: Names of the archives that couldn't be downloaded from any mirror.
+        list: Names of the archives that couldn't be downloaded from any mirror and weren't already in `dest`.
     """
     util.mkdirp(dest)
     failed = []
+    nightly = 'tau-nightly.tgz'
+    nightly_fetched = False
     for name, urls in sources.items():
         path = os.path.join(dest, name)
+        if name != nightly and _readable(path):
+            LOGGER.info("'%s' is already in '%s'", name, dest)
+            continue
+        # Downloads go to a temporary name, so an interrupted one doesn't look like an archive.
+        part = path + '.part'
         for url in urls:
             try:
-                util.download(url, path)
-                util.archive_toplevel(path)
+                util.download(url, part)
+                util.verify_archive(part)
             except OSError as err:
                 LOGGER.warning("Couldn't get '%s' from '%s': %s", name, url, err)
-                if os.path.exists(path):
-                    os.remove(path)
+                if os.path.exists(part):
+                    os.remove(part)
             else:
+                os.replace(part, path)
                 LOGGER.info("Fetched '%s'", name)
+                nightly_fetched = nightly_fetched or name == nightly
                 break
         else:
-            failed.append(name)
-    nightly = os.path.join(dest, 'tau-nightly.tgz')
-    if os.path.exists(nightly):
-        shutil.copy2(nightly, os.path.join(dest, datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')))
+            if _readable(path):
+                LOGGER.warning("Kept the existing '%s'", path)
+            else:
+                failed.append(name)
+    if nightly_fetched:
+        shutil.copy2(os.path.join(dest, nightly),
+                     os.path.join(dest, datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')))
     return failed
 
 

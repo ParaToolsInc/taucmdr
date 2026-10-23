@@ -38,6 +38,7 @@ import tempfile
 from types import SimpleNamespace
 from unittest import mock
 from taucmdr import tests, util
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompilerSet
 from taucmdr.cf.compiler.host import CC, CXX, GNU
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
@@ -105,17 +106,41 @@ class ImportTest(tests.TestCase):
 
     def test_import_rejects_corrupt_archive(self):
         """A truncated archive stops the import before anything is copied."""
-        self._bundle('tau.tgz', 'pdt.tgz')
-        path = os.path.join(self.bundle, 'pdt.tgz')
-        with open(path, 'rb') as fin:
-            data = fin.read()
-        with open(path, 'wb') as fout:
-            fout.write(data[:len(data) // 2])
+        self._bundle('tau.tgz')
+        path = make_archive(os.path.join(self.bundle, 'pdt.tgz'), size=512 * 1024)
+        with open(path, 'r+b') as fout:
+            fout.truncate(os.path.getsize(path) * 3 // 4)
         proc = self._tau_import()
         self.assertCleanExit(proc)
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn('pdt.tgz', proc.stdout + proc.stderr)
         self.assertFalse(os.path.exists(self.src) and os.listdir(self.src))
+
+    def test_import_copy_failure(self):
+        """A copy that fails partway leaves nothing under the archive's name in the source directory."""
+        self._bundle('tau.tgz')
+
+        def copy_part(source, target):
+            with open(target, 'wb') as fout:
+                fout.write(b'part')
+            raise OSError(28, 'No space left on device')
+
+        with mock.patch.object(import_cmd.shutil, 'copy2', side_effect=copy_part), \
+             self.assertRaises(ConfigurationError):
+            import_cmd.import_sources(self.bundle, self.src)
+        self.assertEqual(os.listdir(self.src), [])
+
+    @tests.skipIf(os.geteuid() == 0, "File permissions don't stop root from writing")
+    def test_import_readonly_prefix(self):
+        """Importing into a system prefix that isn't writable is an error, not a crash."""
+        self._bundle('tau.tgz')
+        os.makedirs(self.system)
+        os.chmod(self.system, 0o555)
+        self._readonly.append(self.system)
+        proc = self._tau_import()
+        self.assertCleanExit(proc)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn('write', proc.stdout + proc.stderr)
 
     def test_import_adds_dated_nightly(self):
         self._bundle('tau-nightly.tgz')
