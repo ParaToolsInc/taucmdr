@@ -44,7 +44,6 @@ import datetime
 import shlex
 import resource
 import platform
-import multiprocessing
 from subprocess import CalledProcessError
 from taucmdr import logger, util
 from taucmdr.util import get_command_output
@@ -67,6 +66,9 @@ REPOS = {None: ['http://tau.uoregon.edu/tau.tgz',
                 'http://fs.paratools.com/tau-mirror/tau.tgz']}
 
 NIGHTLY = 'http://fs.paratools.com/tau-nightly.tgz'
+
+# TAU's default for both TAU_MAX_METRICS and TAU_MAX_COUNTERS.
+TAU_DEFAULT_MAX_METRICS = 25
 
 DATA_TOOLS = ['jumpshot',
               'paraprof',
@@ -249,7 +251,6 @@ class TauInstallation(Installation):
                  shmem_support=False,
                  shmem_libraries=None,
                  mpc_support=False,
-                 max_threads=None,
                  uses_python=False,
                  # Instrumentation methods and options
                  source_inst="never",
@@ -320,7 +321,6 @@ class TauInstallation(Installation):
             shmem_support (bool): Enable or disable SHMEM support in TAU.
             shmem_libraries (list): SHMEM libraries to include when linking with TAU.
             mpc_support (bool): Enable or disable MPC support in TAU.
-            max_threads (int): Maximum number of threads in TAU.
             source_inst (str): Policy for source-based instrumentation, one of "automatic", "manual", or "never".
             compiler_inst (str): Policy for compiler-based instrumentation, one of "always", "fallback", or "never".
             keep_inst_files (bool): If True then do not remove instrumented source files after compilation.
@@ -377,7 +377,6 @@ class TauInstallation(Installation):
         assert shmem_support in (True, False)
         assert isinstance(shmem_libraries, list) or shmem_libraries is None
         assert mpc_support in (True, False)
-        assert isinstance(max_threads, int) or max_threads is None
         assert source_inst in ("automatic", "manual", "never")
         assert compiler_inst in ("always", "fallback", "never")
         assert keep_inst_files in (True, False)
@@ -443,7 +442,6 @@ class TauInstallation(Installation):
         self.shmem_support = shmem_support
         self.shmem_libraries = shmem_libraries if shmem_libraries is not None else []
         self.mpc_support = mpc_support
-        self.max_threads = max_threads
         self.uses_python = uses_python
         self.source_inst = source_inst
         self.compiler_inst = compiler_inst
@@ -606,8 +604,8 @@ class TauInstallation(Installation):
         for pkg in 'binutils', 'libunwind', 'libelf', 'libdwarf', 'papi', 'pdt', 'ompt', 'libotf2', 'scorep', 'sqlite3', 'level_zero':
             if getattr(self, 'uses_'+pkg):
                 uid_parts.append(self.dependencies[pkg].uid)
-        # TAU changes if any of its hard-coded limits change
-        uid_parts.extend([str(self._get_max_threads()), str(self._get_max_metrics())])
+        # TAU changes if its threading or its metric limit changes
+        uid_parts.extend([str(self._requests_pthread()), str(self._get_max_metrics())])
         if self.uses_python:
             python_path = self.compilers[PY].absolute_path
             python_version = self.get_python_version(python_path)
@@ -615,17 +613,19 @@ class TauInstallation(Installation):
             uid_parts.extend([python_path, os.path.realpath(python_path), python_version])
         return uid_parts
 
-    def _get_max_threads(self):
-        if self.max_threads:
-            return self.max_threads
-        if (self.pthreads_support or self.openmp_support or self.tbb_support or self.mpc_support):
-            nprocs = multiprocessing.cpu_count()
-            # Assume 2 HTs/core
-            return max(64, 2*nprocs)
-        return 25 # This is currently TAU's default.
+    def _requests_pthread(self):
+        return self.pthreads_support or (self.openmp_support and self.measure_openmp == 'ignore')
 
     def _get_max_metrics(self):
-        return len(self.metrics)
+        return max(TAU_DEFAULT_MAX_METRICS, len(self.metrics))
+
+    def _useropts(self):
+        useropts = ['-O2', '-g']
+        max_metrics = self._get_max_metrics()
+        if max_metrics > TAU_DEFAULT_MAX_METRICS:
+            # TAU sizes separate arrays with each limit, so both must be raised together.
+            useropts.extend([f'-DTAU_MAX_METRICS={max_metrics}', f'-DTAU_MAX_COUNTERS={max_metrics}'])
+        return useropts
 
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
@@ -971,32 +971,29 @@ class TauInstallation(Installation):
         if pdt:
             flags.append('-pdt=%s' % pdt.install_prefix)
             flags.append('-pdt_c++=%s' % pdt.compilers[CXX].unwrap().info.command)
-        if self.pthreads_support:
+        if self._requests_pthread():
+            # Configure with -pthread to support multi-threading without instrumenting OpenMP directives
             flags.append('-pthread')
         elif self.openmp_support:
-            if self.measure_openmp == 'ignore':
-                # Configure with -pthread to support multi-threading without instrumenting OpenMP directives
-                flags.append('-pthread')
+            flags.append('-openmp')
+            if self.measure_openmp == 'ompt':
+                if ompt:
+                    comp_version = self.compilers[CC].version
+                    if (
+                            comp_version is not None and
+                            self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
+                    ):
+                        flags.append('-ompt-v5')
+                    else:
+                        flags.append('-ompt=%s' % ompt.install_prefix)
+                if self.uses_ompt_tr4:
+                    flags.append('-ompt-tr4')
+                elif self.uses_ompt_tr6:
+                    flags.append('-ompt-tr6')
+            elif self.measure_openmp == 'opari':
+                flags.append('-opari')
             else:
-                flags.append('-openmp')
-                if self.measure_openmp == 'ompt':
-                    if ompt:
-                        comp_version = self.compilers[CC].version
-                        if (
-                                comp_version is not None and
-                                self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
-                        ):
-                            flags.append('-ompt-v5')
-                        else:
-                            flags.append('-ompt=%s' % ompt.install_prefix)
-                    if self.uses_ompt_tr4:
-                        flags.append('-ompt-tr4')
-                    elif self.uses_ompt_tr6:
-                        flags.append('-ompt-tr6')
-                elif self.measure_openmp == 'opari':
-                    flags.append('-opari')
-                else:
-                    raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
+                raise InternalError("Invalid value for measure_openmp: %s" % self.measure_openmp)
         if self.measure_io:
             flags.append('-iowrapper')
         if self.dyninst:
@@ -1011,13 +1008,8 @@ class TauInstallation(Installation):
             flags.append('-level_zero')
 
         # Use -useropt for hacks and workarounds.
-        useropts = ['-O2', '-g']
-        # Work around TAU's silly hard-coded limits.
-        useropts.extend(['-DTAU_MAX_THREADS=%d' % self._get_max_threads(),
-                         '-DTAU_MAX_METRICS=%d' % self._get_max_metrics(),
-                         '-DTAU_MAX_COUNTERS=%d' % self._get_max_metrics()])
         # -useropt flag uses '#' as an argument separator
-        flags.append('-useropt=' + '#'.join(useropts))
+        flags.append('-useropt=' + '#'.join(self._useropts()))
 
         cmd = ['./configure'] + flags
         LOGGER.info("Configuring TAU...")
@@ -1172,25 +1164,22 @@ class TauInstallation(Installation):
             tags.add('papi')
         if self.uses_scorep:
             tags.add('scorep')
-        if self.pthreads_support:
+        if self._requests_pthread():
             tags.add('pthread')
         elif self.openmp_support:
-            if self.measure_openmp == 'ignore':
-                tags.add('pthread')
-            else:
-                tags.add('openmp')
-                if self.measure_openmp == 'ompt':
-                    tags.add('ompt')
-                    if self.uses_ompt_tr6:
-                        tags.add('tr6')
-                    elif self.uses_ompt_tr4:
-                        tags.add('tr4')
-                    else:
-                        tags.add('v5')
-                elif self.measure_openmp == 'opari':
-                    tags.add('opari')
+            tags.add('openmp')
+            if self.measure_openmp == 'ompt':
+                tags.add('ompt')
+                if self.uses_ompt_tr6:
+                    tags.add('tr6')
+                elif self.uses_ompt_tr4:
+                    tags.add('tr4')
                 else:
-                    raise InternalError("Invalid value for measure_openmp: '%s'" % self.measure_openmp)
+                    tags.add('v5')
+            elif self.measure_openmp == 'opari':
+                tags.add('opari')
+            else:
+                raise InternalError("Invalid value for measure_openmp: '%s'" % self.measure_openmp)
         if self.tbb_support:
             tags.add('tbb')
         if self.mpi_support:

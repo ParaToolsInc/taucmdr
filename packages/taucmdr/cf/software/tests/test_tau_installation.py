@@ -35,8 +35,10 @@ import os
 import subprocess
 import sys
 import tempfile
+from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
+from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
 from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names, python_build_paths
 
 
@@ -188,3 +190,46 @@ class PythonBuildPathsTest(tests.TestCase):
         with self.assertRaises(ConfigurationError) as context:
             python_build_paths(interpreter)
         self.assertIn('Python.h', str(context.exception))
+
+
+def _metrics(count):
+    return ['TIME'] + [f'M{i}' for i in range(1, count)]
+
+
+class TauConfigurationHashTest(tests.TestCase):
+    """Tests for what makes TAU configurations share a hash."""
+
+    @staticmethod
+    def _tau(**kwargs):
+        return TauInstallation({'tau': 'download'}, HOST_ARCH, HOST_OS, TauInstallation.get_minimal().compilers,
+                               **kwargs)
+
+    def test_uid_separates_threading(self):
+        """A non-threaded configuration never shares a hash with one that asks TAU for pthreads."""
+        plain = self._tau().uid
+        pthreads = self._tau(pthreads_support=True).uid
+        openmp_ignore = self._tau(openmp_support=True, measure_openmp='ignore').uid
+        self.assertNotEqual(plain, pthreads)
+        self.assertNotEqual(plain, openmp_ignore)
+        self.assertEqual(pthreads, openmp_ignore)
+
+    def test_uid_ignores_cpu_count(self):
+        """A TAU configured on one host matches the same configuration on a host with a different core count."""
+        uids = set()
+        for count in 4, 512:
+            with mock.patch('multiprocessing.cpu_count', return_value=count):
+                uids.add(self._tau(openmp_support=True).uid)
+        self.assertEqual(len(uids), 1)
+
+    def test_uid_metrics_clamped(self):
+        self.assertEqual(self._tau(metrics=_metrics(1)).uid, self._tau(metrics=_metrics(25)).uid)
+        self.assertNotEqual(self._tau(metrics=_metrics(25)).uid, self._tau(metrics=_metrics(26)).uid)
+
+    def test_useropts_metrics(self):
+        self.assertEqual(self._tau()._useropts(), ['-O2', '-g'])
+        self.assertEqual(self._tau(metrics=_metrics(25))._useropts(), ['-O2', '-g'])
+        useropts = self._tau(metrics=_metrics(26))._useropts()
+        self.assertIn('-DTAU_MAX_METRICS=26', useropts)
+        self.assertIn('-DTAU_MAX_COUNTERS=26', useropts)
+        for count in 1, 25, 26:
+            self.assertFalse([opt for opt in self._tau(metrics=_metrics(count))._useropts() if 'TAU_MAX_THREADS' in opt])
