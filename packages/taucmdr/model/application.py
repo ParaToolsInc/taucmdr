@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -161,15 +161,6 @@ def attributes():
             'default': False,
             'description': 'application uses MPC',
             'argparse': {'flags': ('--mpc',)},
-            'rebuild_required': True
-        },
-        'max_threads': {
-            'type': 'integer',
-            'description': 'maximum number of threads',
-            'argparse': {'flags': ('--max-threads',),
-                         'metavar': 'threads',
-                         'nargs': '?',
-                         'const': 25},
             'rebuild_required': True
         },
         'linkage': {
