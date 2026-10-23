@@ -98,14 +98,20 @@ def reset_project(workdir):
     PROJECT_STORAGE.destroy()
 
 
-def _configure_project(args):
-    reset_project(os.getcwd())
+def project_argv(args):
+    """Return the ``tau initialize`` arguments for the project that configures TAU for `args`."""
     argv = []
     for key, val in vars(args).items():
         for action in initialize_cmd.parser.actions:
             if key == action.dest:
                 argv.extend(_translate_arg(action.option_strings[0], val))
                 break
+    return argv
+
+
+def _configure_project(args):
+    reset_project(os.getcwd())
+    argv = project_argv(args)
 
     # Initialize all default measurements for this set of arguments.
     # Initializing also selects the default experiment, which may build TAU, so it can fail

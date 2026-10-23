@@ -32,17 +32,50 @@ Functions used for unit tests of system/configure.py.
 import os
 import tempfile
 from types import SimpleNamespace
+from unittest import mock
 import taucmdr
-from taucmdr import tests
+from taucmdr import tests, EXIT_SUCCESS
 from taucmdr.error import InternalError
 from taucmdr.cf.platforms import DARWIN, LINUX
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
 from taucmdr.cli.commands.system import configure
+from taucmdr.model.experiment import Experiment
+from taucmdr.model.project import Project
 
 _HINT = 'Set the environment variable TAUCMDR_SYSTEM_PREFIX'
 
 
+def _plain(record):
+    return {key: val for key, val in record.items() if key != 'name' and key not in record.associations}
+
+
 class ConfigureTest(tests.TestCase):
     """Tests for :any:`system.configure`."""
+
+    def _initialize_records(self, argv):
+        PROJECT_STORAGE.destroy(ignore_errors=False)
+        backend = os.environ.get('__TAUCMDR_DB_BACKEND__', None)
+        if backend:
+            argv = argv + ['--backend', backend]
+        with mock.patch.object(Experiment, 'configure'):
+            self.assertEqual(initialize_cmd.main(argv), EXIT_SUCCESS)
+        proj = Project.controller().selected().populate()
+        return {'application': [_plain(app) for app in proj['applications']],
+                'target': [_plain(targ) for targ in proj['targets']],
+                'measurements': [_plain(meas) for meas in sorted(proj['measurements'], key=lambda m: m['name'])]}
+
+    def test_default_project_records(self):
+        """The configuration chosen with every feature off is same as used with ``tau initialize`` with no arguments."""
+        args = configure.COMMAND.parser.parse_args([])
+        for feature in 'papi', 'openmp', 'mpi', 'shmem', 'cuda':
+            setattr(args, feature, False)
+        configured = self._initialize_records(configure.project_argv(args))
+        plain = self._initialize_records([])
+        for key, records in plain.items():
+            with self.subTest(key):
+                self.assertTrue(records)
+                self.assertEqual(configured[key], records)
 
     def test_full_features_darwin(self):
         args = SimpleNamespace()
