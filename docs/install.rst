@@ -107,6 +107,9 @@ Adapt these steps for your own system.
 
 Users then load the module and run ``tau initialize`` as usual.
 
+After upgrading TAU Commander, run ``tau system configure`` again to ensure that any new
+TAU configurations introduced by the new version are rebuilt.
+
 To use an existing TAU installation by default instead of the ones TAU Commander builds, give its
 path::
 
