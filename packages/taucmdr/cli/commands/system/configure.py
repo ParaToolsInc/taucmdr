@@ -61,8 +61,9 @@ def _translate_arg(flag, arg):
     if flag == '--openmp':
         if arg is True:
             return [flag]
-        if arg is False:
-            return [flag, 'ignore']
+        # initialize makes an OpenMP application for any --openmp value, so leave it out.
+        if arg is False or arg is None:
+            return []
         return [flag, arg]
     if isinstance(arg, str):
         return [flag, arg]

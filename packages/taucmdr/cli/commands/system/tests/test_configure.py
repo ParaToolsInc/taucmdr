@@ -65,6 +65,16 @@ class ConfigureTest(tests.TestCase):
                 'target': [_plain(targ) for targ in proj['targets']],
                 'measurements': [_plain(meas) for meas in sorted(proj['measurements'], key=lambda m: m['name'])]}
 
+    def test_project_argv_openmp(self):
+        args = configure.COMMAND.parser.parse_args([])
+        args.openmp = True
+        argv = configure.project_argv(args)
+        self.assertIn('--openmp', argv)
+        following = argv[argv.index('--openmp') + 1:][:1]
+        self.assertTrue(not following or following[0].startswith('--'), argv)
+        args.openmp = False
+        self.assertNotIn('--openmp', configure.project_argv(args))
+
     def test_default_project_records(self):
         """The configuration chosen with every feature off is same as used with ``tau initialize`` with no arguments."""
         args = configure.COMMAND.parser.parse_args([])
