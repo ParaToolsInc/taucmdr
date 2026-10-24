@@ -307,7 +307,7 @@ def attributes():
         'metrics': {
             'type': 'array',
             'default': ['TIME'],
-            'description': 'a space separated list of performance metrics to gather, e.g. TIME PAPI_FP_INS',
+            'description': 'a space or comma separated list of performance metrics to gather, e.g. TIME PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<metric>'},
@@ -524,6 +524,28 @@ def attributes():
 class MeasurementController(Controller):
     """Measurement data controller."""
 
+    @staticmethod
+    def _normalize_metrics(data):
+        # Done before storing: the SQLite backend doesn't persist changes that `Model.on_create` makes to a record.
+        metrics = data.get('metrics')
+        if isinstance(metrics, list):
+            # TAU compares metric names case-insensitively and ignores repeats.
+            unique = {}
+            for metric in metrics:
+                for part in metric.split(','):
+                    unique.setdefault(part.strip().upper(), part.strip())
+            unique.pop('', None)
+            if unique.pop('TIME', None) is None:
+                LOGGER.warning("'TIME' must always be present as the first metric!")
+            data = dict(data, metrics=['TIME'] + list(unique.values()))
+        return data
+
+    def create(self, data):
+        return super().create(self._normalize_metrics(data))
+
+    def update(self, data, keys):
+        return super().update(self._normalize_metrics(data), keys)
+
     def delete(self, keys, context=True):
         # pylint: disable=unexpected-keyword-arg
         from taucmdr.error import ImmutableRecordError
@@ -554,21 +576,8 @@ class Measurement(Model):
                 raise ConfigurationError(
                     "Selective instrumentation file '%s' not found" % select_file)
 
-    def _check_metrics(self):
-        """Check for TIME in metrics, add it if missing, ensure it is first"""
-        try:
-            self['metrics'].remove('TIME')
-        except KeyError as err:
-            raise ConfigurationError(
-                "The metrics attribute should always exist with at least TIME present!") from err
-        except ValueError as err:
-            LOGGER.warning("'TIME' must always be present as the first metric!")
-        finally:
-            self['metrics'].insert(0, 'TIME')
-
     def on_create(self):
         self._check_select_file()
-        self._check_metrics()
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
@@ -587,7 +596,6 @@ class Measurement(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name']) from err
         self._check_select_file()
-        self._check_metrics()
         if self.is_selected():
             for attr, change in changes.items():
                 if self.attributes[attr].get('rebuild_required'):

@@ -38,6 +38,7 @@ from taucmdr.cli.commands.application.list import COMMAND as list_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.model.application import Application
 from taucmdr.model.experiment import Experiment
+from taucmdr.model.measurement import Measurement
 
 
 class ApplicationTest(tests.TestCase):
@@ -54,3 +55,36 @@ class ApplicationTest(tests.TestCase):
         with mock.patch.object(Experiment, 'configure'):
             self.assertCommandReturnValue(EXIT_SUCCESS, select_cmd,
                                           ['--target', 'targ1', '--application', 'app1', '--measurement', 'sample'])
+
+
+class EncourageTest(tests.TestCase):
+    """Tests for compatibility warnings about measurements that don't enable an application's feature."""
+
+    def _warnings(self, attr, app_updates, meas_updates, meas_name):
+        self.reset_project_storage()
+        PROJECT_STORAGE.update(app_updates, {'name': 'app1'}, table_name=Application.name)
+        PROJECT_STORAGE.update(meas_updates, {'name': meas_name}, table_name=Measurement.name)
+        app = Application.controller(PROJECT_STORAGE).one({'name': 'app1'})
+        meas = Measurement.controller(PROJECT_STORAGE).one({'name': meas_name})
+        conditions = Application.attributes[attr]['compat'][True]
+        if callable(conditions):
+            conditions = (conditions,)
+        with mock.patch('taucmdr.model.application.LOGGER') as logger:
+            for condition in conditions:
+                if condition.__name__ == '_encourage_except_baseline':
+                    condition(app, attr, True, meas)
+        return [call.args for call in logger.warning.call_args_list]
+
+    def test_measurement_enables_feature(self):
+        self.assertFalse(self._warnings('mpi', {'mpi': True}, {'mpi': True}, 'profile'))
+
+    def test_measurement_disables_feature(self):
+        warnings = self._warnings('mpi', {'mpi': True}, {'mpi': False}, 'profile')
+        self.assertEqual(len(warnings), 1)
+        self.assertIn('recommends True in', warnings[0][0])
+
+    def test_baseline_measurement(self):
+        self.assertFalse(self._warnings('mpi', {'mpi': True}, {}, 'baseline'))
+
+    def test_measurement_without_attribute(self):
+        self.assertFalse(self._warnings('caf', {'caf': True}, {}, 'profile'))

@@ -62,7 +62,7 @@ def attributes():
 
     def _encourage_except_baseline(lhs, lhs_attr, lhs_value, rhs):
         if isinstance(rhs, Measurement):
-            if not rhs['baseline']:
+            if not rhs['baseline'] and not rhs.get(lhs_attr, True):
                 lhs_name = lhs.name.lower()
                 rhs_name = rhs.name.lower()
                 LOGGER.warning("%s = %s in %s recommends True in %s",
