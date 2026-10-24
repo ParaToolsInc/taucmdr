@@ -21,6 +21,8 @@ env:
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe: "true"
+  # Open MPI 5 reads this instead of OMPI_MCA_rmaps_base_oversubscribe.
+  PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
   # Python versions Test-python-venv runs on push and pull request.  A workflow_dispatch run uses its
   # python-versions input instead.
   DEFAULT_PYTHON_VERSIONS: '["3.15"]'
@@ -28,7 +30,7 @@ env:
 jobs:
   python-versions:
     name: Choose Python versions
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       versions: ${{ steps.pick.outputs.versions }}
     steps:
@@ -39,7 +41,7 @@ jobs:
         run: echo "versions=${REQUESTED:-$DEFAULT_PYTHON_VERSIONS}" >> "${GITHUB_OUTPUT}"
 
   Test-python-venv:
-    name: Test on Python ${{ matrix.python }} with tox
+    name: Test on ${{ matrix.os }} with Python ${{ matrix.python }} (${{ matrix.backend }})
     needs: python-versions
     runs-on: ${{ matrix.os }}
     permissions:
@@ -47,9 +49,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
         python: ${{ fromJSON(needs.python-versions.outputs.versions) }}
         backend: ['tinydb', 'sqlite']
+        include:
+          - {os: ubuntu-24.04-arm, python: '3.15', backend: tinydb}
+          - {os: ubuntu-24.04-arm, python: '3.15', backend: sqlite}
+          - {os: macos-latest, python: '3.15', backend: tinydb}
+          - {os: macos-latest, python: '3.15', backend: sqlite}
     env:
       OS: ${{ matrix.os }}
       PY_VER: ${{ matrix.python }}
@@ -59,10 +66,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install system packages
+      - name: Install system packages (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev cmake
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran make m4 cmake perl bzip2 xz-utils zlib1g-dev git curl openmpi-bin openmpi-common libopenmpi-dev
+
+      - name: Install system packages (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gcc open-mpi cmake
 
       - name: Install uv
         uses: astral-sh/setup-uv@v10.3.0
@@ -83,6 +95,9 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-venv-system-src
 
+      - name: Remove cached nightly TAU
+        run: rm -f system/src/tau-nightly*.tgz
+
       - name: Test TAU Commander
         run: |
           rm -f ./coverage.xml || true
@@ -91,7 +106,7 @@ jobs:
           uvx --with tox-uv tox -e "py${PY_VER/./}" -- -v
 
       - name: Build sphinx docs
-        if: matrix.python == '3.15' && matrix.backend == 'tinydb'
+        if: matrix.os == 'ubuntu-24.04' && matrix.python == '3.15' && matrix.backend == 'tinydb'
         run: uvx --with tox-uv tox -e docs
 
       - name: Upload TAU Commander unit test log
@@ -109,7 +124,7 @@ jobs:
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: env.ACT != 'true' && github.event_name == 'pull_request' && matrix.python == '3.15' && matrix.backend == 'tinydb'
+        if: env.ACT != 'true' && github.event_name == 'pull_request' && matrix.os == 'ubuntu-24.04' && matrix.python == '3.15' && matrix.backend == 'tinydb'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
@@ -137,7 +152,7 @@ jobs:
           name: test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
 
       - name: Upload Sphinx docs for GitHub Pages
-        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.python == '3.15' && matrix.backend == 'tinydb'
+        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-24.04' && matrix.python == '3.15' && matrix.backend == 'tinydb'
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./build/sphinx/html
@@ -146,7 +161,7 @@ jobs:
     name: Deploy Sphinx docs to GitHub Pages
     needs: [Test-python-venv]
     if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
