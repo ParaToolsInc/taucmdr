@@ -220,6 +220,28 @@ class OmptConfigurationTest(tests.TestCase):
              mock.patch('glob.glob', return_value=[decoy, makefile]):
             self.assertEqual(tau._match_makefile(tau.get_tags()), makefile)
 
+    @staticmethod
+    def _src_with_configure(name, text):
+        src = os.path.join(os.getcwd(), name)
+        os.makedirs(src)
+        with open(os.path.join(src, 'configure'), 'w', encoding='utf-8') as fout:
+            fout.write(text)
+        return src
+
+    def test_useropts_ompt_include(self):
+        """TAU is given the OMPT header directory only when its configure won't copy the header itself."""
+        copy = 'cp ${omptlib}/../include/${ompt_header} ${START_DIR}/include/.\n'
+        ompt = self._tau(openmp_support=True, measure_openmp='ompt')
+        include = '-I' + os.path.join(ompt.dependencies['ompt'].install_prefix, 'include')
+        ompt._src_prefix = self._src_with_configure('unset', 'ompt_version_selected=no\n' + copy)
+        self.assertIn(include, ompt._useropts())
+        ompt._src_prefix = self._src_with_configure('set', 'ompt_version_selected=no\nompt_header=omp-tools.h\n' + copy)
+        self.assertNotIn(include, ompt._useropts())
+        ignore = self._tau(openmp_support=True, measure_openmp='ignore')
+        ignore._src_prefix = ompt._src_prefix
+        self.assertFalse([opt for opt in ignore._useropts() if opt.startswith('-I')])
+        self.assertEqual(self._tau()._useropts(), ['-O2', '-g'])
+
 
 class TauConfigurationHashTest(tests.TestCase):
     """Tests for what makes TAU configurations share a hash."""

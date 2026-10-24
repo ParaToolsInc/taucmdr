@@ -41,6 +41,7 @@ from taucmdr.cf.compiler.host import CC, NVHPC
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.trial.list import COMMAND as trial_list_cmd
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
+from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.measurement.edit import COMMAND as measurement_edit_cmd
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -96,6 +97,22 @@ class CreateTest(tests.TestCase):
         self.assertManagedBuild(0, CC, [], 'hello.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
         self.assertIn("TAU_METRICS=TIME,", stdout)
+        self.assertFalse(stderr)
+
+    @tests.skipIf(HOST_OS is DARWIN, "Apple clang has no OpenMP")
+    def test_run_ompt(self):
+        self.reset_project_storage()
+        self.assertCommandReturnValue(0, application_create_cmd, ['app_ompt', '--openmp', 'T'])
+        # With OMPT, TAU's event-based sampling segfaults at exit in about half of runs.
+        argv = ['meas_ompt', '--openmp', 'ompt', '--source-inst', 'never', '--sample', 'F']
+        self.assertCommandReturnValue(0, measurement_create_cmd, argv)
+        argv = ['exp_ompt', '--target', 'targ1', '--application', 'app_ompt', '--measurement', 'meas_ompt']
+        self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertCommandReturnValue(0, experiment_select_cmd, ['exp_ompt'])
+        self.assertManagedBuild(0, CC, ['-fopenmp'], 'matmult.c')
+        with mock.patch.dict(os.environ, {'OMP_NUM_THREADS': '2'}):
+            stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn("Trial 0 produced 2 profile files", stdout)
         self.assertFalse(stderr)
 
     @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")

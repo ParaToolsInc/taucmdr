@@ -614,6 +614,19 @@ class TauInstallation(Installation):
     def _requests_pthread(self):
         return self.pthreads_support or (self.openmp_support and self.measure_openmp == 'ignore')
 
+    def _ompt_prefix(self):
+        """Returns the OMPT installation prefix passed to TAU's configure, or None if OMPT is not enabled."""
+        ompt = self.dependencies.get('ompt')
+        if not ompt or self._requests_pthread() or not self.openmp_support or self.measure_openmp != 'ompt':
+            return None
+        comp_version = self.compilers[CC].version
+        if (
+                comp_version is not None and
+                self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
+        ):
+            return None
+        return ompt.install_prefix
+
     def _get_max_metrics(self):
         return max(TAU_DEFAULT_MAX_METRICS, len(self.metrics))
 
@@ -623,7 +636,19 @@ class TauInstallation(Installation):
         if max_metrics > TAU_DEFAULT_MAX_METRICS:
             # TAU sizes separate arrays with each limit, so both must be raised together.
             useropts.extend([f'-DTAU_MAX_METRICS={max_metrics}', f'-DTAU_MAX_COUNTERS={max_metrics}'])
+        ompt_prefix = self._ompt_prefix()
+        if ompt_prefix and not self._configure_sets_ompt_header():
+            useropts.append('-I' + os.path.join(ompt_prefix, 'include'))
         return useropts
+
+    def _configure_sets_ompt_header(self):
+        """Returns True if TAU's configure copies omp-tools.h from an OMPT directory into its tree."""
+        try:
+            # Work around a bug in TAU where the ompt-tools.h header is not copied
+            with open(os.path.join(self._src_prefix, 'configure'), encoding='utf-8', errors='replace') as fin:
+                return any(line.startswith('ompt_header=') for line in fin)
+        except OSError:
+            return False
 
     def _get_install_tag(self):
         # Use `self.uid` as a TAU tag and the source package top-level directory as the installation tag
@@ -976,14 +1001,8 @@ class TauInstallation(Installation):
             flags.append('-openmp')
             if self.measure_openmp == 'ompt':
                 if ompt:
-                    comp_version = self.compilers[CC].version
-                    if (
-                            comp_version is not None and
-                            self.compilers[CC].info.family.name == 'Intel' and comp_version[0] >= 19
-                    ):
-                        flags.append('-ompt')
-                    else:
-                        flags.append('-ompt=%s' % ompt.install_prefix)
+                    ompt_prefix = self._ompt_prefix()
+                    flags.append('-ompt=%s' % ompt_prefix if ompt_prefix else '-ompt')
             elif self.measure_openmp == 'opari':
                 flags.append('-opari')
             else:
