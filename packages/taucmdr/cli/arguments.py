@@ -362,7 +362,7 @@ class ParsePackagePathAction(argparse.Action):
             value (str): Value parsed from the command line.
         """
         try:
-            value_as_bool = util.parse_bool(value, additional_true=['download', 'download-tr4', 'download-tr6', 'nightly'])
+            value_as_bool = util.parse_bool(value, additional_true=['download', 'nightly'])
         except TypeError as err:
             if not util.is_url(value):
                 value = os.path.abspath(os.path.expanduser(value))

@@ -64,8 +64,8 @@ def all_sources():
         dict: Archive file names mapped to lists of their URLs, in the order mirrors are tried.
     """
     # Imported here to avoid circular dependency, as the installation modules import this package.
-    from taucmdr.cf.software import ompt_installation, tau_installation  # pylint: disable=import-outside-toplevel
-    url_lists = [ompt_installation.TR6_REPOS, ompt_installation.TR4_REPOS, [tau_installation.NIGHTLY]]
+    from taucmdr.cf.software import tau_installation  # pylint: disable=import-outside-toplevel
+    url_lists = [[tau_installation.NIGHTLY]]
     for info in pkgutil.iter_modules(__path__):
         if info.name.endswith('_installation'):
             module = importlib.import_module(f'{__name__}.{info.name}')

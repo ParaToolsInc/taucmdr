@@ -58,12 +58,18 @@ class AllSourcesTest(tests.TestCase):
                 with self.subTest(installer=name, url=url):
                     self.assertIn(url, urls)
 
+    def test_no_obsolete_ompt(self):
+        """Archives for OMPT versions TAU no longer supports are not listed."""
+        sources = software.all_sources()
+        for name in ('LLVM-openmp-ompt-tr6.tar.gz', 'LLVM-openmp-0.2.tar.gz'):
+            with self.subTest(name=name):
+                self.assertNotIn(name, sources)
+
     def test_platform_variants(self):
         """Archives used only on some platforms are included, and each name's URLs all end in that name."""
         sources = software.all_sources()
         for name in ('pdt.tgz', 'pdt_lite.tgz', 'libunwind-1.8.1.tar.gz', 'libunwind-1.3-rc1.tar.gz',
-                     'LLVM-openmp-8.0.tar.gz', 'LLVM-openmp-ompt-tr6.tar.gz', 'LLVM-openmp-0.2.tar.gz',
-                     'tau.tgz', 'tau-nightly.tgz'):
+                     'LLVM-openmp-8.0.tar.gz', 'tau.tgz', 'tau-nightly.tgz'):
             with self.subTest(name=name):
                 self.assertIn(name, sources)
         for name, mirrors in sources.items():

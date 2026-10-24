@@ -196,6 +196,31 @@ def _metrics(count):
     return ['TIME'] + [f'M{i}' for i in range(1, count)]
 
 
+class OmptConfigurationTest(tests.TestCase):
+    """Tests for the TAU configuration that measures OpenMP with OMPT."""
+
+    @staticmethod
+    def _tau(**kwargs):
+        return TauInstallation({'tau': 'download', 'ompt': 'download'}, HOST_ARCH, HOST_OS,
+                               TauInstallation.get_minimal().compilers, **kwargs)
+
+    def test_ompt_tags(self):
+        """An OMPT configuration asks only for the tags TAU puts in its makefile name."""
+        tags = self._tau(openmp_support=True, measure_openmp='ompt').get_tags()
+        self.assertTrue({'ompt', 'openmp'} <= tags)
+        self.assertFalse({'v5', 'tr4', 'tr6'} & tags)
+
+    def test_ompt_tags_match_makefile(self):
+        """The OMPT makefile TAU writes is the one an OMPT configuration selects."""
+        tau = self._tau(openmp_support=True, measure_openmp='ompt')
+        lib_path = os.path.join(os.getcwd(), 'x86_64', 'lib')
+        makefile = os.path.join(lib_path, f'Makefile.tau-{tau.uid}-ompt-openmp')
+        decoy = os.path.join(lib_path, f'Makefile.tau-{tau.uid}-openmp-opari')
+        with mock.patch.object(TauInstallation, 'lib_path', new_callable=mock.PropertyMock, return_value=lib_path), \
+             mock.patch('glob.glob', return_value=[decoy, makefile]):
+            self.assertEqual(tau._match_makefile(tau.get_tags()), makefile)
+
+
 class TauConfigurationHashTest(tests.TestCase):
     """Tests for what makes TAU configurations share a hash."""
 

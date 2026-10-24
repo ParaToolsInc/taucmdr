@@ -487,7 +487,7 @@ def attributes():
             'default': 'download',
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
-                         'metavar': '(<path>|<url>|download|download-tr4|download-tr6|None)',
+                         'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
             'rebuild_required': True
         },
@@ -646,6 +646,9 @@ class Target(Model):
         sources = {}
         for attr, val in self.items():
             if val and attr.endswith('_source'):
+                # TAU no longer supports the OMPT versions these variants downloaded.
+                if attr == 'ompt_source' and val in ('download-tr4', 'download-tr6'):
+                    val = 'download'
                 sources[attr.replace('_source', '')] = val
         return sources
 

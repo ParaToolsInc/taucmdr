@@ -60,6 +60,16 @@ class TargetTest(tests.TestCase):
         with self.assertRaisesRegex(ConfigurationError, 'NoSuchOS'):
             targ.operating_system()
 
+    def test_legacy_ompt_source(self):
+        """A target stored with a removed OMPT download variant still loads and lists."""
+        self.reset_project_storage()
+        PROJECT_STORAGE.update({'ompt_source': 'download-tr6'}, {'name': 'targ1'}, table_name=Target.name)
+        stored = PROJECT_STORAGE.get({'name': 'targ1'}, table_name=Target.name)
+        self.assertEqual(stored['ompt_source'], 'download-tr6')
+        targ = Target.controller(PROJECT_STORAGE).one({'name': 'targ1'})
+        self.assertEqual(targ.sources()['ompt'], 'download')
+        self.assertCommandReturnValue(0, target_list_cmd, [])
+
     def test_tau_source_override_missing(self):
         """An override_tau_source file with a missing directory produces a warning."""
         system_prefix = tempfile.mkdtemp(dir=os.getcwd())
