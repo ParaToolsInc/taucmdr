@@ -30,7 +30,6 @@ I'd rather call this module "taucmdr.cf.platform" but that would conflict with :
 """
 
 import os
-from taucmdr import util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.objects import KeyedRecord
 from taucmdr.cf.compiler import host, mpi, shmem
@@ -41,6 +40,9 @@ from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 
 # macOS reports Apple silicon as 'arm64'.
 _MACHINE_ALIASES = {'arm64': 'aarch64'}
+
+# Set by Slurm, PBS, PALS, Flux, Cobalt and LSF inside a batch or interactive job.
+_JOB_VARIABLES = ('SLURM_JOB_ID', 'PBS_JOBID', 'PALS_APID', 'FLUX_JOB_ID', 'COBALT_JOBID', 'LSB_JOBID')
 
 
 class Architecture(KeyedRecord):
@@ -98,11 +100,15 @@ class OperatingSystem(KeyedRecord):
         self.description = description
 
     def is_cray_login(self):
-        if self is CRAY_CNL:
-            if util.which('aprun'):
-                return False
-            return True
-        return False
+        """Check whether this is a Cray login node.
+
+        Returns:
+            bool: True if running on a Cray login node.
+        """
+        # This formerly checked for aprun on the path, but that's not a distinguishing factor:
+        # launchers like ``aprun``, ``srun`` and ``mpiexec`` are installed on Cray login nodes.
+        # Instead, look for env vars set inside jobs and treat as login node if none are set
+        return self is CRAY_CNL and not any(var in os.environ for var in _JOB_VARIABLES)
 
     @classmethod
     def detect(cls):

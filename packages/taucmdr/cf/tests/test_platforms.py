@@ -33,7 +33,8 @@ from unittest import mock
 
 from taucmdr import tests
 from taucmdr.tests import TestCase
-from taucmdr.cf.platforms import Architecture, OperatingSystem, TauMagic, ARM64, DARWIN, HOST_OS, SHARED_LIBRARY_SUFFIX
+from taucmdr.cf.platforms import (Architecture, OperatingSystem, TauMagic, ARM64, CRAY_CNL, DARWIN, HOST_OS, LINUX,
+                                  SHARED_LIBRARY_SUFFIX)
 
 _PATCH_PLATFORM = """
 import platform
@@ -42,6 +43,14 @@ platform.system = lambda: {system!r}
 """
 
 _SHARED_LIBRARY_MODULES = ('gotcha', 'libotf2', 'scorep', 'sqlite3', 'ompt')
+
+_JOB_VARIABLES = ('SLURM_JOB_ID', 'PBS_JOBID', 'PALS_APID', 'FLUX_JOB_ID', 'COBALT_JOBID', 'LSB_JOBID')
+
+
+def _clear_job_variables():
+    for var in _JOB_VARIABLES:
+        os.environ.pop(var, None)
+
 
 class PlatformsTest(TestCase):
     """Unit tests for taucmdr.cf.platforms"""
@@ -76,6 +85,31 @@ class PlatformsTest(TestCase):
         for opsys in ('CNK', 'Android'):
             with self.assertRaises(KeyError, msg=opsys):
                 OperatingSystem.find(opsys)
+
+    def test_cray_login_outside_job(self):
+        """Outside any job, a Cray node is treated as a login node."""
+        with mock.patch.dict(os.environ):
+            _clear_job_variables()
+            self.assertTrue(CRAY_CNL.is_cray_login())
+
+    def test_cray_login_in_job(self):
+        """Inside a Slurm, PBS, PALS, Flux, Cobalt or LSF job, a Cray node isn't treated as a login node."""
+        for var in _JOB_VARIABLES:
+            with mock.patch.dict(os.environ):
+                _clear_job_variables()
+                os.environ[var] = '1'
+                self.assertFalse(CRAY_CNL.is_cray_login(), var)
+
+    def test_cray_login_aprun(self):
+        """A Cray node with aprun on PATH is still a login node outside a job."""
+        with mock.patch('taucmdr.util.which', side_effect=lambda name: '/usr/bin/aprun' if name == 'aprun' else None), \
+                mock.patch.dict(os.environ):
+            _clear_job_variables()
+            self.assertTrue(CRAY_CNL.is_cray_login())
+
+    def test_not_cray_login(self):
+        self.assertFalse(LINUX.is_cray_login())
+        self.assertFalse(DARWIN.is_cray_login())
 
     # The below code tests platform detection without requiring that we are actually running
     # on the given platform 
