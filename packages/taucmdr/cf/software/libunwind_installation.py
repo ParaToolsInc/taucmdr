@@ -32,11 +32,10 @@ instrumentation, and other measurement approaches.
 
 import os
 import sys
-import shutil
 import fileinput
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.platforms import ARM64, PPC64LE, CRAY_CNL, LINUX
+from taucmdr.cf.platforms import PPC64LE, CRAY_CNL
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, NVHPC
@@ -47,9 +46,7 @@ LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: [
     'https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.8.1.tar.gz',
-    'https://fs.paratools.com/tau-mirror/libunwind-1.8.1.tar.gz'],
-         ARM64: {LINUX: ['https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3-rc1.tar.gz',
-                         'https://fs.paratools.com/tau-mirror/libunwind-1.3-rc1.tar.gz']}}
+    'https://fs.paratools.com/tau-mirror/libunwind-1.8.1.tar.gz']}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -105,10 +102,3 @@ class LibunwindInstallation(AutotoolsInstallation):
         if self.target_arch is PPC64LE:
             flags.append('-i')
         super().make_install(flags)
-
-    def installation_sequence(self):
-        if self.target_arch is ARM64:
-            LOGGER.info("Using pre-built libunwind package from U. Oregon Performance Research Laboratory")
-            shutil.move(str( self._src_prefix), self.install_prefix)
-        else:
-            super().installation_sequence()
