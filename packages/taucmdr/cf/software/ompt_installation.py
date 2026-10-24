@@ -32,6 +32,7 @@ OMPT is used for performance analysis of OpenMP codes.
 from taucmdr import logger
 from taucmdr.cf.software.installation import CMakeInstallation
 from taucmdr.cf.compiler.host import CC, CXX
+from taucmdr.cf.platforms import SHARED_LIBRARY_SUFFIX
 
 
 
@@ -42,7 +43,7 @@ REPOS = {None: [
     'http://fs.paratools.com/tau-mirror/LLVM-openmp-8.0.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libomp.so']}
+LIBRARIES = {None: [f'libomp.{SHARED_LIBRARY_SUFFIX}']}
 
 HEADERS = {None: ['omp.h', 'ompt.h']}
 

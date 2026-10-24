@@ -39,6 +39,10 @@ from taucmdr.cf.compiler.mpi import MPI_COMPILERS
 from taucmdr.cf.compiler.shmem import SHMEM_COMPILERS
 
 
+# macOS reports Apple silicon as 'arm64'.
+_MACHINE_ALIASES = {'arm64': 'aarch64'}
+
+
 class Architecture(KeyedRecord):
     """Information about a processor architecture.
 
@@ -69,7 +73,8 @@ class Architecture(KeyedRecord):
             return cls._detect
         except AttributeError:
             import platform
-            python_arch = platform.machine()
+            machine = platform.machine()
+            python_arch = _MACHINE_ALIASES.get(machine, machine)
             try:
                 inst = Architecture.find(python_arch)
             except KeyError as err:
@@ -195,6 +200,11 @@ TAU_APPLE = TauMagic((X86_64, DARWIN), 'apple',
                       MPI_COMPILERS: mpi.SYSTEM,
                       SHMEM_COMPILERS: shmem.OPENSHMEM})
 
+TAU_ARM64_APPLE = TauMagic((ARM64, DARWIN), 'arm64_apple',
+                           {HOST_COMPILERS: host.APPLE_LLVM,
+                            MPI_COMPILERS: mpi.SYSTEM,
+                            SHMEM_COMPILERS: shmem.OPENSHMEM})
+
 TAU_X86_64 = TauMagic((X86_64, LINUX), 'x86_64',
                       {HOST_COMPILERS: host.GNU,
                        MPI_COMPILERS: mpi.SYSTEM,
@@ -204,6 +214,11 @@ TAU_CRAYCNL = TauMagic((X86_64, CRAY_CNL), 'craycnl',
                        {HOST_COMPILERS: host.CRAY,
                         MPI_COMPILERS: mpi.CRAY,
                         SHMEM_COMPILERS: shmem.CRAY_SHMEM})
+
+TAU_ARM64_CRAYCNL = TauMagic((ARM64, CRAY_CNL), 'craycnl',
+                             {HOST_COMPILERS: host.CRAY,
+                              MPI_COMPILERS: mpi.CRAY,
+                              SHMEM_COMPILERS: shmem.CRAY_SHMEM})
 
 TAU_PPC64LE_LINUX = TauMagic((PPC64LE, LINUX), 'ibm64linux',
                              {HOST_COMPILERS: host.IBM,
@@ -217,4 +232,5 @@ TAU_ARM64_LINUX = TauMagic((ARM64, LINUX), 'arm64_linux',
 
 HOST_ARCH = Architecture.detect()
 HOST_OS = OperatingSystem.detect()
+SHARED_LIBRARY_SUFFIX = 'dylib' if HOST_OS is DARWIN else 'so'
 HOST_TAU_MAGIC = TauMagic.detect()

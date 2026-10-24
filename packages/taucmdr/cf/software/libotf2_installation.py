@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@ The OTF2 library  provides an interface to write and read trace data.
 """
 
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.platforms import SHARED_LIBRARY_SUFFIX
 
 
 REPOS = {None: [
@@ -37,7 +38,7 @@ REPOS = {None: [
     'https://fs.paratools.com/tau-mirror/otf2-3.1.1.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libotf2.so']}
+LIBRARIES = {None: [f'libotf2.{SHARED_LIBRARY_SUFFIX}']}
 
 HEADERS = {None: ['otf2/otf2.h']}
 

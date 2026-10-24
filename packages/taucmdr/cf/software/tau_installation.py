@@ -57,7 +57,7 @@ from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
 from taucmdr.cf.compiler.cuda import CUDA_CXX, CUDA_FC
 from taucmdr.cf.compiler.caf import CAF_FC
 from taucmdr.cf.compiler.python import PY
-from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import TauMagic, DARWIN, CRAY_CNL, HOST_ARCH, HOST_OS, SHARED_LIBRARY_SUFFIX
 
 
 LOGGER = logger.get_logger(__name__)
@@ -190,10 +190,9 @@ def python_build_paths(python_path):
     if not os.path.isfile(os.path.join(include_dir, 'Python.h')):
         raise ConfigurationError(f"{python_path} has no C headers: there is no Python.h in {include_dir}",
                                  "Install the interpreter's development package, e.g. python3-dev or python3-devel.")
-    dylib_suffix = 'dylib' if HOST_OS is DARWIN else 'so'
     # Search the standard library first, then the directory that holds it.
     for search_dir in stdlib, os.path.dirname(stdlib):
-        for path in glob.iglob(os.path.join(search_dir, '**', 'libpython*.' + dylib_suffix + '*'), recursive=True):
+        for path in glob.iglob(os.path.join(search_dir, '**', f'libpython*.{SHARED_LIBRARY_SUFFIX}*'), recursive=True):
             return include_dir, os.path.dirname(path)
     raise ConfigurationError(f"Unable to find libpython in {stdlib} for {python_path}")
 
@@ -1434,8 +1433,7 @@ class TauInstallation(Installation):
         elif self.profile == 'sqlite':
             # Disable regular TAU Profile output when using SQLite plugin
             env['TAU_PROFILE'] = '0'
-            # This may need to be changed for macOS which uses .dylib
-            tau_plugins.append('libTAU-sqlite3-plugin.so')
+            tau_plugins.append(f'libTAU-sqlite3-plugin.{SHARED_LIBRARY_SUFFIX}')
         else:
             env['TAU_PROFILE'] = '0'
             env['SCOREP_ENABLE_PROFILING'] = 'false'
@@ -2002,7 +2000,7 @@ class TauInstallation(Installation):
             rewrite_cmd = 'tau_run'
             dyninstroot = os.path.join(self.install_prefix, self.target_arch.name, 'dyninst-9.3.2-working')
             env['DYNINST_ROOT'] = dyninstroot
-            env['DYNINSTAPI_RT_LIB'] = '%s/lib/libdyninstAPI_RT.so' %dyninstroot
+            env['DYNINSTAPI_RT_LIB'] = f'{dyninstroot}/lib/libdyninstAPI_RT.{SHARED_LIBRARY_SUFFIX}'
             env['LD_LIBRARY_PATH'] = '%s:%s' %(os.path.join(dyninstroot, 'lib'), env['LD_LIBRARY_PATH'])
         elif rewrite_package == 'pebil':
             rewrite_cmd = 'tau_pebil_rewrite'

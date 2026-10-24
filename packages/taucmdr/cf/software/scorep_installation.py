@@ -35,7 +35,7 @@ from taucmdr import logger, util
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler import host, mpi, shmem
-from taucmdr.cf.platforms import X86_64, PPC64LE
+from taucmdr.cf.platforms import X86_64, PPC64LE, SHARED_LIBRARY_SUFFIX
 
 
 LOGGER = logger.get_logger(__name__)
@@ -95,7 +95,7 @@ COMMANDS = {None:
 HEADERS = {None: ['otf2/otf2.h']}
 
 
-LIBRARIES = {None: ['libcube4.so']}
+LIBRARIES = {None: [f'libcube4.{SHARED_LIBRARY_SUFFIX}']}
 
 
 class ScorepInstallation(AutotoolsInstallation):

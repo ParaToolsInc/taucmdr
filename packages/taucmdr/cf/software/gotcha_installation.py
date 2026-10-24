@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2025, ParaTools, Inc.
+# Copyright (c) 2025-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ GOTCHA is required for Score-P 9.0 and later.
 from taucmdr import logger
 from taucmdr.cf.software.installation import CMakeInstallation
 from taucmdr.cf.compiler.host import CC, CXX
+from taucmdr.cf.platforms import SHARED_LIBRARY_SUFFIX
 
 
 
@@ -41,7 +42,7 @@ REPOS = {None: [
     'https://fs.paratools.com/tau-mirror/GOTCHA-1.0.8.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libgotcha.so']}
+LIBRARIES = {None: [f'libgotcha.{SHARED_LIBRARY_SUFFIX}']}
 
 HEADERS = {None: ['gotcha/gotcha.h']}
 

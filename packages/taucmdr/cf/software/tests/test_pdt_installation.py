@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,23 @@ Functions used for unit tests of pdt_installation.py.
 """
 
 from taucmdr.tests import TestCase, not_implemented
+from taucmdr.cf.platforms import ARM64, X86_64, DARWIN, LINUX, CRAY_CNL
+from taucmdr.cf.software import pdt_installation
+from taucmdr.cf.software.pdt_installation import PdtInstallation
+from taucmdr.cf.software.tau_installation import TauInstallation
 
 @not_implemented
 class PdtInstallationTest(TestCase):
     pass
+
+
+class PdtCommandsTest(TestCase):
+    """Tests for the PDT command lists of each platform."""
+
+    def _verify_commands(self, arch, opsys):
+        compilers = TauInstallation.get_minimal().compilers
+        return PdtInstallation({'pdt': 'download'}, arch, opsys, compilers).verify_commands
+
+    def test_commands_new_platforms(self):
+        self.assertEqual(self._verify_commands(ARM64, DARWIN), pdt_installation.COMMANDS[X86_64][DARWIN])
+        self.assertEqual(self._verify_commands(ARM64, CRAY_CNL), pdt_installation.COMMANDS[ARM64][LINUX])
