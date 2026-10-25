@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ Functions used for unit tests of delete.py.
 
 
 from taucmdr import tests
+from taucmdr.cf.platforms import DARWIN, HOST_OS
 from taucmdr.cli.commands.measurement import delete, create
 from taucmdr.cli.commands import select
 
@@ -54,9 +55,10 @@ class DeleteTest(tests.TestCase):
     def test_issue187(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/187"""
         self.reset_project_storage()
+        inst = ['--compiler-inst', 'always'] if HOST_OS is DARWIN else ['--source-inst', 'automatic']
         stdout, stderr = self.assertCommandReturnValue(0, create.COMMAND,
                                                        ['profile2', '--profile', 'tau', '--trace', 'none',
-                                                        '--source-inst', 'automatic', '--sample', 'false'])
+                                                        '--sample', 'false'] + inst)
         self.assertIn("Added measurement 'profile2' to project configuration", stdout)
         self.assertFalse(stderr)
         stdout, stderr = self.assertCommandReturnValue(0, select.COMMAND, ['profile2'])

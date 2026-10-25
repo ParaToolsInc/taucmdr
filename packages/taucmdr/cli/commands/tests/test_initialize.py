@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -69,3 +69,23 @@ class InitializeTest(tests.TestCase):
         self.reset_project_storage()
         stdout, _ = self.assertCommandReturnValue(0, initialize_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
+
+
+class DarwinInitializeTest(tests.DarwinTestCase):
+    """Unit tests for `taucmdr initialize` on macOS"""
+
+    def test_measurements(self):
+        self.assertSucceeded(self.tau('initialize'))
+        out = self.python(
+            "from taucmdr.cf.storage.levels import PROJECT_STORAGE\n"
+            "from taucmdr.model.measurement import Measurement\n"
+            "from taucmdr.model.project import Project\n"
+            "for meas in Measurement.controller(PROJECT_STORAGE).all():\n"
+            "    print(meas['name'], meas['source_inst'], meas['compiler_inst'])\n"
+            "expt = Project.controller().selected().experiment()\n"
+            "print(Measurement.controller(PROJECT_STORAGE).one(expt['measurement'])['name'])")
+        self.assertEqual(out.splitlines(), ['baseline never never',
+                                            'profile never always',
+                                            'compiler-inst never always',
+                                            'trace never always',
+                                            'profile'])

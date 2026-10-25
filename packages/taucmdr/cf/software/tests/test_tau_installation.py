@@ -38,7 +38,7 @@ import tempfile
 from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
+from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN, LINUX
 from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names, python_build_paths
 
 
@@ -194,6 +194,24 @@ class PythonBuildPathsTest(tests.TestCase):
 
 def _metrics(count):
     return ['TIME'] + [f'M{i}' for i in range(1, count)]
+
+
+class PdtUseTest(tests.TestCase):
+    """Tests for when a TAU configuration uses PDT."""
+
+    @staticmethod
+    def _tau(target_os, **kwargs):
+        return TauInstallation({'tau': 'download', 'pdt': 'download'}, HOST_ARCH, target_os,
+                               TauInstallation.get_minimal().compilers, **kwargs)
+
+    def test_source_inst_on_linux(self):
+        self.assertTrue(self._tau(LINUX, source_inst='automatic').uses_pdt)
+
+    def test_source_inst_on_darwin(self):
+        self.assertFalse(self._tau(DARWIN, source_inst='automatic').uses_pdt)
+
+    def test_shmem_on_darwin(self):
+        self.assertFalse(self._tau(DARWIN, shmem_support=True).uses_pdt)
 
 
 class OmptConfigurationTest(tests.TestCase):

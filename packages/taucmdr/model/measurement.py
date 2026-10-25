@@ -41,6 +41,19 @@ from taucmdr.mvc.controller import Controller
 LOGGER = logger.get_logger(__name__)
 
 
+def _unless_darwin_target(condition):
+    """Wrap a compatibility condition so that it is not checked against macOS targets.
+
+    TAU's compiler-based instrumentation resolves names on macOS without binutils or libunwind.
+    """
+    def wrapper(lhs, lhs_attr, lhs_value, rhs):
+        from taucmdr.cf.platforms import DARWIN  # pylint: disable=import-outside-toplevel
+        from taucmdr.model.target import Target  # pylint: disable=import-outside-toplevel
+        if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
+            condition(lhs, lhs_attr, lhs_value, rhs)
+    return wrapper
+
+
 def attributes():
     """Construct attributes dictionary for the measurement model.
 
@@ -149,7 +162,7 @@ def attributes():
         },
         'source_inst': {
             'type': 'string',
-            'default': 'never' if HOST_OS is not DARWIN else 'automatic',
+            'default': 'never',
             'description': "use hooks inserted into the application source code to gather performance data",
             'argparse': {'flags': ('--source-inst',),
                          'group': 'instrumentation',
@@ -164,7 +177,7 @@ def attributes():
         },
         'compiler_inst': {
             'type': 'string',
-            'default': 'never',
+            'default': 'never' if HOST_OS is not DARWIN else 'always',
             'description': "use compiler-generated callbacks to gather performance data",
             'argparse': {'flags': ('--compiler-inst',),
                          'group': 'instrumentation',
@@ -173,11 +186,10 @@ def attributes():
                          'choices': ('always', 'fallback', 'never'),
                          'const': 'always'},
             'compat': {lambda x: x in ('always', 'fallback'):
-                       (Target.require('binutils_source'),
-                        Target.exclude('binutils_source', None),
-                        Target.require('libunwind_source'),
-                        Target.exclude('libunwind_source', None),
-                        Target.exclude('host_os', DARWIN),
+                       (_unless_darwin_target(Target.require('binutils_source')),
+                        _unless_darwin_target(Target.exclude('binutils_source', None)),
+                        _unless_darwin_target(Target.require('libunwind_source')),
+                        _unless_darwin_target(Target.exclude('libunwind_source', None)),
                         Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },

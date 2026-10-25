@@ -378,11 +378,13 @@ def attributes():
         'pdt_source': {
             'type': 'string',
             'description': 'path or URL to a PDT installation or archive file',
-            'default': 'download',
+            'default': 'download' if HOST_OS is not DARWIN else None,
             'argparse': {'flags': ('--pdt',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
                          'action': ParsePackagePathAction},
+            # PDT's macOS parsers are 32-bit Intel and PowerPC binaries that current macOS can't run.
+            'compat': {(lambda x: x is not None): Target.exclude('host_os', DARWIN.name)},
             'rebuild_required': True
         },
         'binutils_source': {

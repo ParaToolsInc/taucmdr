@@ -185,6 +185,43 @@ def run_tau_subprocess(args, backend, cwd, user_prefix, system_prefix=None, env=
                                  env=dict(storage_env(backend, user_prefix, system_prefix), **(env or {})))
 
 
+_PATCH_DARWIN = """
+import platform
+platform.machine = lambda: 'arm64'
+platform.system = lambda: 'Darwin'
+"""
+
+
+def run_python_as_darwin(code, cwd, user_prefix, backend=None):
+    """Run Python code in a new process that TAU Commander takes for an Apple silicon Mac.
+
+    Args:
+        code (str): Source to run after the platform is patched and before anything is imported.
+        cwd (str): Working directory of the new process.
+        user_prefix (str): User-level storage prefix.
+        backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to use the current one.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    env = storage_env(backend or os.environ.get('__TAUCMDR_DB_BACKEND__'), user_prefix)
+    return run_python_subprocess(['-c', _PATCH_DARWIN + code], env=env, cwd=cwd)
+
+
+def run_tau_as_darwin(args, cwd, user_prefix, backend=None):
+    """Run ``tau`` in a new process that takes this host for an Apple silicon Mac.
+
+    Building TAU is skipped: ``Experiment.configure`` does nothing.
+    """
+    code = ("import sys\n"
+            "from unittest import mock\n"
+            "from taucmdr.model.experiment import Experiment\n"
+            "mock.patch.object(Experiment, 'configure').start()\n"
+            "from taucmdr.cli.commands.__main__ import COMMAND\n"
+            f"sys.exit(COMMAND.main({list(args)!r}))\n")
+    return run_python_as_darwin(code, cwd, user_prefix, backend)
+
+
 def not_implemented(cls):
     """Decorator for TestCase classes to indicate that the tests have not been written (yet)."""
     msg = "%s: tests have not been implemented" % cls.__name__
@@ -423,3 +460,29 @@ class TestCase(unittest.TestCase):
         else:
             raise NotImplementedError
         self.fail("'{}' not found in '{}'".format(value, '\n'.join(data)))
+
+
+class DarwinTestCase(TestCase):
+    """Base class for tests that run in processes which take this host for a Mac.
+
+    Each test gets a new user prefix and an empty project directory.
+    """
+
+    def setUp(self):
+        super().setUp()
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.user_prefix = os.path.join(tmp.name, 'user')
+        self.project_dir = os.path.join(tmp.name, 'project')
+        os.mkdir(self.user_prefix)
+        os.mkdir(self.project_dir)
+
+    def tau(self, *args):
+        """Run ``tau`` as on a Mac, see :any:`run_tau_as_darwin`."""
+        return run_tau_as_darwin(args, self.project_dir, self.user_prefix)
+
+    def python(self, code):
+        """Run Python code as on a Mac and return its output, see :any:`run_python_as_darwin`."""
+        proc = run_python_as_darwin(code, self.project_dir, self.user_prefix)
+        self.assertSucceeded(proc)
+        return proc.stdout.strip()

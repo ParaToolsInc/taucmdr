@@ -486,7 +486,8 @@ class TauInstallation(Installation):
         self.unwinder = unwinder
         self.dyninst = dyninst
         self.unwind_depth = unwind_depth
-        self.uses_pdt = not minimal and (self.source_inst == 'automatic' or self.shmem_support)
+        self.uses_pdt = not minimal and (self.target_os is not DARWIN) and 'pdt' in sources and \
+                        (self.source_inst == 'automatic' or self.shmem_support)
         self.uses_binutils = not minimal and (self.target_os is not DARWIN) and 'binutils' in sources
         self.uses_libunwind = not minimal and (self.target_os is not DARWIN) and 'libunwind' in sources and self.unwinder == 'libunwind'
         self.uses_libelf = not minimal and (self.target_os is not DARWIN) and 'libelf' in sources

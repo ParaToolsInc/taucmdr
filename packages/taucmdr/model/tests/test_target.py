@@ -31,6 +31,7 @@ import tempfile
 from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
+from taucmdr.cf.platforms import DARWIN, HOST_OS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.target.list import COMMAND as target_list_cmd
 from taucmdr.model import target
@@ -42,9 +43,8 @@ class TargetTest(tests.TestCase):
 
     def _target_with(self, data):
         self.reset_project_storage()
-        ctrl = Target.controller(PROJECT_STORAGE)
-        ctrl.update(data, {'name': 'targ1'})
-        return ctrl.one({'name': 'targ1'})
+        PROJECT_STORAGE.update(data, {'name': 'targ1'}, table_name=Target.name)
+        return Target.controller(PROJECT_STORAGE).one({'name': 'targ1'})
 
     def test_unknown_host_arch(self):
         """A target saved with an architecture this version doesn't know gives a clear error."""
@@ -80,3 +80,24 @@ class TargetTest(tests.TestCase):
                 self.assertLogs('taucmdr.model.target', 'WARNING') as logs:
             self.assertEqual(target.tau_source_default(), 'download')
         self.assertIn(missing, logs.output[0])
+
+    def test_pdt_default(self):
+        self.assertEqual(Target.attributes['pdt_source']['default'], None if HOST_OS is DARWIN else 'download')
+
+
+class DarwinTargetTest(tests.DarwinTestCase):
+    """Tests for targets on macOS."""
+
+    def test_pdt_default(self):
+        self.assertEqual(self.python("from taucmdr.model.target import Target\n"
+                                     "print(Target.attributes['pdt_source']['default'])"), 'None')
+
+    def test_pdt_refused(self):
+        self.assertSucceeded(self.tau('initialize', '--bare'))
+        proc = self.tau('target', 'create', 'targ1', '--pdt', 'download')
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn('pdt', (proc.stdout + proc.stderr).lower())
+
+    def test_target_without_pdt(self):
+        self.assertSucceeded(self.tau('initialize', '--bare'))
+        self.assertSucceeded(self.tau('target', 'create', 'targ1'))

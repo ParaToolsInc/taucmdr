@@ -54,7 +54,7 @@ class ApplicationTest(tests.TestCase):
         self.assertCommandReturnValue(EXIT_SUCCESS, copy_cmd, ['app1', 'app2'])
         with mock.patch.object(Experiment, 'configure'):
             self.assertCommandReturnValue(EXIT_SUCCESS, select_cmd,
-                                          ['--target', 'targ1', '--application', 'app1', '--measurement', 'sample'])
+                                          ['--target', 'targ1', '--application', 'app1', '--measurement', 'profile'])
 
 
 class EncourageTest(tests.TestCase):
