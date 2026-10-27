@@ -29,6 +29,7 @@
 Functions used for unit tests of application.py.
 """
 
+import os
 from unittest import mock
 from taucmdr import tests, EXIT_SUCCESS
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
@@ -36,9 +37,33 @@ from taucmdr.cli.commands.application.copy import COMMAND as copy_cmd
 from taucmdr.cli.commands.application.edit import COMMAND as edit_cmd
 from taucmdr.cli.commands.application.list import COMMAND as list_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
-from taucmdr.model.application import Application
+from taucmdr.cf.platforms import CRAY_CNL, LINUX
+from taucmdr.model.application import Application, linkage_default
 from taucmdr.model.experiment import Experiment
 from taucmdr.model.measurement import Measurement
+
+
+class LinkageDefaultTest(tests.TestCase):
+    """Tests for :any:`taucmdr.model.application.linkage_default`."""
+
+    @staticmethod
+    def _default(host_os, link_type):
+        with mock.patch('taucmdr.cf.platforms.HOST_OS', host_os), mock.patch.dict(os.environ):
+            os.environ.pop('CRAYPE_LINK_TYPE', None)
+            if link_type:
+                os.environ['CRAYPE_LINK_TYPE'] = link_type
+            return linkage_default()
+
+    def test_cray_links_dynamically_by_default(self):
+        """The Cray Programming Environment links dynamically unless CRAYPE_LINK_TYPE says otherwise."""
+        self.assertEqual(self._default(CRAY_CNL, None), 'dynamic')
+        self.assertEqual(self._default(CRAY_CNL, 'dynamic'), 'dynamic')
+
+    def test_cray_static_link_type(self):
+        self.assertEqual(self._default(CRAY_CNL, 'static'), 'static')
+
+    def test_linux_ignores_link_type(self):
+        self.assertEqual(self._default(LINUX, 'static'), 'dynamic')
 
 
 class ApplicationTest(tests.TestCase):

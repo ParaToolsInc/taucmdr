@@ -34,6 +34,7 @@ are potentially two application records for the same application code: one
 specifying OpenMP is used and the other specifying OpenMP is not used.
 """
 
+import os
 from taucmdr import logger
 from taucmdr.error import IncompatibleRecordError, ConfigurationError, ProjectSelectionError, ExperimentSelectionError
 from taucmdr.mvc.model import Model
@@ -45,6 +46,18 @@ from taucmdr.cf.compiler.cuda import CUDA_COMPILERS
 from taucmdr.cf.compiler.caf import CAF_COMPILERS
 
 LOGGER = logger.get_logger(__name__)
+
+
+def linkage_default():
+    """Return the default application linkage, "static" or "dynamic".
+
+    The Cray Programming Environment links dynamically unless ``CRAYPE_LINK_TYPE`` is "static".
+    """
+    from taucmdr.cf.platforms import HOST_OS, CRAY_CNL
+    if HOST_OS is CRAY_CNL and os.environ.get('CRAYPE_LINK_TYPE') == 'static':
+        return 'static'
+    return 'dynamic'
+
 
 def attributes():
     """Construct attributes dictionary for the application model.
@@ -58,7 +71,7 @@ def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.measurement import Measurement
-    from taucmdr.cf.platforms import DARWIN, HOST_OS, CRAY_CNL
+    from taucmdr.cf.platforms import DARWIN
 
     def _encourage_except_baseline(lhs, lhs_attr, lhs_value, rhs):
         if isinstance(rhs, Measurement):
@@ -165,7 +178,7 @@ def attributes():
         },
         'linkage': {
             'type': 'string',
-            'default': 'static' if HOST_OS is CRAY_CNL else 'dynamic',
+            'default': linkage_default(),
             'description': "application linkage",
             'argparse': {'flags': ('--linkage',),
                          'metavar': '<linkage>',
