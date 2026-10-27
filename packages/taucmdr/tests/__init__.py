@@ -193,7 +193,7 @@ platform.system = lambda: 'Darwin'
 
 
 def run_python_as_darwin(code, cwd, user_prefix, backend=None):
-    """Run Python code in a new process that TAU Commander takes for an Apple silicon Mac.
+    """Run Python code in a new process that TAU Commander will identify as an Apple silicon Mac.
 
     Args:
         code (str): Source to run after the platform is patched and before anything is imported.
@@ -205,6 +205,8 @@ def run_python_as_darwin(code, cwd, user_prefix, backend=None):
         subprocess.CompletedProcess: The finished process, with text output captured.
     """
     env = storage_env(backend or os.environ.get('__TAUCMDR_DB_BACKEND__'), user_prefix)
+    # Either variable makes TAU Commander take the host for a Cray.
+    env.update(PE_ENV=None, CRAYOS_VERSION=None)
     return run_python_subprocess(['-c', _PATCH_DARWIN + code], env=env, cwd=cwd)
 
 

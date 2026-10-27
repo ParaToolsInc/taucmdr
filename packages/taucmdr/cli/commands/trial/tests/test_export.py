@@ -71,6 +71,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     def test_export_merged_profile(self):
         self.reset_project_storage(['--mpi', '--profile', 'merged', '--trace', 'none'])
         expr = Project.selected().experiment()
@@ -85,6 +86,7 @@ class ExportTest(tests.TestCase):
 
     @tests.skipIf(HOST_OS is DARWIN, "Score-P isn't built on Darwin")
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     def test_export_cubex(self):
         self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
         if util.which('nvc') and self.getCompiler(CC) == util.which('nvc') :
@@ -113,6 +115,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     def test_export_otf2(self):
         self.reset_project_storage(['--mpi', '--trace', 'otf2', '--profile', 'none'])
         expr = Project.selected().experiment()
