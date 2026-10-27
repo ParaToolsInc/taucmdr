@@ -135,15 +135,15 @@ class Knowledgebase:
         """Iterate over compiler families in the knowledgebase.
 
         The first family yielded is the host's preferred compiler family.
-        All other families may be yielded in any order.
+        Fallback families are yielded last; all other families may be yielded in any order.
         """
         from taucmdr.cf.platforms import HOST_TAU_MAGIC
         preferred = HOST_TAU_MAGIC.preferred_families.get(self, None)
         if preferred is not None:
             yield preferred
-        for family in self._families.values():
-            if family is not preferred:
-                yield family
+        others = [family for family in self._families.values() if family is not preferred]
+        yield from (family for family in others if not family.fallback)
+        yield from (family for family in others if family.fallback)
 
     def add(self, name, *args, **kwargs):
         """Add a new compiler family to the knowledgebase.
@@ -226,6 +226,7 @@ class _CompilerFamily(TrackedInstance):
         show_wrapper_flags (list): Command line flags that show the wrapped compiler's command line, e.g. '-show'.
         optional_wrapper (bool): If True then a command that rejects :any:`show_wrapper_flags` is treated as
                                  a compiler that doesn't wrap another compiler instead of as an error.
+        fallback (bool): If True then the family is searched for installed compilers only after every other family.
         members (dict): Compilers in this family indexed by role.
     """
 
@@ -238,9 +239,11 @@ class _CompilerFamily(TrackedInstance):
                  link_library_flags=None,
                  show_wrapper_flags=None,
                  optional_wrapper=False,
+                 fallback=False,
                  family_regex=None):
         self.kbase = kbase
         self.name = name
+        self.fallback = fallback
         self.family_regex = family_regex
         self.version_flags = version_flags or ['--version', '-E']
         self.include_path_flags = include_path_flags or ['-I']

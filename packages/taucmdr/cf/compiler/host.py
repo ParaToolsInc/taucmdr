@@ -37,7 +37,9 @@ HOST_COMPILERS = Knowledgebase('Host', 'Compilers targeting the host CPU',
                                FC=('Fortran', ('FC', 'F77', 'F90')),
                                UPC=('Universal Parallel C', 'UPC'))
 
-SYSTEM = HOST_COMPILERS.add('System', CC='cc', CXX=('c++', 'cxx', 'CC'), FC=('ftn', 'f90', 'f77'), UPC='upc')
+# Any compiler matches the System family, so a named family that matches the same compiler takes precedence.
+SYSTEM = HOST_COMPILERS.add('System', fallback=True,
+                            CC='cc', CXX=('c++', 'cxx', 'CC'), FC=('ftn', 'f90', 'f77'), UPC='upc')
 
 GNU = HOST_COMPILERS.add('GNU', family_regex=r'Free Software Foundation, Inc',
                          CC='gcc', CXX='g++', FC=('gfortran', 'g77'), UPC='gupc')
