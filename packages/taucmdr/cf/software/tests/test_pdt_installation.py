@@ -50,3 +50,13 @@ class PdtCommandsTest(TestCase):
     def test_commands_new_platforms(self):
         self.assertEqual(self._verify_commands(ARM64, DARWIN), pdt_installation.COMMANDS[X86_64][DARWIN])
         self.assertEqual(self._verify_commands(ARM64, CRAY_CNL), pdt_installation.COMMANDS[ARM64][LINUX])
+
+    def test_commands_edg4101_wrappers(self):
+        """Platforms with PDT's EDG 4.10.1 front end expect the x4101 wrapper names."""
+        # PDT's configure installs cparse4101 and cxxparse4101 wherever it ships edgcpfe4101.
+        for arch, by_os in pdt_installation.COMMANDS.items():
+            if arch is None:
+                continue
+            for opsys, commands in by_os.items():
+                if 'edgcpfe4101' in commands:
+                    self.assertLessEqual({'cparse4101', 'cxxparse4101'}, set(commands), (arch.name, opsys.name))

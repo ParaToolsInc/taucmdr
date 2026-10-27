@@ -73,20 +73,44 @@ class DarwinInstrumentationTest(tests.DarwinTestCase):
         self.assertSucceeded(self.tau('target', 'create', 'targ1'))
         self.assertSucceeded(self.tau('application', 'create', 'app1'))
 
-    def _select(self, *measurement_args):
-        self.assertSucceeded(self.tau('measurement', 'create', 'meas1', *measurement_args))
-        return self.tau('select', '--target', 'targ1', '--application', 'app1', '--measurement', 'meas1')
+    def _select(self, *measurement_args, name='meas1'):
+        self.assertSucceeded(self.tau('measurement', 'create', name, *measurement_args))
+        return self.tau('select', '--target', 'targ1', '--application', 'app1', '--measurement', name)
 
     def test_defaults(self):
         out = self.python("from taucmdr.model.measurement import Measurement\n"
                           "print(Measurement.attributes['source_inst']['default'],\n"
-                          "      Measurement.attributes['compiler_inst']['default'])")
-        self.assertEqual(out, 'never always')
+                          "      Measurement.attributes['compiler_inst']['default'],\n"
+                          "      Measurement.attributes['sample']['default'])")
+        self.assertEqual(out, 'never always True')
 
     def test_source_inst_refused(self):
         proc = self._select('--source-inst', 'automatic')
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn('pdt', (proc.stdout + proc.stderr).lower())
+
+    def test_sample_without_binutils(self):
+        self.assertSucceeded(self._select('--sample', 'True'))
+
+    def test_io_with_instrumentation_refused(self):
+        for compiler_inst in 'always', 'fallback':
+            with self.subTest(compiler_inst=compiler_inst):
+                proc = self._select('--io', '--source-inst', 'never', '--compiler-inst', compiler_inst,
+                                    name=compiler_inst)
+                self.assertNotEqual(proc.returncode, 0)
+                output = proc.stdout + proc.stderr
+                self.assertIn('io = True', output)
+                self.assertIn('Darwin', output)
+
+    def test_io_under_tau_exec(self):
+        self.assertSucceeded(self._select('--io', '--source-inst', 'never', '--compiler-inst', 'never'))
+
+    def test_memory_alloc_refused(self):
+        proc = self._select('--memory-alloc')
+        self.assertNotEqual(proc.returncode, 0)
+        output = proc.stdout + proc.stderr
+        self.assertIn('memory_alloc', output)
+        self.assertIn('Darwin', output)
 
     def test_compiler_inst_without_binutils(self):
         self.assertSucceeded(self._select('--compiler-inst', 'always'))

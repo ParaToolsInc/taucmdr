@@ -52,16 +52,14 @@ print(levels.highest_writable_storage().name)
 # and which level is the highest writable one, outside and inside build_level(SYSTEM_STORAGE).
 _BUILD_LEVEL = '''
 import json, os
-from taucmdr.cf.compiler import InstalledCompilerSet
-from taucmdr.cf.compiler.host import CC, CXX, GNU
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
 from taucmdr.cf.software.installation import Installation
+from taucmdr.cf.software.tau_installation import TauInstallation
 from taucmdr.cf.storage import levels
 from taucmdr.model.experiment import Experiment
 
 archive = os.path.join(os.path.dirname(os.environ['__TAUCMDR_USER_PREFIX__']), 'dist', 'fake.tgz')
-found = GNU.installation()
-compilers = InstalledCompilerSet('fake', Host_CC=found[CC], Host_CXX=found[CXX])
+compilers = TauInstallation.get_minimal().compilers
 
 def state():
     inst = Installation('fake', 'Fake', {'fake': 'download'}, HOST_ARCH, HOST_OS, compilers,
@@ -118,7 +116,8 @@ class LevelsTest(tests.TestCase):
     @staticmethod
     def _dirs():
         """Return a new user prefix and project directory under the test work dir."""
-        root = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        # Storage prefixes are reported resolved, and macOS's temporary directory is under the /var symlink.
+        root = os.path.realpath(tempfile.mkdtemp(dir=tests.get_test_workdir()))
         user, project = os.path.join(root, 'user'), os.path.join(root, 'project')
         os.mkdir(user)
         os.mkdir(project)

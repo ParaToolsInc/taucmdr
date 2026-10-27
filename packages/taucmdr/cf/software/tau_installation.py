@@ -871,6 +871,33 @@ class TauInstallation(Installation):
 
         return selected_inc, selected_lib, selected_library
 
+    def _unwind_flags(self, libunwind):
+        """Returns TAU's configure options for the stack unwinder."""
+        if self.unwinder != 'libunwind':
+            return ['-unwinder=%s' % self.unwinder]
+        if libunwind:
+            return ['-unwinder=libunwind', '-unwind=%s' % libunwind.install_prefix]
+        # Without a libunwind directory TAU links a bare -lunwind, which fails where the system has none,
+        # unless its configure links macOS's own libunwind for this architecture.
+        if self.target_os is DARWIN and self._configure_links_system_libunwind():
+            return ['-unwinder=libunwind']
+        return []
+
+    def _configure_links_system_libunwind(self):
+        """Returns True if TAU's configure links macOS's libunwind for this TAU architecture."""
+        machine = '$machine = %s ' % self.tau_magic.name
+        try:
+            with open(os.path.join(self._src_prefix, 'configure'), encoding='utf-8', errors='replace') as fin:
+                previous = ''
+                for line in fin:
+                    if '-framework#System' in line and machine in previous:
+                        return True
+                    if line.strip():
+                        previous = line
+        except OSError:
+            pass
+        return False
+
     def configure(self):
         """Configures TAU
 
@@ -898,8 +925,7 @@ class TauInstallation(Installation):
                     '-tag=%s' % self.uid,
                     '-arch=%s' % self.tau_magic.name,
                     '-bfd=%s' % binutils.install_prefix if binutils else None,
-                    '-unwinder=%s' % self.unwinder,
-                    '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else None,
+                    *self._unwind_flags(libunwind),
                    ] if flag]
             if util.create_subprocess(cmd, cwd=self._src_prefix, stdout=False, show_progress=True):
                 raise SoftwarePackageError('TAU configure failed')
@@ -967,8 +993,7 @@ class TauInstallation(Installation):
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
                   '-bfd=%s' % binutils.install_prefix if binutils else None,
                   '-papi=%s' % papi.install_prefix if papi else None,
-                  '-unwinder=%s' % self.unwinder,
-                  '-unwind=%s' % libunwind.install_prefix if self.unwinder == 'libunwind' and libunwind else None,
+                  *self._unwind_flags(libunwind),
                   '-dwarf=%s' % libdwarf.install_prefix if libdwarf else None,
                   '-elf=%s' % libelf.install_prefix if libdwarf else None,
                   '-scorep=%s' % scorep.install_prefix if scorep else None,
@@ -1373,7 +1398,7 @@ class TauInstallation(Installation):
             if self.select_file:
                 select_file = os.path.realpath(os.path.abspath(self.select_file))
                 tau_opts.add('-optTauSelectFile=%s' % select_file)
-            if self.measure_io:
+            if self.measure_io and self.target_os is not DARWIN:
                 tau_opts.add('-optTrackIO')
             if self.measure_memory_alloc:
                 tau_opts.add('-optMemDbg')

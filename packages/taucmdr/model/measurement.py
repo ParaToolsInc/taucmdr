@@ -44,7 +44,7 @@ LOGGER = logger.get_logger(__name__)
 def _unless_darwin_target(condition):
     """Wrap a compatibility condition so that it is not checked against macOS targets.
 
-    TAU's compiler-based instrumentation resolves names on macOS without binutils or libunwind.
+    TAU resolves names on macOS through the system, without binutils or libunwind.
     """
     def wrapper(lhs, lhs_attr, lhs_value, rhs):
         from taucmdr.cf.platforms import DARWIN  # pylint: disable=import-outside-toplevel
@@ -52,6 +52,22 @@ def _unless_darwin_target(condition):
         if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
             condition(lhs, lhs_attr, lhs_value, rhs)
     return wrapper
+
+
+def _darwin_io_needs_tau_exec(lhs, lhs_attr, lhs_value, rhs):
+    """Compatibility condition: on macOS, I/O is measured only when the application runs under tau_exec.
+
+    TAU's link-time I/O wrapper uses -Wl,-wrap, which Apple's ld doesn't have, and TAU Commander runs
+    instrumented applications without tau_exec.
+    """
+    from taucmdr.cf.platforms import DARWIN  # pylint: disable=import-outside-toplevel
+    from taucmdr.model.target import Target  # pylint: disable=import-outside-toplevel
+    if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
+        return
+    if lhs.get_or_default('source_inst') != 'never' or lhs.get_or_default('compiler_inst') != 'never':
+        raise IncompatibleRecordError("%s = %s in %s requires source_inst = never and compiler_inst = never "
+                                      "with host_os = %s in %s" %
+                                      (lhs_attr, lhs_value, lhs.name.lower(), DARWIN.name, rhs.name.lower()))
 
 
 def attributes():
@@ -149,15 +165,14 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': HOST_OS is not DARWIN,
+            'default': True,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation'},
-            'compat': {True: (Target.require('binutils_source'),
-                              Target.exclude('binutils_source', None),
-                              Target.encourage('libunwind_source'),
-                              Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN),
+            'compat': {True: (_unless_darwin_target(Target.require('binutils_source')),
+                              _unless_darwin_target(Target.exclude('binutils_source', None)),
+                              _unless_darwin_target(Target.encourage('libunwind_source')),
+                              _unless_darwin_target(Target.discourage('libunwind_source', None)),
                               Measurement.exclude('baseline', True))}
         },
         'source_inst': {
@@ -290,7 +305,8 @@ def attributes():
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',)},
-            'compat': {True: Measurement.exclude('baseline', True)},
+            'compat': {True: (Measurement.exclude('baseline', True),
+                              _darwin_io_needs_tau_exec)},
         },
         'heap_usage': {
             'type': 'boolean',
@@ -314,7 +330,9 @@ def attributes():
             'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
-            'compat': {True: Measurement.exclude('baseline', True)},
+            # TAU's memory wrapper links with -Wl,-wrap, which Apple's ld doesn't have.
+            'compat': {True: (Measurement.exclude('baseline', True),
+                              Target.exclude('host_os', DARWIN.name))},
         },
         'metrics': {
             'type': 'array',

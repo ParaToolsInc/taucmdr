@@ -73,7 +73,7 @@ _DARWIN_COMMANDS = ['cparse',
                     'xmlgen']
 
 _ARM64_LINUX_COMMANDS = ['cparse',
-                         'cparse410',
+                         'cparse4101',
                          'cxxparse',
                          'cxxparse4101',
                          'edgcpfe',

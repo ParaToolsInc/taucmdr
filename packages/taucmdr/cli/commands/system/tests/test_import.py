@@ -39,8 +39,6 @@ from types import SimpleNamespace
 from unittest import mock
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.compiler import InstalledCompilerSet
-from taucmdr.cf.compiler.host import CC, CXX, GNU
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS
 from taucmdr.cf.software import installation
 from taucmdr.cf.software.sqlite3_installation import Sqlite3Installation
@@ -177,8 +175,7 @@ class ImportTest(tests.TestCase):
         name = 'sqlite-autoconf-3210000.tar.gz'
         self._bundle(name)
         import_cmd.import_sources(self.bundle, self.src)
-        found = GNU.installation()
-        compilers = InstalledCompilerSet('offline', Host_CC=found[CC], Host_CXX=found[CXX])
+        compilers = TauInstallation.get_minimal().compilers
         inst = Sqlite3Installation({'sqlite3': 'download'}, HOST_ARCH, HOST_OS, compilers)
         with mock.patch.object(installation, 'search_levels', return_value=[SimpleNamespace(prefix=self.system)]), \
              mock.patch.object(util, 'download', side_effect=OSError('offline')) as download:

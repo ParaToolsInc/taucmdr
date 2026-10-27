@@ -85,7 +85,8 @@ class DarwinInitializeTest(tests.DarwinTestCase):
             "expt = Project.controller().selected().experiment()\n"
             "print(Measurement.controller(PROJECT_STORAGE).one(expt['measurement'])['name'])")
         self.assertEqual(out.splitlines(), ['baseline never never',
+                                            'sample never never',
                                             'profile never always',
                                             'compiler-inst never always',
                                             'trace never always',
-                                            'profile'])
+                                            'sample'])

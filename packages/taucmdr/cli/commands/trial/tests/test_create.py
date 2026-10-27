@@ -31,6 +31,7 @@ Functions used for unit tests of create.py.
 
 import functools
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -87,6 +88,7 @@ class CreateTest(tests.TestCase):
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_no_time_metric(self):
         self.reset_project_storage()
         argv = ['meas_no_time', '--metrics', 'PAPI_L2_DCM', '--source-inst', 'never']
@@ -115,7 +117,7 @@ class CreateTest(tests.TestCase):
         self.assertIn("Trial 0 produced 2 profile files", stdout)
         self.assertFalse(stderr)
 
-    @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
+    @tests.skipIf(HOST_OS is DARWIN, "Memory allocation measurement isn't supported on Darwin")
     def test_heap_usage_memory_alloc_sample(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
@@ -146,6 +148,7 @@ class CreateTest(tests.TestCase):
         #self.assertInLastTrialData("Heap Allocate")
         #self.assertInLastTrialData("malloc")
 
+    @tests.skipIf(HOST_OS is DARWIN, "Memory allocation measurement isn't supported on Darwin")
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
@@ -219,7 +222,25 @@ class CreateTest(tests.TestCase):
     def test_sample_resolution_line(self):
         self.sample_resolution_helper('line')
 
-    @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
+    def test_io_tau_exec(self):
+        """POSIX I/O calls are counted when the application runs under tau_exec."""
+        self.reset_project_storage()
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['io', '--source-inst', 'never', '--compiler-inst', 'never',
+                                       '--sample', 'False', '--io'])
+        self.assertCommandReturnValue(0, select_cmd, ['io'])
+        self.assertManagedBuild(0, CC, [], 'io.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn('Trial 0 produced 1 profile files', stdout)
+        self.assertRegex(stdout, r'tau_exec .*-io')
+        self.assertFalse(stderr)
+        profile_dir = Project.selected().experiment().trials()[0].get_data_files()['tau']
+        with open(os.path.join(profile_dir, 'profile.0.0.0'), encoding='utf-8') as fin:
+            profile = fin.read()
+        # TAU pads I/O event names with trailing spaces.
+        for event, calls in ('open()', 10), ('write()', 5), ('read()', 5), ('close()', 10):
+            self.assertRegex(profile, rf'(?m)^"{re.escape(event)}\s*" {calls} ')
+
     def test_system_load_sample(self):
         """Test TAU_TRACK_LOAD w/ sampling"""
         self.reset_project_storage()

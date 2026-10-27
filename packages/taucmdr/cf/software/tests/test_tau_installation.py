@@ -38,7 +38,9 @@ import tempfile
 from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN, LINUX
+from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, ARM64, DARWIN, LINUX
+from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.software.installation import Installation
 from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names, python_build_paths
 
 
@@ -259,6 +261,81 @@ class OmptConfigurationTest(tests.TestCase):
         ignore._src_prefix = ompt._src_prefix
         self.assertFalse([opt for opt in ignore._useropts() if opt.startswith('-I')])
         self.assertEqual(self._tau()._useropts(), ['-O2', '-g'])
+
+
+class UnwinderConfigureTest(tests.TestCase):
+    """Tests for the stack unwinder options given to TAU's configure."""
+
+    _CONFIGURE = ('    if [ "x$unwinder" = "xlibunwind" ] ; then\n'
+                  '          if [ %s ] ; then\n'
+                  '            unwind_lib_flag="-framework#System"\n')
+
+    @staticmethod
+    def _configure_argv(tau, configure=None):
+        src = tempfile.mkdtemp(dir=os.getcwd())
+        if configure is not None:
+            with open(os.path.join(src, 'configure'), 'w', encoding='utf-8') as fout:
+                fout.write(configure)
+        tau._src_prefix = src  # pylint: disable=protected-access
+        with mock.patch('taucmdr.util.create_subprocess', return_value=0) as create_subprocess:
+            tau.configure()
+        return create_subprocess.call_args.args[0]
+
+    @staticmethod
+    def _tau(target_os, target_arch=HOST_ARCH):
+        return TauInstallation({'tau': 'download', 'libunwind': 'download'}, target_arch, target_os,
+                               TauInstallation.get_minimal().compilers)
+
+    def test_darwin_configure_maps_unwinder(self):
+        """On Apple silicon, TAU uses macOS's own libunwind when its configure knows how to link it."""
+        configure = self._CONFIGURE % '$machine = apple -o $machine = arm64_apple'
+        argv = self._configure_argv(self._tau(DARWIN, ARM64), configure)
+        self.assertIn('-unwinder=libunwind', argv)
+        self.assertFalse([arg for arg in argv if arg.startswith('-unwind=')], argv)
+
+    def test_darwin_configure_without_unwinder_mapping(self):
+        """On Apple silicon, TAU isn't asked for libunwind when its configure would link a bare -lunwind."""
+        argv = self._configure_argv(self._tau(DARWIN, ARM64), self._CONFIGURE % '$machine = apple')
+        self.assertFalse([arg for arg in argv if arg.startswith('-unwind')], argv)
+
+    def test_darwin_without_libunwind(self):
+        """On macOS, where TAU Commander provides no libunwind, TAU isn't asked to link one."""
+        argv = self._configure_argv(self._tau(DARWIN))
+        self.assertFalse([arg for arg in argv if arg.startswith('-unwind')], argv)
+
+    def test_minimal_without_libunwind(self):
+        """Minimal TAU, which has no libunwind, isn't asked to link one."""
+        argv = self._configure_argv(TauInstallation.get_minimal())
+        self.assertFalse([arg for arg in argv if arg.startswith('-unwind')], argv)
+
+    def test_linux_with_libunwind(self):
+        """With its own libunwind, TAU gets both the unwinder and libunwind's location."""
+        tau = self._tau(LINUX)
+        argv = self._configure_argv(tau)
+        self.assertIn('-unwinder=libunwind', argv)
+        self.assertIn('-unwind=%s' % tau.dependencies['libunwind'].install_prefix, argv)
+
+
+class CompilerOptionsTest(tests.TestCase):
+    """Tests for the TAU_OPTIONS given to TAU's compiler wrappers."""
+
+    @staticmethod
+    def _tau_options(target_os, **kwargs):
+        compilers = TauInstallation.get_minimal().compilers
+        tau = TauInstallation({'tau': 'download'}, HOST_ARCH, target_os, compilers, **kwargs)
+        with mock.patch.object(Installation, 'compiletime_config',
+                               side_effect=lambda opts=None, env=None: (list(opts or []), dict(env or {}))), \
+             mock.patch.object(TauInstallation, 'get_makefile', return_value=f'Makefile.tau-{tau.uid}'):
+            _, env = tau.compiletime_config(compilers[CC])
+        return env['TAU_OPTIONS'].split()
+
+    def test_io_link_wrapper(self):
+        """On Linux, I/O is also measured by wrapping I/O calls when the application is linked."""
+        self.assertIn('-optTrackIO', self._tau_options(LINUX, measure_io=True, compiler_inst='always'))
+
+    def test_no_io_link_wrapper_on_darwin(self):
+        """Apple's linker can't wrap I/O calls, so on macOS I/O is measured only under tau_exec."""
+        self.assertNotIn('-optTrackIO', self._tau_options(DARWIN, measure_io=True))
 
 
 class TauConfigurationHashTest(tests.TestCase):

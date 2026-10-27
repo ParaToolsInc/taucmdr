@@ -35,6 +35,8 @@ import shutil
 import tempfile
 import taucmdr
 from taucmdr import tests
+from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.software.tau_installation import TauInstallation
 
 _BACKENDS = ('tinydb', 'sqlite')
 
@@ -77,7 +79,8 @@ class NoSystemLevelTest(tests.TestCase):
     def test_trial_without_system_level(self):
         self.assertSucceeded(self.init)
         shutil.copy(os.path.join(tests.REPO_DIR, '.testfiles', 'matmult.c'), self.project)
-        self._tau(['gcc', 'matmult.c', '-o', 'a.out'])
+        host_cc = TauInstallation.get_minimal().compilers[CC].info.command
+        self._tau([host_cc, 'matmult.c', '-o', 'a.out'])
         self.assertIn('produced', self._tau(['trial', 'create', './a.out']).stdout)
         self.assertTrue(glob.glob(os.path.join(self.project, '.tau', '**', 'profile.*'), recursive=True))
 

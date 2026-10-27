@@ -185,13 +185,10 @@ class InitializeCommand(AbstractCommand):
 
         # Target was created so let's see if we can use binutils on this target.
         targ = Target.controller(PROJECT_STORAGE).one({'name': target_name})
-        if not targ['binutils_source']:
+        if not targ['binutils_source'] and targ.operating_system() is not DARWIN:
+            self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
             args.sample = False
-            if targ.operating_system() is DARWIN:
-                self.logger.info("GNU binutils unavailable: disabling sampling")
-            else:
-                self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
-                args.compiler_inst = 'never'
+            args.compiler_inst = 'never'
 
         # Create default measurements
         measurements = []

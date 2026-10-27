@@ -30,15 +30,13 @@ Functions used for unit tests of shmem.py.
 """
 
 import os
-import unittest
-from taucmdr import tests, util
+from taucmdr import tests
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import SYSTEM, MPI_CC
 from taucmdr.cf.compiler.shmem import OPENSHMEM, SHMEM_CC
-
-_GCC = util.which('gcc')
+from taucmdr.cf.software.tau_installation import TauInstallation
 
 
 class OpenSHMEMWrapperTest(tests.TestCase):
@@ -53,18 +51,18 @@ class OpenSHMEMWrapperTest(tests.TestCase):
         os.chmod(path, 0o755)
         return path
 
-    @unittest.skipUnless(_GCC, "gcc not found")
     def test_showme_wrapper(self):
         """An Open MPI style wrapper that accepts -showme reports its include and library paths."""
+        host_cc = TauInstallation.get_minimal().compilers[CC].absolute_path
         path = self._make_compiler('oshcc', (
             'if [ "$1" = "-showme" ]; then\n'
             '  echo "%s -I/fake/openmpi/include -L/fake/openmpi/lib -loshmem -lmpi"\n'
             '  exit 0\n'
             'fi\n'
-            'exit 1\n') % _GCC)
+            'exit 1\n') % host_cc)
         comp = InstalledCompiler(path, OPENSHMEM.members[SHMEM_CC][0])
         self.assertIsNotNone(comp.wrapped)
-        self.assertEqual(comp.wrapped.absolute_path, _GCC)
+        self.assertEqual(comp.wrapped.absolute_path, host_cc)
         self.assertIs(comp.wrapped.info.role, CC)
         self.assertListEqual(comp.include_path, ['/fake/openmpi/include'])
         self.assertListEqual(comp.library_path, ['/fake/openmpi/lib'])
