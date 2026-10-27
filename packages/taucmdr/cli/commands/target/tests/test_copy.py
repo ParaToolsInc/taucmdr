@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017, ParaTools, Inc.
+# Copyright (c) 2017-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -72,7 +72,8 @@ class CopyTest(tests.TestCase):
 
     def test_compilerarg(self):
         self.reset_project_storage()
-        argv = ['targ1', 'targ2', '--compiler', 'System']
+        # The backtrace unwinder, the default on ppc64le, requires GNU compilers.
+        argv = ['targ1', 'targ2', '--compiler', 'System', '--unwinder', 'None']
         stdout, stderr = self.assertCommandReturnValue(0, copy.COMMAND, argv)
         self.assertIn('Added target \'targ2\' to project configuration', stdout)
         self.assertFalse(stderr)
