@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ We keep a separate knowledge base for MPI compilers to simplify compiler
 identification and because TAU doesn't require MPI for all configurations.
 """
 from taucmdr.cf.compiler import Knowledgebase
+from taucmdr.cf.compiler.host import CRAYPE_FAMILY_REGEX
 
 
 MPI_COMPILERS = Knowledgebase('MPI', 'Compilers supporting the Message Passing Interface (MPI)',
@@ -66,7 +67,7 @@ IBM = MPI_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                             'mpixlf2003_r', 'mpixlf2003', 'mpixlf2008_r', 'mpixlf2008', 'mpixlf77_r', 'mpixlf77',
                             'mpifort', 'mpif90', 'mpif77'))
 
-CRAY = MPI_COMPILERS.add('Cray', family_regex=r'-I.*cray',
+CRAY = MPI_COMPILERS.add('Cray', family_regex=CRAYPE_FAMILY_REGEX,
                          version_flags=['-craype-verbose', '--version', '-E'],
                          show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                          CC='cc', CXX='CC', FC='ftn')
