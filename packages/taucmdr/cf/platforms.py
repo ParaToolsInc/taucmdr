@@ -105,9 +105,8 @@ class OperatingSystem(KeyedRecord):
         Returns:
             bool: True if running on a Cray login node.
         """
-        # This formerly checked for aprun on the path, but that's not a distinguishing factor:
-        # launchers like ``aprun``, ``srun`` and ``mpiexec`` are installed on Cray login nodes.
-        # Instead, look for env vars set inside jobs and treat as login node if none are set
+        # Launchers such as aprun, srun and mpiexec are installed on login nodes too, so only the
+        # variables a workload manager sets inside a job show that this is a compute allocation.
         return self is CRAY_CNL and not any(var in os.environ for var in _JOB_VARIABLES)
 
     @classmethod

@@ -60,7 +60,8 @@ class InstrumentationTest(tests.TestCase):
         self.assertCommandReturnValue(EXIT_SUCCESS, target_create_cmd, ['targ2', '--binutils', 'None'])
         self.assertCommandReturnValue(EXIT_SUCCESS, measurement_create_cmd,
                                       ['meas2', '--sample', 'False', '--compiler-inst', 'always'])
-        with mock.patch.object(Experiment, 'configure'), self.assertRaisesRegex(IncompatibleRecordError, 'compiler_inst'):
+        with mock.patch.object(Experiment, 'configure'), \
+             self.assertRaisesRegex(IncompatibleRecordError, 'compiler_inst'):
             select_cmd.main(['--target', 'targ2', '--application', 'app1', '--measurement', 'meas2'])
 
 

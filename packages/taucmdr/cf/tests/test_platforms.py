@@ -111,8 +111,7 @@ class PlatformsTest(TestCase):
         self.assertFalse(LINUX.is_cray_login())
         self.assertFalse(DARWIN.is_cray_login())
 
-    # The below code tests platform detection without requiring that we are actually running
-    # on the given platform 
+    # Patching platform in a new process tests detection without running on the given platform.
     def _run_patched(self, machine, system, code, cray=False):
         """Run `code` in a new process after patching `platform.machine` and `platform.system`."""
         script = _PATCH_PLATFORM.format(machine=machine, system=system) + code

@@ -61,7 +61,7 @@ IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                              'xlf2003_r', 'xlf2003', 'xlf2008_r', 'xlf2008'))
 
 # With -craype-verbose, craype's wrappers print the command line they will run.
-#Older craype also added Cray include paths to it, but current craype doesn't for --version.
+# Older craype also added Cray include paths to it, but current craype doesn't for --version.
 CRAYPE_FAMILY_REGEX = r'-I.*cray|^\S+ .*--version -E\s*$'
 
 CRAY = HOST_COMPILERS.add('Cray', family_regex=CRAYPE_FAMILY_REGEX,

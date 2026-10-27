@@ -615,7 +615,10 @@ class TauInstallation(Installation):
         return self.pthreads_support or (self.openmp_support and self.measure_openmp == 'ignore')
 
     def _ompt_prefix(self):
-        """Returns the OMPT installation prefix passed to TAU's configure, or None if OMPT is not enabled."""
+        """Returns the OMPT installation prefix passed to TAU's configure.
+
+        Returns None if OMPT is not enabled, or if TAU uses the compiler's own OMPT runtime (Intel 19 and later).
+        """
         ompt = self.dependencies.get('ompt')
         if not ompt or self._requests_pthread() or not self.openmp_support or self.measure_openmp != 'ompt':
             return None
@@ -642,9 +645,12 @@ class TauInstallation(Installation):
         return useropts
 
     def _configure_sets_ompt_header(self):
-        """Returns True if TAU's configure copies omp-tools.h from an OMPT directory into its tree."""
+        """Returns True if TAU's configure copies omp-tools.h from an OMPT directory into its tree.
+
+        TAU 2.35.2 and earlier nightlies never set ``ompt_header``, so they don't copy the header and need
+        ``-I<ompt prefix>/include`` to compile their OMPT support.
+        """
         try:
-            # Work around a bug in TAU where the ompt-tools.h header is not copied
             with open(os.path.join(self._src_prefix, 'configure'), encoding='utf-8', errors='replace') as fin:
                 return any(line.startswith('ompt_header=') for line in fin)
         except OSError:
