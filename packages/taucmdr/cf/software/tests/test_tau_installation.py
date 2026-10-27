@@ -194,6 +194,11 @@ class PythonBuildPathsTest(tests.TestCase):
         self.assertIn('Python.h', str(context.exception))
 
 
+def _target_arch(target_os):
+    """Return the target architecture for `target_os`: Apple silicon for macOS, which has no ppc64le TauMagic."""
+    return ARM64 if target_os is DARWIN else HOST_ARCH
+
+
 def _metrics(count):
     return ['TIME'] + [f'M{i}' for i in range(1, count)]
 
@@ -203,7 +208,7 @@ class PdtUseTest(tests.TestCase):
 
     @staticmethod
     def _tau(target_os, **kwargs):
-        return TauInstallation({'tau': 'download', 'pdt': 'download'}, HOST_ARCH, target_os,
+        return TauInstallation({'tau': 'download', 'pdt': 'download'}, _target_arch(target_os), target_os,
                                TauInstallation.get_minimal().compilers, **kwargs)
 
     def test_source_inst_on_linux(self):
@@ -282,9 +287,9 @@ class UnwinderConfigureTest(tests.TestCase):
         return create_subprocess.call_args.args[0]
 
     @staticmethod
-    def _tau(target_os, target_arch=HOST_ARCH):
-        return TauInstallation({'tau': 'download', 'libunwind': 'download'}, target_arch, target_os,
-                               TauInstallation.get_minimal().compilers)
+    def _tau(target_os, target_arch=None):
+        return TauInstallation({'tau': 'download', 'libunwind': 'download'}, target_arch or _target_arch(target_os),
+                               target_os, TauInstallation.get_minimal().compilers)
 
     def test_darwin_configure_maps_unwinder(self):
         """On Apple silicon, TAU uses macOS's own libunwind when its configure knows how to link it."""
@@ -322,7 +327,7 @@ class CompilerOptionsTest(tests.TestCase):
     @staticmethod
     def _tau_options(target_os, **kwargs):
         compilers = TauInstallation.get_minimal().compilers
-        tau = TauInstallation({'tau': 'download'}, HOST_ARCH, target_os, compilers, **kwargs)
+        tau = TauInstallation({'tau': 'download'}, _target_arch(target_os), target_os, compilers, **kwargs)
         with mock.patch.object(Installation, 'compiletime_config',
                                side_effect=lambda opts=None, env=None: (list(opts or []), dict(env or {}))), \
              mock.patch.object(TauInstallation, 'get_makefile', return_value=f'Makefile.tau-{tau.uid}'):
