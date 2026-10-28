@@ -116,6 +116,13 @@ jobs:
           name: taucmdr-unit-test-debug-log-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
           path: ~/.local/taucmdr/debug_log
 
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-unit-test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
+          path: build/test-results/
+
       - name: Upload Pylint report
         if: always()
         uses: actions/upload-artifact@v7
@@ -147,7 +154,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: TEST-*.xml
+          files: build/test-results/TEST-*.xml
           flags: unittests,CI
           name: test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
 

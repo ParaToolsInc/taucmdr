@@ -17,10 +17,13 @@ Arguments after ``--`` will be passed through to ``scripts/run_tests.py``.  With
 
 For quicker runs, a previously built environment can be used::
 
-   .tox/py315/bin/python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
+   .tox/py315/bin/python scripts/run_tests.py [-S] [-U] [-v] [--list] [--results-dir DIR] [TEST ...]
 
 The ``TEST`` list is the dotted name of a package, module, class or method; for example,
 ``taucmdr.cli.commands.tests.test_initialize``. Giving a package name will run every test module under it.
+
+The runner writes JUnit XML (``TEST-*.xml``) and per-test timings (``test-timings.csv``) to ``build/test-results``,
+or to ``DIR`` if ``--results-dir`` is given.  It deletes earlier results there first.
 
 Options:
 

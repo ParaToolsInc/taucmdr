@@ -26,6 +26,7 @@
 #
 """Unit tests for the test runner itself."""
 
+import glob
 import os
 import re
 import shutil
@@ -171,6 +172,30 @@ class RunTestsTest(tests.TestCase):
         prefix, _, _, exists = self._probe_system_prefix({'TAUCMDR_SYSTEM_PREFIX': os.path.join(cwd, 'new')})
         self.assertEqual(prefix, os.path.join(cwd, 'new'))
         self.assertEqual(exists, 'True')
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_results_dir_replaced(self):
+        """The runner clears old results from the results directory and writes new ones there."""
+        results = os.path.join(os.getcwd(), 'results')
+        os.makedirs(results)
+        with open(os.path.join(results, 'TEST-stale.xml'), 'w', encoding='utf-8') as fout:
+            fout.write('<testsuite/>\n')
+        with open(os.path.join(results, 'test-timings.csv'), 'w', encoding='utf-8') as fout:
+            fout.write('stale.test, 1\n')
+        cwd = tempfile.mkdtemp(dir=os.getcwd())
+        user_prefix = tempfile.mkdtemp(dir=os.getcwd())
+        proc = tests.run_python_subprocess(
+            [_RUN_TESTS, '-U', '--results-dir', results, 'taucmdr.cli.commands.tests.test_help'],
+            env=tests.storage_env(os.environ.get('__TAUCMDR_DB_BACKEND__'), user_prefix), cwd=cwd, isolated=False)
+        self.assertSucceeded(proc)
+        self.assertFalse(os.path.exists(os.path.join(results, 'TEST-stale.xml')))
+        self.assertTrue(glob.glob(os.path.join(results, 'TEST-*.xml')))
+        with open(os.path.join(results, 'test-timings.csv'), encoding='utf-8') as fin:
+            timings = fin.read()
+        self.assertNotIn('stale.test', timings)
+        self.assertIn('taucmdr.cli.commands.tests.test_help.', timings)
+        self.assertEqual(glob.glob(os.path.join(cwd, 'TEST-*.xml')) + glob.glob(os.path.join(cwd, 'test-timings*.csv')),
+                         [])
 
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_prints_tested_package(self):

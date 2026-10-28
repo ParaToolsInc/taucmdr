@@ -123,9 +123,16 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: TEST-*.xml
+          files: build/test-results/TEST-*.xml
           flags: unittests,CI
           name: test-results-nightly-${{ matrix.os }}-tinydb
+
+      - name: Upload TinyDB test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-unit-test-results-${{ matrix.os }}-tinydb
+          path: build/test-results/
 
       - name: Test TAU Commander with SQLite backend
         run: |
@@ -140,9 +147,16 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: TEST-*.xml
+          files: build/test-results/TEST-*.xml
           flags: unittests,CI
           name: test-results-nightly-${{ matrix.os }}-sqlite
+
+      - name: Upload SQLite test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-unit-test-results-${{ matrix.os }}-sqlite
+          path: build/test-results/
 
       - name: Upload TAU Commander unit test log
         if: always()

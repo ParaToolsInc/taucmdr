@@ -56,7 +56,15 @@ It comes from the environment variable ``__TAUCMDR_REPO_DIR__``, which ``scripts
 Without it, this is the checkout containing this file.
 """
 
-TIMING_FILE = os.path.join(REPO_DIR, f"test-timings-{int(time.time())}.csv")
+RESULTS_DIR = os.environ.get('__TAUCMDR_TEST_RESULTS_DIR__') or os.path.join(REPO_DIR, 'build', 'test-results')
+"""str: Directory for JUnit XML and timings.
+
+It comes from the environment variable ``__TAUCMDR_TEST_RESULTS_DIR__``, which ``scripts/run_tests.py`` defines.
+"""
+
+TIMING_FILE = os.path.join(RESULTS_DIR, 'test-timings.csv')
+"""str: CSV file to which each test appends its run time."""
+
 LOGGER = logger.get_logger(__name__)
 
 
@@ -281,6 +289,7 @@ class TestCase(unittest.TestCase):
     def tearDown(self) -> None:
         _done = time.time() - self.startTime
         self._result_stream.write(f"{_done:.4g}s ... ")
+        os.makedirs(RESULTS_DIR, exist_ok=True)
         with open(TIMING_FILE, mode='a', encoding='utf-8') as f:
             f.write(f"{self.id()}, {_done:.6g}\n")
 

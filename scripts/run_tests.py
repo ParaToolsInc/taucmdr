@@ -37,10 +37,11 @@ The system prefix comes from ``TAUCMDR_SYSTEM_PREFIX`` or ``__TAUCMDR_SYSTEM_PRE
 
 Usage::
 
-    python scripts/run_tests.py [-S] [-U] [-v] [--list] [TEST ...]
+    python scripts/run_tests.py [-S] [-U] [-v] [--list] [--results-dir DIR] [TEST ...]
 """
 
 import argparse
+import glob
 import importlib
 import os
 import shutil
@@ -66,6 +67,9 @@ def _parse_args(argv):
     parser.add_argument('-v', '--verbose', action='store_const', const=2, default=1, dest='verbosity',
                         help="Print each test's name as it runs.")
     parser.add_argument('--list', action='store_true', help="Print the selected test IDs without running them.")
+    parser.add_argument('--results-dir', metavar='DIR',
+                        help="Write JUnit XML and test timings to this directory, replacing any earlier results "
+                             "there.  Default: build/test-results in the checkout.")
     parser.add_argument('tests', nargs='*', metavar='TEST',
                         help="Tests to run, by dotted name of a package, module, class or method, e.g., "
                              "taucmdr.cli.commands.tests.test_initialize.  Default: run every test.")
@@ -122,14 +126,13 @@ def _load_tests(names):
     return suite
 
 
-def _make_runner(verbosity):
+def _make_runner(verbosity, results_dir):
     try:
         import xmlrunner  # pylint: disable=import-outside-toplevel
     except ImportError:
         runner = unittest.TextTestRunner(verbosity=verbosity, buffer=True)
     else:
-        # JUnit XML goes in the current directory as TEST-*.xml, where CI collects it for Codecov.
-        runner = xmlrunner.XMLTestRunner(output='.', verbosity=verbosity, buffer=True)
+        runner = xmlrunner.XMLTestRunner(output=results_dir, verbosity=verbosity, buffer=True)
     runner.warnings = None
     return runner
 
@@ -148,6 +151,8 @@ def main(argv=None):
     os.environ['__TAUCMDR_SCRIPT__'] = 'tau'
     repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.environ['__TAUCMDR_REPO_DIR__'] = repo_dir
+    results_dir = os.path.abspath(args.results_dir or os.path.join(repo_dir, 'build', 'test-results'))
+    os.environ['__TAUCMDR_TEST_RESULTS_DIR__'] = results_dir
     system_prefix = (os.environ.get('TAUCMDR_SYSTEM_PREFIX') or os.environ.get('__TAUCMDR_SYSTEM_PREFIX__')
                      or os.path.join(repo_dir, 'system'))
     system_prefix = os.path.abspath(system_prefix)
@@ -186,8 +191,13 @@ def main(argv=None):
                 print(f"ERROR: Couldn't load {', '.join(failed)}")
                 return 1
             return 0
+        os.makedirs(results_dir, exist_ok=True)
+        stale = glob.glob(os.path.join(results_dir, 'TEST-*.xml'))
+        stale += glob.glob(os.path.join(results_dir, 'test-timings.csv'))
+        for path in stale:
+            os.remove(path)
         print(f"Running tests with database backend {os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')}")
-        result = _make_runner(args.verbosity).run(suite)
+        result = _make_runner(args.verbosity, results_dir).run(suite)
         from taucmdr.tests import _NOT_IMPLEMENTED  # pylint: disable=import-outside-toplevel,protected-access
         for msg in _NOT_IMPLEMENTED:
             print(f"WARNING: {msg}")
