@@ -38,7 +38,8 @@ import tempfile
 from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, ARM64, DARWIN, LINUX
+from taucmdr.cf.platforms import (HOST_ARCH, HOST_OS, ARM64, PPC64LE, X86_64, CRAY_CNL, DARWIN, LINUX,
+                                  SHARED_LIBRARY_SUFFIX)
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.software.installation import Installation
 from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names, python_build_paths
@@ -319,6 +320,71 @@ class UnwinderConfigureTest(tests.TestCase):
         argv = self._configure_argv(tau)
         self.assertIn('-unwinder=libunwind', argv)
         self.assertIn('-unwind=%s' % tau.dependencies['libunwind'].install_prefix, argv)
+
+
+class ExportDynamicConfigureTest(tests.TestCase):
+    """Tests for exporting TAU's symbols from statically linked applications, which TAU's plugins call."""
+
+    @staticmethod
+    def _argv(target_arch, target_os):
+        tau = TauInstallation({'tau': 'download'}, target_arch, target_os, TauInstallation.get_minimal().compilers)
+        return UnwinderConfigureTest._configure_argv(tau)  # pylint: disable=protected-access
+
+    def test_export_dynamic_requested(self):
+        """TAU is asked to export its symbols where its configure doesn't by default."""
+        for target_arch, target_os in (ARM64, LINUX), (ARM64, CRAY_CNL), (X86_64, CRAY_CNL):
+            self.assertIn('-ENABLE_EXPORT_DYNAMIC', self._argv(target_arch, target_os), (target_arch, target_os))
+
+    def test_export_dynamic_default(self):
+        """TAU's configure is left to its own choice where it already exports TAU's symbols, or can't."""
+        for target_arch, target_os in (X86_64, LINUX), (PPC64LE, LINUX), (ARM64, DARWIN):
+            self.assertNotIn('-ENABLE_EXPORT_DYNAMIC', self._argv(target_arch, target_os), (target_arch, target_os))
+
+
+class RuntimeSelectFileTest(tests.TestCase):
+    """Tests for applying a select file when a dynamically linked application runs."""
+
+    def _env(self, select_file, **kwargs):
+        compilers = TauInstallation.get_minimal().compilers
+        sources = {'tau': 'download', 'sqlite3': 'download'}
+        tau = TauInstallation(sources, HOST_ARCH, HOST_OS, compilers, select_file=select_file, **kwargs)
+        with mock.patch.object(Installation, 'runtime_config',
+                               side_effect=lambda opts=None, env=None: (list(opts or []), dict(env or {}))), \
+             mock.patch.object(TauInstallation, 'get_makefile', return_value=f'Makefile.tau-{tau.uid}'):
+            return tau.runtime_config()[1]
+
+    def _select_file(self, name):
+        path = os.path.join(os.path.realpath(os.getcwd()), name)
+        with open(path, 'w', encoding='utf-8') as fout:
+            fout.write('BEGIN_EXCLUDE_LIST\nfoo\nEND_EXCLUDE_LIST\n')
+        return path
+
+    def test_filter_plugin(self):
+        """TAU's filter plugin is loaded with the select file, alongside any other plugin."""
+        path = self._select_file('select.tau')
+        env = self._env(path, profile='sqlite')
+        self.assertEqual(env['TAU_PLUGINS'].split(':'),
+                         [f'libTAU-sqlite3-plugin.{SHARED_LIBRARY_SUFFIX}',
+                          f'libTAU-filter-plugin.{SHARED_LIBRARY_SUFFIX}({path})'])
+        self.assertNotIn('TAU_SELECT_FILE', env)
+
+    def test_static_linkage(self):
+        """A statically linked application's select file is applied when it's built, not when it runs."""
+        env = self._env(self._select_file('select.tau'), application_linkage='static')
+        self.assertNotIn('TAU_PLUGINS', env)
+
+    def test_path_separators(self):
+        """A select file whose path holds a character that separates TAU_PLUGINS entries is refused."""
+        for name in 'a:b.tau', 'a,b.tau', 'a)b.tau':
+            with self.assertRaises(ConfigurationError, msg=name):
+                self._env(self._select_file(name))
+
+    def test_long_path(self):
+        """A select file whose path makes TAU_PLUGINS too long for TAU is refused."""
+        long_dir = os.path.join(os.getcwd(), *['d' * 200] * 5)
+        os.makedirs(long_dir)
+        with self.assertRaises(ConfigurationError):
+            self._env(self._select_file(os.path.join(long_dir, 'select.tau')))
 
 
 class CompilerOptionsTest(tests.TestCase):

@@ -70,6 +70,9 @@ NIGHTLY = 'http://fs.paratools.com/tau-nightly.tgz'
 # TAU's default for both TAU_MAX_METRICS and TAU_MAX_COUNTERS.
 TAU_DEFAULT_MAX_METRICS = 25
 
+# TAU disables every plugin when TAU_PLUGINS is this long or longer.
+TAU_PLUGINS_MAX_LEN = 1024
+
 DATA_TOOLS = ['jumpshot',
               'paraprof',
               'perfdmf_configure',
@@ -994,6 +997,9 @@ class TauInstallation(Installation):
         flags = [flag for flag in
                  ['-tag=%s' % tag,
                   '-arch=%s' % self.tau_magic.name,
+                  # TAU's plugins must bind to the TAU in a statically linked application, which TAU's
+                  # configure exports only on the architectures it lists.
+                  '-ENABLE_EXPORT_DYNAMIC' if self.tau_magic.name in ('arm64_linux', 'craycnl') else None,
                   '-cc=%s' % cc_command,
                   '-c++=%s' % cxx_command,
                   '-fortran=%s' % fortran_magic if fortran_magic else None,
@@ -1504,7 +1510,13 @@ class TauInstallation(Installation):
             env['TAU_EBS_UNWIND'] = '1'
             env['TAU_EBS_UNWIND_DEPTH'] = str(self.unwind_depth)
         if self.select_file and self.application_linkage == 'dynamic':
-            env['TAU_SELECT_FILE'] = os.path.realpath(os.path.abspath(self.select_file))
+            # TAU ignores TAU_SELECT_FILE when TAU_PLUGINS_PATH is set, so load its filter plugin directly.
+            select_file = os.path.realpath(os.path.abspath(self.select_file))
+            if any(char in select_file for char in ':,)'):
+                raise ConfigurationError(f"Selective instrumentation file path '{select_file}' contains ':', ',' "
+                                         "or ')', which TAU can't read",
+                                         "Move the file to a path without those characters.")
+            tau_plugins.append(f'libTAU-filter-plugin.{SHARED_LIBRARY_SUFFIX}({select_file})')
         if self.verbose:
             opts.append('-v')
         if self.sample:
@@ -1539,6 +1551,10 @@ class TauInstallation(Installation):
             opts.append('-ptts-report-flags=%s' %self.ptts_report_flags)
         if tau_plugins:
             env['TAU_PLUGINS'] = ':'.join(tau_plugins)  # TAU plugins as colon-separated list
+            if len(env['TAU_PLUGINS']) >= TAU_PLUGINS_MAX_LEN:
+                raise ConfigurationError(f"TAU_PLUGINS would be {len(env['TAU_PLUGINS'])} characters long; "
+                                         f"TAU accepts fewer than {TAU_PLUGINS_MAX_LEN}",
+                                         "Move the selective instrumentation file to a shorter path.")
         return list(set(opts)), env
 
     def get_compiler_command(self, compiler):

@@ -241,6 +241,27 @@ class CreateTest(tests.TestCase):
         for event, calls in ('open()', 10), ('write()', 5), ('read()', 5), ('close()', 10):
             self.assertRegex(profile, rf'(?m)^"{re.escape(event)}\s*" {calls} ')
 
+    def test_select_file_runtime(self):
+        """A select file's wildcard exclusions apply at run time to a dynamically linked application."""
+        self.reset_project_storage()
+        # GNU's exclude list and clang without TAU's LLVM plugin drop wildcard entries, so TAU applies this
+        # one at run time.
+        with open('select.tau', 'w', encoding='utf-8') as fout:
+            fout.write('BEGIN_EXCLUDE_LIST\ncompute_interchange#\nEND_EXCLUDE_LIST\n')
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['compinst-select', '--source-inst', 'never', '--compiler-inst', 'always',
+                                       '--sample', 'False', '--select-file', 'select.tau'])
+        self.assertCommandReturnValue(0, select_cmd, ['compinst-select'])
+        self.assertManagedBuild(0, CC, [], 'matmult.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn('Trial 0 produced 1 profile files', stdout)
+        self.assertFalse(stderr)
+        profile_dir = Project.selected().experiment().trials()[0].get_data_files()['tau']
+        with open(os.path.join(profile_dir, 'profile.0.0.0'), encoding='utf-8') as fin:
+            names = [line.split('"')[1] for line in fin if line.startswith('"')]
+        self.assertTrue(any(name.startswith('compute [') for name in names), names)
+        self.assertFalse(any(name.startswith('compute_interchange') for name in names), names)
+
     def test_system_load_sample(self):
         """Test TAU_TRACK_LOAD w/ sampling"""
         self.reset_project_storage()
