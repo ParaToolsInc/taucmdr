@@ -381,10 +381,10 @@ class RuntimeSelectFileTest(tests.TestCase):
 
     def test_long_path(self):
         """A select file whose path makes TAU_PLUGINS too long for TAU is refused."""
-        long_dir = os.path.join(os.getcwd(), *['d' * 200] * 5)
-        os.makedirs(long_dir)
+        # The path isn't created: it's longer than macOS allows.
+        path = os.path.join(os.path.realpath(os.getcwd()), *['d' * 200] * 5, 'select.tau')
         with self.assertRaises(ConfigurationError):
-            self._env(self._select_file(os.path.join(long_dir, 'select.tau')))
+            self._env(path)
 
 
 class CompilerOptionsTest(tests.TestCase):
