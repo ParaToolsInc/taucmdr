@@ -128,8 +128,10 @@ class MainCommand(AbstractCommand):
         # Try to execute as a TAU command
         try:
             return cli.execute_command([cmd], cmd_args)
-        except UnknownCommandError:
-            pass
+        except UnknownCommandError as err:
+            # Raised by a command that was found, e.g. `help` given a name that isn't a command
+            if err.value != cmd:
+                raise
 
         # Check shortcuts
         shortcut = None

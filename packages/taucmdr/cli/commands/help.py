@@ -42,11 +42,11 @@ _SCRIPT_CMD = os.path.basename(TAUCMDR_SCRIPT)
 _GENERIC_HELP = f"See '{_SCRIPT_CMD} --help' or contact {HELP_CONTACT} for assistance"
 
 _KNOWN_FILES = {'makefile': ("makefile script",
-                             "See 'taucmdr make --help' for help building with make"),
+                             f"See '{_SCRIPT_CMD} build --help' for help building with make"),
                 'a.out': ("binary executable",
-                          "See 'taucmdr run --help' for help with profiling this program"),
+                          f"See '{_SCRIPT_CMD} trial create --help' for help with profiling this program"),
                 '.exe': ("binary executable",
-                         "See 'taucmdr run --help' for help with profiling this program")}
+                         f"See '{_SCRIPT_CMD} trial create --help' for help with profiling this program")}
 
 _MIME_HINTS = {None:
                {None: ("unknown file", _GENERIC_HELP),
@@ -61,11 +61,11 @@ _MIME_HINTS = {None:
                                'unknown': ("unknown binary file", _GENERIC_HELP)},
                'text': {None: ("unknown text file", _GENERIC_HELP),
                         'src': ("source code file",
-                                "See 'taucmdr build --help' for help compiling this file"),
+                                f"See '{_SCRIPT_CMD} build --help' for help compiling this file"),
                         'hdr': ("source header file",
-                                "See 'taucmdr build --help' for help instrumenting this file"),
+                                f"See '{_SCRIPT_CMD} build --help' for help instrumenting this file"),
                         'fortran': ("fortran source code file",
-                                    "See 'taucmdr build --help' for help compiling this file"),
+                                    f"See '{_SCRIPT_CMD} build --help' for help compiling this file"),
                         'plain': ("text file", _GENERIC_HELP)}}
 
 
@@ -139,42 +139,37 @@ class HelpCommand(AbstractCommand):
         if args.command[0] == 'all':
             return self.exit_with_fullhelp()
 
-        # Try to look up a Tau command's built-in help page
-        cmd = args.command
         try:
-            return self.exit_with_help(cmd)
-        except ImportError:
-            pass
+            return self.exit_with_help(args.command)
+        except UnknownCommandError:
+            if len(args.command) != 1 or not os.path.isfile(args.command[0]):
+                raise
+        cmd = args.command[0]
 
-        # Is this a file?
-        if os.path.exists(cmd):
-            # Do we recognize the file name?
+        # Do we recognize the file name?
+        try:
+            desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
+        except KeyError:
+            pass
+        else:
+            article = 'an' if desc[0] in 'aeiou' else 'a'
+            hint = f"'{cmd}' is {article} {desc}.\n{hint}."
+            raise UnknownCommandError(cmd, hint)
+
+        # Get the filetype and try to be helpful.
+        filetype, encoding = _guess_filetype(cmd)
+        self.logger.debug("'%s' has filetype (%s, %s)", cmd, filetype, encoding)
+        if filetype:
+            filetype, subtype = filetype.split('/')
             try:
-                desc, hint = _fuzzy_index(_KNOWN_FILES, cmd.lower())
+                type_hints = _MIME_HINTS[filetype]
             except KeyError:
-                pass
+                hint = f"TAU doesn't recognize '{cmd}'.\nSee '{_SCRIPT_CMD} --help' and use the appropriate subcommand."
             else:
+                desc, hint = _fuzzy_index(type_hints, subtype)
                 article = 'an' if desc[0] in 'aeiou' else 'a'
                 hint = f"'{cmd}' is {article} {desc}.\n{hint}."
-                raise UnknownCommandError(cmd, hint)
-
-            # Get the filetype and try to be helpful.
-            filetype, encoding = _guess_filetype(cmd)
-            self.logger.debug("'%s' has filetype (%s, %s)", cmd, filetype, encoding)
-            if filetype:
-                filetype, subtype = filetype.split('/')
-                try:
-                    type_hints = _MIME_HINTS[filetype]
-                except KeyError:
-                    hint = "TAU doesn't recognize '%s'.\nSee 'taucmdr --help' and use the appropriate subcommand." % cmd
-                else:
-                    desc, hint = _fuzzy_index(type_hints, subtype)
-                    article = 'an' if desc[0] in 'aeiou' else 'a'
-                    hint = f"'{cmd}' is {article} {desc}.\n{hint}."
-                raise UnknownCommandError(cmd, hint)
-            raise UnknownCommandError(cmd)
-
-        LOGGER.error("Cannot identify '%s' as a command or filename.", cmd)
-        return self.exit_with_help('__main__')
+            raise UnknownCommandError(cmd, hint)
+        raise UnknownCommandError(cmd)
 
 COMMAND = HelpCommand(__name__, summary_fmt="Show help for a command or suggest actions for a file.")
