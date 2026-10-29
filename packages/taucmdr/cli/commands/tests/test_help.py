@@ -81,6 +81,36 @@ class HelpTest(tests.TestCase):
         self.assertIn('source code file', message)
         self.assertIn('build --help', message)
 
+    def test_source_file_types(self):
+        """Source files are recognized by extension, whether or not the host has a mime.types file."""
+        expected = {'prog.c': 'a source code file', 'prog.cpp': 'a source code file', 'prog.C': 'a source code file',
+                    'prog.h': 'a source header file', 'prog.hpp': 'a source header file',
+                    'prog.f90': 'a fortran source code file', 'prog.F90': 'a fortran source code file'}
+        with mock.patch('mimetypes.knownfiles', []):
+            for name, description in expected.items():
+                with self.subTest(name=name):
+                    with open(name, 'w', encoding='utf-8') as fout:
+                        fout.write('int x;\n')
+                    with self.assertRaises(UnknownCommandError) as context:
+                        help_command.main([name])
+                    self.assertIn(f"'{name}' is {description}.", context.exception.message)
+
+    def test_unknown_binary_file(self):
+        """A binary file without a recognized extension is identified as binary."""
+        with open('myprog', 'wb') as fout:
+            fout.write(b'\x7fELF\x02\x01\x01\x00\x00\x00')
+        with self.assertRaises(UnknownCommandError) as context:
+            help_command.main(['myprog'])
+        self.assertIn("'myprog' is an unknown binary file.", context.exception.message)
+
+    def test_unknown_text_file(self):
+        """A text file without a recognized extension is identified as text."""
+        with open('notes', 'w', encoding='utf-8') as fout:
+            fout.write('some notes\n')
+        with self.assertRaises(UnknownCommandError) as context:
+            help_command.main(['notes'])
+        self.assertIn("'notes' is a text file.", context.exception.message)
+
     def test_command_before_file(self):
         """A command name is looked up as a command even when a file has the same name."""
         with open('target', 'w', encoding='utf-8') as fout:

@@ -28,7 +28,6 @@
 
 import os
 import mimetypes
-import re
 from taucmdr import EXIT_SUCCESS, HELP_CONTACT, TAUCMDR_SCRIPT
 from taucmdr import logger, util, cli
 from taucmdr.cli import arguments, UnknownCommandError
@@ -77,14 +76,24 @@ def _fuzzy_index(dct, full_key):
     return dct[None]
 
 
+# Provide fallback MIME types in case the system doesn't have a settings for these installed
+_SOURCE_TYPES = {**dict.fromkeys(('.c', '.cc', '.cpp', '.cxx', '.c++'), 'text/x-src'),
+                 **dict.fromkeys(('.h', '.hh', '.hpp', '.hxx', '.h++'), 'text/x-hdr'),
+                 **dict.fromkeys(('.f', '.for', '.ftn', '.f77', '.f90', '.f95', '.f03', '.f08'), 'text/x-fortran')}
+
+
 def _guess_filetype(filename):
     """Return a (filetype, encoding) tuple for a file."""
+    try:
+        return _SOURCE_TYPES[os.path.splitext(filename)[1].lower()], None
+    except KeyError:
+        pass
     mimetypes.init()
     filetype = mimetypes.guess_type(filename)
     if not filetype[0]:
         textchars = bytearray([7, 8, 9, 10, 12, 13, 27]) + bytearray(list(range(0x20, 0x100)))
         with open(filename,mode='rb') as fd:
-            if re.sub(textchars, b'', fd.read(1024)):
+            if fd.read(1024).translate(None, textchars):
                 filetype = ('application/unknown', None)
             else:
                 filetype = ('text/plain', None)
