@@ -7,3 +7,6 @@ VERSION
 **/*.egg
 venv/
 .idea/
+.tox/
+dist/
+plans/

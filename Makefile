@@ -30,8 +30,12 @@
 # If set to "true" then show commands as they are executed.
 # Otherwise only the command's output will be shown.
 VERBOSE = true
-DOCKER_IMG_NAME = cmdr-dev-0.1.0
-DOCKER_TAG = latest
+DOCKER_IMG_NAME = taucmdr-dev
+UBUNTU_VERSION = 24.04
+PYTHON_VERSION = 3.15
+DOCKER_TAG = ubuntu$(UBUNTU_VERSION)-py$(PYTHON_VERSION)
+# Use distinct system volume names for different distro releases
+DOCKER_SYSTEM_VOLUME = taucmdr-system-ubuntu$(UBUNTU_VERSION)
 
 # Shell utilities
 RM = rm -f
@@ -52,13 +56,17 @@ help:
 clean:
 	$(ECHO)$(RM) -r build dist
 
+# Allocate a terminal only when make is runnning in one so that this works from a script
+DOCKER_RUN = docker run -i $$(test -t 0 && echo -t) --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --cap-add PERFMON \
+	-v ${PWD}:/home/tau/src
+
 dev-container:
-	$(ECHO)docker build --pull -t $(DOCKER_IMG_NAME) .
+	$(ECHO)docker build --pull --build-arg TAU_UID=$$(id -u) --build-arg UBUNTU_VERSION=$(UBUNTU_VERSION) \
+	    --build-arg PYTHON_VERSION=$(PYTHON_VERSION) -t $(DOCKER_IMG_NAME):$(DOCKER_TAG) .
 
 run-container:
-	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
-	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) $(ARGS)
+	$(ECHO)$(DOCKER_RUN) $(DOCKER_IMG_NAME):$(DOCKER_TAG) $(ARGS)
 
-test-container:
-	$(ECHO)docker run -it --rm --tmpfs=/dev/shm:rw,nosuid,nodev,exec --privileged -v ${PWD}:/home/tau/src \
-	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) test $(ARGS)
+test-container: dev-container
+	$(ECHO)$(DOCKER_RUN) -v $(DOCKER_SYSTEM_VOLUME):/home/tau/system -e TAUCMDR_SYSTEM_PREFIX=/home/tau/system \
+	    $(DOCKER_IMG_NAME):$(DOCKER_TAG) sh -c '"$$(uv tool dir)/taucmdr/bin/python" scripts/run_tests.py -U $(ARGS)'
