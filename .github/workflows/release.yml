@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  # Builds and checks the distributions without publishing them.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check distributions
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Build
+        run: uv build
+
+      - name: Check the version
+        # setuptools-scm takes the version from the tags on the commit, which may not be the tag that started this run.
+        # A branch has no release version to check.
+        run: |
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          sdists=(dist/*.tar.gz)
+          if [ "${#wheels[@]}" -ne 1 ] || [ "${#sdists[@]}" -ne 1 ]; then
+            echo "::error::Expected one wheel and one sdist, found: ${wheels[*]} ${sdists[*]}"
+            exit 1
+          fi
+          wheel_version="$(basename "${wheels[0]}" | cut -d- -f2)"
+          sdist_version="$(basename "${sdists[0]}" .tar.gz | cut -d- -f2)"
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            expected="${GITHUB_REF_NAME#v}"
+          else
+            expected="${wheel_version}"
+          fi
+          if [ "${wheel_version}" != "${expected}" ] || [ "${sdist_version}" != "${expected}" ]; then
+            echo "::error::${GITHUB_REF_NAME} needs version ${expected}, but the wheel is ${wheel_version} and the sdist is ${sdist_version}"
+            exit 1
+          fi
+          echo "VERSION=${expected}" >> "${GITHUB_ENV}"
+
+      - name: Check the wheel's contents
+        run: |
+          python3 - dist/*.whl <<'EOF'
+          import os, sys, zipfile
+          version = os.environ['VERSION']
+          allowed = {'taucmdr', f'taucmdr-{version}.dist-info'}
+          scripts = {f'taucmdr-{version}.data/scripts/tau'}
+          names = zipfile.ZipFile(sys.argv[1]).namelist()
+          unexpected = [name for name in names if name.split('/')[0] not in allowed and name not in scripts]
+          missing = scripts - set(names)
+          if unexpected or missing:
+              sys.exit(f'Unexpected: {unexpected}\nMissing: {sorted(missing)}')
+          EOF
+
+      - name: Check the metadata
+        run: uvx twine check --strict dist/*
+
+      - name: Smoke test
+        env:
+          __TAUCMDR_DISABLE_PAGER__: "1"
+        run: |
+          uv tool install --python 3.15 dist/*.whl
+          tau="$(uv tool dir --bin)/tau"
+          "${tau}" --version | tee version.txt
+          grep -qx "Version *: ${VERSION}" version.txt
+          "${tau}" help all > /dev/null
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  # Release candidates go to TestPyPI only, so they can be installed and checked before the final release.
+  publish-testpypi:
+    name: Publish to TestPyPI
+    if: github.event_name == 'push' && contains(github.ref_name, 'rc')
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        if: env.ACT != 'true'
+        uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    name: Publish to PyPI
+    if: github.event_name == 'push' && !contains(github.ref_name, 'rc')
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        if: env.ACT != 'true'
+        uses: pypa/gh-action-pypi-publish@v1.14.2
