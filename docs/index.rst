@@ -51,6 +51,7 @@ Table of Contents
    :maxdepth: 2
 
    install
+   cli/index
    design
    style
    documentation

@@ -39,6 +39,7 @@ a subclass of :any:`AbstractCommand`.
 .. _git: https://git-scm.com/
 """
 
+import importlib
 import os
 import pkgutil
 import sys
@@ -242,10 +243,10 @@ def find_command(cmd):
     Returns:
         AbstractCommand: Command object for the subcommand.
     """
-    if cmd:
-        root = '.'.join([COMMANDS_PACKAGE_NAME] + cmd)
-    else:
-        root = COMMANDS_PACKAGE_NAME
+    if not cmd:
+        # The top-level command's module is __main__, which _get_commands leaves out.
+        return importlib.import_module(COMMANDS_PACKAGE_NAME + '.__main__').COMMAND
+    root = '.'.join([COMMANDS_PACKAGE_NAME] + cmd)
     try:
         return _get_commands(root)['__module__'].COMMAND
     except KeyError:

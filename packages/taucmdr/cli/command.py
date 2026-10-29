@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 #
 """Base class for TAU Commander commands"""
 
+import functools
 from abc import ABCMeta, abstractmethod
 from taucmdr import logger, cli
 from taucmdr.cli.arguments import ArgumentsNamespace
@@ -77,6 +78,21 @@ class AbstractCommand(metaclass=ABCMeta):
     @property
     def usage(self):
         return self.parser.format_help()
+
+    def format_usage(self, show_defaults=True):
+        """Return the command's usage.
+
+        Args:
+            show_defaults (bool): If False, leave out argument defaults, some of which depend on the host.
+
+        Returns:
+            str: The usage text, as the ``--help`` option shows it.
+        """
+        if show_defaults:
+            return self.usage
+        parser = self._construct_parser()
+        parser.formatter_class = functools.partial(parser.formatter_class, show_defaults=False)
+        return parser.format_help()
 
     def _parse_args(self, argv):
         if isinstance(argv, ArgumentsNamespace):

@@ -190,12 +190,14 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
         indent_increment (int): Number of spaces to indent wrapped lines.
         max_help_position (int): Column on which to begin subsequent lines of wrapped help strings.
         width (int): Maximum help message length before wrapping.
+        show_defaults (bool): If False, don't show each argument's default value.
     """
 
-    def __init__(self, prog, indent_increment=2, max_help_position=30, width=None):
+    def __init__(self, prog, indent_increment=2, max_help_position=30, width=None, show_defaults=True):
         if width is None:
             width = logger.LINE_WIDTH
         super().__init__(prog, indent_increment, max_help_position, width)
+        self._show_defaults = show_defaults
 
     def _split_lines(self, text, width):
         parts = []
@@ -210,7 +212,7 @@ class HelpFormatter(argparse.RawDescriptionHelpFormatter):
         choices = getattr(action, 'choices', None)
         if choices:
             helpstr += '\n{}- {}: {}'.format(indent, action.metavar, ', '.join(choices))
-        if '%(default)' not in action.help:
+        if self._show_defaults and '%(default)' not in action.help:
             if action.default is not argparse.SUPPRESS:
                 defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
                 if action.option_strings or action.nargs in defaulting_nargs:
