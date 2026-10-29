@@ -88,6 +88,11 @@ _COMPILER_WRAPPER_TEMPLATE = """#!/bin/sh
 """
 
 
+def _without_minor_version(command):
+    """Return `command` without a trailing ``.<digits>``, e.g. ``python3.12`` becomes ``python3``."""
+    return re.sub(r'\.\d+$', '', command)
+
+
 class Knowledgebase:
     """TAU compiler knowledgebase front-end."""
 
@@ -299,6 +304,8 @@ class _CompilerFamily(TrackedInstance):
         else:
             families = cls.__instances__
         basename = os.path.basename(absolute_path)
+        if not any(basename in family.commands for family in families):
+            basename = _without_minor_version(basename)
         with_regex, without_regex = [], []
         for family in families:
             if basename in family.commands:
@@ -406,6 +413,8 @@ class _CompilerInfo(TrackedInstance):
         assert family is None or isinstance(family, _CompilerFamily)
         assert role is None or isinstance(role, _CompilerRole)
         found = cls._find(command, family, role)
+        if not found and command:
+            found = cls._find(_without_minor_version(command), family, role)
         if not found:
             if command:
                 # Strip version info and try again

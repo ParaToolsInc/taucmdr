@@ -31,9 +31,12 @@ Functions used for unit tests of create.py.
 #pylint: disable=missing-docstring
 
 import os
+from unittest import mock
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler.host import CC, CXX, FC
+from taucmdr.cf.compiler.python import PY
+from taucmdr.cf.compiler.tests.test_python import versioned_python_link
 from taucmdr.cli.commands.target.create import COMMAND as create_cmd
 
 
@@ -70,6 +73,22 @@ class CreateTest(tests.TestCase):
         self.assertIn('target create <target_name> [arguments]', stderr)
         self.assertIn('target create: error: A target with name', stderr)
         self.assertIn('already exists', stderr)
+
+    def test_python_interpreter_versioned_path(self):
+        """A path to an interpreter named ``python3.<minor>`` is accepted."""
+        self.reset_project_storage()
+        link = versioned_python_link()
+        self.assertCommandReturnValue(0, create_cmd, ['targ02', '--python-interpreter', link])
+        self.assertEqual(self.getCompiler(PY, 'targ02'), link)
+
+    def test_versioned_name_on_path(self):
+        """A bare ``python3.<minor>`` is found on PATH and stored as an absolute path."""
+        self.reset_project_storage()
+        link = versioned_python_link()
+        path = os.pathsep.join([os.path.dirname(link), os.environ.get('PATH', '')])
+        with mock.patch.dict(os.environ, {'PATH': path}), mock.patch.dict(util._WHICH_CACHE, clear=True):
+            self.assertCommandReturnValue(0, create_cmd, ['targ02', '--python-interpreter', os.path.basename(link)])
+        self.assertEqual(self.getCompiler(PY, 'targ02'), link)
 
     @tests.skipUnless(util.which('icc'), "Intel compilers required for this test")
     def test_host_family_intel(self):

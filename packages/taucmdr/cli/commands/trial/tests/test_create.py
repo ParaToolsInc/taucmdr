@@ -338,9 +338,7 @@ class CreateTest(tests.TestCase):
     @tests.skipUnless(_older_python(), "An older Python 3 with C headers is required for this test")
     def test_run_older_python(self):
         """A Python application runs under an older Python than the one running TAU Commander."""
-        # TAU Commander recognizes Python interpreters named python3 or python.
-        interpreter = os.path.join(tempfile.mkdtemp(dir=os.getcwd()), 'python3')
-        os.symlink(_older_python(), interpreter)
+        interpreter = _older_python()
         # An active conda environment holding a different Python must not change which Python TAU is built for.
         with mock.patch.dict(os.environ, {'CONDA_PREFIX': sys.base_prefix}):
             self.reset_project_storage(['--python', 'T', '--python-interpreter', interpreter])
