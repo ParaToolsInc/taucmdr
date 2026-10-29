@@ -198,6 +198,20 @@ class RunTestsTest(tests.TestCase):
                          [])
 
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    def test_no_implicit_tempdir_cleanup(self):
+        """Every temporary directory is cleaned up explicitly, so none warns at exit."""
+        results = tempfile.mkdtemp(dir=os.getcwd())
+        cwd = tempfile.mkdtemp(dir=os.getcwd())
+        user_prefix = tempfile.mkdtemp(dir=os.getcwd())
+        # SQLite storage keeps its connections open until exit, which also raises a ResourceWarning.
+        proc = tests.run_python_subprocess(
+            ['-X', 'dev', '-W', 'error::ResourceWarning',
+             _RUN_TESTS, '-U', '--results-dir', results, 'taucmdr.cli.commands.tests.test_help'],
+            env=tests.storage_env('tinydb', user_prefix), cwd=cwd, isolated=False)
+        self.assertSucceeded(proc)
+        self.assertNotIn('Implicitly cleaning up', proc.stdout + proc.stderr)
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_prints_tested_package(self):
         """The runner says which copy of taucmdr it is testing."""
         retval, _, output = self._run('--list', 'taucmdr.tests.test_init')

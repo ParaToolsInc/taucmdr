@@ -87,14 +87,21 @@ def _cleanup_dtemp():
         _paths = []
         for dir in _DTEMP_ERROR_STACK:
             name = os.path.basename(os.path.normpath(dir))
-            src = os.path.dirname(os.path.normpath(dir))
-            dst =os.path.join(tempfile.gettempdir(), name)
-            shutil.copytree(os.path.normpath(dir), dst)
-            _paths += dst
-        LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
-                       ', '.join(_paths))
-
-atexit.register(_cleanup_dtemp)
+            dst = os.path.join(tempfile.gettempdir(), name)
+            try:
+                shutil.copytree(os.path.normpath(dir), dst)
+            except OSError as err:
+                LOGGER.warning("Couldn't keep temporary directory '%s': %s", dir, err)
+                continue
+            _paths.append(dst)
+        if _paths:
+            LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
+                           ', '.join(_paths))
+    while _DTEMP_STACK:
+        try:
+            _DTEMP_STACK.pop().cleanup()
+        except OSError as err:
+            LOGGER.debug(err)
 
 
 def calculate_uid(parts):
@@ -114,10 +121,33 @@ def calculate_uid(parts):
     return digest[:8]
 
 def mkdtemp(*args, **kwargs):
-    """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
-    path = tempfile.TemporaryDirectory(*args, **kwargs)
+    """Like tempfile.mkdtemp but directory will be recursively deleted when program exits.
+
+    Returns:
+        tempfile.TemporaryDirectory: The new directory. Pass it to :any:`cleanup_dtemp` to delete it sooner.
+    """
+    path = tempfile.TemporaryDirectory(*args, **kwargs)  # pylint: disable=consider-using-with
+    if not mkdtemp.hook_registered:
+        # After weakref.finalize's own atexit hook, so this runs first, while error directories still exist.
+        atexit.register(_cleanup_dtemp)
+        mkdtemp.hook_registered = True
     _DTEMP_STACK.append(path)
     return path
+
+mkdtemp.hook_registered = False
+
+
+def cleanup_dtemp(path):
+    """Delete a temporary directory now instead of when the program exits.
+
+    Args:
+        path (tempfile.TemporaryDirectory): A directory from :any:`mkdtemp` or :any:`tempfile.TemporaryDirectory`.
+    """
+    try:
+        _DTEMP_STACK.remove(path)
+    except ValueError:
+        pass
+    path.cleanup()
 
 
 def copy_file(src, dest, show_progress=True):
@@ -842,7 +872,7 @@ def tmpfs_prefix():
     selected filesystem.
 
     Returns:
-        str: Path to a uniquely-named directory in the temporary filesystem. The directory
+        tempfile.TemporaryDirectory: A uniquely-named directory in the temporary filesystem. The directory
             and all its contents **will be deleted** when the program exits if it installs
             correctly.
     """
@@ -865,6 +895,7 @@ def tmpfs_prefix():
             subprocess.check_call([check_exe_script])
         except (OSError, subprocess.CalledProcessError) as err:
             LOGGER.debug(err)
+            cleanup_dtemp(tmp_prefix)
             continue
         try:
             statvfs = os.statvfs(check_exe_script)
@@ -872,14 +903,19 @@ def tmpfs_prefix():
             LOGGER.debug(err)
             if candidate is None:
                 candidate = tmp_prefix
+            else:
+                cleanup_dtemp(tmp_prefix)
             continue
         else:
             free_mib = (statvfs.f_frsize*statvfs.f_bavail)//0x100000
             LOGGER.debug("%s: %sMB free", tmp_prefix.name, free_mib)
             if free_mib < 2000:
+                cleanup_dtemp(tmp_prefix)
                 continue
         if check_exe_script:
             os.remove(check_exe_script)
+        if candidate is not None:
+            cleanup_dtemp(candidate)
         break
     else:
         if not candidate:

@@ -36,7 +36,7 @@ import tempfile
 import time
 import unittest
 from unittest import skipIf, skipUnless
-from taucmdr.util import get_command_output, rmtree, tmpfs_prefix
+from taucmdr.util import cleanup_dtemp, get_command_output, rmtree, tmpfs_prefix
 from io import StringIO
 from taucmdr import logger
 from taucmdr.error import ConfigurationError, InternalError
@@ -73,13 +73,11 @@ def _report_cleanup_error(_, path, exc):
 
 
 def _destroy_test_workdir(path):
-    dir = path.name
     try:
-        del path
-    except FileNotFoundError:
-        pass
-    if os.path.isdir(dir):
-        rmtree(dir, onexc=_report_cleanup_error)
+        cleanup_dtemp(path)
+    except OSError:
+        if os.path.isdir(path.name):
+            rmtree(path.name, onexc=_report_cleanup_error)
 
 
 def push_test_workdir():
@@ -97,7 +95,7 @@ def push_test_workdir():
         shutil.copy(test_src, test_dst)
         get_command_output(os.path.join(path.name, 'foo_launcher'))
     except OSError:
-        del path
+        cleanup_dtemp(path)
         path = tempfile.TemporaryDirectory(dir=os.getcwd())
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
@@ -112,9 +110,7 @@ def pop_test_workdir():
     :any:`push_test_workdir` was called.
     """
     os.chdir(_CWD_STACK.pop())
-    # The temp directories get deleted automatically when the tempdir object is deleted
-    to_delete = _DIR_STACK.pop()
-    del to_delete
+    _destroy_test_workdir(_DIR_STACK.pop())
 
 
 def get_test_workdir():
