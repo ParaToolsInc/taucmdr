@@ -27,6 +27,7 @@
 """Unit tests for the test runner itself."""
 
 import glob
+import importlib.util
 import os
 import re
 import shutil
@@ -95,8 +96,12 @@ class RunTestsTest(tests.TestCase):
         for name in unset:
             env.pop(name, None)
         env.update(setenv or {})
-        proc = subprocess.run([sys.executable, _RUN_TESTS] + list(args), env=env, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, text=True, check=False, cwd=cwd)
+        # For tests than run tests, set the results directory to a temporary directory, as 
+        # otherwise the run would empty and write to the default results directory,
+        # which could overwrite this run's own results.
+        results_dir = tempfile.mkdtemp(dir=os.getcwd())
+        proc = subprocess.run([sys.executable, _RUN_TESTS, '--results-dir', results_dir] + list(args), env=env,
+                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False, cwd=cwd)
         test_ids = [line for line in proc.stdout.splitlines() if line.startswith('taucmdr.')]
         return proc.returncode, test_ids, proc.stdout
 
@@ -273,6 +278,19 @@ class RunTestsTest(tests.TestCase):
         self.addCleanup(os.chmod, os.path.join(sandbox, 'locked'), 0o700)
         self.assertEqual(retval, 0, output)
         self.assertIn(f"WARNING: Couldn't delete sandbox directory {sandbox}", output)
+
+    @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
+    @tests.skipUnless(importlib.util.find_spec('xmlrunner'), "unittest-xml-reporting is required for this test")
+    def test_nested_run_results_dir(self):
+        """A nested test run writes its results elsewhere than this run's results directory."""
+        root = self._make_modules({'passprobe/__init__.py': '', 'passprobe/test_probe.py': _PASSING_TEST})
+        retval, _, output = self._run('-U', '-v', 'passprobe.test_probe', pythonpath=[root])
+        self.assertEqual(retval, 0, output)
+        reports = re.findall(r'Generated XML report: (\S+)', output)
+        self.assertTrue(reports, output)
+        for outer in tests.RESULTS_DIR, os.path.join(tests.REPO_DIR, 'build', 'test-results'):
+            for report in reports:
+                self.assertFalse(report.startswith(os.path.join(outer, '')), report)
 
     @tests.skipUnless(os.path.exists(_RUN_TESTS), "Needs a source checkout")
     def test_deprecation_warnings(self):
