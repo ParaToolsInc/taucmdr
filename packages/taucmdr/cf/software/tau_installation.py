@@ -39,6 +39,7 @@ TAU is the core software package of TAU Commander.
 import os
 import re
 import glob
+import json
 import shutil
 import datetime
 import shlex
@@ -168,6 +169,14 @@ PROGRAM_LAUNCHERS = {'mpirun': ['-app', '--app', '-configfile'],
                      'cafrun': []}
 
 
+_PYTHON_BUILD_CONFIG_QUERY = """
+import json, sysconfig
+config = {var: sysconfig.get_config_var(var) for var in ('LIBDIR', 'LIBDEST', 'LDVERSION')}
+config.update(stdlib=sysconfig.get_path('stdlib'), include=sysconfig.get_path('include'))
+print(json.dumps(config))
+"""
+
+
 def python_build_paths(python_path):
     """Find the C header and ``libpython`` directories of a Python interpreter.
 
@@ -182,22 +191,23 @@ def python_build_paths(python_path):
     Raises:
         ConfigurationError: The interpreter has no C headers, or its ``libpython`` couldn't be found.
     """
-    stdlib = get_command_output(
-        [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("stdlib"))']).strip()
-    # INCLUDEPY is the build-time location, which is wrong for a relocated Python such as a python-build-standalone
-    # build, so ask for the headers' installed location instead.
-    include_dir = get_command_output(
-        [python_path, '-c', 'import sysconfig; print(sysconfig.get_path("include"))']).strip()
-    # If the development package isn't installed, an Ubuntu-provided Python has neither headers nor a libpython link
-    # beside its standard library, and the search below would then walk all of the standard library's parent.
+    config = json.loads(get_command_output([python_path, '-c', _PYTHON_BUILD_CONFIG_QUERY]))
+    include_dir = config['include']
     if not os.path.isfile(os.path.join(include_dir, 'Python.h')):
         raise ConfigurationError(f"{python_path} has no C headers: there is no Python.h in {include_dir}",
                                  "Install the interpreter's development package, e.g. python3-dev or python3-devel.")
-    # Search the standard library first, then the directory that holds it.
-    for search_dir in stdlib, os.path.dirname(stdlib):
-        for path in glob.iglob(os.path.join(search_dir, '**', f'libpython*.{SHARED_LIBRARY_SUFFIX}*'), recursive=True):
-            return include_dir, os.path.dirname(path)
-    raise ConfigurationError(f"Unable to find libpython in {stdlib} for {python_path}")
+    # We use libpython{LDVERSION}.{SUFFIX} instead of LDLIBRARY, which gives the *static* library
+    # or the framework on macOS.
+    library = f"libpython{config['LDVERSION']}.{SHARED_LIBRARY_SUFFIX}"
+    # LIBDIR and LIBDEST are build-time locations, so for a relocated Python find LIBDIR
+    # relative to the installed standard library
+    relocated = os.path.join(config['stdlib'], os.path.relpath(config['LIBDIR'], config['LIBDEST']))
+    candidates = [config['LIBDIR'], os.path.normpath(relocated)]
+    for lib_dir in candidates:
+        if os.path.isfile(os.path.join(lib_dir, library)):
+            return include_dir, lib_dir
+    raise ConfigurationError(f"Unable to find {library} for {python_path} in {' or '.join(dict.fromkeys(candidates))}",
+                             "Install the interpreter's development package, e.g. python3-dev or python3-devel.")
 
 
 def complete_nightly_names(src_dir):

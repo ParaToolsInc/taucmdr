@@ -31,6 +31,7 @@ Functions used for unit tests of tau_installation.py.
 
 import datetime
 import glob
+import json
 import os
 import subprocess
 import sys
@@ -176,23 +177,94 @@ class PythonBuildPathsTest(tests.TestCase):
 
     def test_python_build_paths_no_headers(self):
         """A Python without C headers, such as a distro Python without the corresponding development package, is refused."""
-        # Create a fake Python interpreter and demonstrate that it produces a ConfigurationError
-        # because it has no correspinding C headers.
-        root = tempfile.mkdtemp(dir=os.getcwd())
-        stdlib = os.path.join(root, 'lib', 'python3.99')
-        include_dir = os.path.join(root, 'include', 'python3.99')
-        os.makedirs(stdlib)
-        os.makedirs(include_dir)
-        with open(os.path.join(stdlib, 'libpython3.99.so'), 'w', encoding='utf-8'):
-            pass
-        interpreter = os.path.join(root, 'python3')
-        with open(interpreter, 'w', encoding='utf-8') as fout:
-            fout.write('#!/bin/sh\n'
-                       f'case "$2" in *stdlib*) echo "{stdlib}" ;; *) echo "{include_dir}" ;; esac\n')
-        os.chmod(interpreter, 0o755)
+        root, interpreter = _fake_python(headers=False)
+        _touch(root, 'lib', _LIBPYTHON)
         with self.assertRaises(ConfigurationError) as context:
             python_build_paths(interpreter)
         self.assertIn('Python.h', str(context.exception))
+
+    def test_libdir(self):
+        """The library is found in the LIBDIR that the Python interpreter reports."""
+        root, interpreter = _fake_python()
+        _touch(root, 'lib', _LIBPYTHON)
+        self.assertEqual(python_build_paths(interpreter), (os.path.join(root, 'include', 'python3.99'),
+                                                           os.path.join(root, 'lib')))
+
+    def test_relocated(self):
+        """A relocated Python, whose LIBDIR still has its build prefix, is found beside its standard library."""
+        root, interpreter = _fake_python(LIBDIR='/nonexistent-build-prefix/lib',
+                                         LIBDEST='/nonexistent-build-prefix/lib/python3.99')
+        _touch(root, 'lib', _LIBPYTHON)
+        self.assertEqual(python_build_paths(interpreter)[1], os.path.join(root, 'lib'))
+
+    def test_other_version(self):
+        """Another Python version's library isn't used."""
+        root, interpreter = _fake_python()
+        _touch(root, 'lib', f'libpython3.98.{SHARED_LIBRARY_SUFFIX}')
+        _touch(root, 'lib', f'libpython3.{SHARED_LIBRARY_SUFFIX}')
+        _touch(root, 'lib', 'python3.99', 'config-3.99', f'libpython3.98.{SHARED_LIBRARY_SUFFIX}')
+        with self.assertRaises(ConfigurationError) as context:
+            python_build_paths(interpreter)
+        self.assertIn(_LIBPYTHON, str(context.exception))
+
+    def test_free_threaded(self):
+        """For a free-threaded Python interpreter the library with ABI flags is chosen."""
+        root, interpreter = _fake_python(LDVERSION='3.99t')
+        _touch(root, 'lib', _LIBPYTHON)
+        with self.assertRaises(ConfigurationError) as context:
+            python_build_paths(interpreter)
+        self.assertIn(f'libpython3.99t.{SHARED_LIBRARY_SUFFIX}', str(context.exception))
+        _touch(root, 'lib', f'libpython3.99t.{SHARED_LIBRARY_SUFFIX}')
+        self.assertEqual(python_build_paths(interpreter)[1], os.path.join(root, 'lib'))
+
+    def test_static_interpreter(self):
+        """A Python whose interpreter links libpython statically but still provides a shared one is detected."""
+        root, interpreter = _fake_python()
+        _touch(root, 'lib', 'libpython3.99.a')
+        with self.assertRaises(ConfigurationError) as context:
+            python_build_paths(interpreter)
+        self.assertIn(_LIBPYTHON, str(context.exception))
+        _touch(root, 'lib', _LIBPYTHON)
+        self.assertEqual(python_build_paths(interpreter)[1], os.path.join(root, 'lib'))
+
+
+_LIBPYTHON = f'libpython3.99.{SHARED_LIBRARY_SUFFIX}'
+
+
+def _touch(*parts):
+    path = os.path.join(*parts)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8'):
+        pass
+
+
+def _fake_python(headers=True, **config):
+    """Make a fake Python 3.99 installed in a new directory for testing purposes.
+    
+    Args:
+        headers (bool): If True then the installation has ``Python.h``.
+        **config: ``sysconfig`` configuration variables to override.
+
+    Returns:
+        tuple: (installation root, path to the interpreter).
+    """
+    root = tempfile.mkdtemp(dir=os.getcwd())
+    stdlib = os.path.join(root, 'lib', 'python3.99')
+    include_dir = os.path.join(root, 'include', 'python3.99')
+    os.makedirs(stdlib)
+    os.makedirs(include_dir)
+    if headers:
+        _touch(include_dir, 'Python.h')
+    values = {'stdlib': stdlib, 'include': include_dir, 'LIBDIR': os.path.join(root, 'lib'), 'LIBDEST': stdlib,
+              'LDVERSION': '3.99'}
+    values.update(config)
+    with open(os.path.join(root, 'config.json'), 'w', encoding='utf-8') as fout:
+        json.dump(values, fout)
+    interpreter = os.path.join(root, 'python3')
+    with open(interpreter, 'w', encoding='utf-8') as fout:
+        fout.write(f'#!/bin/sh\ncat "{root}/config.json"\n')
+    os.chmod(interpreter, 0o755)
+    return root, interpreter
 
 
 def _target_arch(target_os):
