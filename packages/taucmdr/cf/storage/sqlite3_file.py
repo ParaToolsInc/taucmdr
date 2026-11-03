@@ -138,7 +138,7 @@ class SQLiteDatabase:
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
             if self.readonly:
-                # A read-only file can lack tables that would be implicitly craeted by reading them; open a copy
+                # A read-only file can lack tables that would be implicitly created by reading them; open a copy
                 # in memory so they can be created without having to write to the file
                 self._connection = sqlite3.connect(':memory:', isolation_level=None, check_same_thread=False)
                 if os.path.exists(self.dbfile):

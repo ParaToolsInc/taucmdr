@@ -97,7 +97,7 @@ def fetch_sources(dest, sources):
 
 
 class FetchCommand(AbstractCommand):
-    """Downloads every source archive TAU Commander can use, for copying to a system without acccess to the public internet."""
+    """Downloads every source archive TAU Commander can use, for copying to a system without internet access."""
 
     def _construct_parser(self):
         usage = "%s <directory>" % self.command
