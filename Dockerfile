@@ -25,6 +25,7 @@ USER tau
 RUN uv tool install --python ${PYTHON_VERSION} --with-requirements /tmp/taucmdr/requirements-dev.txt /tmp/taucmdr
 # Mount a volume for the system storage level
 RUN mkdir /home/tau/system
+ENV TAUCMDR_SYSTEM_PREFIX="/home/tau/system"
 ENV PATH="/home/tau/.local/bin:${PATH}"
 ENV __TAUCMDR_USER_PREFIX__="/dev/shm/taucmdr_user"
 WORKDIR /home/tau/src
