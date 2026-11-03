@@ -271,7 +271,16 @@ class Installation:
                     return str(archive)
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
-        util.download(self.src, archive)
+        # Download beside the archive and replace it.
+        part = archive + '.part'
+        try:
+            util.download(self.src, part)
+            util.verify_archive(part)
+            os.replace(part, archive)
+        except BaseException:
+            if os.path.exists(part):
+                os.remove(part)
+            raise
         return str(archive)
 
     def acquire_source(self, reuse_archive=True):

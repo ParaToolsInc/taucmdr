@@ -28,11 +28,11 @@
 
 import datetime
 import os
-import shutil
 from taucmdr import EXIT_FAILURE, EXIT_SUCCESS, logger, util
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cf.software import all_sources
+from taucmdr.cf.software.tau_installation import complete_nightly_names
 
 
 LOGGER = logger.get_logger(__name__)
@@ -50,7 +50,8 @@ def fetch_sources(dest, sources):
     """Download source archives into a directory, trying each archive's mirrors in order.
 
     A download that isn't a readable archive, such as a server's error page, counts as a failed mirror.
-    The TAU nightly archive changes every day, so it's downloaded again and stored in a copy with today's date.
+    The TAU nightly archive changes every day, so it's downloaded again and stored with today's date
+    (see :any:`complete_nightly_names`).
 
     Args:
         dest (str): Directory to download into.  It's created if it doesn't exist.
@@ -89,8 +90,9 @@ def fetch_sources(dest, sources):
             else:
                 failed.append(name)
     if nightly_fetched:
-        shutil.copy2(os.path.join(dest, nightly),
-                     os.path.join(dest, datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')))
+        os.replace(os.path.join(dest, nightly),
+                   os.path.join(dest, datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')))
+    complete_nightly_names(dest)
     return failed
 
 

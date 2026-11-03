@@ -145,6 +145,23 @@ class ImportTest(tests.TestCase):
         dated = datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')
         self.assertEqual(sorted(import_cmd.import_sources(self.bundle, self.src)), [dated, 'tau-nightly.tgz'])
         self.assertEqual(sorted(os.listdir(self.src)), [dated, 'tau-nightly.tgz'])
+        self.assertEqual(os.readlink(os.path.join(self.src, 'tau-nightly.tgz')), dated)
+
+    def test_import_newer_nightly(self):
+        """Importing a newer nightly links the plain name to it, replacing an outdated copy."""
+        os.makedirs(self.src)
+        make_archive(os.path.join(self.src, 'tau-nightly-2026-01-02.tgz'), toplevel='tau-2.35')
+        shutil.copy2(os.path.join(self.src, 'tau-nightly-2026-01-02.tgz'), os.path.join(self.src, 'tau-nightly.tgz'))
+        for make_plain in shutil.copy2, lambda source, target: os.symlink(os.path.basename(source), target):
+            with self.subTest(make_plain=make_plain):
+                shutil.rmtree(self.bundle)
+                os.mkdir(self.bundle)
+                newer = make_archive(os.path.join(self.bundle, 'tau-nightly-2026-03-04.tgz'), toplevel='tau-2.36')
+                make_plain(newer, os.path.join(self.bundle, 'tau-nightly.tgz'))
+                import_cmd.import_sources(self.bundle, self.src)
+                self.assertEqual(sorted(os.listdir(self.src)),
+                                 ['tau-nightly-2026-01-02.tgz', 'tau-nightly-2026-03-04.tgz', 'tau-nightly.tgz'])
+                self.assertEqual(os.readlink(os.path.join(self.src, 'tau-nightly.tgz')), 'tau-nightly-2026-03-04.tgz')
 
     def test_import_refused_names(self):
         """Only known source archives are imported."""

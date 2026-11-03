@@ -30,7 +30,6 @@ Functions used for unit tests of system/fetch.py.
 """
 
 import datetime
-import filecmp
 import os
 import tarfile
 import tempfile
@@ -72,8 +71,7 @@ class FetchTest(tests.TestCase):
         self.assertEqual(fetch.fetch_sources(self.dest, sources), [])
         dated = datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')
         self.assertEqual(sorted(os.listdir(self.dest)), sorted([*sources, dated]))
-        self.assertTrue(filecmp.cmp(os.path.join(self.dest, 'tau-nightly.tgz'), os.path.join(self.dest, dated),
-                                    shallow=False))
+        self.assertEqual(os.readlink(os.path.join(self.dest, 'tau-nightly.tgz')), dated)
 
     def test_fetch_mirror_fallback(self):
         missing = 'file://' + os.path.join(self.mirror, 'missing', 'tau.tgz')

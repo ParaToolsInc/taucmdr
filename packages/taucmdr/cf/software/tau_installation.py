@@ -42,6 +42,7 @@ import glob
 import json
 import shutil
 import datetime
+import filecmp
 import shlex
 import resource
 import platform
@@ -210,30 +211,56 @@ def python_build_paths(python_path):
                              "Install the interpreter's development package, e.g. python3-dev or python3-devel.")
 
 
+def dated_nightly_name(archive):
+    """Return the dated name for a TAU nightly archive.
+
+    Args:
+        archive (str): Path to the archive.
+
+    Returns:
+        str: ``tau-nightly-<YYYY-MM-DD>.tgz``.
+    """
+    return datetime.datetime.fromtimestamp(os.path.getmtime(archive)).strftime('tau-nightly-%Y-%m-%d.tgz')
+
+
+def _dated_nightlies(src_dir):
+    return sorted(glob.glob(os.path.join(src_dir, 'tau-nightly-*.tgz')))
+
+
 def complete_nightly_names(src_dir):
-    """Ensure `src_dir` contains the TAU nightly archive under both of the names TAU Commander can look for.
+    """Give dated names to each TAU nightly archive in `src_dir` and link ``tau-nightly.tgz`` to the newest.
 
     Args:
         src_dir (str): A storage level's source archive directory.
 
     Returns:
-        list: Names of the files created.
-    """
+        list: Names of the files created or replaced.
 
-    # A TAU nightly build looks for ``tau-nightly.tgz`` and then for a dated copy, ``tau-nightly-<YYYY-MM-DD>.tgz``,
-    # beside it.  Without the plain name it downloads a new nightly, while without a dated copy it renames the archive,
-    # which fails in a directory that isn't writable. Ensure both copies are present.
+    Raises:
+        OSError: `src_dir` couldn't be changed.
+    """
     plain = os.path.join(src_dir, 'tau-nightly.tgz')
-    dated = sorted(glob.glob(os.path.join(src_dir, 'tau-nightly-*.tgz')))
-    if os.path.exists(plain) and not dated:
-        copy = os.path.join(src_dir, datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz'))
-        shutil.copy2(plain, copy)
-    elif dated and not os.path.exists(plain):
-        copy = plain
-        shutil.copy2(dated[-1], copy)
-    else:
-        return []
-    return [os.path.basename(copy)]
+    changed = []
+    if os.path.isfile(plain) and not os.path.islink(plain):
+        if any(filecmp.cmp(plain, path, shallow=False) for path in _dated_nightlies(src_dir)):
+            os.remove(plain)
+        else:
+            name = dated_nightly_name(plain)
+            os.replace(plain, os.path.join(src_dir, name))
+            changed.append(name)
+    dated = _dated_nightlies(src_dir)
+    if dated:
+        newest = os.path.basename(dated[-1])
+        if not (os.path.islink(plain) and os.readlink(plain) == newest):
+            link = plain + '.link'
+            try:
+                os.remove(link)
+            except FileNotFoundError:
+                pass
+            os.symlink(newest, link)
+            os.replace(link, plain)
+            changed.append(os.path.basename(plain))
+    return sorted(changed)
 
 
 class TauInstallation(Installation):
@@ -674,26 +701,38 @@ class TauInstallation(Installation):
         # so multiple TAU installations share the large common files.
         if self._install_tag is None:
             source_archive = self.acquire_source()
-            self._install_tag = util.archive_toplevel(source_archive)
-            # If tau nightly, add current date to tag
             if self.src == NIGHTLY:
-                nightlies = glob.glob(os.path.join(os.path.dirname(source_archive), 'tau-nightly-*.tgz'))
-                nightlies_downloaded = True if nightlies else False
-                if self.update_nightly or not nightlies_downloaded:
-                    current_date = datetime.datetime.now().strftime('-%Y-%m-%d')
-                    self._install_tag = self._install_tag + current_date
-                    # Move to new tgz file
-                    new_archive_name = os.path.join(
-                        os.path.dirname(source_archive), 'tau-nightly' + current_date + '.tgz'
-                    )
-                    os.rename(source_archive, new_archive_name)
-                    self.src = new_archive_name
-                else:
-                    last_nightly = sorted(nightlies)[-1]
-                    nightly_date = os.path.basename(last_nightly)[11:22]
-                    self._install_tag = self._install_tag + nightly_date
-                    self.src = last_nightly
+                source_archive, date = self._newest_nightly(os.path.dirname(source_archive))
+                self._install_tag = f'{util.archive_toplevel(source_archive)}-{date}'
+                self.src = source_archive
+            else:
+                self._install_tag = util.archive_toplevel(source_archive)
         return self._install_tag
+
+    def _newest_nightly(self, src_dir):
+        """Find the newest TAU nightly archive in `src_dir`, after downloading a new one if updating.
+
+        Returns:
+            tuple: (path to the archive, its date as ``YYYY-MM-DD``).
+        """
+        today = datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')
+        if self.update_nightly and not os.path.exists(os.path.join(src_dir, today)):
+            try:
+                download = self._acquire_source(reuse_archive=False)
+            except OSError as err:
+                LOGGER.warning("Couldn't download the newest TAU nightly, so using the one already downloaded: %s", err)
+            else:
+                src_dir = os.path.dirname(download)
+                os.replace(download, os.path.join(src_dir, today))
+        try:
+            complete_nightly_names(src_dir)
+        except OSError as err:
+            # Another storage level's nightly may be read-only, in which case it's used as it is.
+            LOGGER.debug("Couldn't name the TAU nightly archives in '%s' by date: %s", src_dir, err)
+        dated = _dated_nightlies(src_dir)
+        archive = dated[-1] if dated else os.path.join(src_dir, 'tau-nightly.tgz')
+        name = os.path.basename(archive) if dated else dated_nightly_name(archive)
+        return archive, name[len('tau-nightly-'):-len('.tgz')]
 
     def _verify_tau_libs(self, tau_makefile):
         makefile_tags = os.path.basename(tau_makefile).replace("Makefile.tau", "")

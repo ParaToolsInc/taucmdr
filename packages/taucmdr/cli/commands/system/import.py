@@ -29,6 +29,7 @@
 # Watch out! "import" is a Python keyword, so this can't just be named after its command
 # since `import import` doesn't work.
 
+import filecmp
 import fnmatch
 import hashlib
 import os
@@ -38,7 +39,7 @@ from taucmdr.error import ConfigurationError
 from taucmdr.cli import arguments
 from taucmdr.cli.command import AbstractCommand
 from taucmdr.cf.software import all_sources
-from taucmdr.cf.software.tau_installation import complete_nightly_names
+from taucmdr.cf.software.tau_installation import complete_nightly_names, dated_nightly_name
 from taucmdr.cf.storage.levels import writable_system_storage
 
 
@@ -73,9 +74,9 @@ def _copy_into_place(source, target):
 def import_sources(bundle, src_dir):
     """Copy the source archives in a directory into a storage level's source archive directory.
 
-    Only files named like an archive TAU Commander downloads are copied.  A file already in `src_dir`
-    under the same name is never replaced.  Afterwards the TAU nightly archive is present under both of
-    the names searched by TAU installations (see :any:`complete_nightly_names`).
+    Only files with a name expected of a TAU dependency is copied. Files already in `src_dir`
+    under the same name are not replaced. TAU nightly archives are named with the archive's date, and
+    ``tau-nightly.tgz`` is linked to the newest (see :any:`complete_nightly_names`).
 
     Args:
         bundle (str): Directory holding the archives; made by ``tau system fetch``.
@@ -91,6 +92,7 @@ def import_sources(bundle, src_dir):
         raise ConfigurationError(f"'{bundle}' isn't a directory.")
     known = set(all_sources())
     archives = []
+    dated = [os.path.join(bundle, name) for name in os.listdir(bundle) if fnmatch.fnmatch(name, 'tau-nightly-*.tgz')]
     for name in sorted(os.listdir(bundle)):
         path = os.path.join(bundle, name)
         if not os.path.isfile(path):
@@ -103,12 +105,17 @@ def import_sources(bundle, src_dir):
         except OSError as err:
             raise ConfigurationError(f"'{path}' isn't a readable archive: {err}",
                                      "Copy it again, or download it again with `tau system fetch`.") from err
-        archives.append(name)
+        if name == 'tau-nightly.tgz':
+            if any(filecmp.cmp(path, other, shallow=False) for other in dated):
+                continue
+            archives.append((path, dated_nightly_name(path)))
+        else:
+            archives.append((path, name))
     added = []
     try:
         util.mkdirp(src_dir)
-        for name in archives:
-            source, target = os.path.join(bundle, name), os.path.join(src_dir, name)
+        for source, name in archives:
+            target = os.path.join(src_dir, name)
             if os.path.exists(target):
                 if _same_file(source, target):
                     LOGGER.info("'%s' is already in '%s'", name, src_dir)

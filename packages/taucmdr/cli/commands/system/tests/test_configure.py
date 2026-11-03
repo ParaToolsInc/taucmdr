@@ -158,8 +158,7 @@ class ConfigureTest(tests.TestCase):
         proc = tests.run_tau_subprocess(['system', 'configure', '--tau-config', tau_dir], None, cwd, user,
                                         os.path.dirname(src))
         self.assertSucceeded(proc)
-        with open(os.path.join(src, 'tau-nightly.tgz'), encoding='utf-8') as fin:
-            self.assertEqual(fin.read(), 'nightly')
+        self.assertEqual(os.readlink(os.path.join(src, 'tau-nightly.tgz')), 'tau-nightly-2026-01-02.tgz')
 
     def test_reset_project_elsewhere(self):
         """Configuring refuses to delete a project outside its own working directory."""

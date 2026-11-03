@@ -33,17 +33,22 @@ import datetime
 import glob
 import json
 import os
+import shutil
+import stat
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 from unittest import mock
-from taucmdr import tests
+from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.platforms import (HOST_ARCH, HOST_OS, ARM64, PPC64LE, X86_64, CRAY_CNL, DARWIN, LINUX,
                                   SHARED_LIBRARY_SUFFIX)
 from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.software import installation
 from taucmdr.cf.software.installation import Installation
-from taucmdr.cf.software.tau_installation import TauInstallation, complete_nightly_names, python_build_paths
+from taucmdr.cf.software.tau_installation import NIGHTLY, TauInstallation, complete_nightly_names, python_build_paths
+from taucmdr.cli.commands.system.tests.test_fetch import make_archive
 
 
 class TauInstallationTest(tests.TestCase):
@@ -56,7 +61,6 @@ class TauInstallationTest(tests.TestCase):
         self._cuda_tmpdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        import shutil
         shutil.rmtree(self._cuda_tmpdir, ignore_errors=True)
         super().tearDown()
 
@@ -136,24 +140,142 @@ class CompleteNightlyNamesTest(tests.TestCase):
                 result[name] = fin.read()
         return result
 
-    def test_complete_nightly_names(self):
-        today = datetime.datetime.now().strftime('tau-nightly-%Y-%m-%d.tgz')
-        src = self._src(**{'tau-nightly.tgz': 'new'})
-        self.assertEqual(complete_nightly_names(src), [today])
-        self.assertEqual(self._contents(src), {'tau-nightly.tgz': 'new', today: 'new'})
+    def _assert_links_to(self, src, name):
+        plain = os.path.join(src, 'tau-nightly.tgz')
+        self.assertTrue(os.path.islink(plain), plain)
+        self.assertEqual(os.readlink(plain), name)
 
+    def test_download(self):
+        """A download under the plain name is dated by its modification time, and the plain name links to it."""
+        src = self._src(**{'tau-nightly.tgz': 'new'})
+        _set_mtime(os.path.join(src, 'tau-nightly.tgz'), '2026-03-04')
+        self.assertEqual(complete_nightly_names(src), ['tau-nightly-2026-03-04.tgz', 'tau-nightly.tgz'])
+        self.assertEqual(self._contents(src), {'tau-nightly-2026-03-04.tgz': 'new', 'tau-nightly.tgz': 'new'})
+        self._assert_links_to(src, 'tau-nightly-2026-03-04.tgz')
+
+    def test_link_to_newest(self):
         src = self._src(**{'tau-nightly-2026-01-02.tgz': 'older', 'tau-nightly-2026-03-04.tgz': 'newer'})
         self.assertEqual(complete_nightly_names(src), ['tau-nightly.tgz'])
-        self.assertEqual(self._contents(src)['tau-nightly.tgz'], 'newer')
+        self._assert_links_to(src, 'tau-nightly-2026-03-04.tgz')
 
-        files = {'tau-nightly.tgz': 'a', 'tau-nightly-2026-01-02.tgz': 'a'}
-        src = self._src(**files)
+    def test_copy_replaced(self):
+        """A copy of a dated archive under the plain name is replaced by a link to the newest."""
+        src = self._src(**{'tau-nightly.tgz': 'a',
+                           'tau-nightly-2026-01-02.tgz': 'a',
+                           'tau-nightly-2026-03-04.tgz': 'b'})
+        _set_mtime(os.path.join(src, 'tau-nightly.tgz'), '2026-05-06')
+        self.assertEqual(complete_nightly_names(src), ['tau-nightly.tgz'])
+        self.assertEqual(sorted(os.listdir(src)),
+                         ['tau-nightly-2026-01-02.tgz', 'tau-nightly-2026-03-04.tgz', 'tau-nightly.tgz'])
+        self._assert_links_to(src, 'tau-nightly-2026-03-04.tgz')
+
+    def test_older_download(self):
+        """An archive under the plain name that's older than the newest dated archive keeps its own date."""
+        src = self._src(**{'tau-nightly.tgz': 'old', 'tau-nightly-2026-03-04.tgz': 'newer'})
+        _set_mtime(os.path.join(src, 'tau-nightly.tgz'), '2026-01-02')
+        self.assertEqual(complete_nightly_names(src), ['tau-nightly-2026-01-02.tgz', 'tau-nightly.tgz'])
+        self.assertEqual(self._contents(src), {'tau-nightly-2026-01-02.tgz': 'old',
+                                               'tau-nightly-2026-03-04.tgz': 'newer',
+                                               'tau-nightly.tgz': 'newer'})
+        self._assert_links_to(src, 'tau-nightly-2026-03-04.tgz')
+
+    def test_stale_link(self):
+        for target in 'tau-nightly-2026-01-02.tgz', 'tau-nightly-2025-01-01.tgz':
+            with self.subTest(target=target):
+                src = self._src(**{'tau-nightly-2026-01-02.tgz': 'older', 'tau-nightly-2026-03-04.tgz': 'newer'})
+                os.symlink(target, os.path.join(src, 'tau-nightly.tgz'))
+                self.assertEqual(complete_nightly_names(src), ['tau-nightly.tgz'])
+                self._assert_links_to(src, 'tau-nightly-2026-03-04.tgz')
+
+    def test_current_link(self):
+        src = self._src(**{'tau-nightly-2026-03-04.tgz': 'newer'})
+        os.symlink('tau-nightly-2026-03-04.tgz', os.path.join(src, 'tau-nightly.tgz'))
         self.assertEqual(complete_nightly_names(src), [])
-        self.assertEqual(self._contents(src), files)
+        self._assert_links_to(src, 'tau-nightly-2026-03-04.tgz')
 
+    def test_no_nightly(self):
         src = self._src()
         self.assertEqual(complete_nightly_names(src), [])
         self.assertEqual(complete_nightly_names(os.path.join(src, 'missing')), [])
+
+
+class NightlyInstallTagTest(tests.TestCase):
+    """Tests for the installation tag and source archive of a TAU nightly build."""
+
+    def setUp(self):
+        super().setUp()
+        self.system = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        self.src = os.path.join(self.system, 'src')
+        os.mkdir(self.src)
+        self.today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    def tearDown(self):
+        os.chmod(self.src, stat.S_IRWXU)
+        super().tearDown()
+
+    def _nightly(self, name, toplevel, date=None):
+        path = make_archive(os.path.join(self.src, name), toplevel=toplevel)
+        if date:
+            _set_mtime(path, date)
+        return path
+
+    def _tag_and_source(self, update_nightly=False):
+        tau = TauInstallation.__new__(TauInstallation)
+        tau.name, tau.title, tau.src, tau.srcs, tau.srcs_avail = 'tau', 'TAU', NIGHTLY, [], [NIGHTLY]
+        tau.unmanaged, tau.update_nightly, tau._install_tag = False, update_nightly, None  # pylint: disable=protected-access
+        level = SimpleNamespace(prefix=self.system)
+        with mock.patch.object(installation, 'search_levels', return_value=[level]), \
+             mock.patch.object(installation, 'highest_writable_storage', return_value=level):
+            return tau._get_install_tag(), tau.src  # pylint: disable=protected-access
+
+    @tests.skipIf(os.geteuid() == 0, "File permissions don't stop root from writing")
+    def test_tag_from_built_archive(self):
+        """The tag has the TAU version of the archive that is built, not of an outdated archive under the plain name."""
+        older = self._nightly('tau-nightly-2026-01-02.tgz', 'tau-2.35')
+        shutil.copy(older, os.path.join(self.src, 'tau-nightly.tgz'))
+        newer = self._nightly('tau-nightly-2026-03-04.tgz', 'tau-2.36')
+        os.chmod(self.src, 0o555)
+        self.assertEqual(self._tag_and_source(), ('tau-2.36-2026-03-04', newer))
+
+    def test_new_download(self):
+        """An archive just downloaded under the plain name is built instead of an older dated one."""
+        self._nightly('tau-nightly-2026-01-02.tgz', 'tau-2.35')
+        self._nightly('tau-nightly.tgz', 'tau-2.36')
+        dated = os.path.join(self.src, f'tau-nightly-{self.today}.tgz')
+        self.assertEqual(self._tag_and_source(), (f'tau-2.36-{self.today}', dated))
+        self.assertEqual(os.readlink(os.path.join(self.src, 'tau-nightly.tgz')), os.path.basename(dated))
+
+    def test_update_nightly(self):
+        """Updating downloads a new archive without overwriting the one the plain name links to."""
+        older = self._nightly('tau-nightly-2026-01-02.tgz', 'tau-2.35')
+        os.symlink(os.path.basename(older), os.path.join(self.src, 'tau-nightly.tgz'))
+        with mock.patch.object(installation.util, 'download',
+                               side_effect=lambda src, dest: make_archive(dest, toplevel='tau-2.36')) as download:
+            tag, source = self._tag_and_source(update_nightly=True)
+        download.assert_called_once()
+        self.assertEqual(tag, f'tau-2.36-{self.today}')
+        self.assertEqual(source, os.path.join(self.src, f'tau-nightly-{self.today}.tgz'))
+        self.assertEqual(util.archive_toplevel(older), 'tau-2.35')
+
+    def test_update_nightly_daily(self):
+        """Updating doesn't download again on the day of the last download."""
+        dated = self._nightly(f'tau-nightly-{self.today}.tgz', 'tau-2.36')
+        os.symlink(os.path.basename(dated), os.path.join(self.src, 'tau-nightly.tgz'))
+        with mock.patch.object(installation.util, 'download') as download:
+            self.assertEqual(self._tag_and_source(update_nightly=True), (f'tau-2.36-{self.today}', dated))
+        download.assert_not_called()
+
+    @tests.skipIf(os.geteuid() == 0, "File permissions don't stop root from writing")
+    def test_undated_readonly(self):
+        """An archive only under the plain name in a read-only directory is dated by its modification time."""
+        plain = self._nightly('tau-nightly.tgz', 'tau-2.35', date='2026-03-04')
+        os.chmod(self.src, 0o555)
+        self.assertEqual(self._tag_and_source(), ('tau-2.35-2026-03-04', plain))
+
+
+def _set_mtime(path, date):
+    timestamp = datetime.datetime.fromisoformat(date).timestamp()
+    os.utime(path, (timestamp, timestamp), follow_symlinks=False)
 
 
 class PythonBuildPathsTest(tests.TestCase):
