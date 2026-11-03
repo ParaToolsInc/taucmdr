@@ -36,6 +36,7 @@ from taucmdr.model.experiment import Experiment
 
 
 class ExperimentEditCommand(EditCommand):
+    """``experiment edit`` subcommand."""
 
     def main(self, argv):
         args = self._parse_args(argv)

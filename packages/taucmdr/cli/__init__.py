@@ -227,8 +227,7 @@ def _resolve(cmd, c, d):
         return [matches[0][0]] + _resolve(cmd, cdr, matches[0][1])
     if not matches:
         raise UnknownCommandError(' '.join(cmd))
-    if len(matches) > 1:
-        raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
+    raise AmbiguousCommandError(' '.join(cmd), [m[0] for m in matches])
 
 def find_command(cmd):
     """Import the command module and return its COMMAND member.

@@ -228,9 +228,8 @@ class TrialController(Controller):
                 # Trial record was deleted
                 pass
             raise err
-        else:
-            self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
-            return retval
+        self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
+        return retval
 
     def renumber(self, old_trials, new_trials):
         """Renumbers trial id of an experiment.
@@ -244,7 +243,7 @@ class TrialController(Controller):
         expr = Project.selected().experiment()
         existing_nums = [trial['number'] for trial in
                          Trial.controller(storage=PROJECT_STORAGE).search({'experiment': expr.eid})]
-        start_temp_id = max(max(existing_nums), max(new_trials)) + 1
+        start_temp_id = max([*existing_nums, *new_trials]) + 1
         temp_id = start_temp_id
         for old_trial_num in old_trials:
             old_trial = self.one({'number': old_trial_num, 'experiment': expr.eid})
@@ -349,24 +348,23 @@ class Trial(Model):
             return launcher_cmd, []
         if num_exes <= 1:
             return launcher_cmd, [cmd]
-        if num_exes > 1:
-            colons = [i for i, x in enumerate(cmd) if x == ':']
-            if not colons:
-                # Recognized launcher with multiple executables but not using ':' syntax.
-                LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
-                               "the application executable is '%s' and subsequent executables are arguments "
-                               "to that command. If this is incorrect, use ':' to separate each application "
-                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`. "
-                               "Or, use '--' to separate '%s', its arguments, and subsequent executables "
-                               "from the application command, e.g. "
-                               "`mpirun -np 4 numactl -m 1 -- ./a.out -l hello", cmd0, cmd0)
-                return launcher_cmd, [cmd]
-            # Split MPMD command on ':'.  Retain ':' as first element of each application command
-            colons.append(len(cmd))
-            application_cmds = [cmd[:colons[0]]]
-            for i, idx in enumerate(colons[:-1]):
-                application_cmds.append(cmd[idx:colons[i+1]])
-            return launcher_cmd, application_cmds
+        colons = [i for i, x in enumerate(cmd) if x == ':']
+        if not colons:
+            # Recognized launcher with multiple executables but not using ':' syntax.
+            LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
+                           "the application executable is '%s' and subsequent executables are arguments "
+                           "to that command. If this is incorrect, use ':' to separate each application "
+                           "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`. "
+                           "Or, use '--' to separate '%s', its arguments, and subsequent executables "
+                           "from the application command, e.g. "
+                           "`mpirun -np 4 numactl -m 1 -- ./a.out -l hello", cmd0, cmd0)
+            return launcher_cmd, [cmd]
+        # Split MPMD command on ':'.  Retain ':' as first element of each application command
+        colons.append(len(cmd))
+        application_cmds = [cmd[:colons[0]]]
+        for i, idx in enumerate(colons[:-1]):
+            application_cmds.append(cmd[idx:colons[i+1]])
+        return launcher_cmd, application_cmds
 
     @property
     def prefix(self):
@@ -519,7 +517,7 @@ class Trial(Model):
                         LOGGER.info("Renaming %s to %s", fname, new_name)
                         os.rename(fname, new_name)
                     else:
-                        raise ConfigurationError("The profile numbers for trial %d cannot be corrected.",
+                        raise ConfigurationError(f"The profile numbers for trial {self['number']} cannot be corrected.",
                                                  "Check that the application configuration is correct.",
                                                  "Check that the measurement configuration is correct.",
                                                  "Check for instrumentation failure in the compilation log.")

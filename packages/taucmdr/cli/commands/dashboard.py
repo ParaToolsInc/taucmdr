@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -69,8 +69,7 @@ class DashboardCommand(AbstractCommand):
                 err.value = "No project configurations exist."
                 err.hints = ['Use `%s` to create a new project configuration.' % project_create_cmd]
             raise err
-        else:
-            project_list_cmd.main(subargs + [proj['name']])
+        project_list_cmd.main(subargs + [proj['name']])
         print()
         return EXIT_SUCCESS
 

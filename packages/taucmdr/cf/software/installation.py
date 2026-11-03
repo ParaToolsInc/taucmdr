@@ -233,8 +233,7 @@ class Installation:
             arch_dct = dct[self.target_arch]
         except KeyError:
             return default
-        else:
-            return arch_dct.get(self.target_os, arch_dct.get(None, default))
+        return arch_dct.get(self.target_os, arch_dct.get(None, default))
 
     def set_group(self, gid=None):
         """Sets the group for all files in the installation.
@@ -440,11 +439,10 @@ class Installation:
                 LOGGER.info("%s installation failed: %s", self.title, err)
                 #util.add_error_stack(self._src_prefix)
                 raise
-            else:
-                # Delete the decompressed source code to save space. The source archive is retained.
-                LOGGER.debug("Deleting '%s'", self._src_prefix)
-                util.rmtree(self._src_prefix, ignore_errors=True)
-                self._src_prefix = None
+            # Delete the decompressed source code to save space. The source archive is retained.
+            LOGGER.debug("Deleting '%s'", self._src_prefix)
+            util.rmtree(self._src_prefix, ignore_errors=True)
+            self._src_prefix = None
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()

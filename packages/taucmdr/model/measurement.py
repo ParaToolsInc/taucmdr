@@ -341,7 +341,7 @@ def attributes():
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<metric>'},
-            'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
+            'compat': {lambda metrics: any('PAPI' in met for met in metrics):
                        (Target.require('papi_source'), Target.exclude('papi_source', None)),
                        lambda x: x != ['TIME']: Measurement.exclude('baseline', True)},
             'rebuild_required': True

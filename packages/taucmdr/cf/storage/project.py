@@ -86,9 +86,9 @@ class ProjectStorage(LocalFileStorage):
                                    "Use '-@ user' option for user level storage.") from err
             try:
                 util.mkdirp(project_prefix)
-            except Exception as err:
+            except Exception as mkdir_err:
                 raise StorageError("Failed to access %s filesystem prefix '%s': %s" %
-                                   (self.name, project_prefix, err)) from err
+                                   (self.name, project_prefix, mkdir_err)) from mkdir_err
             # Exclude project storage directory from git
             with open(os.path.join(self.prefix, '.gitignore'), 'w+') as fout:
                 fout.write('/*\n')

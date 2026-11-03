@@ -130,15 +130,6 @@ class ExperimentController(Controller):
         """Default match_any to False to prevent matches outside the selected project."""
         return super()._check_unique(data, match_any)
 
-    def create(self, data):
-        return super().create(data)
-
-    def update(self, data, keys):
-        return super().update(data, keys)
-
-    def unset(self, fields, keys):
-        return super().unset(fields, keys)
-
     def delete(self, keys):
         return super().delete(keys)
 
@@ -237,9 +228,9 @@ class Experiment(Model):
         self.verify()
         try:
             util.mkdirp(self.prefix)
-        except:
+        except OSError as err:
             raise ConfigurationError('Cannot create directory %r' % self.prefix,
-                                     'Check that you have `write` access')
+                                     'Check that you have `write` access') from err
 
     def on_delete(self):
         try:
@@ -249,7 +240,7 @@ class Experiment(Model):
                 LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
 
     def data_size(self):
-        return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
+        return sum(int(trial.get('data_size', 0)) for trial in self.populate('trials'))
 
     def next_trial_number(self):
         trials = self.populate(attribute='trials', defaults=True)
@@ -550,9 +541,8 @@ class Experiment(Model):
                 raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." %
                                          (self['name'], ", ".join(not_found)))
             return [trial for trial in trials if trial['number'] in trial_numbers]
-        else:
-            found = trials[0]
-            for trial in trials[1:]:
-                if trial['begin_time'] > found['begin_time']:
-                    found = trial
-            return [found]
+        found = trials[0]
+        for trial in trials[1:]:
+            if trial['begin_time'] > found['begin_time']:
+                found = trial
+        return [found]

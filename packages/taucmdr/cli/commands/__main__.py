@@ -63,7 +63,8 @@ class MainCommand(AbstractCommand):
 
     def _construct_parser(self):
         usage = "%s [arguments] <subcommand> [options]"  % self.command
-        _green = lambda x: "{:<35}".format(util.color_text(x, 'green'))
+        def _green(text):
+            return "{:<35}".format(util.color_text(text, 'green'))
         epilog_parts = ["", cli.commands_description(), "",
                         util.color_text("Shortcuts:", attrs=["bold"]),
                         _green("  %(command)s <compiler>") + "Execute a compiler command",

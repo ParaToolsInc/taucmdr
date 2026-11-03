@@ -108,7 +108,7 @@ class SQLiteDatabase:
 
         def execute(self, sql, parameters=(), log=True):
             if log:
-                _heavy_debug(f"{self._dbfile}: Executing `{sql}` with parameters {parameters}")
+                _heavy_debug("%s: Executing `%s` with parameters %s", self._dbfile, sql, parameters)
             try:
                 return self._cursor.execute(sql, parameters)
             except sqlite3.OperationalError as err:
@@ -516,14 +516,13 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         table = self.table(table_name)
         if keys is None:
             return None
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             return table.get(eid=keys)
-        elif isinstance(keys, dict):
+        if isinstance(keys, dict):
             return table.get(keys=keys, match_any=match_any)
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             return [self.get(key, table_name=table_name, match_any=match_any) for key in keys]
-        else:
-            raise ValueError(keys)
+        raise ValueError(keys)
 
     def search(self, keys=None, table_name=None, match_any=False):
         """Find multiple records.
@@ -549,18 +548,17 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         table = self.table(table_name)
         if keys is None:
             return table.search(cond=None)
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             element = table.get(eid=keys)
             return [element] if element else []
-        elif isinstance(keys, dict):
+        if isinstance(keys, dict):
             return table.search(keys, match_any=match_any)
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             result = []
             for key in keys:
                 result.extend(self.search(keys=key, table_name=table_name, match_any=match_any))
             return result
-        else:
-            raise ValueError(keys)
+        raise ValueError(keys)
 
     def match(self, field, table_name=None, regex=None, test=None):
         """Find records where `field` matches `regex` or `test`.
@@ -590,13 +588,12 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         possible_records = self.table(table_name).exists(field)
         if test is not None and regex is not None:
             raise ValueError('At most one of "test" and "regex" can be provided')
-        elif test is not None:
+        if test is not None:
             return [record for record in possible_records if test(record[field])]
-        elif regex is not None:
+        if regex is not None:
             pattern = re.compile(regex)
             return [record for record in possible_records if pattern.match(record[field])]
-        else:
-            return possible_records
+        return possible_records
 
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.
@@ -621,15 +618,13 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """
         if keys is None:
             return False
-        elif isinstance(keys, dict):
+        if isinstance(keys, dict):
             return self.table(table_name).count(keys, match_any=match_any) > 0
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             return self.get(keys, table_name=table_name, match_any=match_any) is not None
-        else:
-            raise ValueError(
-                f'"keys" must be dict, list, tuple, or {self.Record.eid_type}, but was {type(keys)}')
+        raise ValueError(f'"keys" must be dict, list, tuple, or {self.Record.eid_type}, but was {type(keys)}')
 
     def insert(self, data, table_name=None):
         """Create a new record.
@@ -723,7 +718,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         table = self.table(table_name)
         if keys is None:
             return
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             table.remove(eid=keys)
         elif isinstance(keys, dict):
             table.remove(keys=keys, match_any=match_any)

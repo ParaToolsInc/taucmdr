@@ -136,13 +136,13 @@ def _get_term_size_tput():
     """
     try:
         import subprocess
-        proc = subprocess.Popen(["tput", "cols"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                universal_newlines=True)
-        output = proc.communicate(input=None)
+        with subprocess.Popen(["tput", "cols"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              universal_newlines=True) as proc:
+            output = proc.communicate(input=None)
         cols = int(output[0])
-        proc = subprocess.Popen(["tput", "lines"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                universal_newlines=True)
-        output = proc.communicate(input=None)
+        with subprocess.Popen(["tput", "lines"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              universal_newlines=True) as proc:
+            output = proc.communicate(input=None)
         rows = int(output[0])
         return (cols, rows)
     except:     # pylint: disable=bare-except

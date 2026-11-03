@@ -257,7 +257,8 @@ def which(program, use_cached=True):
             return _WHICH_CACHE[prog_enc]
         except KeyError:
             pass
-    _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    def _is_exec(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
     fpath, _ = os.path.split(prog_enc)
     if fpath:
         abs_program = os.path.abspath(prog_enc)
@@ -313,7 +314,7 @@ def download(src, dest, timeout=8):
         # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
         if timeout:
             raise OSError("Failed to download '%s'" % src)
-        with ProgressIndicator("Downloading") as progress_bar:
+        with ProgressIndicator("Downloading"):
             try:
                 with urllib.request.urlopen(src) as in_stream, open(dest, 'wb') as out_file:
                     shutil.copyfileobj(in_stream, out_file)
@@ -342,8 +343,8 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
         LOGGER.warning("Invalid response while retrieving download file size")
         file_size = -1
     with ProgressIndicator("Downloading", total_size=file_size) as progress_bar:
-        with open(os.devnull, 'wb') as devnull:
-            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT, universal_newlines=True)
+        with open(os.devnull, 'wb') as devnull, \
+                subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT, universal_newlines=True) as proc:
             while proc.poll() is None:
                 try:
                     current_size = os.stat(dest).st_size
@@ -450,7 +451,7 @@ def is_clean_container(obj):
             k, v = stack.pop()
             if isinstance(k, bad_types):
                 return False
-            elif isinstance(k, sequence_types):
+            if isinstance(k, sequence_types):
                 if not is_clean_container(k):
                     return False
             if isinstance(v, dict):
@@ -592,20 +593,14 @@ def path_accessible(path, mode='r'):
         if 'w' in mode:
             modebits |= os.W_OK | os.X_OK
         return os.access(path, modebits)
-    else:
-        handle = None
-        try:
-            handle = open(path, mode)
-        except OSError as err:
-            if err.errno == errno.EACCES:
-                return False
-            # Some other error, not permissions
-            raise
-        else:
+    try:
+        with open(path, mode):
             return True
-        finally:
-            if handle:
-                handle.close()
+    except OSError as err:
+        if err.errno == errno.EACCES:
+            return False
+        # Some other error, not permissions
+        raise
 
 # pylint: disable=unused-argument
 @contextmanager
@@ -649,9 +644,8 @@ def create_subprocess(
         if error_buf:
             buf = deque(maxlen=error_buf)
         output = []
-        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, universal_newlines=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-        with proc.stdout:
+        with subprocess.Popen(cmd, cwd=cwd, env=subproc_env, universal_newlines=True,
+                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1) as proc:
             # Use iter to avoid hidden read-ahead buffer bug in named pipes:
             # http://bugs.python.org/issue3907
             for line in iter(proc.stdout.readline, ''):
@@ -773,10 +767,9 @@ def parse_bool(value, additional_true=None, additional_false=None):
         value = value.lower()
         if value in true_values:
             return True
-        elif value in false_values:
+        if value in false_values:
             return False
-        else:
-            raise TypeError
+        raise TypeError
     return bool(value)
 
 
@@ -855,8 +848,8 @@ def get_binary_linkage(cmd):
     ldd = which('ldd')
     if not ldd:
         return None
-    proc = subprocess.Popen([ldd, cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, _ = proc.communicate()
+    with subprocess.Popen([ldd, cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+        stdout, _ = proc.communicate()
     if proc.returncode:
         return 'static' if stdout else None
     return 'dynamic'

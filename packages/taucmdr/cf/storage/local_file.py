@@ -275,6 +275,7 @@ class LocalFileStorage(AbstractStorage):
             self._database._write(self._db_copy)
             self._db_copy = None
             return False
+        return False
 
     def table(self, table_name):
         self.connect_database()
@@ -292,7 +293,7 @@ class LocalFileStorage(AbstractStorage):
         join = _or if match_any else _and
         itr = keys.items()
         key, val = next(iter(itr))
-        query = (tinydb.where(key) == val)
+        query = tinydb.where(key) == val
         for key, value in itr:
             query = join(query, (tinydb.where(key) == value))
         return query

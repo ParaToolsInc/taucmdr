@@ -563,7 +563,7 @@ class CopyCommand(CreateCommand):
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = (f"{self.command} <{self.model_name}_{key_attr}> <copy_{key_attr}> [arguments]")
+        usage = f"{self.command} <{self.model_name}_{key_attr}> <copy_{key_attr}> [arguments]"
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,

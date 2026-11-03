@@ -1,5 +1,5 @@
 #.language
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -246,10 +246,8 @@ class Controller:
                 foreign = props['collection']
             except KeyError:
                 return value
-            else:
-                return foreign.controller(self.storage).search(value, context=context)
-        else:
-            return foreign.controller(self.storage).one(value, context=context)
+            return foreign.controller(self.storage).search(value, context=context)
+        return foreign.controller(self.storage).one(value, context=context)
 
     def _check_unique(self, data, match_any=True):
         unique = {attr: data[attr] for attr, props in self.model.attributes.items() if 'unique' in props}
@@ -273,7 +271,7 @@ class Controller:
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
             for attr, foreign in self.model.associations.items():
-                if 'model' or 'collection' in self.model.attributes[attr]:
+                if 'model' in self.model.attributes[attr] or 'collection' in self.model.attributes[attr]:
                     affected = record.get(attr, None)
                     if affected:
                         foreign_cls, via = foreign

@@ -59,6 +59,3 @@ class GotchaInstallation(CMakeInstallation):
                       '-DCMAKE_CXX_COMPILER=' + self.compilers[CXX].unwrap().absolute_path,
                       '-DCMAKE_BUILD_TYPE=Release'])
         return super().cmake(flags)
-
-    def make(self, flags):
-        return super().make(flags)

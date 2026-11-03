@@ -153,8 +153,7 @@ class InitializeCommand(AbstractCommand):
             PROJECT_STORAGE.disconnect_filesystem()
             util.rmtree(PROJECT_STORAGE.prefix, ignore_errors=True)
             raise
-        else:
-            project_select_cmd.main([project_name])
+        project_select_cmd.main([project_name])
 
     def _create_measurement(self, name, args, **kwargs):
         args = ArgumentsNamespace(**dict(vars(args), **kwargs))

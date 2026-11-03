@@ -286,7 +286,7 @@ class ConsoleHelpFormatter(HelpFormatter):
             invocations = [get_invocation(action)]
             for subaction in self._iter_indented_subactions(action):
                 invocations.append(get_invocation(subaction))
-            invocation_length = max([len(util.uncolor_text(s)) for s in invocations])
+            invocation_length = max(len(util.uncolor_text(s)) for s in invocations)
             action_length = invocation_length + self._current_indent
             self._action_max_length = max(self._action_max_length, action_length)
             self._add_item(self._format_action, [action])

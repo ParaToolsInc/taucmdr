@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -61,9 +61,9 @@ class TrialDeleteCommand(DeleteCommand):
                 self.parser.error("No trial number %s in the current experiment.  "
                                 "See `trial list` to see all trial numbers." % field['number'])
                 break
-        for i, _ in enumerate(fields):
-            trial_ctrl.delete(fields[i])
-            self.logger.info('Deleted trial %s', numbers[i])
+        for field, number in zip(fields, numbers):
+            trial_ctrl.delete(field)
+            self.logger.info('Deleted trial %s', number)
         return EXIT_SUCCESS
 
 COMMAND = TrialDeleteCommand(Trial, __name__, summary_fmt="Delete experiment trials.")

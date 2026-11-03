@@ -570,7 +570,8 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
-                                     (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags)) from err
+                                     (self.absolute_path, self.info.short_descr,
+                                      self.info.family.show_wrapper_flags)) from err
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
         known_commands = {info.command for info in _CompilerInfo.all()}
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
@@ -801,9 +802,9 @@ class InstalledCompilerFamily:
                     self.members.setdefault(role, []).append(installed)
         for role, info_list in family.members.items():
             for info in info_list:
-              if family.name == 'None':
-                  installed = InstalledCompiler(info.command, info)
-                  self.members.setdefault(role, []).append(installed)
+                if family.name == 'None':
+                    installed = InstalledCompiler(info.command, info)
+                    self.members.setdefault(role, []).append(installed)
         if not self.members:
             cmds = [info.command for info_list in family.members.values() for info in info_list]
             raise ConfigurationError(f"{self.family.name} {self.family.kbase.description} not found.",

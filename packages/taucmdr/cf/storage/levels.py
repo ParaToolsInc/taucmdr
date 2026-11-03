@@ -43,7 +43,6 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 
 
 import contextlib
-import os
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import StorageError
