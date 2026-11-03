@@ -871,7 +871,7 @@ def tmpfs_prefix():
             correctly.
     """
     # The storage modules import this module, so importing the storage levels at the top would be circular.
-    from taucmdr.cf.storage.levels import highest_writable_storage  # pylint: disable=import-outside-toplevel
+    from taucmdr.cf.storage.levels import highest_writable_storage
     candidate = None
     for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
         try:

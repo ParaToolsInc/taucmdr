@@ -47,8 +47,8 @@ def _unless_darwin_target(condition):
     TAU resolves names on macOS through the system, without binutils or libunwind.
     """
     def wrapper(lhs, lhs_attr, lhs_value, rhs):
-        from taucmdr.cf.platforms import DARWIN  # pylint: disable=import-outside-toplevel
-        from taucmdr.model.target import Target  # pylint: disable=import-outside-toplevel
+        from taucmdr.cf.platforms import DARWIN
+        from taucmdr.model.target import Target
         if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
             condition(lhs, lhs_attr, lhs_value, rhs)
     return wrapper
@@ -60,8 +60,8 @@ def _darwin_io_needs_tau_exec(lhs, lhs_attr, lhs_value, rhs):
     TAU's link-time I/O wrapper uses -Wl,-wrap, which Apple's ld doesn't have, and TAU Commander runs
     instrumented applications without tau_exec.
     """
-    from taucmdr.cf.platforms import DARWIN  # pylint: disable=import-outside-toplevel
-    from taucmdr.model.target import Target  # pylint: disable=import-outside-toplevel
+    from taucmdr.cf.platforms import DARWIN
+    from taucmdr.model.target import Target
     if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
         return
     if lhs.get_or_default('source_inst') != 'never' or lhs.get_or_default('compiler_inst') != 'never':

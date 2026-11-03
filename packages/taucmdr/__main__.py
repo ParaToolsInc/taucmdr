@@ -40,7 +40,7 @@ def _profiler():
     if not profile_taucmdr:
         yield
     else:
-        from cProfile import Profile  # pylint: disable=import-outside-toplevel
+        from cProfile import Profile
         prof = Profile()
         prof.enable()
         try:
@@ -62,7 +62,7 @@ def main():
         os.environ.setdefault('__TAUCMDR_SCRIPT__', launcher if os.path.isfile(launcher) else 'tau')
         os.execv(sys.executable, [sys.executable, '-I', '-m', 'taucmdr', *sys.argv[1:]])
     with _profiler():
-        from taucmdr.cli.commands.__main__ import COMMAND  # pylint: disable=import-outside-toplevel
+        from taucmdr.cli.commands.__main__ import COMMAND
         sys.exit(COMMAND.main(sys.argv[1:]))
 
 
