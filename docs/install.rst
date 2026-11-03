@@ -50,8 +50,8 @@ configurations there once.  Users load a module file and use those builds.  TAU 
 anything else a user needs that is not present at system-level in their own ``~/.local/taucmdr``.
 
 The shared builds go in a *system prefix*, a directory set by the ``TAUCMDR_SYSTEM_PREFIX`` environment
-variable.  Without it there's no shared level, and each user's installation builds private copies of TAU
-and its dependencies.
+variable, which must be an absolute path.  Without it there's no shared level, and each user's installation
+builds private copies of TAU and its dependencies.
 
 These example steps use ``/opt/taucmdr`` and a group named ``tauadmin`` for the administrators who maintain it.
 Adapt these steps for your own system.

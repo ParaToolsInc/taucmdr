@@ -30,12 +30,15 @@ Functions used for unit tests of host.py.
 """
 
 
+from subprocess import CalledProcessError
+from types import SimpleNamespace
 from unittest import mock
 from taucmdr import tests, util
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import host, mpi
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.platforms import TAU_PPC64LE_LINUX
+from taucmdr.error import ConfigurationError
 
 # Output of `<wrapper> -craype-verbose --version -E` from craype 2.7.32.
 CRAYPE_GNU_CC = """gcc (GCC) 13.3.1 20240611 (Red Hat 13.3.1-2)
@@ -95,6 +98,29 @@ class FamilyOrderTest(tests.TestCase):
         with mock.patch('taucmdr.cf.platforms.HOST_TAU_MAGIC', TAU_PPC64LE_LINUX):
             host_cc = compiler.InstalledCompiler.find_any(CC)
         self.assertIsNot(host_cc.info.family, host.SYSTEM)
+
+
+class ProbeTest(tests.TestCase):
+    """Tests for finding a compiler's family from its output."""
+
+    def test_failed_version_command(self):
+        """A family whose version command fails isn't matched against another family's output."""
+        kbase = object()
+        first, second = (SimpleNamespace(name=name, kbase=kbase, commands=['cc'], family_regex=regex,
+                                         version_flags=[flag], show_wrapper_flags=None)
+                         for name, regex, flag in (('First', 'first', '--first'), ('Second', 'second', '--second')))
+        outputs = {'--first': 'compatible with second', '--second': CalledProcessError(1, 'cc', output='')}
+
+        def get_command_output(cmd):
+            output = outputs[cmd[-1]]
+            if isinstance(output, Exception):
+                raise output
+            return output
+
+        with mock.patch.dict(compiler._CompilerFamily._probe_cache, clear=True), \
+             mock.patch.object(util, 'get_command_output', side_effect=get_command_output), \
+             self.assertRaises(ConfigurationError):
+            compiler._CompilerFamily.probe('/usr/bin/cc', [first, second])
 
 
 class CrayFamilyTest(tests.TestCase):

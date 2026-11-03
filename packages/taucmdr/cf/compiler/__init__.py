@@ -294,7 +294,6 @@ class _CompilerFamily(TrackedInstance):
             pass
         LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
         messages = []
-        stdout = None
         # Settle down pylint... the __instances__ member is created by __new__
         # pylint: disable=no-member
         if candidates:
@@ -312,6 +311,7 @@ class _CompilerFamily(TrackedInstance):
                 (with_regex if family.family_regex else without_regex).append(family)
         for family in with_regex:
             cmd = [absolute_path] + family.version_flags
+            stdout = None
             try:
                 stdout = util.get_command_output(cmd)
             except CalledProcessError as err:

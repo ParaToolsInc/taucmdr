@@ -84,7 +84,14 @@ Appears in help messages, and the compiler wrappers run this path.
 
 def _system_prefix():  # type: () -> str | None
     values = {var: os.environ.get(var) for var in ('TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__')}
-    paths = {var: os.path.realpath(os.path.abspath(value)) for var, value in values.items() if value}
+    for var, value in values.items():
+        # A relative path would lead to a different directory in each working directory,
+        # such as a build directory where the compiler wrappers run.
+        # Thus, the system prefix is required to be an absolute path. 
+        if value and not os.path.isabs(value):
+            sys.stderr.write(f"{var} ('{value}') must be an absolute path.\n")
+            sys.exit(EXIT_FAILURE)
+    paths = {var: os.path.realpath(value) for var, value in values.items() if value}
     if len(set(paths.values())) > 1:
         sys.stderr.write(f"TAUCMDR_SYSTEM_PREFIX ('{values['TAUCMDR_SYSTEM_PREFIX']}') and __TAUCMDR_SYSTEM_PREFIX__ "
                          f"('{values['__TAUCMDR_SYSTEM_PREFIX__']}') point to different directories. Set only one.\n")

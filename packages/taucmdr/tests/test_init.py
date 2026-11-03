@@ -119,15 +119,20 @@ class GlobalsTest(tests.TestCase):
         self.assertEqual(out, os.path.realpath(absolute))
 
     def test_system_prefix_override(self):
-        """The system prefix is set by __TAUCMDR_SYSTEM_PREFIX__; a relative path is relative to the working directory."""
-        cwd = tempfile.mkdtemp(dir=os.getcwd())
-        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': 'system'}, cwd=cwd)
-        self.assertEqual(retval, 0, err)
-        self.assertEqual(out, os.path.realpath(os.path.join(cwd, 'system')))
+        """The system prefix is set by __TAUCMDR_SYSTEM_PREFIX__."""
         absolute = tempfile.mkdtemp(dir=os.getcwd())
-        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': absolute}, cwd=cwd)
+        retval, out, err = self._print_system_prefix({'__TAUCMDR_SYSTEM_PREFIX__': absolute})
         self.assertEqual(retval, 0, err)
         self.assertEqual(out, os.path.realpath(absolute))
+
+    def test_relative_system_prefix(self):
+        """A relative system prefix is an error."""
+        for var in ('TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__'):
+            with self.subTest(var=var):
+                retval, out, err = self._print_system_prefix({var: 'system'})
+                self.assertEqual(retval, taucmdr.EXIT_FAILURE % 256, out)
+                self.assertIn(var, err)
+                self.assertIn("'system'", err)
 
     def test_same_prefix_both_names(self):
         """Both variables may be set if they lead to the same directory."""
