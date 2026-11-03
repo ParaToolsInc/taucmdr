@@ -937,11 +937,11 @@ class TauInstallation(Installation):
             return ['-unwinder=libunwind', '-unwind=%s' % libunwind.install_prefix]
         # Without a libunwind directory TAU links a bare -lunwind, which fails where the system has none,
         # unless its configure links macOS's own libunwind for this architecture.
-        if self.target_os is DARWIN and self._configure_links_system_libunwind():
+        if self.target_os is DARWIN and self._links_system_libunwind():
             return ['-unwinder=libunwind']
         return []
 
-    def _configure_links_system_libunwind(self):
+    def _links_system_libunwind(self):
         """Returns True if TAU's configure links macOS's libunwind for this TAU architecture."""
         machine = '$machine = %s ' % self.tau_magic.name
         try:

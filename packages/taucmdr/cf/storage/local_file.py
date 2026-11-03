@@ -72,7 +72,7 @@ class _JsonFileStorage(tinydb.JSONStorage):
             self.path = str(path)
             self.readonly = True
             try:
-                self._handle = open(path)
+                self._handle = open(path)  # pylint: disable=consider-using-with
             except FileNotFoundError:
                 self._handle = None
                 LOGGER.debug("'%s' doesn't exist and can't be created; treating as empty and read-only", path)

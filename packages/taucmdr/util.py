@@ -196,7 +196,8 @@ def rmtree(path, ignore_errors=False, onexc=None, attempts=5):
         return
     for i in range(attempts-1):
         try:
-            return shutil.rmtree(path)
+            shutil.rmtree(path)
+            return
         except Exception as err:        # pylint: disable=broad-except
             LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
@@ -216,7 +217,7 @@ def _rmtree(path, ignore_errors, onexc):
         shutil.rmtree(path, ignore_errors=ignore_errors)
     else:
         # Fallback for older Python versions
-        shutil.rmtree(path, ignore_errors=ignore_errors,
+        shutil.rmtree(path, ignore_errors=ignore_errors,  # pylint: disable=deprecated-argument
                       onerror=lambda function, failed, exc_info: onexc(function, failed, exc_info[1]))
 
 
@@ -720,8 +721,8 @@ def page_output(output_string: str):
         print(output_string)
     else:
         pager_cmd = shlex.split(os.environ.get('PAGER', 'less -F -R -S -X -K'))
-        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE, text=True)
-        proc.communicate(output_string)
+        with subprocess.Popen(pager_cmd, stdin=subprocess.PIPE, text=True) as proc:
+            proc.communicate(output_string)
 
 
 def human_size(num, suffix='B'):

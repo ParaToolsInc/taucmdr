@@ -87,7 +87,7 @@ def _system_prefix():  # type: () -> str | None
     for var, value in values.items():
         # A relative path would lead to a different directory in each working directory,
         # such as a build directory where the compiler wrappers run.
-        # Thus, the system prefix is required to be an absolute path. 
+        # Thus, the system prefix is required to be an absolute path.
         if value and not os.path.isabs(value):
             sys.stderr.write(f"{var} ('{value}') must be an absolute path.\n")
             sys.exit(EXIT_FAILURE)

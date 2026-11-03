@@ -113,9 +113,10 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         self._action_groups.append(group)
         return group
 
-    def format_help(self):
+    def format_help(self, formatter=None):
         """Format command line help string."""
-        formatter = self._get_formatter()
+        if formatter is None:
+            formatter = self._get_formatter()
         formatter.add_usage(self.usage, self._actions, self._mutually_exclusive_groups)
         formatter.add_text(self.description)
         for action_group in self._sorted_groups():

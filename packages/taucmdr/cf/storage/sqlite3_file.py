@@ -151,7 +151,7 @@ class SQLiteDatabase:
                 LOGGER.debug("Opened SQLite database at %s read-only", self.dbfile)
             else:
                 self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
-                LOGGER.debug(f"Connected to SQLite database at {self.dbfile}")
+                LOGGER.debug("Connected to SQLite database at %s", self.dbfile)
 
     def close(self):
         """Close the database connection"""
