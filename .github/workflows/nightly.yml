@@ -82,7 +82,7 @@ jobs:
       - name: Install TAU Commander
         run: |
           uv tool install --python 3.15 .
-          echo "$(uv tool dir --bin)" >> "${GITHUB_PATH}"
+          uv tool dir --bin >> "${GITHUB_PATH}"
           "$(uv tool dir --bin)/tau" --version
 
       - name: Install minimal TAU
