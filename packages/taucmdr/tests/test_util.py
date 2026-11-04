@@ -29,6 +29,7 @@
 Functions used for unit tests of util.py.
 """
 
+import glob
 import io
 import os
 import shlex
@@ -290,24 +291,39 @@ class TemporaryDirectoryTest(tests.TestCase):
                 "util.add_error_stack(build)\n")
         proc = self._run_python(code, tmpdir)
         self.assertSucceeded(proc)
-        self.assertTrue(os.path.exists(os.path.join(tmpdir, 'build', 'marker')), proc.stdout + proc.stderr)
+        self.assertEqual(len(glob.glob(os.path.join(tmpdir, 'build-*', 'marker'))), 1, proc.stdout + proc.stderr)
         self.assertNotIn('Implicitly cleaning up', proc.stdout + proc.stderr)
 
-    def test_error_dir_copy_failure_at_exit(self):
-        """A copy of an error directory that fails doesn't stop the exit hook from deleting the other directories."""
+    def test_error_dirs_same_name_kept_at_exit(self):
+        """Error directories with the same name, including one kept by an earlier run, are both copied."""
         tmpdir = tempfile.mkdtemp(dir=os.getcwd())
         os.mkdir(os.path.join(tmpdir, 'build'))
         code = ("import os\n"
                 "from taucmdr import util\n"
-                "build = os.path.join(util.mkdtemp().name, 'build')\n"
-                "os.mkdir(build)\n"
-                "util.add_error_stack(build)\n"
+                "for i in range(2):\n"
+                "    build = os.path.join(util.mkdtemp().name, 'build')\n"
+                "    os.mkdir(build)\n"
+                "    open(os.path.join(build, f'marker{i}'), 'w').close()\n"
+                "    util.add_error_stack(build)\n")
+        proc = self._run_python(code, tmpdir)
+        self.assertSucceeded(proc)
+        self.assertEqual(len(glob.glob(os.path.join(tmpdir, 'build-*', 'marker0'))), 1, proc.stdout + proc.stderr)
+        self.assertEqual(len(glob.glob(os.path.join(tmpdir, 'build-*', 'marker1'))), 1, proc.stdout + proc.stderr)
+
+    def test_error_dir_copy_failure_at_exit(self):
+        """A copy of an error directory that fails doesn't stop the exit hook from deleting the other directories."""
+        tmpdir = tempfile.mkdtemp(dir=os.getcwd())
+        code = ("import os\n"
+                "from taucmdr import util\n"
+                "util.add_error_stack(os.path.join(util.mkdtemp().name, 'missing'))\n"
                 "print(util.mkdtemp().name)\n")
         proc = self._run_python(code, tmpdir)
         self.assertSucceeded(proc)
         leftover = proc.stdout.splitlines()[0]
         self.assertTrue(leftover.startswith(tmpdir), proc.stdout)
         self.assertFalse(os.path.exists(leftover))
+        self.assertIn("Couldn't keep temporary directory", proc.stdout + proc.stderr)
+        self.assertEqual(glob.glob(os.path.join(tmpdir, 'missing-*')), [])
         self.assertNotIn('Implicitly cleaning up', proc.stdout + proc.stderr)
 
     @staticmethod
@@ -366,4 +382,6 @@ class TemporaryDirectoryTest(tests.TestCase):
         with mock.patch.object(util, '_DTEMP_ERROR_STACK', [build]), mock.patch.object(util, '_DTEMP_STACK', []), \
                 mock.patch.object(tempfile, 'tempdir', dest), self.assertLogs(util.LOGGER, 'WARNING') as logs:
             util._cleanup_dtemp()  # pylint: disable=protected-access
-        self.assertIn(os.path.join(dest, 'build'), '\n'.join(logs.output))
+        kept = glob.glob(os.path.join(dest, 'build-*'))
+        self.assertEqual(len(kept), 1)
+        self.assertIn(kept[0], '\n'.join(logs.output))

@@ -47,7 +47,7 @@ import hashlib
 import urllib.parse
 import urllib.request
 from collections import deque
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from zipfile import ZipFile
 import termcolor
 from unidecode import unidecode
@@ -87,11 +87,18 @@ def _cleanup_dtemp():
         _paths = []
         for dir in _DTEMP_ERROR_STACK:
             name = os.path.basename(os.path.normpath(dir))
-            dst = os.path.join(tempfile.gettempdir(), name)
+            dst = None
             try:
-                shutil.copytree(os.path.normpath(dir), dst)
+                # Use a temporary directory with a unique name, so an earlier run's
+                # copy of the same package doesn't interfere with this one.
+                dst = tempfile.mkdtemp(prefix=f'{name}-', dir=tempfile.gettempdir())
+                shutil.copytree(os.path.normpath(dir), dst, dirs_exist_ok=True)
             except OSError as err:
                 LOGGER.warning("Couldn't keep temporary directory '%s': %s", dir, err)
+                if dst:
+                    # os.rmdir removes only an empty directory, so a partial copy is kept.
+                    with suppress(OSError):
+                        os.rmdir(dst)
                 continue
             _paths.append(dst)
         if _paths:
