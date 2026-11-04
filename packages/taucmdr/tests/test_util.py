@@ -255,7 +255,7 @@ class PageOutputTest(tests.TestCase):
         with open(script, 'w', encoding='utf-8') as fout:
             fout.write('cat > "$1"\n')
         with mock.patch.dict(os.environ, {'PAGER': f'sh {shlex.quote(script)} {shlex.quote(paged)}'}):
-            del os.environ['__TAUCMDR_DISABLE_PAGER__']
+            os.environ.pop('__TAUCMDR_DISABLE_PAGER__', None)
             util.page_output('h\u00e9llo pager')
         with open(paged, encoding='utf-8') as fin:
             self.assertEqual(fin.read(), 'hello pager')
