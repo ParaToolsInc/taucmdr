@@ -1,7 +1,7 @@
 Installing TAU Commander
 ========================
 
-TAU Commander needs Python 3.11 or newer.  It installs into its own virtual environment with
+TAU Commander needs Python 3.11.4 or newer.  It installs into its own virtual environment with
 `uv <https://docs.astral.sh/uv/>`_ or `pipx <https://pipx.pypa.io/>`_.  Don't install it into a
 Python environment you use for other work: when TAU Commander profiles Python code, packages in that
 environment could conflict with its own.
@@ -146,7 +146,7 @@ On a computer with internet access:
 
 On the computer without internet access:
 
-4. Ensure that Python 3.11 or newer is installed.
+4. Ensure that Python 3.11.4 or newer is installed.
 
 5. Install TAU Commander from the wheelhouse::
 
@@ -168,4 +168,3 @@ On the computer without internet access:
 
       export TAUCMDR_SYSTEM_PREFIX=$HOME/taucmdr-system
       tau system import bundle
-

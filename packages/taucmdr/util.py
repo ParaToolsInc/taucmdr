@@ -491,12 +491,8 @@ def _extract_all(archive, dest, members=None):
         dest (str): Destination folder.
         members: Members to extract, or None for all of them.
     """
-    # Uses tarfile's 'data' filter if supported by this Python version.
-    # The filter refuses files or links that would be created outside dest.
-    if hasattr(tarfile, 'data_filter'):
-        archive.extractall(dest, members=members, filter='data')
-    else:
-        archive.extractall(dest, members=members)
+    # The 'data' filter refuses files or links that would be created outside dest.
+    archive.extractall(dest, members=members, filter='data')
 
 
 def extract_archive(archive, dest, show_progress=True):

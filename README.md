@@ -40,6 +40,8 @@ Install TAU Commander from a checkout with [uv](https://docs.astral.sh/uv/) or [
   - `uv tool install /path/to/taucmdr`
   - or `pipx install /path/to/taucmdr`
 
+TAU Commander requires Python 3.11.4 or later.
+
 TAU and its dependencies are built on demand.
 For shared and offline installs, see [Installing TAU Commander](http://paratoolsinc.github.io/taucmdr/install.html).
 

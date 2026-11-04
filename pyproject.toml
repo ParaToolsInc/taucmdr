@@ -10,7 +10,7 @@ readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [{ name = "ParaTools, Inc.", email = "info@paratools.com" }]
-requires-python = ">=3.11"
+requires-python = ">=3.11.4"
 dependencies = [
     "fasteners>=0.16",
     "termcolor>=1.1.0",

@@ -39,8 +39,8 @@ from taucmdr import tests
 
 
 def _import_with_version(version):
-    """Import taucmdr in a new interpreter whose ``sys.version_info`` reports `version` (MAJOR, MINOR)."""
-    version_info = tuple(version) + (0, 'final', 0)
+    """Import taucmdr in a new interpreter whose ``sys.version_info`` reports `version` (MAJOR, MINOR, MICRO)."""
+    version_info = tuple(version) + ('final', 0)
     code = f"import sys; sys.version_info = {version_info!r}; import taucmdr"
     return tests.run_python_subprocess(['-c', code], isolated=False)
 
@@ -49,17 +49,22 @@ class PythonVersionTest(tests.TestCase):
     """Tests for the Python version check in :py:mod:`taucmdr`."""
 
     def test_supported_versions(self):
-        for version in ((3, 11), (3, 12), (3, 13), (3, 14), (3, 15), (3, 16)):
+        for version in ((3, 11, 4), (3, 11, 9), (3, 12, 0), (3, 13, 0), (3, 14, 0), (3, 15, 0), (3, 16, 0)):
             with self.subTest(version=version):
                 proc = _import_with_version(version)
                 self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def test_unsupported_versions(self):
-        for version in ((2, 7), (3, 7), (3, 8), (3, 10)):
+        for version in ((2, 7, 18), (3, 7, 0), (3, 8, 0), (3, 10, 12), (3, 11, 0), (3, 11, 3)):
             with self.subTest(version=version):
                 proc = _import_with_version(version)
                 self.assertNotEqual(proc.returncode, 0)
-                self.assertIn('Python 3.11 or newer is required', proc.stderr)
+                self.assertIn('Python 3.11.4 or newer is required', proc.stderr)
+
+    def test_matches_requires_python(self):
+        """The version check agrees with the package's Requires-Python metadata."""
+        minimum = '.'.join(str(x) for x in taucmdr.MINIMUM_PYTHON_VERSION)
+        self.assertEqual(importlib.metadata.metadata('taucmdr')['Requires-Python'], '>=' + minimum)
 
 
 class VersionTest(tests.TestCase):

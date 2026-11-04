@@ -49,15 +49,19 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
+MINIMUM_PYTHON_VERSION = (3, 11, 4)
+"""tuple: Oldest supported Python version (MAJOR, MINOR, MICRO).  Must match `requires-python` in pyproject.toml."""
+
 # Sliced so that pyupgrade --py311-plus doesn't delete the check as dead code.
-if sys.version_info[:2] < (3, 11):
+if sys.version_info[:3] < MINIMUM_PYTHON_VERSION:
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
     sys.stderr.write("""{}
 {}
 {}
-Your Python version is {} but Python 3.11 or newer is required.
+Your Python version is {} but Python {} or newer is required.
 Please install the required Python version or contact {} for support.
-""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, HELP_CONTACT))
+""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, '.'.join([str(x) for x in MINIMUM_PYTHON_VERSION]),
+           HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
 # Imported after the version check so that an unsupported Python fails there, not here.

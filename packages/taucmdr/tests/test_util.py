@@ -173,7 +173,6 @@ class ExtractArchiveTest(tests.TestCase):
         with open(os.path.join(topdir, 'link.txt'), encoding='utf-8') as fin:
             self.assertEqual(fin.read(), 'hello\n')
 
-    @tests.skipUnless(hasattr(tarfile, 'data_filter'), "tarfile extraction filters required")
     def test_extract_archive_unsafe_link(self):
         """An archive with a link that points outside the destination raises OSError and isn't extracted."""
         archive = _make_archive(os.path.join(os.getcwd(), 'unsafe.tgz'), {'passwd': '/etc/passwd'})
