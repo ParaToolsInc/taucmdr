@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ class TargetMetricsCommand(AbstractCommand):
         parts = [util.hline("{} Metrics on Target '{}'".format(metric, targ['name']), 'cyan')]
         table = Texttable(logger.LINE_WIDTH)
         table.set_cols_align(['r', 'l'])
-        name_width = max([len(row[0]) for row in rows])
+        name_width = max(len(row[0]) for row in rows)
         table.set_cols_width([name_width+1, logger.LINE_WIDTH-name_width-4])
         table.set_deco(Texttable.HEADER | Texttable.VLINES)
         table.add_rows(rows)

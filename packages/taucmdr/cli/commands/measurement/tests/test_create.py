@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,22 @@ from taucmdr import tests
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.model.measurement import Measurement
 from taucmdr.cli.commands.measurement.create import COMMAND as create_cmd
+
+# (label, flags, expected stored list, whether the TIME warning is expected)
+METRICS_CASES = (
+    ('comma', ['--metrics', 'TIME,PAPI_TOT_CYC'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('comma_equals', ['--metrics=TIME,PAPI_TOT_CYC'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('space', ['--metrics', 'TIME', 'PAPI_TOT_CYC'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('mixed', ['--metrics', 'TIME,PAPI_L1_DCM', 'PAPI_TOT_CYC'], ['TIME', 'PAPI_L1_DCM', 'PAPI_TOT_CYC'], False),
+    ('time_absent', ['--metrics', 'PAPI_TOT_CYC,PAPI_L1_DCM'], ['TIME', 'PAPI_TOT_CYC', 'PAPI_L1_DCM'], True),
+    ('time_not_first', ['--metrics', 'PAPI_TOT_CYC,TIME'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('time_repeated', ['--metrics', 'TIME,PAPI_TOT_CYC,TIME'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('repeated', ['--metrics', 'TIME,PAPI_TOT_CYC', 'papi_tot_cyc', 'PAPI_L1_DCM,PAPI_TOT_CYC'],
+     ['TIME', 'PAPI_TOT_CYC', 'PAPI_L1_DCM'], False),
+    ('time_lowercase', ['--metrics', 'time,PAPI_TOT_CYC'], ['TIME', 'PAPI_TOT_CYC'], False),
+)
+TIME_WARNING = "'TIME' must always be present"
+
 
 class CreateTest(tests.TestCase):
     """Tests for :any:`measurement.create`."""
@@ -94,3 +110,14 @@ class CreateTest(tests.TestCase):
         meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
         self.assertIsInstance(meas, Measurement)
         self.assertEqual(meas['callpath'], 10)
+
+    def test_metrics_forms(self):
+        for label, flags, expected, warns in METRICS_CASES:
+            with self.subTest(label):
+                self.reset_project_storage()
+                name = 'meas_' + label
+                stdout, stderr = self.assertCommandReturnValue(0, create_cmd, [name] + flags)
+                self.assertFalse(stderr)
+                self.assertEqual(TIME_WARNING in stdout, warns)
+                meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
+                self.assertEqual(meas['metrics'], expected)

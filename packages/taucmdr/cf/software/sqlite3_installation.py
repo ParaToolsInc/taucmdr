@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ to store profile data in such a database.
 """
 
 from taucmdr.cf.software.installation import AutotoolsInstallation
+from taucmdr.cf.platforms import SHARED_LIBRARY_SUFFIX
 
 
 REPOS = {None: [
@@ -38,7 +39,7 @@ REPOS = {None: [
     'https://fs.paratools.com/tau-mirror/sqlite-autoconf-3210000.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libsqlite3.a', 'libsqlite3.la', 'libsqlite3.so']}
+LIBRARIES = {None: ['libsqlite3.a', 'libsqlite3.la', f'libsqlite3.{SHARED_LIBRARY_SUFFIX}']}
 
 HEADERS = {None: ['sqlite3.h', 'sqlite3ext.h']}
 

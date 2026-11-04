@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,12 +34,6 @@ It should be as short and simple.
 import os
 import sys
 
-__version__ = "0.0.0"
-"""str: TAU Commander Version"""
-
-TAUCMDR_VERSION = __version__
-"""str: TAU Commander Version"""
-
 EXIT_FAILURE = -100
 """int: Process exit code indicating unrecoverable failure."""
 
@@ -55,40 +49,65 @@ HELP_CONTACT = '<support@paratools.com>'
 TAUCMDR_URL = 'www.taucommander.com'
 """str: URL of the TAU Commander project."""
 
-REQUIRED_PYTHON_VERSIONS = [(2, 7), (3, 5), (3, 6), (3, 7)]
-"""list of tuples: Required Python versions for TAU Commander.
+MINIMUM_PYTHON_VERSION = (3, 11, 4)
+"""tuple: Oldest supported Python version (MAJOR, MINOR, MICRO).  Must match `requires-python` in pyproject.toml."""
 
-A list of tuples (MAJOR, MINOR) directly comparible to :any:`sys.version_info`
-"""
-
-if not sys.version_info[0:2] in REQUIRED_PYTHON_VERSIONS:
+# Sliced so that pyupgrade --py311-plus doesn't delete the check as dead code.
+if sys.version_info[:3] < MINIMUM_PYTHON_VERSION:
     VERSION = '.'.join([str(x) for x in sys.version_info[0:3]])
-    EXPECTED = ' or '.join([(str(x) + '.' + str(y)) for (x, y) in REQUIRED_PYTHON_VERSIONS])
     sys.stderr.write("""{}
 {}
 {}
-Your Python version is {} but Python {} is required.
+Your Python version is {} but Python {} or newer is required.
 Please install the required Python version or contact {} for support.
-""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, EXPECTED, HELP_CONTACT))
+""".format(TAUCMDR_URL, sys.executable, sys.version, VERSION, '.'.join([str(x) for x in MINIMUM_PYTHON_VERSION]),
+           HELP_CONTACT))
     sys.exit(EXIT_FAILURE)
 
-TAUCMDR_HOME = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_HOME__',
-                                                               os.path.join(os.path.dirname(__file__), '..', '..'))))
-"""str: Absolute path to the top-level TAU Commander directory.
+# Imported after the version check so that an unsupported Python fails there, not here.
+import importlib.metadata  # pylint: disable=wrong-import-position
 
-This directory contains at least `bin`, `docs`, and `packages` directories and is the root
-for system-level package installation paths. **Do not** change it once it is set.
-"""
+def _installed_version():  # type: () -> str
+    try:
+        return importlib.metadata.version('taucmdr')
+    except importlib.metadata.PackageNotFoundError:
+        return "0.0.0"
 
-TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__', sys.argv[0] or 'tau')
+__version__ = _installed_version()
+"""str: TAU Commander Version, from the installed package's metadata, or ``0.0.0`` if the package isn't installed."""
+
+TAUCMDR_VERSION = __version__
+"""str: TAU Commander Version"""
+
+TAUCMDR_SCRIPT = os.environ.get('__TAUCMDR_SCRIPT__') or 'tau'
 """str: Script that launched TAU Commander.
 
-Mainly used for help messages. **Do not** change it once it is set.
+Appears in help messages, and the compiler wrappers run this path.
+**Do not** change it once it is set.
 """
 
-SYSTEM_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_SYSTEM_PREFIX__',
-                                                                os.path.join(TAUCMDR_HOME, 'system'))))
-"""str: System-level TAU Commander files."""
+def _system_prefix():  # type: () -> str | None
+    values = {var: os.environ.get(var) for var in ('TAUCMDR_SYSTEM_PREFIX', '__TAUCMDR_SYSTEM_PREFIX__')}
+    for var, value in values.items():
+        # A relative path would lead to a different directory in each working directory,
+        # such as a build directory where the compiler wrappers run.
+        # Thus, the system prefix is required to be an absolute path.
+        if value and not os.path.isabs(value):
+            sys.stderr.write(f"{var} ('{value}') must be an absolute path.\n")
+            sys.exit(EXIT_FAILURE)
+    paths = {var: os.path.realpath(value) for var, value in values.items() if value}
+    if len(set(paths.values())) > 1:
+        sys.stderr.write(f"TAUCMDR_SYSTEM_PREFIX ('{values['TAUCMDR_SYSTEM_PREFIX']}') and __TAUCMDR_SYSTEM_PREFIX__ "
+                         f"('{values['__TAUCMDR_SYSTEM_PREFIX__']}') point to different directories. Set only one.\n")
+        sys.exit(EXIT_FAILURE)
+    return next(iter(paths.values()), None)
+
+SYSTEM_PREFIX = _system_prefix()
+"""str: System-level TAU Commander files, or None if there is no system level.
+
+The system level is set by the environment variable ``TAUCMDR_SYSTEM_PREFIX``, or by its older name
+``__TAUCMDR_SYSTEM_PREFIX__``. It is unset or empty for no system level.
+"""
 
 USER_PREFIX = os.path.realpath(os.path.abspath(os.environ.get('__TAUCMDR_USER_PREFIX__',
                                                               os.path.join(os.path.expanduser('~'),
@@ -119,7 +138,7 @@ def version_banner(): # type: () -> str
            "Python Impl.   : %(pyimpl)s\n"
            "PYTHONPATH     : %(pythonpath)s\n")
     data = {"url": TAUCMDR_URL,
-            "prefix": TAUCMDR_HOME,
+            "prefix": os.path.dirname(os.path.realpath(__file__)),
             "version": TAUCMDR_VERSION,
             "timestamp": str(datetime.now()),
             "hostname": socket.gethostname(),

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.progress import ProgressIndicator
 from taucmdr.cf.storage import StorageError
-from taucmdr.cf.storage.levels import ORDERED_LEVELS
-from taucmdr.cf.storage.levels import highest_writable_storage
+from taucmdr.cf.storage.levels import highest_writable_storage, search_levels
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf import compiler
 from taucmdr.cf.compiler import InstalledCompilerSet
@@ -158,10 +157,6 @@ class Installation:
             else:
                 self.srcs = []
                 self.srcs_avail = [self.src]
-        elif src.lower() == 'download-tr6':
-            raise ConfigurationError("download-tr6 is not a valid source for %s" % self.title)
-        elif src.lower() == 'download-tr4':
-            raise ConfigurationError("download-tr4 is not a valid source for %s" % self.title)
         else:
             self.src = src
         self.unmanaged = os.path.isdir(self.src)
@@ -195,7 +190,7 @@ class Installation:
             else:
                 tag = self._get_install_tag()
                 # Search the storage hierarchy for an existing installation
-                for storage in reversed(ORDERED_LEVELS):
+                for storage in reversed(search_levels()):
                     try:
                         self._set_install_prefix(str(os.path.join(storage.prefix, self.name, tag)))
                         self.verify()
@@ -238,8 +233,7 @@ class Installation:
             arch_dct = dct[self.target_arch]
         except KeyError:
             return default
-        else:
-            return arch_dct.get(self.target_os, arch_dct.get(None, default))
+        return arch_dct.get(self.target_os, arch_dct.get(None, default))
 
     def set_group(self, gid=None):
         """Sets the group for all files in the installation.
@@ -267,7 +261,7 @@ class Installation:
     def _acquire_source(self, reuse_archive):
         archive_file = os.path.basename(self.src)
         if reuse_archive:
-            for storage in ORDERED_LEVELS:
+            for storage in search_levels():
                 try:
                     archive = os.path.join(storage.prefix, "src", archive_file)
                 except StorageError:
@@ -276,7 +270,16 @@ class Installation:
                     return str(archive)
         archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
         archive = os.path.join(archive_prefix, os.path.basename(self.src))
-        util.download(self.src, archive)
+        # Download beside the archive and replace it.
+        part = archive + '.part'
+        try:
+            util.download(self.src, part)
+            util.verify_archive(part)
+            os.replace(part, archive)
+        except BaseException:
+            if os.path.exists(part):
+                os.remove(part)
+            raise
         return str(archive)
 
     def acquire_source(self, reuse_archive=True):
@@ -436,11 +439,10 @@ class Installation:
                 LOGGER.info("%s installation failed: %s", self.title, err)
                 #util.add_error_stack(self._src_prefix)
                 raise
-            else:
-                # Delete the decompressed source code to save space. The source archive is retained.
-                LOGGER.debug("Deleting '%s'", self._src_prefix)
-                util.rmtree(self._src_prefix, ignore_errors=True)
-                self._src_prefix = None
+            # Delete the decompressed source code to save space. The source archive is retained.
+            LOGGER.debug("Deleting '%s'", self._src_prefix)
+            util.rmtree(self._src_prefix, ignore_errors=True)
+            self._src_prefix = None
         # Verify the new installation
         LOGGER.info("Verifying %s installation...", self.title)
         return self.verify()

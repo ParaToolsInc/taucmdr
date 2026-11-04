@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -120,7 +120,6 @@ class ConfigurationError(Error):
             *hints: Hint messages to help the user resolve this error.
         """
         if not hints:
-            hints = list()
             hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
         super().__init__(value, *hints)
 

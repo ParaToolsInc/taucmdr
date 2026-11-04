@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,14 @@ import sys
 import glob
 import shutil
 import atexit
+import subprocess
 import tempfile
 import time
 import unittest
 from unittest import skipIf, skipUnless
-from taucmdr.util import get_command_output, tmpfs_prefix
+from taucmdr.util import cleanup_dtemp, get_command_output, rmtree, tmpfs_prefix
 from io import StringIO
-from taucmdr import logger, TAUCMDR_HOME, EXIT_SUCCESS, EXIT_FAILURE
+from taucmdr import logger
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.compiler import InstalledCompiler
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE
@@ -47,19 +48,36 @@ _DIR_STACK = []
 _CWD_STACK = []
 _NOT_IMPLEMENTED = []
 
-TIMING_FILE = os.path.join(TAUCMDR_HOME, f"test-timings-{int(time.time())}.csv")
+REPO_DIR = os.environ.get('__TAUCMDR_REPO_DIR__') or \
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+"""str: Absolute path to the TAU Commander source checkout.
+
+It comes from the environment variable ``__TAUCMDR_REPO_DIR__``, which ``scripts/run_tests.py`` defines.
+Without it, this is the checkout containing this file.
+"""
+
+RESULTS_DIR = os.environ.get('__TAUCMDR_TEST_RESULTS_DIR__') or os.path.join(REPO_DIR, 'build', 'test-results')
+"""str: Directory for JUnit XML and timings.
+
+It comes from the environment variable ``__TAUCMDR_TEST_RESULTS_DIR__``, which ``scripts/run_tests.py`` defines.
+"""
+
+TIMING_FILE = os.path.join(RESULTS_DIR, 'test-timings.csv')
+"""str: CSV file to which each test appends its run time."""
+
 LOGGER = logger.get_logger(__name__)
 
 
+def _report_cleanup_error(_, path, exc):
+    sys.stderr.write(f"\nERROR: Failed to clean up testing directory {path}: {exc}\n")
+
+
 def _destroy_test_workdir(path):
-    onerror = lambda f, p, e: sys.stderr.write("\nERROR: Failed to clean up testing directory %s\n" % p)
-    dir = path.name
     try:
-        del path
-    except FileNotFoundError:
-        pass
-    if os.path.isdir(dir):
-        shutil.rmtree(dir, ignore_errors=True, onerror=onerror)
+        cleanup_dtemp(path)
+    except OSError:
+        if os.path.isdir(path.name):
+            rmtree(path.name, onexc=_report_cleanup_error)
 
 
 def push_test_workdir():
@@ -72,12 +90,12 @@ def push_test_workdir():
     """
     path = tmpfs_prefix()
     try:
-        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', 'foo_launcher')
+        test_src = os.path.join(REPO_DIR, '.testfiles', 'foo_launcher')
         test_dst = os.path.join(path.name, 'foo_launcher')
         shutil.copy(test_src, test_dst)
         get_command_output(os.path.join(path.name, 'foo_launcher'))
     except OSError:
-        del path
+        cleanup_dtemp(path)
         path = tempfile.TemporaryDirectory(dir=os.getcwd())
     _DIR_STACK.append(path)
     _CWD_STACK.append(os.getcwd())
@@ -92,9 +110,7 @@ def pop_test_workdir():
     :any:`push_test_workdir` was called.
     """
     os.chdir(_CWD_STACK.pop())
-    # The temp directories get deleted automatically when the tempdir object is deleted
-    to_delete = _DIR_STACK.pop()
-    del to_delete
+    _destroy_test_workdir(_DIR_STACK.pop())
 
 
 def get_test_workdir():
@@ -111,6 +127,105 @@ def cleanup():
 
 
 atexit.register(cleanup)
+
+
+def run_python_subprocess(args, env=None, cwd=None, isolated=True):
+    """Run this Python interpreter in a new process.
+
+    Args:
+        args (list): Arguments to the interpreter.
+        env (dict): Changes to the environment.  A value of None unsets the variable.
+        cwd (str): Working directory of the new process.
+        isolated (bool): If True, run in isolated mode (``-I``), as the ``tau`` launcher does.  Otherwise
+                         ``PYTHONPATH`` is set to this interpreter's ``sys.path``, so the new process imports
+                         the same :py:mod:`taucmdr`.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    child_env = dict(os.environ, PYTHONPATH=os.pathsep.join(sys.path))
+    for key, value in (env or {}).items():
+        if value is None:
+            child_env.pop(key, None)
+        else:
+            child_env[key] = value
+    cmd = [sys.executable, '-I', *args] if isolated else [sys.executable, *args]
+    return subprocess.run(cmd, env=child_env, cwd=cwd, capture_output=True, text=True, check=False)
+
+
+def storage_env(backend, user_prefix, system_prefix=None):
+    """Return environment changes that give a new TAU Commander process the given storage.
+
+    Args:
+        backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to leave it unset.
+        user_prefix (str): User-level storage prefix. ``HOME`` is set to it too, so nothing reaches the real one.
+        system_prefix (str): System-level storage prefix, or None for no system level.
+
+    Returns:
+        dict: Changes for :any:`run_python_subprocess`'s `env`.
+    """
+    return {'__TAUCMDR_USER_PREFIX__': user_prefix,
+            'HOME': user_prefix,
+            'TAUCMDR_SYSTEM_PREFIX': system_prefix,
+            '__TAUCMDR_SYSTEM_PREFIX__': system_prefix,
+            '__TAUCMDR_DB_BACKEND__': backend}
+
+
+def run_tau_subprocess(args, backend, cwd, user_prefix, system_prefix=None, env=None):
+    """Run ``tau`` in a new process with the given storage.
+
+    Args:
+        args (list): Arguments to ``tau``.
+        backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to leave it unset.
+        cwd (str): Working directory of the new process.
+        user_prefix (str): User-level storage prefix.
+        system_prefix (str): System-level storage prefix, or None for no system level.
+        env (dict): Further changes to the environment, as for :any:`run_python_subprocess`.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    return run_python_subprocess(['-m', 'taucmdr', *args], cwd=cwd,
+                                 env=dict(storage_env(backend, user_prefix, system_prefix), **(env or {})))
+
+
+_PATCH_DARWIN = """
+import platform
+platform.machine = lambda: 'arm64'
+platform.system = lambda: 'Darwin'
+"""
+
+
+def run_python_as_darwin(code, cwd, user_prefix, backend=None):
+    """Run Python code in a new process that TAU Commander will identify as an Apple silicon Mac.
+
+    Args:
+        code (str): Source to run after the platform is patched and before anything is imported.
+        cwd (str): Working directory of the new process.
+        user_prefix (str): User-level storage prefix.
+        backend (str): Value for ``__TAUCMDR_DB_BACKEND__``, or None to use the current one.
+
+    Returns:
+        subprocess.CompletedProcess: The finished process, with text output captured.
+    """
+    env = storage_env(backend or os.environ.get('__TAUCMDR_DB_BACKEND__'), user_prefix)
+    # Either variable makes TAU Commander take the host for a Cray.
+    env.update(PE_ENV=None, CRAYOS_VERSION=None)
+    return run_python_subprocess(['-c', _PATCH_DARWIN + code], env=env, cwd=cwd)
+
+
+def run_tau_as_darwin(args, cwd, user_prefix, backend=None):
+    """Run ``tau`` in a new process that takes this host for an Apple silicon Mac.
+
+    Building TAU is skipped: ``Experiment.configure`` does nothing.
+    """
+    code = ("import sys\n"
+            "from unittest import mock\n"
+            "from taucmdr.model.experiment import Experiment\n"
+            "mock.patch.object(Experiment, 'configure').start()\n"
+            "from taucmdr.cli.commands.__main__ import COMMAND\n"
+            f"sys.exit(COMMAND.main({list(args)!r}))\n")
+    return run_python_as_darwin(code, cwd, user_prefix, backend)
 
 
 def not_implemented(cls):
@@ -170,7 +285,8 @@ class TestCase(unittest.TestCase):
     def tearDown(self) -> None:
         _done = time.time() - self.startTime
         self._result_stream.write(f"{_done:.4g}s ... ")
-        with open(TIMING_FILE, mode='at', encoding='utf-8') as f:
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+        with open(TIMING_FILE, mode='a', encoding='utf-8') as f:
             f.write(f"{self.id()}, {_done:.6g}\n")
 
     def run(self, result=None):
@@ -217,7 +333,8 @@ class TestCase(unittest.TestCase):
             argv.extend(['--backend', default_backend])
         if init_args is not None:
             argv.extend(init_args)
-        if '--bare' in argv or glob.glob(os.path.join(SYSTEM_STORAGE.prefix, 'tau', 'tau-nightly-*')):
+        built_prefix = (SYSTEM_STORAGE if SYSTEM_STORAGE is not None else USER_STORAGE).prefix
+        if '--bare' in argv or glob.glob(os.path.join(built_prefix, 'tau', 'tau-nightly-*')):
             initialize_cmd.main(argv)
         else:
             # If this is the first time setting up TAU and dependencies then we need to emit output so
@@ -229,7 +346,8 @@ class TestCase(unittest.TestCase):
             tstart = time.time()
             thread.start()
             self._result_stream.write("\nInitializing TAU and dependencies:\n")
-            self._result_stream.write("    @SYSTEM='%s'\n" % SYSTEM_STORAGE.prefix)
+            system_prefix = SYSTEM_STORAGE.prefix if SYSTEM_STORAGE is not None else '<none>'
+            self._result_stream.write("    @SYSTEM='%s'\n" % system_prefix)
             self._result_stream.write("    @USER='%s'\n" % USER_STORAGE.prefix)
             while thread.is_alive():
                 time.sleep(5)
@@ -281,7 +399,7 @@ class TestCase(unittest.TestCase):
             logger._STDOUT_HANDLER.stream = orig_stdout
 
     def copy_testfile(self, src, dst=None):
-        test_src = os.path.join(TAUCMDR_HOME, '.testfiles', src)
+        test_src = os.path.join(REPO_DIR, '.testfiles', src)
         test_dst = os.path.join(get_test_workdir(), dst or src)
         LOGGER.info(f"Copying test file {test_src} to {test_dst}")
         shutil.copy(test_src, test_dst)
@@ -302,6 +420,20 @@ class TestCase(unittest.TestCase):
             return path
         else :
             self.fail(f"No {role} compiler in target '{target_name}'")
+
+    def assertCleanExit(self, proc):
+        """Check that a process from :any:`run_python_subprocess` printed no Python traceback.
+
+        TAU Commander's own report of an unexpected exception goes to stdout, so both streams are checked.
+        """
+        output = proc.stdout + proc.stderr
+        for text in 'Traceback', 'Exception ignored', 'This is a bug in TAU Commander':
+            self.assertNotIn(text, output)
+
+    def assertSucceeded(self, proc):
+        """Check that a process from :any:`run_python_subprocess` exited with status 0 and no traceback."""
+        self.assertCleanExit(proc)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
     def assertCommandReturnValue(self, return_value, cmd, argv):
         retval, stdout, stderr = self.exec_command(cmd, argv)
@@ -337,17 +469,27 @@ class TestCase(unittest.TestCase):
         self.fail("'{}' not found in '{}'".format(value, '\n'.join(data)))
 
 
-class TestRunner(unittest.TextTestRunner):
-    """Test suite runner."""
+class DarwinTestCase(TestCase):
+    """Base class for tests that run in processes which take this host for a Mac.
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.buffer = True
+    Each test gets a new user prefix and an empty project directory.
+    """
 
-    def run(self, test):
-        result = super().run(test)
-        for item in _NOT_IMPLEMENTED:
-            print("WARNING: %s" % item)
-        if result.wasSuccessful():
-            return EXIT_SUCCESS
-        return EXIT_FAILURE
+    def setUp(self):
+        super().setUp()
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.user_prefix = os.path.join(tmp.name, 'user')
+        self.project_dir = os.path.join(tmp.name, 'project')
+        os.mkdir(self.user_prefix)
+        os.mkdir(self.project_dir)
+
+    def tau(self, *args):
+        """Run ``tau`` as on a Mac, see :any:`run_tau_as_darwin`."""
+        return run_tau_as_darwin(args, self.project_dir, self.user_prefix)
+
+    def python(self, code):
+        """Run Python code as on a Mac and return its output, see :any:`run_python_as_darwin`."""
+        proc = run_python_as_darwin(code, self.project_dir, self.user_prefix)
+        self.assertSucceeded(proc)
+        return proc.stdout.strip()

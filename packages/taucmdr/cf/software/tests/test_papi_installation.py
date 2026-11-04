@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,35 +29,52 @@
 Functions used for unit tests of papi_installation.py.
 """
 
+import warnings
+from xml.etree import ElementTree
+from taucmdr import tests
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.tests import TestCase
+from taucmdr.cf.software.papi_installation import PapiInstallation
 from taucmdr.model.project import Project
 
 
 class PapiInstallationTest(TestCase):
     """Unit tests for PapiInstallation."""
 
+    def test_xml_event_info_cached(self):
+        """Event information that was already read is reused, even when it has no child elements."""
+        papi = PapiInstallation.__new__(PapiInstallation)
+        papi._xml_event_info = ElementTree.Element('eventinfo')
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            self.assertIs(papi.xml_event_info(), papi._xml_event_info)
+
     def _get_papi_installation(self):
         expr = Project.selected().experiment()
         return expr.populate('target').get_installation('papi')
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_parse_metrics_none(self):
         self.reset_project_storage()
         papi = self._get_papi_installation()
         parsed = papi.parse_metrics(['TIME'])
         self.assertEqual([], parsed)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_parse_metrics_preset(self):
         self.reset_project_storage()
         papi = self._get_papi_installation()
         parsed = papi.parse_metrics(['TIME', 'PAPI_TOT_CYC'])
         self.assertEqual(['PAPI_TOT_CYC'], parsed)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_parse_metrics_colon(self):
         self.reset_project_storage()
         papi = self._get_papi_installation()
         parsed = papi.parse_metrics(['TIME', 'PAPI_NATIVE:CPU_CLK_UNHALTED'])
         self.assertEqual(['CPU_CLK_UNHALTED'], parsed)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_parse_metrics_underscore(self):
         self.reset_project_storage()
         papi = self._get_papi_installation()

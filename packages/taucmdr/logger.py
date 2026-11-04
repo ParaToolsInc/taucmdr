@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -136,13 +136,13 @@ def _get_term_size_tput():
     """
     try:
         import subprocess
-        proc = subprocess.Popen(["tput", "cols"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                universal_newlines=True)
-        output = proc.communicate(input=None)
+        with subprocess.Popen(["tput", "cols"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              universal_newlines=True) as proc:
+            output = proc.communicate(input=None)
         cols = int(output[0])
-        proc = subprocess.Popen(["tput", "lines"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                universal_newlines=True)
-        output = proc.communicate(input=None)
+        with subprocess.Popen(["tput", "lines"], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              universal_newlines=True) as proc:
+            output = proc.communicate(input=None)
         rows = int(output[0])
         return (cols, rows)
     except:     # pylint: disable=bare-except
@@ -171,7 +171,7 @@ def _get_term_size_posix():
         except:     # pylint: disable=bare-except
             return None
         # pylint: disable=invalid-sequence-index
-        result = cast(Optional[Tuple[int, int]], dims)
+        result = cast(Optional[tuple[int, int]], dims)
         return result
     dims = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
     if not dims:
@@ -390,6 +390,9 @@ width cannot be determined, the default is 80.
 """
 
 _ROOT_LOGGER = logging.getLogger()
+_STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
+_STDOUT_HANDLER.setFormatter(LogFormatter(line_width=LINE_WIDTH, printable_only=True))
+_STDOUT_HANDLER.setLevel(LOG_LEVEL)
 if not _ROOT_LOGGER.handlers:
     _ROOT_LOGGER.setLevel(logging.DEBUG)
     _LOG_FILE_PREFIX = os.path.dirname(LOG_FILE)
@@ -398,9 +401,6 @@ if not _ROOT_LOGGER.handlers:
     except OSError as exc:
         if not (exc.errno == errno.EEXIST and os.path.isdir(_LOG_FILE_PREFIX)):
             raise
-    _STDOUT_HANDLER = logging.StreamHandler(sys.stdout)
-    _STDOUT_HANDLER.setFormatter(LogFormatter(line_width=LINE_WIDTH, printable_only=True))
-    _STDOUT_HANDLER.setLevel(LOG_LEVEL)
     _ROOT_LOGGER.addHandler(_STDOUT_HANDLER)
     _FILE_HANDLER = handlers.TimedRotatingFileHandler(LOG_FILE, when='D', interval=1, backupCount=3)
     _FILE_HANDLER.setFormatter(LogFormatter(line_width=120, allow_colors=False))

@@ -106,18 +106,18 @@ Forran compiler named "ifort".  If TAU Commander ever needs to discover what fam
 match the regular expression "Intel Corporation" in the output produced by running the compiler with the version
 flags specified by the family (:any:`_CompilerFamily.version_flags`).
 
-Multiple compilers can be specified for each role.  The IBM BlueGene Fortran compilers are a bit crazy::
+Multiple compilers can be specified for each role.  The IBM XL compilers have several names per role::
 
-   IBM_BG = HOST_COMPILERS.add('BlueGene',
-                               CC=('bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r'),
-                               CXX=('bgxlc++', 'bgxlc++_r', 'bgxlC', 'bgxlC_r'),
-                               FC=('bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90',
-                                   'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003',
-                                   'bgxlf2008', 'bgxlf2008_r', 'bgf2008'))
+   IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
+                            version_flags=['-qversion'],
+                            CC=('xlc_r', 'xlc'),
+                            CXX=('xlc++_r', 'xlc++', 'xlC_r', 'xlC', 'xlcuf'),
+                            FC=('xlf_r', 'xlf', 'xlf90_r', 'xlf90', 'xlf95_r', 'xlf95',
+                                'xlf2003_r', 'xlf2003', 'xlf2008_r', 'xlf2008'))
 
-The first compiler command listed in a role (e.g. ``bgxlf`` in ``FC``) is the *preferred* compiler for the role.
-If TAU Commander is ever in a situation where it knows it needs to compile a Fortran file on BlueGene/Q with IBM
-compilers then it will first attempt the operation with ``bgxlf``.  If that fails, it will try the next compiler,
+The first compiler command listed in a role (e.g. ``xlf_r`` in ``FC``) is the *preferred* compiler for the role.
+If TAU Commander is ever in a situation where it knows it needs to compile a Fortran file with IBM XL compilers
+then it will first attempt the operation with ``xlf_r``.  If that fails, it will try the next compiler,
 and the next, and so on until it ultimately succeeds or admits failure.
 
 

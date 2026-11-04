@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -139,7 +139,12 @@ class Compiler(Model):
     def _compiler_info(self):
         command = os.path.basename(self['path'])
         role = Knowledgebase.find_role(self['role'])
-        family = role.kbase.families[self['family']]
+        try:
+            family = role.kbase.families[self['family']]
+        except KeyError as err:
+            raise ConfigurationError(f"Compiler '{self['path']}' is in the '{self['family']}' compiler family, "
+                                     "which this version of TAU Commander doesn't support.",
+                                     "Create a new target with supported compilers using `tau target create`.") from err
         info_list = Knowledgebase.find_compiler(command, family, role)
         if len(info_list) != 1:
             raise InternalError("Zero or more than one known compilers match '%s'" % self)

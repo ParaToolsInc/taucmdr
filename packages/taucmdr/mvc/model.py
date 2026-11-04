@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ class ModelMeta(type):
     def __new__(mcs, name, bases, dct):
         if dct['__module__'] != __name__:
             # Each Model subclass has its own relationships
-            dct.update({'associations': dict(), 'references': set()})
+            dct.update({'associations': {}, 'references': set()})
             # The default model name is the class name
             if dct.get('name', None) is None:
                 dct['name'] = name
@@ -174,10 +174,9 @@ class Model(StorageRecord, metaclass=ModelMeta):
             if self._populated is not None and not defaults:
                 return self._populated[attribute]
             return self.controller(self.storage).populate(self, attribute, defaults, context=context)
-        else:
-            if self._populated is None:
-                self._populated = self.controller(self.storage).populate(self, attribute, defaults, context=context)
-            return self._populated
+        if self._populated is None:
+            self._populated = self.controller(self.storage).populate(self, attribute, defaults, context=context)
+        return self._populated
 
     @classmethod
     def controller(cls, storage):
@@ -584,7 +583,8 @@ class Model(StorageRecord, metaclass=ModelMeta):
             If ``bob['hungry'] == False`` or if the 'hungry' attribute were not set then all
             the above expressions do nothing.
         """
-        as_tuple = lambda x: x if isinstance(x, tuple) else (x,)
+        def as_tuple(x):
+            return x if isinstance(x, tuple) else (x,)
         for attr, props in self.attributes.items():
             try:
                 compat = props['compat']

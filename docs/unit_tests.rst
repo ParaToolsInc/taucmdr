@@ -7,9 +7,34 @@ expected with unit testing.
 Running unit tests
 ------------------
 
-Run the setup.py script to execute all unit tests::
+Run every unit test from the repository root with tox::
 
-   python setup.py test
+   tox -e py315
+
+The argument can be replaced with ``py311`` to ``py314`` to test the other supported Python versions.
+When run, tox will build a wheel, install it into ``.tox/py315`` and run ``scripts/run_tests.py`` there.
+Arguments after ``--`` will be passed through to ``scripts/run_tests.py``.  Without them, tox passes ``-U``.
+
+For quicker runs, a previously built environment can be used::
+
+   .tox/py315/bin/python scripts/run_tests.py [-S] [-U] [-v] [--list] [--results-dir DIR] [TEST ...]
+
+The ``TEST`` list is the dotted name of a package, module, class or method; for example,
+``taucmdr.cli.commands.tests.test_initialize``. Giving a package name will run every test module under it.
+
+The runner writes JUnit XML (``TEST-*.xml``) and per-test timings (``test-timings.csv``) to ``build/test-results``,
+or to ``DIR`` if ``--results-dir`` is given.  It deletes earlier results there first.
+
+Options:
+
+* ``-v`` prints each test's name as it runs.
+* ``--list`` prints the selected test IDs without running them.
+* ``-U`` points user storage at a temporary directory.
+* ``-S`` points system storage at a temporary directory, so TAU and its dependencies are built from scratch.
+
+Test runs keep system storage in the checkout's ``system/`` directory, unless ``TAUCMDR_SYSTEM_PREFIX``
+(or its older name, ``__TAUCMDR_SYSTEM_PREFIX__``) is set.  The test runner creates the directory if it
+doesn't exist, so the tests always have a system level.
 
 Writing new unit tests
 ----------------------

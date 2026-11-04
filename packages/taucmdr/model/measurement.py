@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,35 @@ from taucmdr.mvc.controller import Controller
 LOGGER = logger.get_logger(__name__)
 
 
+def _unless_darwin_target(condition):
+    """Wrap a compatibility condition so that it is not checked against macOS targets.
+
+    TAU resolves names on macOS through the system, without binutils or libunwind.
+    """
+    def wrapper(lhs, lhs_attr, lhs_value, rhs):
+        from taucmdr.cf.platforms import DARWIN
+        from taucmdr.model.target import Target
+        if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
+            condition(lhs, lhs_attr, lhs_value, rhs)
+    return wrapper
+
+
+def _darwin_io_needs_tau_exec(lhs, lhs_attr, lhs_value, rhs):
+    """Compatibility condition: on macOS, I/O is measured only when the application runs under tau_exec.
+
+    TAU's link-time I/O wrapper uses -Wl,-wrap, which Apple's ld doesn't have, and TAU Commander runs
+    instrumented applications without tau_exec.
+    """
+    from taucmdr.cf.platforms import DARWIN
+    from taucmdr.model.target import Target
+    if not (isinstance(rhs, Target) and rhs['host_os'] == DARWIN.name):
+        return
+    if lhs.get_or_default('source_inst') != 'never' or lhs.get_or_default('compiler_inst') != 'never':
+        raise IncompatibleRecordError("%s = %s in %s requires source_inst = never and compiler_inst = never "
+                                      "with host_os = %s in %s" %
+                                      (lhs_attr, lhs_value, lhs.name.lower(), DARWIN.name, rhs.name.lower()))
+
+
 def attributes():
     """Construct attributes dictionary for the measurement model.
 
@@ -53,7 +82,7 @@ def attributes():
     from taucmdr.model.project import Project
     from taucmdr.model.target import Target
     from taucmdr.model.application import Application
-    from taucmdr.cf.platforms import HOST_OS, DARWIN, IBM_CNK
+    from taucmdr.cf.platforms import HOST_OS, DARWIN
     from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
     from taucmdr.cf.compiler.cuda import CUDA_CXX
     from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -136,20 +165,19 @@ def attributes():
         },
         'sample': {
             'type': 'boolean',
-            'default': HOST_OS not in (DARWIN, IBM_CNK),
+            'default': True,
             'description': "use event-based sampling to gather performance data",
             'argparse': {'flags': ('--sample',),
                          'group': 'instrumentation'},
-            'compat': {True: (Target.require('binutils_source'),
-                              Target.exclude('binutils_source', None),
-                              Target.encourage('libunwind_source'),
-                              Target.discourage('libunwind_source', None),
-                              Target.exclude('host_os', DARWIN),
+            'compat': {True: (_unless_darwin_target(Target.require('binutils_source')),
+                              _unless_darwin_target(Target.exclude('binutils_source', None)),
+                              _unless_darwin_target(Target.encourage('libunwind_source')),
+                              _unless_darwin_target(Target.discourage('libunwind_source', None)),
                               Measurement.exclude('baseline', True))}
         },
         'source_inst': {
             'type': 'string',
-            'default': 'never' if HOST_OS is not DARWIN else 'automatic',
+            'default': 'never',
             'description': "use hooks inserted into the application source code to gather performance data",
             'argparse': {'flags': ('--source-inst',),
                          'group': 'instrumentation',
@@ -164,7 +192,7 @@ def attributes():
         },
         'compiler_inst': {
             'type': 'string',
-            'default': 'never',
+            'default': 'never' if HOST_OS is not DARWIN else 'always',
             'description': "use compiler-generated callbacks to gather performance data",
             'argparse': {'flags': ('--compiler-inst',),
                          'group': 'instrumentation',
@@ -173,11 +201,10 @@ def attributes():
                          'choices': ('always', 'fallback', 'never'),
                          'const': 'always'},
             'compat': {lambda x: x in ('always', 'fallback'):
-                       (Target.require('binutils_source'),
-                        Target.exclude('binutils_source', None),
-                        Target.require('libunwind_source'),
-                        Target.exclude('libunwind_source', None),
-                        Target.exclude('host_os', DARWIN),
+                       (_unless_darwin_target(Target.require('binutils_source')),
+                        _unless_darwin_target(Target.exclude('binutils_source', None)),
+                        _unless_darwin_target(Target.require('libunwind_source')),
+                        _unless_darwin_target(Target.exclude('libunwind_source', None)),
                         Measurement.exclude('baseline', True))},
             'rebuild_required': True
         },
@@ -278,7 +305,8 @@ def attributes():
             'default': False,
             'description': 'measure time spent in POSIX I/O calls',
             'argparse': {'flags': ('--io',)},
-            'compat': {True: Measurement.exclude('baseline', True)},
+            'compat': {True: (Measurement.exclude('baseline', True),
+                              _darwin_io_needs_tau_exec)},
         },
         'heap_usage': {
             'type': 'boolean',
@@ -302,16 +330,18 @@ def attributes():
             'description': 'record memory allocation/deallocation events and detect leaks',
             'argparse': {'flags': ('--memory-alloc',),
                          'group': 'memory'},
-            'compat': {True: Measurement.exclude('baseline', True)},
+            # TAU's memory wrapper links with -Wl,-wrap, which Apple's ld doesn't have.
+            'compat': {True: (Measurement.exclude('baseline', True),
+                              Target.exclude('host_os', DARWIN.name))},
         },
         'metrics': {
             'type': 'array',
             'default': ['TIME'],
-            'description': 'a space separated list of performance metrics to gather, e.g. TIME PAPI_FP_INS',
+            'description': 'a space or comma separated list of performance metrics to gather, e.g. TIME PAPI_FP_INS',
             'argparse': {'flags': ('--metrics',),
                          'group': 'data',
                          'metavar': '<metric>'},
-            'compat': {lambda metrics: bool(len([met for met in metrics if 'PAPI' in met])):
+            'compat': {lambda metrics: any('PAPI' in met for met in metrics):
                        (Target.require('papi_source'), Target.exclude('papi_source', None)),
                        lambda x: x != ['TIME']: Measurement.exclude('baseline', True)},
             'rebuild_required': True
@@ -524,6 +554,28 @@ def attributes():
 class MeasurementController(Controller):
     """Measurement data controller."""
 
+    @staticmethod
+    def _normalize_metrics(data):
+        # Done before storing: the SQLite backend doesn't persist changes that `Model.on_create` makes to a record.
+        metrics = data.get('metrics')
+        if isinstance(metrics, list):
+            # TAU compares metric names case-insensitively and ignores repeats.
+            unique = {}
+            for metric in metrics:
+                for part in metric.split(','):
+                    unique.setdefault(part.strip().upper(), part.strip())
+            unique.pop('', None)
+            if unique.pop('TIME', None) is None:
+                LOGGER.warning("'TIME' must always be present as the first metric!")
+            data = dict(data, metrics=['TIME'] + list(unique.values()))
+        return data
+
+    def create(self, data):
+        return super().create(self._normalize_metrics(data))
+
+    def update(self, data, keys):
+        return super().update(self._normalize_metrics(data), keys)
+
     def delete(self, keys, context=True):
         # pylint: disable=unexpected-keyword-arg
         from taucmdr.error import ImmutableRecordError
@@ -554,21 +606,8 @@ class Measurement(Model):
                 raise ConfigurationError(
                     "Selective instrumentation file '%s' not found" % select_file)
 
-    def _check_metrics(self):
-        """Check for TIME in metrics, add it if missing, ensure it is first"""
-        try:
-            self['metrics'].remove('TIME')
-        except KeyError as err:
-            raise ConfigurationError(
-                "The metrics attribute should always exist with at least TIME present!") from err
-        except ValueError as err:
-            LOGGER.warning("'TIME' must always be present as the first metric!")
-        finally:
-            self['metrics'].insert(0, 'TIME')
-
     def on_create(self):
         self._check_select_file()
-        self._check_metrics()
 
     def on_update(self, changes):
         from taucmdr.error import ImmutableRecordError
@@ -587,7 +626,6 @@ class Measurement(Model):
                                          "in experiment '%s':\n    %s." % (self['name'], expr['name'], err),
                                          "Delete experiment '%s' and try again." % expr['name']) from err
         self._check_select_file()
-        self._check_metrics()
         if self.is_selected():
             for attr, change in changes.items():
                 if self.attributes[attr].get('rebuild_required'):

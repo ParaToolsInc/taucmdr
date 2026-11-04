@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ OMPT is used for performance analysis of OpenMP codes.
 from taucmdr import logger
 from taucmdr.cf.software.installation import CMakeInstallation
 from taucmdr.cf.compiler.host import CC, CXX
+from taucmdr.cf.platforms import SHARED_LIBRARY_SUFFIX
 
 
 
@@ -42,7 +43,7 @@ REPOS = {None: [
     'http://fs.paratools.com/tau-mirror/LLVM-openmp-8.0.tar.gz'
 ]}
 
-LIBRARIES = {None: ['libomp.so']}
+LIBRARIES = {None: [f'libomp.{SHARED_LIBRARY_SUFFIX}']}
 
 HEADERS = {None: ['omp.h', 'ompt.h']}
 
@@ -51,16 +52,6 @@ class OmptInstallation(CMakeInstallation):
     """Encapsulates an OMPT installation."""
 
     def __init__(self, sources, target_arch, target_os, compilers):
-        if sources['ompt'] == 'download-tr6':
-            sources['ompt'] = [
-                'http://tau.uoregon.edu/LLVM-openmp-ompt-tr6.tar.gz',
-                'http://fs.paratools.com/tau-mirror/LLVM-openmp-ompt-tr6.tar.gz'
-            ]
-        elif sources['ompt'] == 'download-tr4':
-            sources['ompt'] = [
-                'http://tau.uoregon.edu/LLVM-openmp-0.2.tar.gz',
-                'https://fs.paratools.com/tau-mirror/LLVM-openmp-0.2.tar.gz'
-            ]
         super().__init__('ompt', 'ompt', sources, target_arch, target_os,
                                                compilers, REPOS, None, LIBRARIES, HEADERS)
 

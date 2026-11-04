@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,32 +31,40 @@ Handles system manipulation and status tasks, e.g. subprocess management or file
 
 import re
 import os
+import shlex
 import sys
 import time
 import atexit
 import subprocess
 import errno
 import shutil
-import pkgutil
 import tarfile
 import gzip
+import zlib
 import tempfile
 from stat import S_IRUSR, S_IWUSR, S_IEXEC
 import hashlib
 import urllib.parse
 import urllib.request
 from collections import deque
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from zipfile import ZipFile
 import termcolor
 from unidecode import unidecode
 from taucmdr import logger
-from taucmdr.cf.storage.levels import highest_writable_storage
 from taucmdr.error import InternalError, ConfigurationError
 from taucmdr.progress import ProgressIndicator
 
+try:
+    import lzma
+except ImportError:
+    lzma = None
+
 
 LOGGER = logger.get_logger(__name__)
+
+_ARCHIVE_ERRORS = (tarfile.TarError, EOFError, zlib.error) + ((lzma.LZMAError,) if lzma else ())
+"""tuple: Exceptions raised while reading a corrupt or truncated archive, such as an interrupted download."""
 
 # Suppress debugging messages in optimized code
 if __debug__:
@@ -79,21 +87,35 @@ def _cleanup_dtemp():
         _paths = []
         for dir in _DTEMP_ERROR_STACK:
             name = os.path.basename(os.path.normpath(dir))
-            src = os.path.dirname(os.path.normpath(dir))
-            dst =os.path.join(tempfile.gettempdir(), name)
-            shutil.copytree(os.path.normpath(dir), dst)
-            _paths += dst
-        LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
-                       ', '.join(_paths))
-
-atexit.register(_cleanup_dtemp)
+            dst = None
+            try:
+                # Use a temporary directory with a unique name, so an earlier run's
+                # copy of the same package doesn't interfere with this one.
+                dst = tempfile.mkdtemp(prefix=f'{name}-', dir=tempfile.gettempdir())
+                shutil.copytree(os.path.normpath(dir), dst, dirs_exist_ok=True)
+            except OSError as err:
+                LOGGER.warning("Couldn't keep temporary directory '%s': %s", dir, err)
+                if dst:
+                    # os.rmdir removes only an empty directory, so a partial copy is kept.
+                    with suppress(OSError):
+                        os.rmdir(dst)
+                continue
+            _paths.append(dst)
+        if _paths:
+            LOGGER.warning('The following temporary directories were not deleted due to build errors: %s.\n',
+                           ', '.join(_paths))
+    while _DTEMP_STACK:
+        try:
+            _DTEMP_STACK.pop().cleanup()
+        except OSError as err:
+            LOGGER.debug(err)
 
 
 def calculate_uid(parts):
     """Create a new unique identifier.
 
     Args:
-        parts (list): **Ordered** list of strings to include in the UID calcuation.
+        parts (list): **Ordered** list of strings to include in the UID calculation.
 
     Returns:
         str: A string of hexadecimal digits uniquely calculated from `parts`.
@@ -106,10 +128,33 @@ def calculate_uid(parts):
     return digest[:8]
 
 def mkdtemp(*args, **kwargs):
-    """Like tempfile.mkdtemp but directory will be recursively deleted when program exits."""
-    path = tempfile.TemporaryDirectory(*args, **kwargs)
+    """Like tempfile.mkdtemp but directory will be recursively deleted when program exits.
+
+    Returns:
+        tempfile.TemporaryDirectory: The new directory. Pass it to :any:`cleanup_dtemp` to delete it sooner.
+    """
+    path = tempfile.TemporaryDirectory(*args, **kwargs)  # pylint: disable=consider-using-with
+    if not mkdtemp.hook_registered:
+        # After weakref.finalize's own atexit hook, so this runs first, while error directories still exist.
+        atexit.register(_cleanup_dtemp)
+        mkdtemp.hook_registered = True
     _DTEMP_STACK.append(path)
     return path
+
+mkdtemp.hook_registered = False
+
+
+def cleanup_dtemp(path):
+    """Delete a temporary directory now instead of when the program exits.
+
+    Args:
+        path (tempfile.TemporaryDirectory): A directory from :any:`mkdtemp` or :any:`tempfile.TemporaryDirectory`.
+    """
+    try:
+        _DTEMP_STACK.remove(path)
+    except ValueError:
+        pass
+    path.cleanup()
 
 
 def copy_file(src, dest, show_progress=True):
@@ -141,7 +186,7 @@ def mkdirp(*args):
 def add_error_stack(path):
     _DTEMP_ERROR_STACK.append(str(path))
 
-def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
+def rmtree(path, ignore_errors=False, onexc=None, attempts=5):
     """Wrapper around shutil.rmtree to work around stale or slow NFS directories.
 
     Tries repeatedly to recursively remove `path` and sleeps between attempts.
@@ -150,22 +195,37 @@ def rmtree(path, ignore_errors=False, onerror=None, attempts=5):
         path (str): A directory but not a symbolic link to a directory.
         ignore_errors (bool): If True then errors resulting from failed removals will be ignored.
                               If False or omitted, such errors are handled by calling a handler
-                              specified by `onerror` or, if that is omitted, they raise an exception.
-        onerror: Callable that accepts three parameters: function, path, and excinfo.  See :any:shutil.rmtree.
+                              specified by `onexc` or, if that is omitted, they raise an exception.
+        onexc: Callable that accepts function, path, and the exception.  See :any:`shutil.rmtree`.
         attempts (int): Number of times to repeat shutil.rmtree before giving up.
     """
     if not os.path.exists(path):
         return
     for i in range(attempts-1):
         try:
-            return shutil.rmtree(path)
+            shutil.rmtree(path)
+            return
         except Exception as err:        # pylint: disable=broad-except
             LOGGER.warning("Unexpected error: %s", err)
             time.sleep(i+1)
     try:
-        shutil.rmtree(path, ignore_errors, onerror)
+        _rmtree(path, ignore_errors, onexc)
     except FileNotFoundError:
         pass
+
+
+def _rmtree(path, ignore_errors, onexc):
+    """Call :any:`shutil.rmtree` with an `onexc` handler on any Python version. """
+    # Python 3.12 deprecated shutil.rmtree's onerror argument, whose handler
+    # receives sys.exc_info, and added `onexc`, whose handler receives the exception.
+    if sys.version_info >= (3, 12):
+        shutil.rmtree(path, ignore_errors=ignore_errors, onexc=onexc)  # pylint: disable=unexpected-keyword-arg
+    elif onexc is None:
+        shutil.rmtree(path, ignore_errors=ignore_errors)
+    else:
+        # Fallback for older Python versions
+        shutil.rmtree(path, ignore_errors=ignore_errors,  # pylint: disable=deprecated-argument
+                      onerror=lambda function, failed, exc_info: onexc(function, failed, exc_info[1]))
 
 
 @contextmanager
@@ -204,7 +264,8 @@ def which(program, use_cached=True):
             return _WHICH_CACHE[prog_enc]
         except KeyError:
             pass
-    _is_exec = lambda fpath: os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    def _is_exec(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
     fpath, _ = os.path.split(prog_enc)
     if fpath:
         abs_program = os.path.abspath(prog_enc)
@@ -260,7 +321,7 @@ def download(src, dest, timeout=8):
         # Fallback: urllib is usually **much** slower than curl or wget and doesn't support timeout
         if timeout:
             raise OSError("Failed to download '%s'" % src)
-        with ProgressIndicator("Downloading") as progress_bar:
+        with ProgressIndicator("Downloading"):
             try:
                 with urllib.request.urlopen(src) as in_stream, open(dest, 'wb') as out_file:
                     shutil.copyfileobj(in_stream, out_file)
@@ -289,8 +350,8 @@ def _create_dl_subprocess(abs_cmd, src, dest, timeout):
         LOGGER.warning("Invalid response while retrieving download file size")
         file_size = -1
     with ProgressIndicator("Downloading", total_size=file_size) as progress_bar:
-        with open(os.devnull, 'wb') as devnull:
-            proc = subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT, universal_newlines=True)
+        with open(os.devnull, 'wb') as devnull, \
+                subprocess.Popen(get_cmd, stdout=devnull, stderr=subprocess.STDOUT, universal_newlines=True) as proc:
             while proc.poll() is None:
                 try:
                     current_size = os.stat(dest).st_size
@@ -326,26 +387,45 @@ def archive_toplevel(archive):
     """
     _heavy_debug("Determining top-level directory name in '%s'", archive)
     try:
-        fin = tarfile.open(archive)
-    except tarfile.ReadError as err:
-        raise OSError from err
-    else:
-        if fin.firstmember.isdir():
-            topdir = str(fin.firstmember.name)
-        else:
-            dirs = [str(d.name) for d in fin.getmembers() if d.isdir()]
-            if dirs:
-                topdir = min(dirs, key=len)
+        with tarfile.open(archive) as fin:
+            if fin.firstmember.isdir():
+                topdir = str(fin.firstmember.name)
             else:
-                names = [str(d.name) for d in fin.getmembers() if d.isfile()]
-                for name in names:
-                    dirname, basename = os.path.split(name)
-                    while dirname:
-                        dirname, basename = os.path.split(dirname)
-                    dirs += [str(basename)]
-                topdir = min(dirs, key=len)
-        LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
-        return str(topdir)
+                dirs = [str(d.name) for d in fin.getmembers() if d.isdir()]
+                if dirs:
+                    topdir = min(dirs, key=len)
+                else:
+                    names = [str(d.name) for d in fin.getmembers() if d.isfile()]
+                    for name in names:
+                        dirname, basename = os.path.split(name)
+                        while dirname:
+                            dirname, basename = os.path.split(dirname)
+                        dirs += [str(basename)]
+                    topdir = min(dirs, key=len)
+    except _ARCHIVE_ERRORS as err:
+        raise OSError(f"Cannot read '{archive}': {err}") from err
+    LOGGER.debug("Top-level directory in '%s' is '%s'", archive, topdir)
+    return str(topdir)
+
+
+def verify_archive(archive):
+    """Check that an archive can be read to its end.
+
+    Reading only an archive's first members doesn't catch an archive that was cut short, such as by an
+    interrupted copy, so this reads the whole file.
+
+    Args:
+        archive (str): Path to archive file.
+
+    Raises:
+        IOError: `archive` could not be read.
+    """
+    try:
+        with tarfile.open(archive) as fin:
+            for _ in fin:
+                pass
+    except _ARCHIVE_ERRORS as err:
+        raise OSError(f"Cannot read '{archive}': {err}") from err
 
 
 def is_clean_container(obj):
@@ -378,7 +458,7 @@ def is_clean_container(obj):
             k, v = stack.pop()
             if isinstance(k, bad_types):
                 return False
-            elif isinstance(k, sequence_types):
+            if isinstance(k, sequence_types):
                 if not is_clean_container(k):
                     return False
             if isinstance(v, dict):
@@ -403,6 +483,18 @@ def _show_extract_progress(members):
             progress_bar.update(i)
             yield member
 
+def _extract_all(archive, dest, members=None):
+    """Extract members of the open tar file `archive` into `dest`.
+
+    Args:
+        archive (tarfile.TarFile): Open tar file.
+        dest (str): Destination folder.
+        members: Members to extract, or None for all of them.
+    """
+    # The 'data' filter refuses files or links that would be created outside dest.
+    archive.extractall(dest, members=members, filter='data')
+
+
 def extract_archive(archive, dest, show_progress=True):
     """Extracts archive file to dest.
 
@@ -417,21 +509,24 @@ def extract_archive(archive, dest, show_progress=True):
         str: Full path to extracted files.
 
     Raises:
-        IOError: Failed to extract archive.
+        OSError: Failed to extract archive, or the archive has members that would be unsafe to extract.
     """
     topdir = archive_toplevel(archive)
     full_dest = os.path.join(dest, topdir)
     mkdirp(dest)
     with tarfile.open(archive) as fin:
-        if show_progress:
-            LOGGER.info("Checking contents of '%s'", archive)
-            with ProgressIndicator("Extracting archive", show_cpu=False):
-                members = fin.getmembers()
-            LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
-            fin.extractall(dest, members=_show_extract_progress(members))
-        else:
-            LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
-            fin.extractall(dest)
+        try:
+            if show_progress:
+                LOGGER.info("Checking contents of '%s'", archive)
+                with ProgressIndicator("Extracting archive", show_cpu=False):
+                    members = fin.getmembers()
+                LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
+                _extract_all(fin, dest, members=_show_extract_progress(members))
+            else:
+                LOGGER.info("Extracting '%s' to create '%s'", archive, full_dest)
+                _extract_all(fin, dest)
+        except _ARCHIVE_ERRORS as err:
+            raise OSError(f"Cannot extract '{archive}': {err}") from err
     if not os.path.isdir(full_dest):
         raise OSError(f"Extracting '{archive}' does not create '{full_dest}'")
     return full_dest
@@ -501,20 +596,14 @@ def path_accessible(path, mode='r'):
         if 'w' in mode:
             modebits |= os.W_OK | os.X_OK
         return os.access(path, modebits)
-    else:
-        handle = None
-        try:
-            handle = open(path, mode)
-        except OSError as err:
-            if err.errno == errno.EACCES:
-                return False
-            # Some other error, not permissions
-            raise
-        else:
+    try:
+        with open(path, mode):
             return True
-        finally:
-            if handle:
-                handle.close()
+    except OSError as err:
+        if err.errno == errno.EACCES:
+            return False
+        # Some other error, not permissions
+        raise
 
 # pylint: disable=unused-argument
 @contextmanager
@@ -558,9 +647,8 @@ def create_subprocess(
         if error_buf:
             buf = deque(maxlen=error_buf)
         output = []
-        proc = subprocess.Popen(cmd, cwd=cwd, env=subproc_env, universal_newlines=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1)
-        with proc.stdout:
+        with subprocess.Popen(cmd, cwd=cwd, env=subproc_env, universal_newlines=True,
+                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1) as proc:
             # Use iter to avoid hidden read-ahead buffer bug in named pipes:
             # http://bugs.python.org/issue3907
             for line in iter(proc.stdout.readline, ''):
@@ -608,7 +696,7 @@ def get_command_output(cmd):
     else:
         _heavy_debug("Using cached output for command: %s", cmd)
     LOGGER.debug("Checking subprocess output: %s", cmd)
-    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+    stdout = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)
     get_command_output.cache[key] = stdout
     _heavy_debug(stdout)
     LOGGER.debug("%s returned 0", cmd)
@@ -629,9 +717,9 @@ def page_output(output_string: str):
     if os.environ.get('__TAUCMDR_DISABLE_PAGER__', False):
         print(output_string)
     else:
-        pager_cmd = os.environ.get('PAGER', 'less -F -R -S -X -K').split(' ')
-        proc = subprocess.Popen(pager_cmd, stdin=subprocess.PIPE)
-        proc.communicate(output_string)
+        pager_cmd = shlex.split(os.environ.get('PAGER', 'less -F -R -S -X -K'))
+        with subprocess.Popen(pager_cmd, stdin=subprocess.PIPE, text=True) as proc:
+            proc.communicate(output_string)
 
 
 def human_size(num, suffix='B'):
@@ -682,10 +770,9 @@ def parse_bool(value, additional_true=None, additional_false=None):
         value = value.lower()
         if value in true_values:
             return True
-        elif value in false_values:
+        if value in false_values:
             return False
-        else:
-            raise TypeError
+        raise TypeError
     return bool(value)
 
 
@@ -760,24 +847,12 @@ def uncolor_text(text):
     return re.sub(_COLOR_CONTROL_RE, '', text)
 
 
-def _iter_modules(paths, prefix):
-    # pylint: disable=no-member
-    yielded = {}
-    for path in paths:
-        importer = pkgutil.get_importer(path)
-        iter_importer_modules = importer.iter_modules
-        for name, ispkg in iter_importer_modules(prefix):
-            if name not in yielded:
-                yielded[name] = True
-                yield importer, name, ispkg
-
-
 def get_binary_linkage(cmd):
     ldd = which('ldd')
     if not ldd:
         return None
-    proc = subprocess.Popen([ldd, cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, _ = proc.communicate()
+    with subprocess.Popen([ldd, cmd], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+        stdout, _ = proc.communicate()
     if proc.returncode:
         return 'static' if stdout else None
     return 'dynamic'
@@ -794,10 +869,12 @@ def tmpfs_prefix():
     selected filesystem.
 
     Returns:
-        str: Path to a uniquely-named directory in the temporary filesystem. The directory
+        tempfile.TemporaryDirectory: A uniquely-named directory in the temporary filesystem. The directory
             and all its contents **will be deleted** when the program exits if it installs
             correctly.
     """
+    # The storage modules import this module, so importing the storage levels at the top would be circular.
+    from taucmdr.cf.storage.levels import highest_writable_storage
     candidate = None
     for prefix in "/dev/shm", tempfile.gettempdir(), highest_writable_storage().prefix:
         try:
@@ -815,6 +892,7 @@ def tmpfs_prefix():
             subprocess.check_call([check_exe_script])
         except (OSError, subprocess.CalledProcessError) as err:
             LOGGER.debug(err)
+            cleanup_dtemp(tmp_prefix)
             continue
         try:
             statvfs = os.statvfs(check_exe_script)
@@ -822,14 +900,19 @@ def tmpfs_prefix():
             LOGGER.debug(err)
             if candidate is None:
                 candidate = tmp_prefix
+            else:
+                cleanup_dtemp(tmp_prefix)
             continue
         else:
             free_mib = (statvfs.f_frsize*statvfs.f_bavail)//0x100000
             LOGGER.debug("%s: %sMB free", tmp_prefix.name, free_mib)
             if free_mib < 2000:
+                cleanup_dtemp(tmp_prefix)
                 continue
         if check_exe_script:
             os.remove(check_exe_script)
+        if candidate is not None:
+            cleanup_dtemp(candidate)
         break
     else:
         if not candidate:

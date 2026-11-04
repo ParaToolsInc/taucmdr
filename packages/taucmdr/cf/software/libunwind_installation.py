@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,10 @@ instrumentation, and other measurement approaches.
 
 import os
 import sys
-import shutil
 import fileinput
 from taucmdr import logger
 from taucmdr.error import ConfigurationError
-from taucmdr.cf.platforms import IBM_BGQ, ARM64, PPC64LE, PPC64, CRAY_CNL, LINUX
+from taucmdr.cf.platforms import PPC64LE, CRAY_CNL
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.cf.compiler.host import CC, CXX, PGI, GNU, NVHPC
@@ -47,9 +46,7 @@ LOGGER = logger.get_logger(__name__)
 
 REPOS = {None: [
     'https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.8.1.tar.gz',
-    'https://fs.paratools.com/tau-mirror/libunwind-1.8.1.tar.gz'],
-         ARM64: {LINUX: ['https://www.cs.uoregon.edu/research/paracomp/tau/tauprofile/dist/libunwind-1.3-rc1.tar.gz',
-                         'https://fs.paratools.com/tau-mirror/libunwind-1.3-rc1.tar.gz']}}
+    'https://fs.paratools.com/tau-mirror/libunwind-1.8.1.tar.gz']}
 
 LIBRARIES = {None: ['libunwind.a']}
 
@@ -74,13 +71,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         """Configure libunwind."""
         os.environ['CC'] = self.compilers[CC].unwrap().absolute_path
         os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
-        if self.target_arch is IBM_BGQ:
-            flags.append('--disable-shared')
-            for line in fileinput.input(os.path.join(str(self._src_prefix),
-                                                     'src', 'unwind', 'Resume.c'), inplace=True):
-                # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
-                sys.stdout.write(line.replace('_Unwind_Resume', '_Unwind_Resume_other'))
-        elif self.target_os is CRAY_CNL:
+        if self.target_os is CRAY_CNL:
             os.environ['CFLAGS'] = '-fPIC'
             os.environ['CXXFLAGS'] = '-fPIC'
             flags.append('--disable-shared')
@@ -108,13 +99,6 @@ class LibunwindInstallation(AutotoolsInstallation):
 
 
     def make_install(self, flags):
-        if self.target_arch in [PPC64, PPC64LE]:
+        if self.target_arch is PPC64LE:
             flags.append('-i')
         super().make_install(flags)
-
-    def installation_sequence(self):
-        if self.target_arch is ARM64:
-            LOGGER.info("Using pre-built libunwind package from U. Oregon Performance Research Laboratory")
-            shutil.move(str( self._src_prefix), self.install_prefix)
-        else:
-            super().installation_sequence()

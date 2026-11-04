@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,7 @@ class PapiInstallation(AutotoolsInstallation):
         src_prefix = super()._prepare_src(*args, **kwargs)
         if os.path.basename(src_prefix) != 'src':
             src_prefix = os.path.join(src_prefix, 'src')
-        
+
         # Modify PAPI's config.mk script to not use -Werror due to upstream bug when using NVHPC
         for line in fileinput.input(os.path.join(src_prefix, 'libpfm4/config.mk'), inplace=True):
             # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
@@ -94,7 +94,7 @@ class PapiInstallation(AutotoolsInstallation):
         super().make(flags)
 
     def xml_event_info(self):
-        if not self._xml_event_info:
+        if self._xml_event_info is None:
             self.install()
             xml_event_info = util.get_command_output(os.path.join(self.bin_path, 'papi_xml_event_info'))
             self._xml_event_info = ElementTree.fromstring(xml_event_info)

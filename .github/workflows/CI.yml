@@ -1,166 +1,137 @@
-# Unfortunately, there is a lot of duplicated code that could be simplified/eliminated with YAML anchors and aliases,
-# but GitHub Actions does not yet support YAML anchors and aliases.
-# Clever use of global environment variables could help eliminate some of it, but the best options would be to just use
-# aliases and anchors
-
 name: CI
 
 on:
   push:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      python-versions:
+        description: 'JSON list of Python versions for the venv tests, e.g. ["3.11", "3.14"]'
+        type: string
+        default: '["3.11", "3.12", "3.13", "3.14"]'
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
-  __TAUCMDR_SYSTEM_PREFIX__: "system"
+  TAUCMDR_SYSTEM_PREFIX: ${{ github.workspace }}/system
   CI: "ON"
-  INSTALLDIR: "taucmdr"
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"
   TZ: "UTC"
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe: "true"
+  # Open MPI 5 reads this instead of OMPI_MCA_rmaps_base_oversubscribe.
+  PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
+  # Python versions Test-python-venv runs on push and pull request.  A workflow_dispatch run uses its
+  # python-versions input instead.
+  DEFAULT_PYTHON_VERSIONS: '["3.15"]'
 
 jobs:
-  Install-taucmdr-minimal:
-    name: Install and Test TAU Commander
+  python-versions:
+    name: Choose Python versions
+    runs-on: ubuntu-24.04
+    outputs:
+      versions: ${{ steps.pick.outputs.versions }}
+    steps:
+      - name: Use the requested versions, or the default
+        id: pick
+        env:
+          REQUESTED: ${{ inputs.python-versions }}
+        run: echo "versions=${REQUESTED:-$DEFAULT_PYTHON_VERSIONS}" >> "${GITHUB_OUTPUT}"
+
+  Test-python-venv:
+    name: Test on ${{ matrix.os }} with Python ${{ matrix.python }} (${{ matrix.backend }})
+    needs: python-versions
     runs-on: ${{ matrix.os }}
     permissions:
       pull-requests: write
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
+        python: ${{ fromJSON(needs.python-versions.outputs.versions) }}
         backend: ['tinydb', 'sqlite']
+        include:
+          - {os: ubuntu-24.04-arm, python: '3.15', backend: tinydb}
+          - {os: ubuntu-24.04-arm, python: '3.15', backend: sqlite}
+          - {os: macos-latest, python: '3.15', backend: tinydb}
+          - {os: macos-latest, python: '3.15', backend: sqlite}
     env:
       OS: ${{ matrix.os }}
+      PY_VER: ${{ matrix.python }}
       __TAUCMDR_DB_BACKEND__: ${{ matrix.backend }}
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 9999
+          fetch-depth: 0
 
-      - name: Install system packages
+      - name: Install system packages (Linux)
+        if: runner.os == 'Linux'
         run: |
-          # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev cmake
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran make m4 cmake perl bzip2 xz-utils zlib1g-dev git curl openmpi-bin openmpi-common libopenmpi-dev
 
-      - name: System info
-        id: info
+      - name: Install system packages (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gcc open-mpi cmake
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Install an older Python
         run: |
-          # Get info for debugging and set some environment variables to use later
-          uname -a
-          mount
-          df -h
-          gcc --version
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref:        ${{ github.ref }}"
-          echo "matrix.os:         ${{ matrix.os }}"
-          echo "Pythons found:"
-          type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "install_dir=${INSTALLDIR}" >> "${GITHUB_OUTPUT}"
-          echo "INSTALLDIR=${INSTALLDIR}" >> "${GITHUB_ENV}"
-          echo "home_dir=${HOME}" >> "${GITHUB_OUTPUT}"
-          echo "taucmdr_system=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
-          echo "__TAUCMDR_SYSTEM_PREFIX__=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_ENV}"
-          echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
-          echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
-          echo "BRANCH: ${GITHUB_REF#refs/*/}"
-          BASEREF=${{ github.base_ref }}
-          if [ "${BASEREF}" ]; then
-            echo "baseref=${BASEREF#refs/*/}" >> "${GITHUB_OUTPUT}"
-            echo "BASEREF: ${BASEREF#/refs/*/}"
-          else
-            echo "baseref=unstable" >> "${GITHUB_OUTPUT}"
-            echo "BASEREF: unstable"
-          fi
+          # For the test that profiles an application under a Python older than the one running the tests.
+          uv python install 3.11
+          mkdir -p "${HOME}/.local/bin"
+          ln -sf "$(uv python find 3.11)" "${HOME}/.local/bin/python3.11"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
 
       - name: Cache TAU sources
         uses: actions/cache@v5
         with:
-          path: ${{ steps.info.outputs.taucmdr_system}}/src
-          key: ${{ matrix.os }}-system-src-${{ github.sha }}
+          path: system/src
+          key: ${{ matrix.os }}-venv-system-src-${{ github.sha }}
           restore-keys: |
-            ${{ matrix.os }}-system-src
+            ${{ matrix.os }}-venv-system-src
 
-      - name: Cache pylint directory
-        uses: actions/cache@v5
-        with:
-          path: ${{ steps.info.outputs.home_dir }}/.pylint.d
-          key: ${{ matrix.os }}-pylint-cache-${{ steps.info.outputs.branch }}-${{ github.sha }}
-          restore-keys: |
-            ${{ matrix.os }}-pylint-cache-${{ steps.info.outputs.baseref }}
-
-      - name: Install TAU Commander
-        run: |
-          make INSTALLDIR="${INSTALLDIR}" install
-          echo "${INSTALLDIR}/conda/bin" >> "${GITHUB_PATH}"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-          which python
-          which pip
-          python -m pip install -U pip
-          python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
-          cd "${HOME}"
-          zip -vr taucmdr.zip "${INSTALLDIR##*/}" -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
-          type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
-
-      - name: Upload TAU Commander install log
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}-${{ matrix.backend }}
-          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
-
-      # - name: Upload TAU Commander minimal install
-      #   if: always()
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: taucmdr-installation-${{ matrix.os }}
-      #     path: ${{ steps.info.outputs.home_dir }}/taucmdr.zip
-
-      - name: Detect Python version
-        run: |
-          PY_VER="$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")"
-          echo "PY_VER=${PY_VER}" >> "${GITHUB_ENV}"
-
-      - name: Verify MPI functionality
-        run: |
-          mkdir -p /tmp/mpitest
-          cp .testfiles/mpi_hello.c /tmp/mpitest
-          cd /tmp/mpitest
-          mpicc mpi_hello.c
-          mpirun -np 4 ./a.out
+      - name: Remove cached nightly TAU
+        run: rm -f system/src/tau-nightly*.tgz
 
       - name: Test TAU Commander
         run: |
           rm -f ./coverage.xml || true
-          coverage run setup.py test
-          coverage xml
+          # tox-uv makes tox create its environments with uv, which also provides the Python.
+          # Passing -v instead of tox.ini's default -U lists each test and keeps the debug log in ~/.local/taucmdr.
+          uvx --with tox-uv tox -e "py${PY_VER/./}" -- -v
 
       - name: Build sphinx docs
-        run: python setup.py build_sphinx
+        if: matrix.os == 'ubuntu-24.04' && matrix.python == '3.15' && matrix.backend == 'tinydb'
+        run: uvx --with tox-uv tox -e docs
 
       - name: Upload TAU Commander unit test log
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: taucmdr-unit-test-debug-log-${{ matrix.os }}-${{ matrix.backend }}
-          path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
+          name: taucmdr-unit-test-debug-log-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
+          path: ~/.local/taucmdr/debug_log
 
-      - name: Upload Pylint report
-        if: always() && matrix.os == 'ubuntu-22.04'
+      - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: taucmdr-pylint-logs-${{ matrix.os }}-${{ matrix.backend }}
+          name: taucmdr-unit-test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
+          path: build/test-results/
+
+      - name: Upload Pylint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-pylint-logs-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
           path: pylint.md
 
       - name: Pylint PR Comment
-        if: env.ACT != 'true' && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
+        if: env.ACT != 'true' && github.event_name == 'pull_request' && matrix.os == 'ubuntu-24.04' && matrix.python == '3.15' && matrix.backend == 'tinydb'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: pylint-comment
@@ -173,9 +144,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests,CI
-          name: codecov-${{ matrix.os }}
-          fail_ci_if_error: true # optional (default = false)
-          env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,__TAUCMDR_SYSTEM_PREFIX__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
+          name: codecov-${{ matrix.os }}-py${{ matrix.python }}
+          fail_ci_if_error: true
+          env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
       - name: Upload test results to Codecov
         if: always() && env.ACT != 'true'
@@ -183,39 +154,21 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: TEST-*.xml
+          files: build/test-results/TEST-*.xml
           flags: unittests,CI
-          name: test-results-${{ matrix.os }}-${{ matrix.backend }}
+          name: test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
 
       - name: Upload Sphinx docs for GitHub Pages
-        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-22.04' && matrix.backend == 'tinydb'
+        if: success() && env.ACT != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable') && matrix.os == 'ubuntu-24.04' && matrix.python == '3.15' && matrix.backend == 'tinydb'
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./build/sphinx/html
 
-      - name: tau_validate
-        if: always()
-        run: |
-          cd ${{ steps.info.outputs.taucmdr_system }}/tau/tau-2*
-          printf '#!/bin/bash\nmpirun -np 2 ./simple\n' > parallel.sh
-          TAU_VALIDATE_PARALLEL="$(pwd)/parallel.sh"
-          export TAU_VALIDATE_PARALLEL
-          ./tau_validate -v --html --table table.html --timeout 180 x86_64 &> results.html || true
-          mkdir "${HOME}/tau-tests-validate"
-          cp table.html results.html "${HOME}/tau-tests-validate"
-
-      - name: Upload unit tests TAU validate
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: taucmdr-full-tau-validate-${{ matrix.os }}-${{ matrix.backend }}-${{ github.sha }}
-          path: ${{ steps.info.outputs.home_dir }}/tau-tests-validate
-
   deploy-docs:
     name: Deploy Sphinx docs to GitHub Pages
-    needs: Install-taucmdr-minimal
+    needs: [Test-python-venv]
     if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/unstable' )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
@@ -224,8 +177,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Configure Pages
+        if: env.ACT != 'true'
         uses: actions/configure-pages@v5
 
       - name: Deploy to GitHub Pages
+        if: env.ACT != 'true'
         id: deployment
         uses: actions/deploy-pages@v4

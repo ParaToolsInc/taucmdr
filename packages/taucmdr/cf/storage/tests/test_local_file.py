@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,13 +24,36 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
+"""Unit tests for :py:mod:`taucmdr.cf.storage.local_file`."""
 
-Functions used for unit tests of local_file.py.
-"""
-
+import os
+import warnings
+import taucmdr
 from taucmdr import tests
 
-@tests.not_implemented
+
 class LocalFileTest(tests.TestCase):
-    pass
+    """Tests for :py:mod:`taucmdr.cf.storage.local_file`."""
+
+    def test_vendored_tinydb(self):
+        """TAU Commander uses its vendored TinyDB and never imports a top-level ``tinydb``."""
+        # Import TAU Commander the way the `tau` command does.
+        code = ("import sys\n"
+                "import taucmdr.cli.commands.__main__\n"
+                "from taucmdr.cf.storage import local_file\n"
+                "print(local_file.tinydb.__name__)\n"
+                "print('tinydb' in sys.modules)\n")
+        proc = tests.run_python_subprocess(['-c', code], isolated=False)
+        self.assertSucceeded(proc)
+        self.assertEqual(proc.stdout.split()[-2:], ['taucmdr._vendor.tinydb', 'False'])
+
+    def test_vendored_code_compiles(self):
+        """The vendored packages compile without warnings."""
+        vendor_dir = os.path.join(os.path.dirname(os.path.abspath(taucmdr.__file__)), '_vendor')
+        for dirpath, _, filenames in os.walk(vendor_dir):
+            for filename in filenames:
+                if filename.endswith('.py'):
+                    path = os.path.join(dirpath, filename)
+                    with open(path, encoding='utf-8') as fin, warnings.catch_warnings():
+                        warnings.simplefilter('error')
+                        compile(fin.read(), path, 'exec')

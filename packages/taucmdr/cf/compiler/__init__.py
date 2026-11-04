@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,7 @@ change from system to system.
 
 import os
 import re
+import shlex
 import getpass
 from datetime import datetime
 from subprocess import CalledProcessError
@@ -85,6 +86,11 @@ _COMPILER_WRAPPER_TEMPLATE = """#!/bin/sh
 #
 %(taucmdr_script)s build %(command)s "$@"
 """
+
+
+def _without_minor_version(command):
+    """Return `command` without a trailing ``.<digits>``, e.g. ``python3.12`` becomes ``python3``."""
+    return re.sub(r'\.\d+$', '', command)
 
 
 class Knowledgebase:
@@ -134,15 +140,15 @@ class Knowledgebase:
         """Iterate over compiler families in the knowledgebase.
 
         The first family yielded is the host's preferred compiler family.
-        All other families may be yielded in any order.
+        Fallback families are yielded last; all other families may be yielded in any order.
         """
         from taucmdr.cf.platforms import HOST_TAU_MAGIC
         preferred = HOST_TAU_MAGIC.preferred_families.get(self, None)
         if preferred is not None:
             yield preferred
-        for family in self._families.values():
-            if family is not preferred:
-                yield family
+        others = [family for family in self._families.values() if family is not preferred]
+        yield from (family for family in others if not family.fallback)
+        yield from (family for family in others if family.fallback)
 
     def add(self, name, *args, **kwargs):
         """Add a new compiler family to the knowledgebase.
@@ -223,26 +229,33 @@ class _CompilerFamily(TrackedInstance):
         library_path_flags (list): Command line flags that add a directory to the compiler's library path, e.g. '-L'.
         link_library_flags (list): Command line flags that link a library, e.g. '-l'.
         show_wrapper_flags (list): Command line flags that show the wrapped compiler's command line, e.g. '-show'.
+        optional_wrapper (bool): If True then a command that rejects :any:`show_wrapper_flags` is treated as
+                                 a compiler that doesn't wrap another compiler instead of as an error.
+        fallback (bool): If True then the family is searched for installed compilers only after every other family.
         members (dict): Compilers in this family indexed by role.
     """
 
     _probe_cache = {}
 
-    def __init__(self, kbase, name, members,
+    def __init__(self, kbase, name, members,  # pylint: disable=too-many-arguments
                  version_flags=None,
                  include_path_flags=None,
                  library_path_flags=None,
                  link_library_flags=None,
                  show_wrapper_flags=None,
+                 optional_wrapper=False,
+                 fallback=False,
                  family_regex=None):
         self.kbase = kbase
         self.name = name
+        self.fallback = fallback
         self.family_regex = family_regex
         self.version_flags = version_flags or ['--version', '-E']
         self.include_path_flags = include_path_flags or ['-I']
         self.library_path_flags = library_path_flags or ['-L']
         self.link_library_flags = link_library_flags or ['-l']
         self.show_wrapper_flags = show_wrapper_flags or []
+        self.optional_wrapper = optional_wrapper
         self.members = {}
         self.commands = set()
         for role, commands in members.items():
@@ -281,7 +294,6 @@ class _CompilerFamily(TrackedInstance):
             pass
         LOGGER.debug("Probing compiler '%s' to discover compiler family", absolute_path)
         messages = []
-        stdout = None
         # Settle down pylint... the __instances__ member is created by __new__
         # pylint: disable=no-member
         if candidates:
@@ -291,12 +303,15 @@ class _CompilerFamily(TrackedInstance):
         else:
             families = cls.__instances__
         basename = os.path.basename(absolute_path)
+        if not any(basename in family.commands for family in families):
+            basename = _without_minor_version(basename)
         with_regex, without_regex = [], []
         for family in families:
             if basename in family.commands:
                 (with_regex if family.family_regex else without_regex).append(family)
         for family in with_regex:
             cmd = [absolute_path] + family.version_flags
+            stdout = None
             try:
                 stdout = util.get_command_output(cmd)
             except CalledProcessError as err:
@@ -398,6 +413,8 @@ class _CompilerInfo(TrackedInstance):
         assert family is None or isinstance(family, _CompilerFamily)
         assert role is None or isinstance(role, _CompilerRole)
         found = cls._find(command, family, role)
+        if not found and command:
+            found = cls._find(_without_minor_version(command), family, role)
         if not found:
             if command:
                 # Strip version info and try again
@@ -546,10 +563,15 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         try:
             stdout = util.get_command_output(cmd)
         except CalledProcessError as err:
+            if self.info.family.optional_wrapper:
+                LOGGER.debug("'%s' doesn't accept arguments %s so assuming it doesn't wrap another compiler",
+                             self.absolute_path, self.info.family.show_wrapper_flags)
+                return None
             # If this command didn't accept show_wrapper_flags then it's not a compiler wrapper to begin with,
             # i.e. another command just happens to be the same as a known compiler command.
             raise ConfigurationError("'%s' isn't actually a %s since it doesn't accept arguments %s." %
-                                     (self.absolute_path, self.info.short_descr, self.info.family.show_wrapper_flags)) from err
+                                     (self.absolute_path, self.info.short_descr,
+                                      self.info.family.show_wrapper_flags)) from err
         # Assume the longest line starting with a known compiler command is the wrapped compiler followed by arguments.
         known_commands = {info.command for info in _CompilerInfo.all()}
         for line in sorted(stdout.split('\n'), key=len, reverse=True):
@@ -743,7 +765,7 @@ class InstalledCompiler(metaclass=InstalledCompilerCreator):
         with open(script_file, "w+") as fout:
             wrapper = _COMPILER_WRAPPER_TEMPLATE % {'date': str(datetime.now()),
                                                     'user': getpass.getuser(),
-                                                    'taucmdr_script': TAUCMDR_SCRIPT,
+                                                    'taucmdr_script': shlex.quote(TAUCMDR_SCRIPT),
                                                     'command': self.command}
             fout.write(wrapper)
         os.chmod(script_file, os.stat(script_file).st_mode | 0o111)
@@ -780,9 +802,9 @@ class InstalledCompilerFamily:
                     self.members.setdefault(role, []).append(installed)
         for role, info_list in family.members.items():
             for info in info_list:
-              if family.name == 'None':
-                  installed = InstalledCompiler(info.command, info)
-                  self.members.setdefault(role, []).append(installed)
+                if family.name == 'None':
+                    installed = InstalledCompiler(info.command, info)
+                    self.members.setdefault(role, []).append(installed)
         if not self.members:
             cmds = [info.command for info_list in family.members.values() for info in info_list]
             raise ConfigurationError(f"{self.family.name} {self.family.kbase.description} not found.",

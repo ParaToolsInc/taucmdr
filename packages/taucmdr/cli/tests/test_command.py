@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,29 @@ Functions used for unit tests of command.py.
 """
 
 
-from taucmdr import tests
+from taucmdr import cli, tests
 #from taucmdr.cli import command
 
 class CommandTest(tests.TestCase):
     def test_command(self):
         self.assertEqual(1, 1)
+
+
+class FormatUsageTest(tests.TestCase):
+    """Tests for :any:`AbstractCommand.format_usage`."""
+
+    def test_defaults_shown(self):
+        self.assertIn('- default:', cli.find_command(['target', 'create']).format_usage())
+
+    def test_defaults_omitted(self):
+        usage = cli.find_command(['target', 'create']).format_usage(show_defaults=False)
+        self.assertNotIn('- default:', usage)
+        self.assertIn('--python-interpreter', usage)
+
+    def test_cached_parser_unchanged(self):
+        """Usage without defaults doesn't change the parser that ``--help`` uses."""
+        command = cli.find_command(['target', 'create'])
+        parser = command.parser
+        command.format_usage(show_defaults=False)
+        self.assertIs(command.parser, parser)
+        self.assertIn('- default:', command.usage)

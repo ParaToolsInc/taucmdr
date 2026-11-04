@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,11 @@ Functions used for unit tests of show.py.
 
 
 from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH
 from taucmdr.cli.commands.trial import show, create
 from taucmdr.cf.compiler.host import CC
 
 class ShowTest(tests.TestCase):
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_show(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')

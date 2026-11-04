@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,9 @@ HOST_COMPILERS = Knowledgebase('Host', 'Compilers targeting the host CPU',
                                FC=('Fortran', ('FC', 'F77', 'F90')),
                                UPC=('Universal Parallel C', 'UPC'))
 
-SYSTEM = HOST_COMPILERS.add('System', CC='cc', CXX=('c++', 'cxx', 'CC'), FC=('ftn', 'f90', 'f77'), UPC='upc')
+# Any compiler matches the System family, so a named family that matches the same compiler takes precedence.
+SYSTEM = HOST_COMPILERS.add('System', fallback=True,
+                            CC='cc', CXX=('c++', 'cxx', 'CC'), FC=('ftn', 'f90', 'f77'), UPC='upc')
 
 GNU = HOST_COMPILERS.add('GNU', family_regex=r'Free Software Foundation, Inc',
                          CC='gcc', CXX='g++', FC=('gfortran', 'g77'), UPC='gupc')
@@ -58,14 +60,11 @@ IBM = HOST_COMPILERS.add('IBM', family_regex=r'^IBM XL',
                          FC=('xlf_r', 'xlf', 'xlf90_r', 'xlf90', 'xlf95_r', 'xlf95',
                              'xlf2003_r', 'xlf2003', 'xlf2008_r', 'xlf2008'))
 
-IBM_BG = HOST_COMPILERS.add('BlueGene',
-                            CC=('bgxlc', 'bgxlc_r', 'bgcc', 'bgcc_r', 'bgc89', 'bgc89_r', 'bgc99', 'bgc99_r'),
-                            CXX=('bgxlc++', 'bgxlc++_r', 'bgxlC', 'bgxlC_r'),
-                            FC=('bgxlf', 'bgxlf_r', 'bgf77', 'bgfort77', 'bgxlf90', 'bgxlf90_r', 'bgf90',
-                                'bgxlf95', 'bgxlf95_r', 'bgf95', 'bgxlf2003', 'bgxlf2003_r', 'bgf2003',
-                                'bgxlf2008', 'bgxlf2008_r', 'bgf2008'))
+# With -craype-verbose, craype's wrappers print the command line they will run.
+# Older craype also added Cray include paths to it, but current craype doesn't for --version.
+CRAYPE_FAMILY_REGEX = r'-I.*cray|^\S+ .*--version -E\s*$'
 
-CRAY = HOST_COMPILERS.add('Cray', family_regex=r'-I.*cray',
+CRAY = HOST_COMPILERS.add('Cray', family_regex=CRAYPE_FAMILY_REGEX,
                           version_flags=['-craype-verbose', '--version', '-E'],
                           show_wrapper_flags=['-craype-verbose', '--version', '-E'],
                           CC='cc', CXX='CC', FC='ftn', UPC='cc')

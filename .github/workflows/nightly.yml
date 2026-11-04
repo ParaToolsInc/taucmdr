@@ -12,15 +12,16 @@ on:
 
 env:
   __TAUCMDR_PROGRESS_BARS__: "disabled"
-  __TAUCMDR_SYSTEM_PREFIX__: "system"
+  TAUCMDR_SYSTEM_PREFIX: ${{ github.workspace }}/system
   CI: "ON"
-  INSTALLDIR: "taucmdr"
   PIP_NO_CLEAN: "ON"
   PIP_PREFER_BINARY: "ON"
   TZ: "UTC"
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
   OMPI_MCA_rmaps_base_oversubscribe: "true"
+  # Open MPI 5 reads this instead of OMPI_MCA_rmaps_base_oversubscribe.
+  PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
 
 jobs:
   Install-taucmdr-minimal:
@@ -29,19 +30,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
     env:
       OS: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 9999
+          fetch-depth: 0
 
       - name: Install system packages
         run: |
           # Ensure that we have default system compilers and MPI for testing
           sudo apt-get update -qq || true
-          sudo apt-get install -y --no-install-recommends gcc g++ gfortran openmpi-bin openmpi-common libopenmpi-dev python2.7-minimal python2.7-dev
+          sudo apt-get install -y --no-install-recommends gcc g++ gfortran make m4 cmake perl bzip2 xz-utils zlib1g-dev git curl openmpi-bin openmpi-common libopenmpi-dev
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Install Python
+        run: uv python install 3.15
+
+      - name: Install an older Python
+        run: |
+          # For the test that profiles an application under a Python older than the one running the tests.
+          uv python install 3.11
+          mkdir -p "${HOME}/.local/bin"
+          ln -sf "$(uv python find 3.11)" "${HOME}/.local/bin/python3.11"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
 
       - name: System info
         id: info
@@ -54,15 +69,10 @@ jobs:
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref:        ${{ github.ref }}"
           echo "matrix.os:         ${{ matrix.os }}"
-          echo "Pythons found:"
-          type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
-          export INSTALLDIR="${HOME}/${INSTALLDIR}"
-          echo "install_dir=${INSTALLDIR}" >> "${GITHUB_OUTPUT}"
-          echo "INSTALLDIR=${INSTALLDIR}" >> "${GITHUB_ENV}"
+          echo "Pythons installed by uv:"
+          uv python list --only-installed
           echo "home_dir=${HOME}" >> "${GITHUB_OUTPUT}"
-          echo "taucmdr_system=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_OUTPUT}"
-          echo "__TAUCMDR_SYSTEM_PREFIX__=${INSTALLDIR}/${__TAUCMDR_SYSTEM_PREFIX__}" >> "${GITHUB_ENV}"
+          echo "taucmdr_system=${TAUCMDR_SYSTEM_PREFIX}" >> "${GITHUB_OUTPUT}"
           echo "branch=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
           echo "BRANCH=${GITHUB_REF#refs/*/}" >> "${GITHUB_ENV}"
           echo "BRANCH: ${GITHUB_REF#refs/*/}"
@@ -71,17 +81,13 @@ jobs:
 
       - name: Install TAU Commander
         run: |
-          make INSTALLDIR="${INSTALLDIR}" install
-          echo "${INSTALLDIR}/conda/bin" >> "${GITHUB_PATH}"
-          export PATH="${INSTALLDIR}/conda/bin:${PATH}"
-          which python
-          which pip
-          python -m pip install -U pip
-          python -m pip install -U --prefix "${INSTALLDIR}/conda" -r requirements-dev.txt
-          cd "${HOME}"
-          zip -vr taucmdr-nightly.zip "${INSTALLDIR##*/}" -x "taucmdr/system/src/*" -x "taucmdr/conda/*"
-          type -a python
-          while read -r line ; do "${line##* is }" --version; done <<< "$(type -a python)"
+          uv tool install --python 3.15 .
+          uv tool dir --bin >> "${GITHUB_PATH}"
+          "$(uv tool dir --bin)/tau" --version
+
+      - name: Install minimal TAU
+        run: |
+          tau system configure --tau-config=minimal
 
       - name: Upload TAU Commander install log
         if: always()
@@ -90,17 +96,10 @@ jobs:
           name: taucmdr-tau-minimal-debug-log-${{ matrix.os }}
           path: ${{ steps.info.outputs.home_dir }}/.local/taucmdr/debug_log
 
-      - name: Upload TAU Commander minimal install
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: taucmdr-installation-${{ matrix.os }}
-          path: ${{ steps.info.outputs.home_dir }}/taucmdr-nightly.zip
-
       - name: Install Full TAU
         run: |
           rm ~/.local/taucmdr/debug_log || true
-          TAU=full ${{ steps.info.outputs.taucmdr_system }}/configure
+          tau system configure --tau-config=full
 
       - name: Upload TAU Commander full-TAU install log
         if: always()
@@ -113,38 +112,51 @@ jobs:
         run: |
           rm ~/.local/taucmdr/debug_log || true
           export __TAUCMDR_DB_BACKEND__=tinydb
+          __TAUCMDR_TEST_LAUNCHER__="$(uv tool dir --bin)/tau"
+          export __TAUCMDR_TEST_LAUNCHER__
           rm -f ./coverage.xml || true
-          coverage run setup.py test
-          coverage xml
+          uvx --with tox-uv tox -e py315 -- -v
 
       - name: Upload test results to Codecov (TinyDB)
-        if: always()
+        if: always() && env.ACT != 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: TEST-*.xml
+          files: build/test-results/TEST-*.xml
           flags: unittests,CI
           name: test-results-nightly-${{ matrix.os }}-tinydb
+
+      - name: Upload TinyDB test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-unit-test-results-${{ matrix.os }}-tinydb
+          path: build/test-results/
 
       - name: Test TAU Commander with SQLite backend
         run: |
           export __TAUCMDR_DB_BACKEND__=sqlite
-          coverage run setup.py test
-          coverage xml
+          __TAUCMDR_TEST_LAUNCHER__="$(uv tool dir --bin)/tau"
+          export __TAUCMDR_TEST_LAUNCHER__
+          uvx --with tox-uv tox -e py315 -- -v
 
       - name: Upload test results to Codecov (SQLite)
-        if: always()
+        if: always() && env.ACT != 'true'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
-          files: TEST-*.xml
+          files: build/test-results/TEST-*.xml
           flags: unittests,CI
           name: test-results-nightly-${{ matrix.os }}-sqlite
 
-      - name: Build sphinx docs
-        run: python setup.py build_sphinx
+      - name: Upload SQLite test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: taucmdr-unit-test-results-${{ matrix.os }}-sqlite
+          path: build/test-results/
 
       - name: Upload TAU Commander unit test log
         if: always()

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ Functions used for unit tests of select.py.
 
 
 from taucmdr import tests
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cli.commands.experiment.select import COMMAND as SELECT_COMMAND
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -44,6 +45,7 @@ class SelectTest(tests.TestCase):
         self.assertIn('the following arguments are required', stderr)
         self.assertFalse(stdout)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_invalid_metric(self):
         self.reset_project_storage()
         self.assertCommandReturnValue(0, measurement_create_cmd,
@@ -53,6 +55,7 @@ class SelectTest(tests.TestCase):
         stdout, _ = self.assertCommandReturnValue(0, SELECT_COMMAND, ['exp2'])
         self.assertIn('WARNING', stdout)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_check_rebuild_required(self):
         self.reset_project_storage()
         self.assertCommandReturnValue(0, measurement_create_cmd,

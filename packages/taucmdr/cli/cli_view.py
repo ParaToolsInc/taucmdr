@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -51,8 +51,8 @@ class Texttable(OriginalTexttable):
 
         Draws a line by looping over a single cell length, over all the cells, making any header text bold.
         A better place to implement this would have been `_splitit()` but the logic in texttable does not strip
-        ANSI escape sequences and treats them as printable characters. This may break when texttable is upgraded
-        as it is marked for internal use only. Adapted from texttable v1.6.3:
+        ANSI escape sequences and treats them as printable characters.  texttable 1.6.3 and 1.7.1 have the same
+        `_draw_line`.  Adapted from texttable v1.6.3:
             https://github.com/foutaise/texttable/blob/4073cefdfc4e5c50ed587909875b64b005c70df8/texttable.py#L657-L686
         """
 
@@ -413,7 +413,7 @@ class ListCommand(AbstractCliView):
                                  const='short', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         style_group.add_argument('-d', '--dashboard',
-                                 help="show %(model_name)s data in a fancy dasboard" % self._format_fields,
+                                 help="show %(model_name)s data in a fancy dashboard" % self._format_fields,
                                  const='dashboard', action='store_const', dest=style_dest,
                                  default=arguments.SUPPRESS)
         style_group.add_argument('-l', '--long',
@@ -442,9 +442,9 @@ class ListCommand(AbstractCliView):
 
         project_ctl = self.model.controller(PROJECT_STORAGE)
         user_ctl = self.model.controller(USER_STORAGE)
-        system_ctl = self.model.controller(SYSTEM_STORAGE)
+        system_ctl = self.model.controller(SYSTEM_STORAGE) if SYSTEM_STORAGE is not None else None
 
-        system = SYSTEM_STORAGE.name in storage_levels
+        system = 'system' in storage_levels
         user = USER_STORAGE.name in storage_levels
         project = PROJECT_STORAGE.name in storage_levels or not (user or system)
 
@@ -457,7 +457,7 @@ class ListCommand(AbstractCliView):
             parts.extend(self._format_records(project_ctl, style, keys, context=context))
         if style == 'dashboard':
             # Show record counts (not the records themselves) for other storage levels
-            if not system:
+            if not system and system_ctl is not None:
                 parts.extend(self._count_records(system_ctl))
             if not user:
                 parts.extend(self._count_records(user_ctl))
@@ -472,15 +472,14 @@ class ListCommand(AbstractCliView):
         style = getattr(args, 'style', None) or self.default_style
         storage_levels = arguments.parse_storage_flag(args)
 
+        context = True
         if args.project:
             matching = Project.controller().one({'name': args.project})
-            if matching:
-                LOGGER.debug("Using project %s", matching.eid)
-                context = [('project', matching.eid), ('projects', matching.eid)]
-            else:
+            if not matching:
                 LOGGER.debug("Project %s not found", args.project)
-        else:
-            context = True
+                self.parser.error(f"There is no project named '{args.project}'.")
+            LOGGER.debug("Using project %s", matching.eid)
+            context = [('project', matching.eid), ('projects', matching.eid)]
 
         return self._list_records([l.name for l in storage_levels], keys, style, context=context)
 
@@ -501,12 +500,12 @@ class ListCommand(AbstractCliView):
             if len(keys) == 1:
                 records = ctrl.search({key_attr: keys[0]}, context=context)
                 if not records:
-                    self.parser.error("No {} with {}='{}'".format(self.model_name, key_attr, keys[0]))
+                    self.parser.error(f"No {self.model_name} with {key_attr}='{keys[0]}'")
             else:
                 records = ctrl.search([{key_attr: key} for key in keys], context=context)
                 for i, record in enumerate(records):
                     if not record:
-                        self.parser.error("No {} with {}='{}'".format(self.model_name, key_attr, keys[i]))
+                        self.parser.error(f"No {self.model_name} with {key_attr}='{keys[i]}'")
         return records
 
     def _format_records(self, ctrl, style, keys=None, context=True):
@@ -564,7 +563,7 @@ class CopyCommand(CreateCommand):
 
     def _construct_parser(self):
         key_attr = self.model.key_attribute
-        usage = (f"{self.command} <{self.model_name}_{key_attr}> <copy_{key_attr}> [arguments]")
+        usage = f"{self.command} <{self.model_name}_{key_attr}> <copy_{key_attr}> [arguments]"
         parser = arguments.get_parser_from_model(self.model,
                                                  use_defaults=False,
                                                  prog=self.command,
@@ -585,11 +584,10 @@ class CopyCommand(CreateCommand):
         matching = ctrl.search({key_attr: key})
         if not matching:
             self.parser.error(f"No {ctrl.storage.name}-level {self.model_name} with {key_attr}='{key}'.")
-        elif len(matching) > 1:
+        if len(matching) > 1:
             raise InternalError("More than one %s-level %s with %s='%s' exists!" %
                                 (ctrl.storage.name, self.model_name, key_attr, key))
-        else:
-            found = matching[0]
+        found = matching[0]
         data = dict(found)
         data.update(updates)
         return self._create_record(store, data)

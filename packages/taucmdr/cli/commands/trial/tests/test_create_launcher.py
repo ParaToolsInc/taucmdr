@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,12 @@ Functions used for unit tests of create.py.
 
 import shutil
 from taucmdr import tests, util
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cf.compiler.caf import CAF_FC
+from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
+from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
 
 class CreateLauncherTest(tests.TestCase):
@@ -42,8 +45,21 @@ class CreateLauncherTest(tests.TestCase):
     https://github.com/ParaToolsInc/taucmdr/issues/210
     """
 
+    def _select_tau_exec(self, *args):
+        """Select a measurement that runs the application under tau_exec on every host.
+
+        The default measurement does only where sampling is on.
+        """
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['tau-exec', '--source-inst', 'never', '--compiler-inst', 'never',
+                                       '--sample', 'False', *args])
+        self.assertCommandReturnValue(0, select_cmd, ['tau-exec'])
+
+    @tests.skipIf(HOST_OS is DARWIN, "System Integrity Protection removes tau_exec's DYLD_INSERT_LIBRARIES "
+                                     "when it starts a shell script launcher")
     def test_foo_launcher_simple(self):
         self.reset_project_storage()
+        self._select_tau_exec()
         self.copy_testfile('foo_launcher')
         self.assertManagedBuild(0, CC, [], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', './a.out'])
@@ -51,10 +67,11 @@ class CreateLauncherTest(tests.TestCase):
         self.assertIn("Multiple executables were found", stdout)
         self.assertIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
-        self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./a.out')
+        self.assertRegex(stdout, r'tau_exec .* ./foo_launcher ./a.out')
 
     def test_launcher_flag(self):
         self.reset_project_storage()
+        self._select_tau_exec()
         self.copy_testfile('foo_launcher')
         self.assertManagedBuild(0, CC, [], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', '--', './a.out'])
@@ -62,45 +79,51 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER\nDone", stdout)
-        self.assertRegexpMatches(stdout, r'./foo_launcher tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'./foo_launcher tau_exec .* ./a.out')
 
+    @tests.skipIf(HOST_OS is DARWIN, "System Integrity Protection removes tau_exec's DYLD_INSERT_LIBRARIES "
+                                     "when it starts a shell script launcher")
     def test_invalid_exe(self):
         self.reset_project_storage()
+        self._select_tau_exec()
         self.copy_testfile('foo_launcher')
         stdout, stderr = self.assertNotCommandReturnValue(0, trial_create_cmd, ['./foo_launcher', './invalid'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("FOO LAUNCHER", stdout)
-        self.assertRegexpMatches(stdout, r'tau_exec .* ./foo_launcher ./invalid')
+        self.assertRegex(stdout, r'tau_exec .* ./foo_launcher ./invalid')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
     def test_mpirun(self):
         self.reset_project_storage(['--mpi'])
+        self._select_tau_exec('--mpi', 'True')
         self.assertManagedBuild(0, MPI_CC, ['-DTAU_MPI'], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['mpirun', '-np', '4', './a.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
-        self.assertRegexpMatches(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
     def test_mpirun_with_flag(self):
         self.reset_project_storage(['--mpi'])
+        self._select_tau_exec('--mpi', 'True')
         self.assertManagedBuild(0, MPI_CC, ['-DTAU_MPI'], 'matmult.c')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['mpirun', '-np', '4', '--', './a.out'])
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
-        self.assertRegexpMatches(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'mpirun -np 4 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     @tests.skipUnlessHaveCompiler(MPI_CC)
     def test_mpirun_mpmd(self):
         self.reset_project_storage(['--mpi'])
+        self._select_tau_exec('--mpi', 'True')
         self.assertManagedBuild(0, MPI_CC, ['-DTAU_MPI'], 'matmult.c')
         shutil.copy('./a.out', './b.out')
         stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd,
@@ -109,7 +132,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 4 profile files", stdout)
-        self.assertRegexpMatches(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
+        self.assertRegex(stdout, r'mpirun -np 2 tau_exec .* ./a.out : -np 2 tau_exec .* ./b.out')
 
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
@@ -120,7 +143,7 @@ class CreateLauncherTest(tests.TestCase):
         self.assertFalse(stderr)
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
-        self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
 
     @tests.skipUnless(util.which('cafrun'), "cafrun required for this test")
     @tests.skipUnlessHaveCompiler(CAF_FC)
@@ -132,4 +155,4 @@ class CreateLauncherTest(tests.TestCase):
         self.assertNotIn("Multiple executables were found", stdout)
         self.assertNotIn("executable is './foo_launcher'", stdout)
         self.assertIn("produced 9 profile files", stdout)
-        self.assertRegexpMatches(stdout, r'cafrun -np 9 tau_exec .* ./a.out')
+        self.assertRegex(stdout, r'cafrun -np 9 tau_exec .* ./a.out')

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -47,3 +47,9 @@ class ListTest(tests.TestCase):
         stdout, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['INVALID_NAME'])
         self.assertIn("No target with name='INVALID_NAME'", stderr)
         self.assertFalse(stdout)
+
+    def test_unknown_project(self):
+        """Listing targets of a project that doesn't exist produces an error."""
+        self.reset_project_storage()
+        _, stderr = self.assertNotCommandReturnValue(0, LIST_COMMAND, ['--project', 'nosuchproject'])
+        self.assertIn("nosuchproject", stderr)
