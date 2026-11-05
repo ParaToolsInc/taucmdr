@@ -38,8 +38,8 @@ The TAU Commandments
 8. **Never** shalt thou develop on the master branch, for that is an abomination.
 9. **Never** shalt thou merge code into the master branch that is failing the continuous integration (CI) tests.
 10. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really
-   really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it
-   and everything is on fire*.
+    really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it
+    and everything is on fire*.
 
 Table of Contents
 =================

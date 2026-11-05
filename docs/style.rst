@@ -259,11 +259,11 @@ exceptions are:
 -  Default options for scripts.
 -  Module-level constants. For example: ``PI = 3.14159``. Constants
    should be named using all caps with underscores; see
-   `Naming <#Naming>`__ below.
+   `Naming <Naming_>`__ below.
 -  It is sometimes useful for globals to cache values needed or returned
    by functions.
 -  If needed, globals should be made internal to the module and accessed
-   through public module level functions; see `Naming <#Naming>`__
+   through public module level functions; see `Naming <Naming_>`__
    below.
 
 Nested/Local/Inner Classes and Functions
@@ -515,7 +515,7 @@ subclasses.
 **Decision:** Use properties in new code to access or set data where you
 would normally have used simple, lightweight accessor or setter methods.
 Read-only properties should be created with the ``@property``
-`decorator <#Function_and_Method_Decorators>`__.
+`decorator <Function and Method Decorators_>`__.
 
 Inheritance with properties can be non-obvious if the property itself is
 not overridden. Thus one must make sure that accessor methods are called
@@ -769,7 +769,7 @@ available when the decorator runs (at import time, perhaps from
 parameters should (as much as possible) be guaranteed to succeed in all
 cases.
 
-Decorators are a special case of "top level code" - see `main <#Main>`__
+Decorators are a special case of "top level code" - see `main <Main_>`__
 for more discussion.
 
 Threading
@@ -872,7 +872,7 @@ Within comments, put long URLs on their own line if necessary.
     # v2.0/csv_file_name_extension_full_specification.html
 
 Make note of the indentation of the elements in the line continuation
-examples above; see the `indentation <#Indentation>`__ section for
+examples above; see the `indentation <Indentation_>`__ section for
 explanation.
 
 Parentheses
@@ -918,7 +918,7 @@ Indent your code blocks with *4 spaces*.
 
 Never use tabs or mix tabs and spaces. In cases of implied line
 continuation, you should align wrapped elements either vertically, as
-per the examples in the `line length <#Line_length>`__ section; or using
+per the examples in the `line length <Line length_>`__ section; or using
 a hanging indent of 4 spaces, in which case there should be no argument
 on the first line.
 
@@ -1673,4 +1673,4 @@ operations that should not be executed when the file is being
 .. _docstrings: https://www.python.org/dev/peps/pep-0257/
 .. _Sphinx: http://sphinx-doc.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
-.. _EAFP Style: <http://stackoverflow.com/a/11360880/403516>
+.. _EAFP Style: http://stackoverflow.com/a/11360880/403516
