@@ -183,6 +183,8 @@ class ProgressIndicator:
             label (str): Display label for the progress phase.
             implicit (bool): If True, phase is automatically popped when the next phase is pushed.
         """
+        if self._mode == 'disabled':
+            return
         if self.auto_refresh:
             if self._thread is None:
                 self._thread = threading.Thread(target=self._thread_progress)
@@ -209,6 +211,8 @@ class ProgressIndicator:
             self.update()
 
     def pop_phase(self):
+        if self._mode == 'disabled':
+            return
         if self.auto_refresh:
             self._updating.acquire()
         if self._phases:

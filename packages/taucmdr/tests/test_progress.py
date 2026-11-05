@@ -90,3 +90,14 @@ class ProgressIndicatorTest(tests.TestCase):
 
     def test_full_without_terminal(self):
         self.assertIn('Setting permissions', self._output('full', isatty=False))
+
+    def test_disabled_keeps_no_phases(self):
+        out = io.StringIO()
+        with mock.patch.dict(os.environ, {'__TAUCMDR_PROGRESS_BARS__': 'disabled'}), mock.patch('sys.stdout', new=out):
+            with progress.ProgressIndicator('Building', auto_refresh=0) as indicator:
+                for i in range(10):
+                    indicator.push_phase('Step %d' % i)
+                    indicator.phase('Implicit %d' % i)
+                    indicator.pop_phase()
+                self.assertEqual(indicator._phases, [])  # pylint: disable=protected-access
+        self.assertEqual(out.getvalue(), '')
