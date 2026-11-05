@@ -180,7 +180,7 @@ class Controller:
         """Check if a record exists.
 
         Args:
-            keys: See :any:`AbstractStorage.exists`.
+            keys: See :any:`AbstractStorage.contains`.
 
         Returns:
             bool: True if a record matching `keys` exists, False otherwise.
@@ -486,7 +486,7 @@ class Controller:
         """Associates a record with another record.
 
         Args:
-            record (Record): Record to associate.
+            record (StorageRecord): Record to associate.
             foreign_model (Model): Foreign record's data model.
             affected (list): Identifiers for the records that will be updated to associate with `record`.
             via (str): The name of the associated foreign attribute.
@@ -511,7 +511,7 @@ class Controller:
         """Disassociates a record from another record.
 
         Args:
-            record (Record): Record to disassociate.
+            record (StorageRecord): Record to disassociate.
             foreign_model (Model): Foreign record's data model.
             affected (list): Identifiers for the records that will be updated to disassociate from `record`.
             via (str): The name of the associated foreign attribute.

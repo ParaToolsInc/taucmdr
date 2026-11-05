@@ -229,7 +229,7 @@ class ProgressIndicator:
     def update(self, count=None, block_size=None, total_size=None):
         """Show progress.
 
-        Updates `block_size` or `total_size` if given for compatibility with :any:`urllib.urlretrieve`.
+        Updates `block_size` or `total_size` if given for compatibility with :py:func:`urllib.request.urlretrieve`.
 
         Args:
             count (int): Number of blocks of `block_size` that have been completed.

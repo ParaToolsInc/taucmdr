@@ -52,6 +52,7 @@ Table of Contents
    design
    style
    documentation
+   pre-commit-hooks
    new_feature
    new_compiler
    unit_tests

@@ -38,8 +38,6 @@ class AbstractCommand(metaclass=ABCMeta):
     Attributes:
         module_name (str): Name of the command module this command object belongs to.
         command (str): Command line string that executes this command.
-        summary (str): One-line summary of the command.
-        help_page (str): Long and informative description of the command.
         group (str): If not None, commands will be grouped together by group name in help messages.
     """
 
@@ -63,10 +61,12 @@ class AbstractCommand(metaclass=ABCMeta):
 
     @property
     def summary(self):
+        """str: One-line summary of the command."""
         return self.summary_fmt % self.format_fields
 
     @property
     def help_page(self):
+        """str: Long and informative description of the command."""
         return self.help_page_fmt % self.format_fields
 
     @property

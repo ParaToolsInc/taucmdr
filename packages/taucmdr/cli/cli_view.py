@@ -53,7 +53,7 @@ class Texttable(OriginalTexttable):
         A better place to implement this would have been `_splitit()` but the logic in texttable does not strip
         ANSI escape sequences and treats them as printable characters.  texttable 1.6.3 and 1.7.1 have the same
         `_draw_line`.  Adapted from texttable v1.6.3:
-            https://github.com/foutaise/texttable/blob/4073cefdfc4e5c50ed587909875b64b005c70df8/texttable.py#L657-L686
+        https://github.com/foutaise/texttable/blob/4073cefdfc4e5c50ed587909875b64b005c70df8/texttable.py#L657-L686
         """
 
         line = self._splitit(line, isheader)
@@ -433,7 +433,7 @@ class ListCommand(AbstractCliView):
 
         Args:
             storage_levels (list): Storage levels to query, e.g. ['user', 'project']
-            keys (list): Keys to match to :any:`self.key_attr`.
+            keys (list): Keys to match to the model's key attribute.
             style (str): Style in which to format records.
 
         Returns:
@@ -488,7 +488,7 @@ class ListCommand(AbstractCliView):
 
         Args:
             ctrl (Controller): Controller for the data model.
-            keys (list): Keys to match to :any:`self.key_attr`.
+            keys (list): Keys to match to the model's key attribute.
 
         Returns:
             list: Model records.
@@ -516,7 +516,7 @@ class ListCommand(AbstractCliView):
         Args:
             ctrl (Controller): Controller for the data model.
             style (str): Style in which to format records.
-            keys (list): Keys to match to :any:`self.key_attr`.
+            keys (list): Keys to match to the model's key attribute.
 
         Returns:
             list: Record data as formatted strings.

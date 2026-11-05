@@ -26,6 +26,6 @@ Step 4: Update the Common Framework
 
 With the new feature described in the model, update the Common Framework
 modules in :py:mod:`taucmdr.cf` to react to the new model attributes.  For
-example, you may need to add new parameters to
-:any:`TauInstallation.__init__` so the installation object can configure
+example, you may need to add new parameters to the
+:any:`TauInstallation` constructor so the installation object can configure
 TAU appropriately and enable support for the new feature.

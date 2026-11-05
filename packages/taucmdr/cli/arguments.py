@@ -99,8 +99,8 @@ class MutableArgumentGroupParser(argparse.ArgumentParser):
         If the group doesn't exist it will be created.
 
         Args:
-            *args: Positional arguments to pass to :any:`ArgumentParser.add_argument_group`
-            **kwargs: Keyword arguments to pass to :any:`ArgumentParser.add_argument_group`
+            *args: Positional arguments to pass to :py:meth:`argparse.ArgumentParser.add_argument_group`
+            **kwargs: Keyword arguments to pass to :py:meth:`argparse.ArgumentParser.add_argument_group`
 
         Returns:
             An argument group object.

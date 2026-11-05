@@ -258,7 +258,7 @@ def skipUnlessHaveCompiler(role):
 class TestCase(unittest.TestCase):
     """Base class for unit tests.
 
-    Performs tests in a temporary directory and reconfigures :any:`taucmdr.logger` to work with :any:`unittest`.
+    Performs tests in a temporary directory and reconfigures :py:mod:`taucmdr.logger` to work with :any:`unittest`.
     """
     # Follow the :any:`unittest` code style.
     # pylint: disable=invalid-name

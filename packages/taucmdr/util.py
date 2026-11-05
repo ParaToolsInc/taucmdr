@@ -809,8 +809,8 @@ def hline(title, *args, **kwargs):
 
     Args:
         title (str): Text to put on the horizontal rule.
-        *args: Positional arguments to pass to :any:`termcolor.colored`.
-        **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.
+        *args: Positional arguments to pass to ``termcolor.colored``.
+        **kwargs: Keyword arguments to pass to ``termcolor.colored``.
 
     Returns:
         str: The horizontal rule.
@@ -820,12 +820,12 @@ def hline(title, *args, **kwargs):
 
 
 def color_text(text, *args, **kwargs):
-    """Use :any:`termcolor.colored` to colorize text.
+    """Use ``termcolor.colored`` to colorize text.
 
     Args:
         text (str): Text to colorize.
-        *args: Positional arguments to pass to :any:`termcolor.colored`.
-        **kwargs: Keyword arguments to pass to :any:`termcolor.colored`.
+        *args: Positional arguments to pass to ``termcolor.colored``.
+        **kwargs: Keyword arguments to pass to ``termcolor.colored``.
 
     Returns:
         str: The colorized text.

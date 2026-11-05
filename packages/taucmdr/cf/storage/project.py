@@ -98,8 +98,8 @@ class ProjectStorage(LocalFileStorage):
         """Disconnects the database and filesystem and recursively deletes the filesystem.
 
         Args:
-            *args: Passed through to :any:`disconnect_filesystem`.
-            **kwargs: Keyword arguments for :any:`disconnect_filesystem` or :any:`shutil.rmtree`.
+            *args: Passed through to :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem`.
+            **kwargs: Keyword arguments for :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem` or :any:`shutil.rmtree`.
         """
         self.disconnect_filesystem(*args, **kwargs)
         ignore_errors = kwargs.pop('ignore_errors', False)
