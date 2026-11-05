@@ -1,13 +1,13 @@
 TAU Commander
 =============
 
-[![GitHub license][License img]](./LICENSE)
+[![GitHub license][License img]](https://github.com/ParaToolsInc/taucmdr/blob/master/LICENSE)
 [![CI][CI img]](https://github.com/ParaToolsInc/taucmdr/actions)
 [![Coverage Status][Coverage img]](https://codecov.io/github/ParaToolsInc/taucmdr?branch=master)
 
 ![The TAU Commander performance engineering solution consists of an
 intuitive, client-side application and cloud-hosted data analysis,
-storage, and visualization services.](docs/_static/taucmdr.png)
+storage, and visualization services.](https://raw.githubusercontent.com/ParaToolsInc/taucmdr/master/docs/_static/taucmdr.png)
 
 TAU Commander from [ParaTools, Inc.](http://www.paratools.com/) is a
 production-grade performance engineering solution that makes
@@ -35,12 +35,14 @@ TAU Commander are:
 Getting Started
 ===============
 
-Install a release version of TAU Commander with [uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
+Install a release version of TAU Commander with
+[uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
 
   - `uv tool install taucmdr`
   - or `pipx install taucmdr`
 
-To install a development version, check out this repo and give the path of the checkout instead: `uv tool install /path/to/taucmdr`.
+To install a development version, check out this repo and give the path of
+the checkout instead: `uv tool install /path/to/taucmdr`.
 
 TAU Commander requires Python 3.11.4 or later.
 
@@ -56,7 +58,8 @@ Need help?
 ==========
 
   - Add `--help` to any TAU Commander command line to see command line usage.
-  - The [command reference](http://paratoolsinc.github.io/taucmdr/cli/index.html) describes every `tau` command.
+  - The [command reference](http://paratoolsinc.github.io/taucmdr/cli/index.html)
+    describes every `tau` command.
   - Contact <support@paratools.com> with questions or feedback.
 
 Developers
