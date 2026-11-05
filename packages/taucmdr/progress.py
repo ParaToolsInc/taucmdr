@@ -87,7 +87,9 @@ class ProgressIndicator:
     _indent = '    '
 
     def __init__(self, label, total_size=0, block_size=1, show_cpu=True, auto_refresh=0.25):
-        mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', 'full').lower()
+        # Each redraw starts with a carriage return, which a log file or CI log shows as a new line.
+        default_mode = 'full' if sys.stdout.isatty() else 'disabled'
+        mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', default_mode).lower()
         if mode not in ('full', 'disabled'):
             raise ConfigurationError('Invalid value for __TAUCMDR_PROGRESS_BARS__ environment variable: %s' % mode)
         self.label = label
@@ -240,6 +242,8 @@ class ProgressIndicator:
             self.block_size = block_size
         if total_size is not None:
             self.total_size = total_size
+        if self._mode == 'disabled':
+            return
         if self.auto_refresh:
             if threading.current_thread() is not self._thread:
                 if not self._phases:
