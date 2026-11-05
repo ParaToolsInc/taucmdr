@@ -27,11 +27,9 @@
 #
 """Run TAU Commander's unit tests.
 
-This is a test runner which provides functionality mimicking that provided by the former
-``python setup.py test`` command removed from setuptools in v72. It sets environment
-variables required by TAU Commander's tests. These variables must already be set when the
-:py:mod:`taucmdr` module is first loaded, so this must be a standalone script rather 
-than part of that module.
+The runner sets the environment variables that TAU Commander's tests need, such as the script name and
+the storage prefixes.  :py:mod:`taucmdr` reads them when it's first imported, so the runner is a
+standalone script rather than ``python -m unittest``, which would import :py:mod:`taucmdr` first.
 
 The system prefix comes from ``TAUCMDR_SYSTEM_PREFIX`` or ``__TAUCMDR_SYSTEM_PREFIX__``.
 

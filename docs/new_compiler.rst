@@ -4,7 +4,7 @@ How to Add Support for a New Compiler
 TL;DR
 -----
 
-1. Check existing family definitions in :any:`tau.cf.compiler`.  If the missing compiler's family is already
+1. Check existing family definitions in :py:mod:`taucmdr.cf.compiler`.  If the missing compiler's family is already
    defined then just update the existing definition.  Otherwise declare a new family using the existing declarations
    as an example.
 2. Update :any:`TauInstallation` with any special cases or goofy flags TAU might need to work with the new compiler,

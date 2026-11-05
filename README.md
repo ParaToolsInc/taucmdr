@@ -35,10 +35,12 @@ TAU Commander are:
 Getting Started
 ===============
 
-Install TAU Commander from a checkout with [uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
+Install a release version of TAU Commander with [uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
 
-  - `uv tool install /path/to/taucmdr`
-  - or `pipx install /path/to/taucmdr`
+  - `uv tool install taucmdr`
+  - or `pipx install taucmdr`
+
+To install a development version, check out this repo and give the path of the checkout instead: `uv tool install /path/to/taucmdr`.
 
 TAU Commander requires Python 3.11.4 or later.
 
@@ -54,7 +56,7 @@ Need help?
 ==========
 
   - Add `--help` to any TAU Commander command line to see command line usage.
-  - Use `tau help` to view online documentation.  (Very incomplete at the moment.)
+  - The [command reference](http://paratoolsinc.github.io/taucmdr/cli/index.html) describes every `tau` command.
   - Contact <support@paratools.com> with questions or feedback.
 
 Developers

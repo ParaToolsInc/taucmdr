@@ -45,8 +45,10 @@ the rest of the documentation, writing the output to ``build/sphinx/html``.
 File Header
 -----------
 
-All Python files must begin with a file encoding string, followed by the
-license boilerplate text, followed by the module's docstring.
+All Python files must begin with the license boilerplate text, followed by
+the module's docstring. When updating a file, change the copyright date
+in the header to a range encompassing the current year. 
+
 **Do not** include the following in the header or the module docstring:
 
   * File creation or modification dates since these are always wrong
@@ -68,9 +70,8 @@ certain that you're not doing something wrong.
 
 ::
 
-  # -*- coding: utf-8 -*-
   #
-  # Copyright (c) <YEAR>, ParaTools, Inc.
+  # Copyright (c) <CREATED_YEAR>-<CURRENT_YEAR>, ParaTools, Inc.
   # All rights reserved.
   #
   # Redistribution and use in source and binary forms, with or without
@@ -270,7 +271,6 @@ Full Documentation Example
 
 ::
 
-  # -*- coding: utf-8 -*-
   """Example Google style docstrings.
 
   This module demonstrates documentation as specified by the `Google Python

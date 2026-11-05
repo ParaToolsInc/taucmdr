@@ -57,7 +57,7 @@ The project's pylintrc file will enforce most of these rules.
 The exceptions to `Google Python Style`_ are:
 
 * Maximum line length is 120 characters.
-* Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
+* Multiple imports per line are OK, e.g. ``from taucmdr import logger, error, util``.
 * Exceptions should not be avoided.  Prefer `EAFP Style`_.
 * Complex list comprehensions are OK.
 
@@ -1333,28 +1333,28 @@ Strings
 ~~~~~~~
 
 
-Use the ``format`` method or the ``%`` operator for formatting strings,
-even when the parameters are all strings. Use your best judgement to
-decide between ``+`` and ``%`` (or ``format``) though.
+Use f-strings to format strings, even when the parameters are all strings.
+Joining exactly two strings with ``+`` is fine too.  Log messages are the
+exception: pass the values as arguments with ``%`` placeholders, so the logger
+only formats messages it actually writes.
 
 **Yes:**
 
 ::
 
     x = a + b
-    x = '%s, %s!' % (imperative, expletive)
-    x = '{}, {}!'.format(imperative, expletive)
-    x = 'name: %s; score: %d' % (name, n)
-    x = 'name: {}; score: {}'.format(name, n)
+    x = f'{imperative}, {expletive}!'
+    x = f'name: {name}; score: {n}'
+    LOGGER.debug("'%s' has filetype %s", name, filetype)
 
 **No:**
 
 ::
 
-    x = '%s%s' % (a, b)  # use + in this case
-    x = '{}{}'.format(a, b)  # use + in this case
+    x = f'{a}{b}'  # use + in this case
     x = imperative + ', ' + expletive + '!'
     x = 'name: ' + name + '; score: ' + str(n)
+    LOGGER.debug(f"'{name}' has filetype {filetype}")
 
 Avoid using the ``+`` and ``+=`` operators to accumulate a string within
 a loop. Since strings are immutable, this creates unnecessary temporary
@@ -1368,7 +1368,7 @@ loop terminates (or, write each substring to a ``io.BytesIO`` buffer).
 
     items = ['<table>']
     for last_name, first_name in employee_list:
-        items.append('<tr><td>%s, %s</td></tr>' % (last_name, first_name))
+        items.append(f'<tr><td>{last_name}, {first_name}</td></tr>')
     items.append('</table>')
     employee_table = ''.join(items)
 
@@ -1378,7 +1378,7 @@ loop terminates (or, write each substring to a ``io.BytesIO`` buffer).
 
     employee_table = '<table>'
     for last_name, first_name in employee_list:
-        employee_table += '<tr><td>%s, %s</td></tr>' % (last_name, first_name)
+        employee_table += f'<tr><td>{last_name}, {first_name}</td></tr>'
     employee_table += '</table>'
 
 Be consistent with your choice of string quote character within a file.
@@ -1519,7 +1519,7 @@ E.g.:
 
     import os
     import sys
-    from tau import logger, error
+    from taucmdr import logger, error
 
 **No:**
 
