@@ -77,7 +77,7 @@ There are three ways to get a wheel to try out before publishing to TestPyPI:
   Due to a bug in act v0.2.89's, the artifact server rejects ``actions/upload-artifact@v7``; until that's fixed, add
   ``--local-repository actions/upload-artifact@v7=<checkout of actions/upload-artifact at v4>``.
 * Run the release workflow on GitHub on a branch.  A manual run builds and checks the distributions but
-  does not publish them publishes them::
+  does not publish them::
 
      gh workflow run release.yml --ref <branch>
      gh run download <run ID> -n dist

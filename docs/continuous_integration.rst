@@ -18,7 +18,7 @@ storage backends, TinyDB and SQLite.
 
 On push and pull request, CI tests Python 3.15 on ``ubuntu-24.04`` (x86_64), ``ubuntu-24.04-arm``
 (aarch64) and ``macos-latest`` (Apple silicon).  To test the older supported Pythons, run the CI manually and
-give the Python versions to test using the ``python-versions`` input:
+give the Python versions to test using the ``python-versions`` input::
 
    gh workflow run CI.yml --ref <branch> -f python-versions='["3.11", "3.12", "3.13", "3.14"]'
 

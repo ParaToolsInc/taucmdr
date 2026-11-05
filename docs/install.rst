@@ -139,10 +139,10 @@ On a computer with internet access:
 
       python3 -m pip download --dest wheelhouse taucmdr
 
-2. Download the source archives of TAU and the packages it builds (about 1.2 GB) into ``bundle``::
+2. Download the source archives of TAU and the packages it builds (about 1.2 GB) into ``bundle``.
+   ``uvx`` runs the copy of TAU Commander in ``wheelhouse``, so the archives match the version you'll install::
 
-      uv tool install taucmdr
-      tau system fetch bundle
+      uvx --no-index --find-links wheelhouse --from taucmdr tau system fetch bundle
 
    ``tau system fetch`` exits with an error if it couldn't download an archive from any of its
    mirrors; run it again to retry.
