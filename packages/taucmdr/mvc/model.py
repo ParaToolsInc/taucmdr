@@ -90,22 +90,20 @@ class ModelMeta(type):
 class Model(StorageRecord, metaclass=ModelMeta):
     """The "M" in `MVC`_.
 
-    Attributes:
-        name (str): Name of the model.
-        associations (dict): (Controller, str) tuples keyed by attribute name defining attribute associations.
-        references (set): (Controller, str) tuples listing foreign models referencing this model.
-        attributes (dict): Model attributes.
-        key_attribute (str): Name of an attribute that serves as a unique identifier.
-
     .. _MVC: https://en.wikipedia.org/wiki/Model-view-controller
     """
     __controller__ = Controller
     __attributes__ = NotImplemented
 
+    #: Name of the model.
     name = None
+    #: (Controller, str) tuples keyed by attribute name defining attribute associations.
     associations = {}
+    #: (Controller, str) tuples listing foreign models referencing this model.
     references = set()
+    #: Model attributes.
     attributes = {}
+    #: Name of an attribute that serves as a unique identifier.
     key_attribute = None
 
     def __init__(self, record):
@@ -309,7 +307,7 @@ class Model(StorageRecord, metaclass=ModelMeta):
             * rhs (Model): Controller of the data record we are checking against.
 
         The `condition` callable raises a :any:`IncompatibleRecordError` if the compared attributes
-        are fatally incompatibile, i.e. the user's operation is guaranteed to fail with the chosen
+        are fatally incompatible, i.e. the user's operation is guaranteed to fail with the chosen
         records. It may emit log messages to indicate that the records are not perfectly compatible
         but that the user's operation is still likely to succeed with the chosen records.
 

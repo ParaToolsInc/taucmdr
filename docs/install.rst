@@ -7,7 +7,8 @@ Python environment you use for other work: when TAU Commander profiles Python co
 environment could conflict with its own.
 
 TAU Commander builds TAU and the packages it uses from source, so it needs C, C++ and Fortran
-compilers, ``make``, ``cmake`` and ``m4``.  Installing from a checkout also needs ``git``.  On Ubuntu::
+compilers, ``make``, ``cmake`` and ``m4``.  Installing from a checkout of the source also needs ``git``.
+On Ubuntu::
 
    sudo apt install gcc g++ gfortran make cmake m4 git
 
@@ -21,13 +22,13 @@ TAU Commander once and builds TAU for all users.  Either kind works without inte
 Per-user install
 ----------------
 
-Install from a checkout of TAU Commander::
+Install TAU Commander from PyPI::
 
-   uv tool install /path/to/taucmdr
+   uv tool install taucmdr
 
 or, with pipx::
 
-   pipx install /path/to/taucmdr
+   pipx install taucmdr
 
 Either one installs ``tau`` in ``~/.local/bin``.  If that directory isn't on your ``PATH``,
 ``uv tool update-shell`` (or ``pipx ensurepath``) adds it.  Then initialize a project in the directory
@@ -38,6 +39,12 @@ with your code::
 
 It is not necessary to configure anything ahead of time.  The first time a project needs TAU or packages it depends upon,
 TAU Commander downloads and builds them, and later projects reuse them.
+
+To install a development version, give the path of a checkout in place of ``taucmdr``, e.g.
+``uv tool install /path/to/taucmdr``.
+
+To upgrade an installed TAU Commander, run ``uv tool upgrade taucmdr``
+(or ``pipx upgrade taucmdr``).
 
 
 .. _shared-install:
@@ -68,7 +75,7 @@ Adapt these steps for your own system.
       export UV_TOOL_DIR=/opt/taucmdr/tools
       export UV_TOOL_BIN_DIR=/opt/taucmdr/bin
       export UV_PYTHON_INSTALL_DIR=/opt/taucmdr/python
-      uv tool install --python 3.12 /path/to/taucmdr
+      uv tool install --python 3.12 taucmdr
 
    uv warns that ``/opt/taucmdr/bin`` isn't on your ``PATH``; the module file created in the next step adds it.
 
@@ -127,17 +134,15 @@ You prepare both on a computer with internet access and copy them over.
 
 On a computer with internet access:
 
-1. Build TAU Commander's wheel and download its dependencies.  They're pure Python, so one
-   ``wheelhouse`` works on any platform with a supported Python::
+1. Download TAU Commander and its dependencies.  They're pure Python, so one ``wheelhouse`` works on
+   any platform with a supported Python::
 
-      cd /path/to/taucmdr
-      uv build --wheel --out-dir wheelhouse
-      python3 -m pip download --dest wheelhouse wheelhouse/taucmdr-*.whl
+      python3 -m pip download --dest wheelhouse taucmdr
 
-2. Download the source archives of TAU and the packages it builds (about 1.2 GB) into ``bundle``::
+2. Download the source archives of TAU and the packages it builds (about 1.2 GB) into ``bundle``.
+   ``uvx`` runs the copy of TAU Commander in ``wheelhouse``, so the archives match the version you'll install::
 
-      uv tool install /path/to/taucmdr
-      tau system fetch bundle
+      uvx --no-index --find-links wheelhouse --from taucmdr tau system fetch bundle
 
    ``tau system fetch`` exits with an error if it couldn't download an archive from any of its
    mirrors; run it again to retry.

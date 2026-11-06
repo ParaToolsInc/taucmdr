@@ -4,7 +4,7 @@ How to Add Support for a New Compiler
 TL;DR
 -----
 
-1. Check existing family definitions in :any:`tau.cf.compiler`.  If the missing compiler's family is already
+1. Check existing family definitions in :py:mod:`taucmdr.cf.compiler`.  If the missing compiler's family is already
    defined then just update the existing definition.  Otherwise declare a new family using the existing declarations
    as an example.
 2. Update :any:`TauInstallation` with any special cases or goofy flags TAU might need to work with the new compiler,
@@ -74,8 +74,8 @@ resolves a major pain point in TAU where using a TAU configuration for one compi
 compiler can cause all sorts of problems.
 
 
-Compiler Roles (:any:`CompilerRole`)
-------------------------------------
+Compiler Roles (:any:`_CompilerRole`)
+-------------------------------------
 
 Each individual compiler has a *Role* that is represented by an instance of the :any:`_CompilerRole` class.
 A compiler's role maps a compiler to it's primary language via a keyword.  For example, the ``g++`` compiler

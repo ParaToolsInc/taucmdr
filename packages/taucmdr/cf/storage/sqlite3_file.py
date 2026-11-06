@@ -171,17 +171,17 @@ class SQLiteDatabase:
             raise StorageError(f"Cannot write to '{self.dbfile}'", "Check that you have `write` access.")
 
     def start_transaction(self):
-        """Begin a transaction, which can be reverted with :any:`_SQLiteDatabase.revert_transaction`
-        or committed with :any:`_SQLiteDatabase.commit_transaction`.
+        """Begin a transaction, which can be reverted with :any:`SQLiteDatabase.revert_transaction`
+        or committed with :any:`SQLiteDatabase.commit_transaction`.
         """
         self.cursor().execute('BEGIN EXCLUSIVE TRANSACTION;')
 
     def revert_transaction(self):
-        """Revert a transaction previously started with :any:`_SQLiteDatabase.start_transaction` """
+        """Revert a transaction previously started with :any:`SQLiteDatabase.start_transaction` """
         self.cursor().execute('ROLLBACK;')
 
     def commit_transaction(self):
-        """Commit a transaction previously started with :any:`_SQLiteDatabase.start_transaction` """
+        """Commit a transaction previously started with :any:`SQLiteDatabase.start_transaction` """
         self.cursor().execute('END TRANSACTION;')
 
     def tables(self):
@@ -398,9 +398,6 @@ class SQLiteLocalFileStorage(LocalFileStorage):
     """A persistent, transactional record storage system.
 
     Uses :py:class:`sqlite3` for both the database and the key/value store.
-
-    Attributes:
-        dbfile (str): Absolute path to database file.
     """
 
     Record = _SQLiteJsonRecord
@@ -411,6 +408,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
     @property
     def dbfile(self):
+        """str: Absolute path to the database file."""
         return os.path.join(self.prefix, self.name + '.sqlite3')
 
     def database_exists(self):
@@ -483,7 +481,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """Count the records in the database.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
             int: Number of records in the table.
@@ -501,7 +499,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -535,7 +533,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -565,11 +563,11 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Either `regex` or `test` may be specified, not both.
         If `regex` is given, then all records with `field` matching the regular expression are returned.
-        If test is given then all records with `field` set to a value that caues `test` to return True are returned.
+        If test is given then all records with `field` set to a value that causes `test` to return True are returned.
         If neither is given, return all records where `field` is set to any value.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             field (string): Name of the data field to match.
             regex (string): Regular expression string.
             test: Callable returning a boolean value.
@@ -606,7 +604,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -633,7 +631,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             data (dict): Data to insert in table.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
             Record: The new record.
@@ -651,7 +649,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         Args:
             fields (dict): Data to record.
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -683,7 +681,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         Args:
             fields (list): Names of fields to remove from matching records.
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -708,7 +706,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -733,6 +731,6 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """Delete all records.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
         """
         self.table(table_name).purge()

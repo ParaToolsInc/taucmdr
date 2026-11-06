@@ -143,8 +143,8 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          flags: unittests,CI
-          name: codecov-${{ matrix.os }}-py${{ matrix.python }}
+          flags: CI
+          name: codecov-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
           fail_ci_if_error: true
           env_vars: OS,PY_VER,__TAUCMDR_PROGRESS_BARS__,__TAUCMDR_DB_BACKEND__,GITHUB_WORKFLOW,GITHUB_RUN_ID,GITHUB_RUN_NUMBER,GITHUB_ACTOR
 
@@ -155,7 +155,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
           files: build/test-results/TEST-*.xml
-          flags: unittests,CI
+          flags: CI
           name: test-results-${{ matrix.os }}-py${{ matrix.python }}-${{ matrix.backend }}
 
       - name: Upload Sphinx docs for GitHub Pages

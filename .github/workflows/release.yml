@@ -102,6 +102,7 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
 
+  # Final versions are published on the live PyPI
   publish-pypi:
     name: Publish to PyPI
     if: github.event_name == 'push' && !contains(github.ref_name, 'rc')
@@ -119,3 +120,27 @@ jobs:
       - name: Publish
         if: env.ACT != 'true'
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
+
+  # Runs only after the PyPI upload succeeded, so a GitHub release always matches a release on PyPI.
+  github-release:
+    name: Create GitHub release
+    needs: publish-pypi
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create release
+        if: env.ACT != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/*.whl \
+            --verify-tag \
+            --title "TAU Commander ${GITHUB_REF_NAME#v}" \
+            --generate-notes

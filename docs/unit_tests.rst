@@ -52,8 +52,10 @@ file in the directory.
 
 Step 3: Contents of ``test_function_name.py``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Each ``test_function_name.py`` file should import the :any:`tau.tests` package. A
-separate class should be created for each function that is tested and multiple
+Each ``test_function_name.py`` file should import the :py:mod:`taucmdr.tests` package
+and subclass ``tests.TestCase``, which runs each test class in a temporary working
+directory and cleans up project storage afterwards. A separate class should be
+created for each function that is tested and multiple
 test functions may be created in each class in order to run multiple tests on a
 single function. Each function should use an ``assert*`` command that checks if
 the function produces the expected output.
@@ -65,12 +67,14 @@ to camel case.
 
 ::
 
-    class CamelCaseTest(unittest.TestCase):
+    from taucmdr import tests, util
+
+    class CamelCaseTest(tests.TestCase):
         def test_camelcase(self):
             self.assertEqual(util.camelcase("abc_def_ghi"), "AbcDefGhi")
 
 
 Further information on the unit test package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The `page <https://docs.python.org/2/library/unittest.html>`_ has more
+The `unittest documentation <https://docs.python.org/3/library/unittest.html>`_ has more
 information on writing a unit test function.

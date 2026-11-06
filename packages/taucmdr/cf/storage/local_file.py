@@ -61,7 +61,7 @@ class _JsonRecord(StorageRecord):
 class _JsonFileStorage(tinydb.JSONStorage):
     """Allow read-only as well as read-write access to the JSON file.
 
-    TinyDB's default storage (:any:`tinydb.JSONStorage`) assumes write access to the JSON file.
+    TinyDB's default storage (``tinydb.JSONStorage``) assumes write access to the JSON file.
     This isn't the case for system-level storage and possibly others.  A file that doesn't exist
     and can't be created is treated as an empty, read-only database.
     """
@@ -111,9 +111,6 @@ class LocalFileStorage(AbstractStorage):
     """A persistent, transactional record storage system.
 
     Uses :py:class:`TinyDB` for both the database and the key/value store.
-
-    Attributes:
-        dbfile (str): Absolute path to database file.
     """
 
     Record = _JsonRecord
@@ -243,6 +240,7 @@ class LocalFileStorage(AbstractStorage):
 
     @property
     def dbfile(self):
+        """str: Absolute path to the database file."""
         return os.path.join(self.prefix, self.name + '.json')
 
     def database_exists(self):
@@ -302,7 +300,7 @@ class LocalFileStorage(AbstractStorage):
         """Count the records in the database.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
             int: Number of records in the table.
@@ -320,7 +318,7 @@ class LocalFileStorage(AbstractStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -361,7 +359,7 @@ class LocalFileStorage(AbstractStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -396,11 +394,11 @@ class LocalFileStorage(AbstractStorage):
 
         Either `regex` or `test` may be specified, not both.
         If `regex` is given, then all records with `field` matching the regular expression are returned.
-        If test is given then all records with `field` set to a value that caues `test` to return True are returned.
+        If test is given then all records with `field` set to a value that causes `test` to return True are returned.
         If neither is given, return all records where `field` is set to any value.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             field (string): Name of the data field to match.
             regex (string): Regular expression string.
             test: Callable returning a boolean value.
@@ -433,7 +431,7 @@ class LocalFileStorage(AbstractStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -463,7 +461,7 @@ class LocalFileStorage(AbstractStorage):
 
         Args:
             data (dict): Data to insert in table.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
             Record: The new record.
@@ -483,7 +481,7 @@ class LocalFileStorage(AbstractStorage):
         Args:
             fields (dict): Data to record.
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -517,7 +515,7 @@ class LocalFileStorage(AbstractStorage):
         Args:
             fields (list): Names of fields to remove from matching records.
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -550,7 +548,7 @@ class LocalFileStorage(AbstractStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -574,7 +572,7 @@ class LocalFileStorage(AbstractStorage):
         """Delete all records.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
         """
         LOGGER.debug("%s: purge()", table_name)
         self.table(table_name).purge()

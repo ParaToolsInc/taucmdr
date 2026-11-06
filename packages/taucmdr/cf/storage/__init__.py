@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,8 +28,8 @@
 TAU Storage Containers.
 
 A storage container provides a record database, a persistent filesystem, and a key/value store.
-The database is accessed via member methods like :any:`insert`, :any:`search`, etc.
-The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :any:`prefix`.
+The database is accessed via member methods like :py:meth:`AbstractStorage.insert`, :py:meth:`AbstractStorage.search`, etc.
+The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :py:meth:`AbstractStorage.prefix`.
 The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.
 """
 
@@ -49,10 +49,10 @@ class StorageRecord(dict):
     """A record in the storage container's database.
 
     Attributes:
-        eid_type: Element identifier type.
         storage: Storage container whose database contains this record.
         eid: Element identifier value.
     """
+    #: Element identifier type.
     eid_type = None
 
     def __init__(self, storage, eid, element):
@@ -68,14 +68,12 @@ class AbstractStorage(metaclass=ABCMeta):
     """Abstract base class for storage containers.
 
     A storage container provides a record database, a persistent filesystem, and a key/value store.
-    The database is accessed via member methods like :any:`insert`, :any:`search`, etc.
-    The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :any:`prefix`.
+    The database is accessed via member methods like :py:meth:`insert`, :py:meth:`search`, etc.
+    The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :py:meth:`prefix`.
     The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.
 
     Attributes:
         name (str): The storage container's name, e.g. "system" or "user".
-        prefix (str): Absolute path to the top-level directory of the container's filesystem.
-        database (str): Database object implementing :any:`AbstractDatabase`.
     """
 
     Record = StorageRecord
@@ -243,7 +241,7 @@ class AbstractStorage(metaclass=ABCMeta):
 
         Either `regex` or `test` may be specified, not both.
         If `regex` is given, then all records with `field` matching the regular expression are returned.
-        If test is given then all records with `field` set to a value that caues `test` to return True are returned.
+        If test is given then all records with `field` set to a value that causes `test` to return True are returned.
         If neither is given, return all records where `field` is set to any value.
 
         Args:

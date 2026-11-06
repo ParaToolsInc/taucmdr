@@ -32,21 +32,26 @@ To build the docs locally, run these commands from the repository root, in an en
 TAU Commander and ``requirements-dev.txt`` installed.  Sphinx needs Python 3.12 or newer::
 
   $ python -m sphinx.ext.apidoc -M -P -f -e -o docs packages/taucmdr packages/taucmdr/_vendor
-  $ python -m sphinx -b html -d build/sphinx/doctrees docs build/sphinx/html
+  $ python -m sphinx -W --keep-going -E -b html -d build/sphinx/doctrees docs build/sphinx/html
 
 ``tox -e docs`` runs the same commands with Python 3.15 and a current Sphinx, after deleting the API pages of the
 previous build.
 
 The first command generates the API reference pages. The second builds
 the rest of the documentation, writing the output to ``build/sphinx/html``.
+``-W`` turns Sphinx warnings into errors, so broken cross-references or bad reST markup in a docstring
+will cause the build to fail.  ``--keep-going`` reports all of warnings before failing, and ``-E`` rereads
+every page, so warnings from unchanged pages aren't hidden by an earlier build.
 
 
 
 File Header
 -----------
 
-All Python files must begin with a file encoding string, followed by the
-license boilerplate text, followed by the module's docstring.
+All Python files must begin with the license boilerplate text, followed by
+the module's docstring. When updating a file, change the copyright date
+in the header to a range encompassing the current year. 
+
 **Do not** include the following in the header or the module docstring:
 
   * File creation or modification dates since these are always wrong
@@ -68,9 +73,8 @@ certain that you're not doing something wrong.
 
 ::
 
-  # -*- coding: utf-8 -*-
   #
-  # Copyright (c) <YEAR>, ParaTools, Inc.
+  # Copyright (c) <CREATED_YEAR>-<CURRENT_YEAR>, ParaTools, Inc.
   # All rights reserved.
   #
   # Redistribution and use in source and binary forms, with or without
@@ -270,7 +274,6 @@ Full Documentation Example
 
 ::
 
-  # -*- coding: utf-8 -*-
   """Example Google style docstrings.
 
   This module demonstrates documentation as specified by the `Google Python

@@ -6,14 +6,11 @@
 Welcome
 =======
 
-.. important::
-   This documentation is intended for the lucky people **developing**
-   TAU Commander.  If you are a TAU Commander **user** then you should
-   visit `the TAU Commander website`_. If you're looking for information
-   on the `TAU Performance System`_ (the heart of TAU Commander) then you
-   should visit `the TAU project page <http://tau.uoregon.edu/>`_.
+If you use TAU Commander, start with :doc:`install` and the :doc:`cli/index`, which describes
+the CLI interface and ``tau`` commands and subcommands.  For the `TAU Performance System`_ itself,
+which is used by TAU Commander to carry out performance monitoring, see `the TAU project page <http://tau.uoregon.edu/>`_.
 
-This document will help you, the TAU Commander developer, contribute to the
+The rest of this documentation is for developers of TAU Commander, and will help you contribute to the
 project. For over two decades the `TAU Performance System`_ has been developed
 primarily by graduate students with extreme demands on their time so best
 practices of software design, safety, and maintainability were largely ignored
@@ -31,7 +28,7 @@ the master branch.
 The TAU Commandments
 ====================
 
-1. Thou shalt use `pylint`_ 1.6.4 or later as part of your development cycle.
+1. Thou shalt use `pylint`_ as part of your development cycle, and keep the score at 9.0 or above.
 2. Thou shalt follow the :doc:`design` for it is sacred.
 3. Thou shalt style thine code according to the :doc:`style`.
 4. Thou shalt document your code according to the :doc:`documentation`.
@@ -41,8 +38,8 @@ The TAU Commandments
 8. **Never** shalt thou develop on the master branch, for that is an abomination.
 9. **Never** shalt thou merge code into the master branch that is failing the continuous integration (CI) tests.
 10. **Never** shalt thou *just quickly fix this one thing because I have a hard deadline I forgot and now I really
-   really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it
-   and everything is on fire*.
+    really really need this feature to be part of TAU Commander whatever the cost and oh God I broke it I broke it
+    and everything is on fire*.
 
 Table of Contents
 =================
@@ -55,6 +52,7 @@ Table of Contents
    design
    style
    documentation
+   pre-commit-hooks
    new_feature
    new_compiler
    unit_tests
@@ -77,7 +75,6 @@ Modules
 
 
 
-.. _the TAU Commander website: http://www.taucommander.com/
 .. _TAU Performance System: http://tau.uoregon.edu/
 .. _pylint: https://www.pylint.org/
 .. _Editor Config: https://editorconfig.org/#download

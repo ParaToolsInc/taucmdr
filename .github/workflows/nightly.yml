@@ -124,7 +124,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
           files: build/test-results/TEST-*.xml
-          flags: unittests,CI
+          flags: nightly
           name: test-results-nightly-${{ matrix.os }}-tinydb
 
       - name: Upload TinyDB test results
@@ -148,7 +148,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results
           files: build/test-results/TEST-*.xml
-          flags: unittests,CI
+          flags: nightly
           name: test-results-nightly-${{ matrix.os }}-sqlite
 
       - name: Upload SQLite test results
