@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,11 @@
 System-level records are globally readable and writable, depending on the user's
 system access level.  System-level is a good place for software package installations
 and some system-specific configurations, e.g. target or compiler configurations.
+The system level exists only when :any:`SYSTEM_PREFIX` is set.  A system prefix that doesn't
+exist is treated as an empty, read-only level until it is created.
 
 User-level records are readable and writable by (at least) the user.  User-level is also
-where software is installed when the user doesn't have write access to :any:`SYSTEM_PREFIX`.
+where software is installed when there is no system level or the user doesn't have write access to it.
 It's a good place for user-specific records, i.e. preferences or encrypted login credentials.
 
 Project-level records define the project and its member components.  The user may also
@@ -40,13 +42,14 @@ where :any:`USER_PREFIX` is not accessible from cluster compute nodes.
 """
 
 
-import os
+import contextlib
 from taucmdr import SYSTEM_PREFIX, USER_PREFIX
+from taucmdr.error import ConfigurationError
 from taucmdr.cf.storage import StorageError
 from taucmdr.cf.storage.storage_dispatch import StorageDispatch, ProjectStorageDispatch
 
-SYSTEM_STORAGE = StorageDispatch('system', SYSTEM_PREFIX)
-"""System-level data storage."""
+SYSTEM_STORAGE = StorageDispatch('system', SYSTEM_PREFIX, create_prefix=False) if SYSTEM_PREFIX else None
+"""System-level data storage, or None if there is no system level."""
 
 USER_STORAGE = StorageDispatch('user', USER_PREFIX)
 """User-level data storage."""
@@ -54,11 +57,39 @@ USER_STORAGE = StorageDispatch('user', USER_PREFIX)
 PROJECT_STORAGE = ProjectStorageDispatch()
 """Project-level data storage."""
 
-ORDERED_LEVELS = (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE)
+ORDERED_LEVELS = tuple(level for level in (PROJECT_STORAGE, USER_STORAGE, SYSTEM_STORAGE) if level is not None)
 """All storage levels in their preferred order."""
 
 STORAGE_LEVELS = {level.name: level for level in ORDERED_LEVELS}
 """All storage levels indexed by their names."""
+
+
+def require_system_storage():
+    """Return the system storage level.
+
+    Raises:
+        ConfigurationError: No system level exists.
+    """
+    if SYSTEM_STORAGE is None:
+        raise ConfigurationError(
+            "No system-level storage is configured.",
+            "Set the environment variable TAUCMDR_SYSTEM_PREFIX to a directory for shared TAU builds.")
+    return SYSTEM_STORAGE
+
+
+def writable_system_storage():
+    """Return the system storage level for a command, creating its prefix if needed.
+    Guarantees that a returned level is writable, or else raises an error.
+
+    Raises:
+        ConfigurationError: No system level exists, or it can't be written.
+    """
+    storage = require_system_storage()
+    storage.connect_filesystem()
+    if not storage.is_writable():
+        raise ConfigurationError(f"Cannot write to system-level storage in '{storage.prefix}'.",
+                                 "Check that you have `write` access, e.g. as a member of the group that owns it.")
+    return storage
 
 
 def highest_writable_storage():
@@ -80,3 +111,36 @@ def highest_writable_storage():
         else:
             raise StorageError("No writable storage levels") from err
         return highest_writable_storage.value
+
+
+def search_levels():
+    """Return the storage levels to search for installed software packages and their source archives.
+
+    This is :data:`ORDERED_LEVELS`, or only the level given to :any:`build_level` while that is active.
+    """
+    return getattr(search_levels, 'only', ORDERED_LEVELS)
+
+
+@contextlib.contextmanager
+def build_level(storage):
+    """Find, download and install software packages only in `storage` while the context is active.
+
+    Packages already installed at other levels are ignored, so everything the context builds ends up in `storage`.
+
+    Args:
+        storage: The storage level, e.g. :any:`SYSTEM_STORAGE`.
+    """
+    missing = object()
+    old_writable = getattr(highest_writable_storage, 'value', missing)
+    old_only = getattr(search_levels, 'only', missing)
+    highest_writable_storage.value = storage
+    search_levels.only = (storage,)
+    try:
+        yield storage
+    finally:
+        for func, attr, old in ((highest_writable_storage, 'value', old_writable),
+                                (search_levels, 'only', old_only)):
+            if old is missing:
+                delattr(func, attr)
+            else:
+                setattr(func, attr, old)

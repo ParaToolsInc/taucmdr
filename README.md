@@ -1,13 +1,13 @@
 TAU Commander
 =============
 
-[![GitHub license][License img]](./LICENSE)
+[![GitHub license][License img]](https://github.com/ParaToolsInc/taucmdr/blob/master/LICENSE)
 [![CI][CI img]](https://github.com/ParaToolsInc/taucmdr/actions)
 [![Coverage Status][Coverage img]](https://codecov.io/github/ParaToolsInc/taucmdr?branch=master)
 
 ![The TAU Commander performance engineering solution consists of an
 intuitive, client-side application and cloud-hosted data analysis,
-storage, and visualization services.](docs/_static/taucmdr.png)
+storage, and visualization services.](https://raw.githubusercontent.com/ParaToolsInc/taucmdr/master/docs/_static/taucmdr.png)
 
 TAU Commander from [ParaTools, Inc.](http://www.paratools.com/) is a
 production-grade performance engineering solution that makes
@@ -35,20 +35,19 @@ TAU Commander are:
 Getting Started
 ===============
 
-Install TAU Commander to the default location:
+Install a release version of TAU Commander with
+[uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
 
-  - `make install`
+  - `uv tool install taucmdr`
+  - or `pipx install taucmdr`
 
-Or, to install to a different location:
+To install a development version, check out this repo and give the path of
+the checkout instead: `uv tool install /path/to/taucmdr`.
 
-  - `make install INSTALLDIR=/path/to/installation`
+TAU Commander requires Python 3.11.4 or later.
 
-Add TAU Commander to your PATH:
-
-  - bash-like shells (nearly everyone):
-    - `export PATH=/path/to/taucmdr/bin:$PATH`
-  - csh-like shells (nearly everyone else):
-    - `set path=(/path/to/taucmdr/bin $path)`
+TAU and its dependencies are built on demand.
+For shared and offline installs, see [Installing TAU Commander](http://paratoolsinc.github.io/taucmdr/install.html).
 
 Initialize a new TAU project:
 
@@ -59,8 +58,9 @@ Need help?
 ==========
 
   - Add `--help` to any TAU Commander command line to see command line usage.
-  - Use `tau help` to view online documentation.  (Very incomplete at the moment.)
-  - Contact support@paratools.com with questions or feedback.
+  - The [command reference](http://paratoolsinc.github.io/taucmdr/cli/index.html)
+    describes every `tau` command.
+  - Contact <support@paratools.com> with questions or feedback.
 
 Developers
 ==========

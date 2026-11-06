@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,25 @@
 Functions used for unit tests of trial.py.
 """
 
-
+import warnings
+from datetime import datetime, timedelta, timezone
 from taucmdr import tests
+from taucmdr.model.trial import TrialController
 
 @tests.not_implemented
 class TrialTest(tests.TestCase):
     pass
+
+
+class TrialControllerTest(tests.TestCase):
+    """Tests for :any:`TrialController`."""
+
+    def test_mark_time(self):
+        """Trial timestamps are naive UTC times, as stored trial records have them."""
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            timestamp = TrialController._mark_time('BEGIN', {'name': 'expr1'})
+        parsed = datetime.fromisoformat(timestamp)
+        self.assertIsNone(parsed.tzinfo)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        self.assertLess(abs(now - parsed), timedelta(minutes=1))

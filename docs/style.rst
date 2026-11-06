@@ -57,7 +57,7 @@ The project's pylintrc file will enforce most of these rules.
 The exceptions to `Google Python Style`_ are:
 
 * Maximum line length is 120 characters.
-* Multiple imports per line are OK, e.g. ``from tau import logger, error, util``.
+* Multiple imports per line are OK, e.g. ``from taucmdr import logger, error, util``.
 * Exceptions should not be avoided.  Prefer `EAFP Style`_.
 * Complex list comprehensions are OK.
 
@@ -259,11 +259,11 @@ exceptions are:
 -  Default options for scripts.
 -  Module-level constants. For example: ``PI = 3.14159``. Constants
    should be named using all caps with underscores; see
-   `Naming <#Naming>`__ below.
+   `Naming <Naming_>`__ below.
 -  It is sometimes useful for globals to cache values needed or returned
    by functions.
 -  If needed, globals should be made internal to the module and accessed
-   through public module level functions; see `Naming <#Naming>`__
+   through public module level functions; see `Naming <Naming_>`__
    below.
 
 Nested/Local/Inner Classes and Functions
@@ -515,7 +515,7 @@ subclasses.
 **Decision:** Use properties in new code to access or set data where you
 would normally have used simple, lightweight accessor or setter methods.
 Read-only properties should be created with the ``@property``
-`decorator <#Function_and_Method_Decorators>`__.
+`decorator <Function and Method Decorators_>`__.
 
 Inheritance with properties can be non-obvious if the property itself is
 not overridden. Thus one must make sure that accessor methods are called
@@ -769,7 +769,7 @@ available when the decorator runs (at import time, perhaps from
 parameters should (as much as possible) be guaranteed to succeed in all
 cases.
 
-Decorators are a special case of "top level code" - see `main <#Main>`__
+Decorators are a special case of "top level code" - see `main <Main_>`__
 for more discussion.
 
 Threading
@@ -872,7 +872,7 @@ Within comments, put long URLs on their own line if necessary.
     # v2.0/csv_file_name_extension_full_specification.html
 
 Make note of the indentation of the elements in the line continuation
-examples above; see the `indentation <#Indentation>`__ section for
+examples above; see the `indentation <Indentation_>`__ section for
 explanation.
 
 Parentheses
@@ -918,7 +918,7 @@ Indent your code blocks with *4 spaces*.
 
 Never use tabs or mix tabs and spaces. In cases of implied line
 continuation, you should align wrapped elements either vertically, as
-per the examples in the `line length <#Line_length>`__ section; or using
+per the examples in the `line length <Line length_>`__ section; or using
 a hanging indent of 4 spaces, in which case there should be no argument
 on the first line.
 
@@ -1333,28 +1333,28 @@ Strings
 ~~~~~~~
 
 
-Use the ``format`` method or the ``%`` operator for formatting strings,
-even when the parameters are all strings. Use your best judgement to
-decide between ``+`` and ``%`` (or ``format``) though.
+Use f-strings to format strings, even when the parameters are all strings.
+Joining exactly two strings with ``+`` is fine too.  Log messages are the
+exception: pass the values as arguments with ``%`` placeholders, so the logger
+only formats messages it actually writes.
 
 **Yes:**
 
 ::
 
     x = a + b
-    x = '%s, %s!' % (imperative, expletive)
-    x = '{}, {}!'.format(imperative, expletive)
-    x = 'name: %s; score: %d' % (name, n)
-    x = 'name: {}; score: {}'.format(name, n)
+    x = f'{imperative}, {expletive}!'
+    x = f'name: {name}; score: {n}'
+    LOGGER.debug("'%s' has filetype %s", name, filetype)
 
 **No:**
 
 ::
 
-    x = '%s%s' % (a, b)  # use + in this case
-    x = '{}{}'.format(a, b)  # use + in this case
+    x = f'{a}{b}'  # use + in this case
     x = imperative + ', ' + expletive + '!'
     x = 'name: ' + name + '; score: ' + str(n)
+    LOGGER.debug(f"'{name}' has filetype {filetype}")
 
 Avoid using the ``+`` and ``+=`` operators to accumulate a string within
 a loop. Since strings are immutable, this creates unnecessary temporary
@@ -1368,7 +1368,7 @@ loop terminates (or, write each substring to a ``io.BytesIO`` buffer).
 
     items = ['<table>']
     for last_name, first_name in employee_list:
-        items.append('<tr><td>%s, %s</td></tr>' % (last_name, first_name))
+        items.append(f'<tr><td>{last_name}, {first_name}</td></tr>')
     items.append('</table>')
     employee_table = ''.join(items)
 
@@ -1378,7 +1378,7 @@ loop terminates (or, write each substring to a ``io.BytesIO`` buffer).
 
     employee_table = '<table>'
     for last_name, first_name in employee_list:
-        employee_table += '<tr><td>%s, %s</td></tr>' % (last_name, first_name)
+        employee_table += f'<tr><td>{last_name}, {first_name}</td></tr>'
     employee_table += '</table>'
 
 Be consistent with your choice of string quote character within a file.
@@ -1519,7 +1519,7 @@ E.g.:
 
     import os
     import sys
-    from tau import logger, error
+    from taucmdr import logger, error
 
 **No:**
 
@@ -1673,4 +1673,4 @@ operations that should not be executed when the file is being
 .. _docstrings: https://www.python.org/dev/peps/pep-0257/
 .. _Sphinx: http://sphinx-doc.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
-.. _EAFP Style: <http://stackoverflow.com/a/11360880/403516>
+.. _EAFP Style: http://stackoverflow.com/a/11360880/403516

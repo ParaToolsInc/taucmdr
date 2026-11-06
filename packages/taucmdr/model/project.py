@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -127,8 +127,7 @@ class ProjectController(Controller):
                 raise KeyError
         except KeyError as err:
             raise ProjectSelectionError("No project selected") from err
-        else:
-            return selected
+        return selected
 
 
 class Project(Model):

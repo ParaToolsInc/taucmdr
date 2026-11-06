@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,20 @@
 Functions used for unit tests of create.py.
 """
 
+import functools
 import os
+import re
+import subprocess
+import sys
 import tempfile
+from unittest import mock
 from taucmdr import tests
-from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cf.compiler.host import CC, NVHPC
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.trial.list import COMMAND as trial_list_cmd
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
+from taucmdr.cli.commands.application.create import COMMAND as application_create_cmd
 from taucmdr.cli.commands.measurement.create import COMMAND as measurement_create_cmd
 from taucmdr.cli.commands.measurement.edit import COMMAND as measurement_edit_cmd
 from taucmdr.cli.commands.experiment.create import COMMAND as experiment_create_cmd
@@ -44,10 +50,24 @@ from taucmdr.cli.commands.experiment.select import COMMAND as experiment_select_
 from taucmdr.model.project import Project
 from taucmdr import util
 
+
+@functools.cache
+def _older_python():
+    """Return the path of a Python 3 older than this one that has its C headers, or None."""
+    check = ('import os, sysconfig; '
+             'print(os.path.exists(os.path.join(sysconfig.get_path("include"), "Python.h")))')
+    for minor in range(sys.version_info[1] - 1, 7, -1):
+        path = util.which(f'python3.{minor}')
+        if path:
+            proc = subprocess.run([path, '-c', check], stdout=subprocess.PIPE, text=True, check=False)
+            if proc.stdout.strip() == 'True':
+                return path
+    return None
+
+
 class CreateTest(tests.TestCase):
     """Tests for :any:`trial.create`."""
 
-    @tests.skipIf(HOST_ARCH.is_bluegene(), "Test skipped on BlueGene")
     def test_create(self):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
@@ -68,6 +88,7 @@ class CreateTest(tests.TestCase):
         stdout, _ = self.assertCommandReturnValue(0, trial_create_cmd, ['--help'])
         self.assertIn('Show this help message and exit', stdout)
 
+    @tests.skipIf(HOST_OS is DARWIN, "PAPI isn't built on Darwin")
     def test_no_time_metric(self):
         self.reset_project_storage()
         argv = ['meas_no_time', '--metrics', 'PAPI_L2_DCM', '--source-inst', 'never']
@@ -80,7 +101,23 @@ class CreateTest(tests.TestCase):
         self.assertIn("TAU_METRICS=TIME,", stdout)
         self.assertFalse(stderr)
 
-    @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
+    @tests.skipIf(HOST_OS is DARWIN, "Apple clang has no OpenMP")
+    def test_run_ompt(self):
+        self.reset_project_storage()
+        self.assertCommandReturnValue(0, application_create_cmd, ['app_ompt', '--openmp', 'T'])
+        # With OMPT, TAU's event-based sampling segfaults at exit in about half of runs.
+        argv = ['meas_ompt', '--openmp', 'ompt', '--source-inst', 'never', '--sample', 'F']
+        self.assertCommandReturnValue(0, measurement_create_cmd, argv)
+        argv = ['exp_ompt', '--target', 'targ1', '--application', 'app_ompt', '--measurement', 'meas_ompt']
+        self.assertCommandReturnValue(0, experiment_create_cmd, argv)
+        self.assertCommandReturnValue(0, experiment_select_cmd, ['exp_ompt'])
+        self.assertManagedBuild(0, CC, ['-fopenmp'], 'matmult.c')
+        with mock.patch.dict(os.environ, {'OMP_NUM_THREADS': '2'}):
+            stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn("Trial 0 produced 2 profile files", stdout)
+        self.assertFalse(stderr)
+
+    @tests.skipIf(HOST_OS is DARWIN, "Memory allocation measurement isn't supported on Darwin")
     def test_heap_usage_memory_alloc_sample(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
@@ -111,6 +148,7 @@ class CreateTest(tests.TestCase):
         #self.assertInLastTrialData("Heap Allocate")
         #self.assertInLastTrialData("malloc")
 
+    @tests.skipIf(HOST_OS is DARWIN, "Memory allocation measurement isn't supported on Darwin")
     def test_heap_usage_memory_alloc_profile(self):
         """https://github.com/ParaToolsInc/taucmdr/issues/14"""
         self.reset_project_storage()
@@ -184,7 +222,46 @@ class CreateTest(tests.TestCase):
     def test_sample_resolution_line(self):
         self.sample_resolution_helper('line')
 
-    @tests.skipIf(HOST_OS is DARWIN, "Sampling not supported on Darwin")
+    def test_io_tau_exec(self):
+        """POSIX I/O calls are counted when the application runs under tau_exec."""
+        self.reset_project_storage()
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['io', '--source-inst', 'never', '--compiler-inst', 'never',
+                                       '--sample', 'False', '--io'])
+        self.assertCommandReturnValue(0, select_cmd, ['io'])
+        self.assertManagedBuild(0, CC, [], 'io.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn('Trial 0 produced 1 profile files', stdout)
+        self.assertRegex(stdout, r'tau_exec .*-io')
+        self.assertFalse(stderr)
+        profile_dir = Project.selected().experiment().trials()[0].get_data_files()['tau']
+        with open(os.path.join(profile_dir, 'profile.0.0.0'), encoding='utf-8') as fin:
+            profile = fin.read()
+        # TAU pads I/O event names with trailing spaces.
+        for event, calls in ('open()', 10), ('write()', 5), ('read()', 5), ('close()', 10):
+            self.assertRegex(profile, rf'(?m)^"{re.escape(event)}\s*" {calls} ')
+
+    def test_select_file_runtime(self):
+        """A select file's wildcard exclusions apply at run time to a dynamically linked application."""
+        self.reset_project_storage()
+        # GNU's exclude list and clang without TAU's LLVM plugin drop wildcard entries, so TAU applies this
+        # one at run time.
+        with open('select.tau', 'w', encoding='utf-8') as fout:
+            fout.write('BEGIN_EXCLUDE_LIST\ncompute_interchange#\nEND_EXCLUDE_LIST\n')
+        self.assertCommandReturnValue(0, measurement_create_cmd,
+                                      ['compinst-select', '--source-inst', 'never', '--compiler-inst', 'always',
+                                       '--sample', 'False', '--select-file', 'select.tau'])
+        self.assertCommandReturnValue(0, select_cmd, ['compinst-select'])
+        self.assertManagedBuild(0, CC, [], 'matmult.c')
+        stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, ['./a.out'])
+        self.assertIn('Trial 0 produced 1 profile files', stdout)
+        self.assertFalse(stderr)
+        profile_dir = Project.selected().experiment().trials()[0].get_data_files()['tau']
+        with open(os.path.join(profile_dir, 'profile.0.0.0'), encoding='utf-8') as fin:
+            names = [line.split('"')[1] for line in fin if line.startswith('"')]
+        self.assertTrue(any(name.startswith('compute [') for name in names), names)
+        self.assertFalse(any(name.startswith('compute_interchange') for name in names), names)
+
     def test_system_load_sample(self):
         """Test TAU_TRACK_LOAD w/ sampling"""
         self.reset_project_storage()
@@ -212,6 +289,7 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         self.assertManagedBuild(0, CC, [], 'hello.c')
         test_dir = os.getcwd()
+        self.addCleanup(os.chdir, test_dir)
         with tempfile.TemporaryDirectory() as path:
             os.chdir(path)
             stdout, stderr = self.assertCommandReturnValue(0, trial_create_cmd, [test_dir+'/a.out', '--tau-dir', test_dir])
@@ -220,7 +298,6 @@ class CreateTest(tests.TestCase):
             self.assertIn('Trial 0 produced', stdout)
             self.assertIn('profile files', stdout)
             self.assertFalse(stderr)
-            os.chdir(test_dir)
 
     def test_description(self):
         """Test --description option"""
@@ -230,7 +307,7 @@ class CreateTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(0, trial_list_cmd, [])
         self.assertIn('test desc', stdout)
 
-    @tests.skipUnless(util.which('python'), "Python 2 or 3 required for this test")
+    @tests.skipUnless(util.which('python'), "Python 3 required for this test")
     def test_run_python(self):
         self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python'])
         self.copy_testfile('firstprime.py')
@@ -241,20 +318,6 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         self.assertRegex(stdout, '-tau-python-interpreter=/.*/python[23]?(\r\n?|\n| )')
-        self.assertFalse(stderr)
-        self.assertInLastTrialData("first_prime_after")
-
-    @tests.skipUnless(util.which('python2'), "Python 2 required for this test")
-    def test_run_python2(self):
-        self.reset_project_storage(['--python', 'T', '--python-interpreter', 'python2'])
-        self.copy_testfile('firstprime.py')
-        test_dir = os.getcwd()
-        stdout, stderr = self.assertCommandReturnValue(
-            0, trial_create_cmd, ['python2', os.path.join(test_dir, 'firstprime.py')]
-        )
-        self.assertIn('Trial 0 produced', stdout)
-        self.assertIn('profile files', stdout)
-        # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 
@@ -269,6 +332,21 @@ class CreateTest(tests.TestCase):
         self.assertIn('Trial 0 produced', stdout)
         self.assertIn('profile files', stdout)
         # self.assertRegex(stdout, '-tau-python-interpreter=/.*/python3')
+        self.assertFalse(stderr)
+        self.assertInLastTrialData("first_prime_after")
+
+    @tests.skipUnless(_older_python(), "An older Python 3 with C headers is required for this test")
+    def test_run_older_python(self):
+        """A Python application runs under an older Python than the one running TAU Commander."""
+        interpreter = _older_python()
+        # An active conda environment holding a different Python must not change which Python TAU is built for.
+        with mock.patch.dict(os.environ, {'CONDA_PREFIX': sys.base_prefix}):
+            self.reset_project_storage(['--python', 'T', '--python-interpreter', interpreter])
+            self.copy_testfile('firstprime.py')
+            stdout, stderr = self.assertCommandReturnValue(
+                0, trial_create_cmd, [interpreter, os.path.join(os.getcwd(), 'firstprime.py')]
+            )
+        self.assertIn('Trial 0 produced', stdout)
         self.assertFalse(stderr)
         self.assertInLastTrialData("first_prime_after")
 

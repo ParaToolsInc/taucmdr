@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018, ParaTools, Inc.
+# Copyright (c) 2018-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -77,8 +77,8 @@ class TrialRenumberCommand(AbstractCommand):
             self.parser.error("Invalid number of trials."
                               " Number of old trials ids should be equal to number of new trial ids.")
 
-        self.logger.info("Renumbering " + ', '.join(
-            [f'{i} => {j}' for (i, j) in zip(trial_numbers, new_trial_numbers)]))
+        self.logger.info("Renumbering %s", ', '.join(
+            f'{i} => {j}' for (i, j) in zip(trial_numbers, new_trial_numbers)))
         proj_ctrl = Project.controller()
         trial_ctrl = Trial.controller(proj_ctrl.storage)
         expr = Project.selected().experiment()

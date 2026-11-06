@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ import glob
 import errno
 import base64
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 import shutil
 
@@ -133,38 +133,11 @@ class TrialController(Controller):
 
     @staticmethod
     def _mark_time(mark, expr):
-        timestamp = str(datetime.utcnow())
+        # Trial records store naive UTC timestamps, and experiments compare them as strings.
+        timestamp = str(datetime.now(timezone.utc).replace(tzinfo=None))
         headline = '\n{:=<{}}\n'.format('== {} {} at {} =='.format(mark, expr['name'], timestamp), logger.LINE_WIDTH)
         LOGGER.info(headline)
         return timestamp
-
-    def _perform_bluegene(self, expr, trial, cmd, cwd, env):
-        if os.path.basename(cmd[0]) != 'qsub':
-            raise TrialError("At the moment, TAU Commander requires qsub to launch on BlueGene")
-        # Move TAU environment parameters to the command line
-        env_parts = {}
-        for key, val in env.items():
-            if key not in os.environ:
-                env_parts[key] = val.replace(":", r"\:").replace("=", r"\=")
-        env_str = ':'.join(['%s=%s' % item for item in env_parts.items()])
-        cmd = [util.which('tau_exec') if c == 'tau_exec' else c for c in cmd]
-        cmd = [cmd[0], '--env', '"%s"' % env_str] + cmd[1:]
-        env = dict(os.environ)
-        try:
-            self.update({'phase': 'executing'}, trial.eid)
-            retval = trial.queue_command(expr, cmd, cwd, env)
-        except:
-            self.delete(trial.eid)
-            raise
-        if retval != 0:
-            raise TrialError("Failed to add job to the queue.",
-                             "Verify that the right input parameters were specified.",
-                             "Check the program output for error messages.",
-                             "Does the selected application configuration correctly describe this program?",
-                             "Does the selected measurement configuration specify the right measurement methods?",
-                             "Does the selected target configuration match the runtime environment?")
-        LOGGER.info("The job has been added to the queue.")
-        return retval
 
     def _perform_interactive(self, expr, trial, cmd, cwd, env, record_output=False):
         begin_time = self._mark_time('BEGIN', expr)
@@ -239,19 +212,15 @@ class TrialController(Controller):
         if measurement['trace'] == 'otf2' or measurement['profile'] == 'cubex':
             env['SCOREP_EXPERIMENT_DIRECTORY'] = trial.prefix
         b64env = base64.standard_b64encode(repr(env).encode()).decode()
-        is_bluegene = expr.populate('target').architecture().is_bluegene()
         is_cray_login = expr.populate('target').operating_system().is_cray_login()
         if is_cray_login:
             LOGGER.warning('Running on a Cray head node. This may produce incorrect results. '
                            'Try running on a compute node.')
         try:
-            if is_bluegene:
-                retval = self._perform_bluegene(expr, trial, cmd, cwd, env)
+            if record_output:
+                retval, _ = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
             else:
-                if record_output:
-                    retval, _ = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
-                else:
-                    retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
+                retval = self._perform_interactive(expr, trial, cmd, cwd, env, record_output)
         except Exception as err:
             try:
                 self.update({'phase': 'failed', 'environment': b64env}, trial.eid)
@@ -259,9 +228,8 @@ class TrialController(Controller):
                 # Trial record was deleted
                 pass
             raise err
-        else:
-            self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
-            return retval
+        self.update({'phase': 'completed', 'environment': b64env}, trial.eid)
+        return retval
 
     def renumber(self, old_trials, new_trials):
         """Renumbers trial id of an experiment.
@@ -275,7 +243,7 @@ class TrialController(Controller):
         expr = Project.selected().experiment()
         existing_nums = [trial['number'] for trial in
                          Trial.controller(storage=PROJECT_STORAGE).search({'experiment': expr.eid})]
-        start_temp_id = max(max(existing_nums), max(new_trials)) + 1
+        start_temp_id = max([*existing_nums, *new_trials]) + 1
         temp_id = start_temp_id
         for old_trial_num in old_trials:
             old_trial = self.one({'number': old_trial_num, 'experiment': expr.eid})
@@ -380,24 +348,23 @@ class Trial(Model):
             return launcher_cmd, []
         if num_exes <= 1:
             return launcher_cmd, [cmd]
-        if num_exes > 1:
-            colons = [i for i, x in enumerate(cmd) if x == ':']
-            if not colons:
-                # Recognized launcher with multiple executables but not using ':' syntax.
-                LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
-                               "the application executable is '%s' and subsequent executables are arguments "
-                               "to that command. If this is incorrect, use ':' to separate each application "
-                               "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`. "
-                               "Or, use '--' to separate '%s', its arguments, and subsequent executables "
-                               "from the application command, e.g. "
-                               "`mpirun -np 4 numactl -m 1 -- ./a.out -l hello", cmd0, cmd0)
-                return launcher_cmd, [cmd]
-            # Split MPMD command on ':'.  Retain ':' as first element of each application command
-            colons.append(len(cmd))
-            application_cmds = [cmd[:colons[0]]]
-            for i, idx in enumerate(colons[:-1]):
-                application_cmds.append(cmd[idx:colons[i+1]])
-            return launcher_cmd, application_cmds
+        colons = [i for i, x in enumerate(cmd) if x == ':']
+        if not colons:
+            # Recognized launcher with multiple executables but not using ':' syntax.
+            LOGGER.warning("Multiple executables were found on the command line.  TAU will assume that "
+                           "the application executable is '%s' and subsequent executables are arguments "
+                           "to that command. If this is incorrect, use ':' to separate each application "
+                           "executable and its arguments, e.g. `mpirun -np 4 ./foo -l : -np 2 ./bar arg1`. "
+                           "Or, use '--' to separate '%s', its arguments, and subsequent executables "
+                           "from the application command, e.g. "
+                           "`mpirun -np 4 numactl -m 1 -- ./a.out -l hello", cmd0, cmd0)
+            return launcher_cmd, [cmd]
+        # Split MPMD command on ':'.  Retain ':' as first element of each application command
+        colons.append(len(cmd))
+        application_cmds = [cmd[:colons[0]]]
+        for i, idx in enumerate(colons[:-1]):
+            application_cmds.append(cmd[idx:colons[i+1]])
+        return launcher_cmd, application_cmds
 
     @property
     def prefix(self):
@@ -492,40 +459,6 @@ class Trial(Model):
             raise InternalError("Unhandled trace format '%s'" % trace_fmt)
         return data
 
-    def queue_command(self, expr, cmd, cwd, env):
-        """Execute a command as part of an experiment trial.
-
-        Creates a new subprocess for the command and checks for TAU data files
-        when the subprocess exits.
-
-        Args:
-            expr (Experiment): Experiment data.
-            cmd (str): Command to profile, with command line arguments.
-            cwd (str): Working directory to perform trial in.
-            env (dict): Environment variables to set before performing the trial.
-
-        Returns:
-            int: Subprocess return code.
-        """
-        cmd_str = ' '.join(cmd)
-        tau_env_opts = sorted(f'{key}={val}' for key, val in env.items()
-                              if (key.startswith('TAU_') or
-                                  key.startswith('SCOREP_') or
-                                  key in ('PROFILEDIR', 'TRACEDIR')))
-        LOGGER.info('\n'.join(tau_env_opts))
-        LOGGER.info(cmd_str)
-        try:
-            retval = util.create_subprocess(cmd, cwd=cwd, env=env, log=False)
-        except OSError as err:
-            target = expr.populate('target')
-            errno_hint = {errno.EPERM: "Check filesystem permissions",
-                          errno.ENOENT: "Check paths and command line arguments",
-                          errno.ENOEXEC: "Check that this host supports '%s'" % target['host_arch']}
-            raise TrialError(f"Couldn't execute {cmd_str}: {err}", errno_hint.get(err.errno, None)) from err
-        if retval:
-            LOGGER.warning("Return code %d from '%s'", retval, cmd_str)
-        return retval
-
     def execute_command(self, expr, cmd, cwd, env, record_output=False):
         """Execute a command as part of an experiment trial.
 
@@ -584,7 +517,7 @@ class Trial(Model):
                         LOGGER.info("Renaming %s to %s", fname, new_name)
                         os.rename(fname, new_name)
                     else:
-                        raise ConfigurationError("The profile numbers for trial %d cannot be corrected.",
+                        raise ConfigurationError(f"The profile numbers for trial {self['number']} cannot be corrected.",
                                                  "Check that the application configuration is correct.",
                                                  "Check that the measurement configuration is correct.",
                                                  "Check for instrumentation failure in the compilation log.")

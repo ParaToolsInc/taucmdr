@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,15 @@ from taucmdr.model.measurement import Measurement
 from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.measurement.create import COMMAND as CREATE_COMMAND
 from taucmdr.cli.commands.measurement.edit import COMMAND as EDIT_COMMAND
+
+METRICS_CASES = (
+    ('comma', ['--metrics', 'TIME,PAPI_TOT_CYC'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('comma_equals', ['--metrics=TIME,PAPI_TOT_CYC'], ['TIME', 'PAPI_TOT_CYC'], False),
+    ('mixed', ['--metrics', 'TIME,PAPI_L1_DCM', 'PAPI_TOT_CYC'], ['TIME', 'PAPI_L1_DCM', 'PAPI_TOT_CYC'], False),
+    ('time_absent', ['--metrics', 'PAPI_TOT_CYC,PAPI_L1_DCM'], ['TIME', 'PAPI_TOT_CYC', 'PAPI_L1_DCM'], True),
+)
+TIME_WARNING = "'TIME' must always be present"
+
 
 class EditTest(tests.TestCase):
     """Tests for :any:`measurement.edit`."""
@@ -173,3 +182,15 @@ class EditTest(tests.TestCase):
         self.assertIsNotNone(meas)
         self.assertNotIn('extra_tau_options', meas)
         self.assertNotIn('force_tau_options', meas)
+
+    def test_metrics_forms(self):
+        for label, flags, expected, warns in METRICS_CASES:
+            with self.subTest(label):
+                self.reset_project_storage()
+                name = 'meas_' + label
+                self.assertCommandReturnValue(0, CREATE_COMMAND, [name])
+                stdout, stderr = self.assertCommandReturnValue(0, EDIT_COMMAND, [name] + flags)
+                self.assertFalse(stderr)
+                self.assertEqual(TIME_WARNING in stdout, warns)
+                meas = Measurement.controller(PROJECT_STORAGE).one({'name': name})
+                self.assertEqual(meas['metrics'], expected)

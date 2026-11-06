@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import os
 import json
 import re
 import sqlite3
+import urllib.parse
 from taucmdr import logger, util
 from taucmdr.cf.storage.local_file import LocalFileStorage
 from taucmdr.cf.storage import StorageRecord, StorageError
@@ -93,9 +94,10 @@ class SQLiteDatabase:
         dbfile (str): Path to database file
     """
 
-    def __init__(self, dbfile, storage=None):
+    def __init__(self, dbfile, storage=None, readonly=False):
         self.dbfile = dbfile
         self.storage = storage
+        self.readonly = readonly
         self._connection = None
         self._transaction_level = 0
 
@@ -106,8 +108,14 @@ class SQLiteDatabase:
 
         def execute(self, sql, parameters=(), log=True):
             if log:
-                _heavy_debug(f"{self._dbfile}: Executing `{sql}` with parameters {parameters}")
-            return self._cursor.execute(sql, parameters)
+                _heavy_debug("%s: Executing `%s` with parameters %s", self._dbfile, sql, parameters)
+            try:
+                return self._cursor.execute(sql, parameters)
+            except sqlite3.OperationalError as err:
+                if 'readonly' in str(err):
+                    raise StorageError(f"Cannot write to '{self._dbfile}': {err}",
+                                       "Check that you have `write` access.") from err
+                raise
 
         def fetchone(self):
             return self._cursor.fetchone()
@@ -129,8 +137,21 @@ class SQLiteDatabase:
             # check_same_thread = False allows connection to be used from a different thread than the one that
             # created it, but note that the connection may not be used from multiple threads at the same time.
             # See https://stackoverflow.com/questions/24374242/python-sqlite-how-to-manually-begin-and-end-transactions
-            self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
-            LOGGER.debug(f"Connected to SQLite database at {self.dbfile}")
+            if self.readonly:
+                # A read-only file can lack tables that would be implicitly created by reading them; open a copy
+                # in memory so they can be created without having to write to the file
+                self._connection = sqlite3.connect(':memory:', isolation_level=None, check_same_thread=False)
+                if os.path.exists(self.dbfile):
+                    uri = f"file:{urllib.parse.quote(self.dbfile)}?mode=ro"
+                    source = sqlite3.connect(uri, uri=True)
+                    try:
+                        source.backup(self._connection)
+                    finally:
+                        source.close()
+                LOGGER.debug("Opened SQLite database at %s read-only", self.dbfile)
+            else:
+                self._connection = sqlite3.connect(self.dbfile, isolation_level=None, check_same_thread=False)
+                LOGGER.debug("Connected to SQLite database at %s", self.dbfile)
 
     def close(self):
         """Close the database connection"""
@@ -144,18 +165,23 @@ class SQLiteDatabase:
             raise SQLiteStorageError('Database connection is not open')
         return self._LoggingCursor(self.dbfile, self._connection.cursor())
 
+    def check_writable(self):
+        """Raise :any:`StorageError` if the database is read-only."""
+        if self.readonly:
+            raise StorageError(f"Cannot write to '{self.dbfile}'", "Check that you have `write` access.")
+
     def start_transaction(self):
-        """Begin a transaction, which can be reverted with :any:`_SQLiteDatabase.revert_transaction`
-        or committed with :any:`_SQLiteDatabase.commit_transaction`.
+        """Begin a transaction, which can be reverted with :any:`SQLiteDatabase.revert_transaction`
+        or committed with :any:`SQLiteDatabase.commit_transaction`.
         """
         self.cursor().execute('BEGIN EXCLUSIVE TRANSACTION;')
 
     def revert_transaction(self):
-        """Revert a transaction previously started with :any:`_SQLiteDatabase.start_transaction` """
+        """Revert a transaction previously started with :any:`SQLiteDatabase.start_transaction` """
         self.cursor().execute('ROLLBACK;')
 
     def commit_transaction(self):
-        """Commit a transaction previously started with :any:`_SQLiteDatabase.start_transaction` """
+        """Commit a transaction previously started with :any:`SQLiteDatabase.start_transaction` """
         self.cursor().execute('END TRANSACTION;')
 
     def tables(self):
@@ -225,6 +251,7 @@ class _SQLiteJsonTable:
         cursor.close()
 
     def insert(self, element):
+        self.database.check_writable()
         cursor = self.database.cursor()
         cursor.execute(f"INSERT INTO {self.name} (data) VALUES(?)", [json.dumps(element)])
         result = _SQLiteJsonRecord(self.database.storage, element, eid=cursor.lastrowid)
@@ -245,6 +272,8 @@ class _SQLiteJsonTable:
     def _get(self, keys=None, eid=None, match_any=False, remove=False):
         db_row = None
         result = None
+        if remove:
+            self.database.check_writable()
         cursor = self.database.cursor()
         command = 'DELETE' if remove else 'SELECT id, data'
 
@@ -306,6 +335,7 @@ class _SQLiteJsonTable:
             match_any (bool): If True, match records satisfying any key (OR); otherwise AND.
             unset (bool): If True, remove the named fields instead of setting them.
         """
+        self.database.check_writable()
         # Construct the json_set expression
         if not fields:
             # We were asked to update no fields, which is a no-op
@@ -357,6 +387,7 @@ class _SQLiteJsonTable:
         return result
 
     def purge(self):
+        self.database.check_writable()
         cursor = self.database.cursor()
         cursor.execute(f'DROP TABLE IF EXISTS {self.name};')
         cursor.close()
@@ -367,19 +398,17 @@ class SQLiteLocalFileStorage(LocalFileStorage):
     """A persistent, transactional record storage system.
 
     Uses :py:class:`sqlite3` for both the database and the key/value store.
-
-    Attributes:
-        dbfile (str): Absolute path to database file.
     """
 
     Record = _SQLiteJsonRecord
 
-    def __init__(self, name, prefix):
-        super().__init__(name, prefix)
+    def __init__(self, name, prefix, create_prefix=True):
+        super().__init__(name, prefix, create_prefix)
         self._database = None
 
     @property
     def dbfile(self):
+        """str: Absolute path to the database file."""
         return os.path.join(self.prefix, self.name + '.sqlite3')
 
     def database_exists(self):
@@ -388,18 +417,24 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         except StorageError:
             return False
 
+    def _database_writable(self):
+        if os.path.exists(self.dbfile):
+            return os.access(self.dbfile, os.W_OK) and os.access(self.prefix, os.W_OK)
+        return os.path.isdir(self.prefix) and os.access(self.prefix, os.W_OK)
+
     def connect_database(self, *args, **kwargs):
-        """Open the database for reading and writing."""
+        """Open the database for reading and writing, or only for reading if it can't be written."""
 
         if self._database is None:
-            util.mkdirp(self.prefix)
+            self._make_prefix()
             try:
-                self._database = SQLiteDatabase(self.dbfile, storage=self)
+                self._database = SQLiteDatabase(self.dbfile, storage=self, readonly=not self._database_writable())
                 self._database.open()
-            except OSError as err:
+            except (OSError, sqlite3.Error) as err:
+                self._database = None
                 raise StorageError(f"Failed to access {self.name} database '{self.dbfile}': {err}",
                                    "Check that you have `write` access") from err
-            if not util.path_accessible(self.dbfile):
+            if os.path.exists(self.dbfile) and not util.path_accessible(self.dbfile):
                 raise StorageError("Database file '%s' exists but cannot be read." % self.dbfile,
                                    "Check that you have `read` access")
             LOGGER.debug("Initialized connection to SQLite database `%s` at '%s'", self.name, self.dbfile)
@@ -446,7 +481,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """Count the records in the database.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
             int: Number of records in the table.
@@ -464,7 +499,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -479,14 +514,13 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         table = self.table(table_name)
         if keys is None:
             return None
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             return table.get(eid=keys)
-        elif isinstance(keys, dict):
+        if isinstance(keys, dict):
             return table.get(keys=keys, match_any=match_any)
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             return [self.get(key, table_name=table_name, match_any=match_any) for key in keys]
-        else:
-            raise ValueError(keys)
+        raise ValueError(keys)
 
     def search(self, keys=None, table_name=None, match_any=False):
         """Find multiple records.
@@ -499,7 +533,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -512,29 +546,28 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         table = self.table(table_name)
         if keys is None:
             return table.search(cond=None)
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             element = table.get(eid=keys)
             return [element] if element else []
-        elif isinstance(keys, dict):
+        if isinstance(keys, dict):
             return table.search(keys, match_any=match_any)
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             result = []
             for key in keys:
                 result.extend(self.search(keys=key, table_name=table_name, match_any=match_any))
             return result
-        else:
-            raise ValueError(keys)
+        raise ValueError(keys)
 
     def match(self, field, table_name=None, regex=None, test=None):
         """Find records where `field` matches `regex` or `test`.
 
         Either `regex` or `test` may be specified, not both.
         If `regex` is given, then all records with `field` matching the regular expression are returned.
-        If test is given then all records with `field` set to a value that caues `test` to return True are returned.
+        If test is given then all records with `field` set to a value that causes `test` to return True are returned.
         If neither is given, return all records where `field` is set to any value.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             field (string): Name of the data field to match.
             regex (string): Regular expression string.
             test: Callable returning a boolean value.
@@ -553,13 +586,12 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         possible_records = self.table(table_name).exists(field)
         if test is not None and regex is not None:
             raise ValueError('At most one of "test" and "regex" can be provided')
-        elif test is not None:
+        if test is not None:
             return [record for record in possible_records if test(record[field])]
-        elif regex is not None:
+        if regex is not None:
             pattern = re.compile(regex)
             return [record for record in possible_records if pattern.match(record[field])]
-        else:
-            return possible_records
+        return possible_records
 
     def contains(self, keys, table_name=None, match_any=False):
         """Check if the specified table contains at least one matching record.
@@ -572,7 +604,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -584,15 +616,13 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """
         if keys is None:
             return False
-        elif isinstance(keys, dict):
+        if isinstance(keys, dict):
             return self.table(table_name).count(keys, match_any=match_any) > 0
-        elif isinstance(keys, (list, tuple)):
+        if isinstance(keys, (list, tuple)):
             return [self.contains(keys=key, table_name=table_name, match_any=match_any) for key in keys]
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             return self.get(keys, table_name=table_name, match_any=match_any) is not None
-        else:
-            raise ValueError(
-                f'"keys" must be dict, list, tuple, or {self.Record.eid_type}, but was {type(keys)}')
+        raise ValueError(f'"keys" must be dict, list, tuple, or {self.Record.eid_type}, but was {type(keys)}')
 
     def insert(self, data, table_name=None):
         """Create a new record.
@@ -601,7 +631,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             data (dict): Data to insert in table.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
             Record: The new record.
@@ -619,7 +649,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         Args:
             fields (dict): Data to record.
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -651,7 +681,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         Args:
             fields (list): Names of fields to remove from matching records.
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -676,7 +706,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
 
         Args:
             keys: Fields or element identifiers to match.
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
             match_any (bool): Only applies if `keys` is a dictionary.  If True then any key
                               in `keys` may match or if False then all keys in `keys` must match.
 
@@ -686,7 +716,7 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         table = self.table(table_name)
         if keys is None:
             return
-        elif isinstance(keys, self.Record.eid_type):
+        if isinstance(keys, self.Record.eid_type):
             table.remove(eid=keys)
         elif isinstance(keys, dict):
             table.remove(keys=keys, match_any=match_any)
@@ -701,6 +731,6 @@ class SQLiteLocalFileStorage(LocalFileStorage):
         """Delete all records.
 
         Args:
-            table_name (str): Name of the table to operate on.  See :any:`AbstractDatabase.table`.
+            table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
         """
         self.table(table_name).purge()

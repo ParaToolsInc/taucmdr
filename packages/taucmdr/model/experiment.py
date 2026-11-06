@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -130,15 +130,6 @@ class ExperimentController(Controller):
         """Default match_any to False to prevent matches outside the selected project."""
         return super()._check_unique(data, match_any)
 
-    def create(self, data):
-        return super().create(data)
-
-    def update(self, data, keys):
-        return super().update(data, keys)
-
-    def unset(self, fields, keys):
-        return super().unset(fields, keys)
-
     def delete(self, keys):
         return super().delete(keys)
 
@@ -237,9 +228,9 @@ class Experiment(Model):
         self.verify()
         try:
             util.mkdirp(self.prefix)
-        except:
+        except OSError as err:
             raise ConfigurationError('Cannot create directory %r' % self.prefix,
-                                     'Check that you have `write` access')
+                                     'Check that you have `write` access') from err
 
     def on_delete(self):
         try:
@@ -249,7 +240,7 @@ class Experiment(Model):
                 LOGGER.error("Could not remove experiment data at '%s': %s", self.prefix, err)
 
     def data_size(self):
-        return sum([int(trial.get('data_size', 0)) for trial in self.populate('trials')])
+        return sum(int(trial.get('data_size', 0)) for trial in self.populate('trials'))
 
     def next_trial_number(self):
         trials = self.populate(attribute='trials', defaults=True)
@@ -258,7 +249,6 @@ class Experiment(Model):
                 return i
         return len(trials)
 
-    @fasteners.interprocess_locked(os.path.join(highest_writable_storage().prefix, '.lock'))
     def configure(self):
         """Sets up the Experiment for a new trial.
 
@@ -268,6 +258,11 @@ class Experiment(Model):
         Returns:
             TauInstallation: Object handle for the TAU installation.
         """
+        # The lock goes where packages are installed, which is decided at the time of the call.
+        with fasteners.InterProcessLock(os.path.join(highest_writable_storage().prefix, '.lock')):
+            return self._configure()
+
+    def _configure(self):
         from taucmdr.cf.software.tau_installation import TauInstallation
         LOGGER.debug("Configuring experiment %s", self['name'])
         with fasteners.InterProcessLock(os.path.join(PROJECT_STORAGE.prefix, '.lock')):
@@ -299,7 +294,6 @@ class Experiment(Model):
             shmem_support=application.get_or_default('shmem'),
             shmem_libraries=target.get('shmem_libraries', []),
             mpc_support=application.get_or_default('mpc'),
-            max_threads=application.get('max_threads', None),
             uses_python=application.get_or_default('python'),
             # Instrumentation methods and options
             source_inst=measurement.get_or_default('source_inst'),
@@ -370,7 +364,7 @@ class Experiment(Model):
         LOGGER.debug("Managed build: %s", [compiler_cmd] + compiler_args)
         target = self.populate('target')
         application = self.populate('application')
-        target_compilers = target.check_compiler(compiler_cmd, compiler_args)
+        target_compilers = target.check_compiler(compiler_cmd)
         try:
             found_compiler = application.check_compiler(target_compilers)
         except ConfigurationError as err:
@@ -474,7 +468,6 @@ class Experiment(Model):
             shmem_support=application.get_or_default('shmem'),
             shmem_libraries=target.get('shmem_libraries', []),
             mpc_support=application.get_or_default('mpc'),
-            max_threads=application.get('max_threads', None),
             # Instrumentation methods and options
             source_inst=source_inst,
             compiler_inst=measurement.get_or_default('compiler_inst'),
@@ -548,9 +541,8 @@ class Experiment(Model):
                 raise ConfigurationError("Experiment '%s' has no trial with number(s): %s." %
                                          (self['name'], ", ".join(not_found)))
             return [trial for trial in trials if trial['number'] in trial_numbers]
-        else:
-            found = trials[0]
-            for trial in trials[1:]:
-                if trial['begin_time'] > found['begin_time']:
-                    found = trial
-            return [found]
+        found = trials[0]
+        for trial in trials[1:]:
+            if trial['begin_time'] > found['begin_time']:
+                found = trial
+        return [found]

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ import sys
 import glob
 import shutil
 import fileinput
-from taucmdr import logger, util
+from taucmdr import logger
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
@@ -65,7 +65,7 @@ class BinutilsInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags):
-        from taucmdr.cf.platforms import DARWIN, IBM_BGP, IBM_BGQ, INTEL_KNC
+        from taucmdr.cf.platforms import DARWIN, PPC64LE
         flags.extend(['--disable-nls', '--disable-werror'])
         # We don't need these and they force a dependency on texinfo
         flags.extend(['--disable-gas', '--disable-gprof', '--disable-gprofng'])
@@ -79,25 +79,8 @@ class BinutilsInstallation(AutotoolsInstallation):
         else:
             flags.append('CFLAGS=-fPIC')
             flags.append('CXXFLAGS=-fPIC')
-        if self.target_arch is IBM_BGP:
-            flags.append('CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-gcc')
-            flags.append('CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc-bgp-linux-g++')
-        elif self.target_arch is IBM_BGQ:
-            flags.append('CC=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-gcc')
-            flags.append('CXX=/bgsys/drivers/ppcfloor/gnu-linux/bin/powerpc64-bgq-linux-g++')
-        elif self.target_arch.is_ibm():
+        if self.target_arch is PPC64LE:
             flags.append('--disable-largefile')
-        elif self.target_arch is INTEL_KNC:
-            k1om_ar = util.which('x86_64-k1om-linux-ar')
-            if not k1om_ar:
-                for path in glob.glob('/usr/linux-k1om-*'):
-                    k1om_ar = util.which(os.path.join(path, 'bin', 'x86_64-k1om-linux-ar'))
-                    if k1om_ar:
-                        break
-                else:
-                    raise ConfigurationError("Cannot find KNC native compilers in /usr/linux-k1om-*")
-            os.environ['PATH'] = os.pathsep.join((os.path.dirname(k1om_ar), os.environ['PATH']))
-            flags.append('--host=x86_64-k1om-linux')
         return super().configure(flags)
 
     def make_install(self, flags):

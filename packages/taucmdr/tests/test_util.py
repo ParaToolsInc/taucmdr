@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,34 @@
 Functions used for unit tests of util.py.
 """
 
-
+import glob
+import io
+import os
+import shlex
+import tarfile
+import tempfile
+import warnings
+from unittest import mock
 from taucmdr import util, tests
+
+
+def _make_archive(path, links):
+    """Write a gzipped tar file with ``pkg/file.txt`` and the symbolic links `links` ({name: target}) in ``pkg/``."""
+    with tarfile.open(path, 'w:gz') as tar:
+        info = tarfile.TarInfo('pkg')
+        info.type = tarfile.DIRTYPE
+        info.mode = 0o755
+        tar.addfile(info)
+        data = b'hello\n'
+        info = tarfile.TarInfo('pkg/file.txt')
+        info.size = len(data)
+        tar.addfile(info, io.BytesIO(data))
+        for name, target in links.items():
+            info = tarfile.TarInfo('pkg/' + name)
+            info.type = tarfile.SYMTYPE
+            info.linkname = target
+            tar.addfile(info)
+    return path
 
 
 class HumanSizeTest(tests.TestCase):
@@ -131,3 +157,230 @@ class IsCleanContainerTest(tests.TestCase):
         self.assertFalse(util.is_clean_container(('some', 1, b'tuple')))
         self.assertFalse(util.is_clean_container(['some', True, bytearray(b'list')]))
         self.assertFalse(util.is_clean_container({'key': [{b'bad value', 'good value'}]}))
+
+
+class ExtractArchiveTest(tests.TestCase):
+    """Tests for :any:`util.extract_archive`."""
+
+    def test_extract_archive(self):
+        """Extracting an archive creates its top-level directory, without deprecation warnings."""
+        archive = _make_archive(os.path.join(os.getcwd(), 'good.tgz'), {'link.txt': 'file.txt'})
+        dest = tempfile.mkdtemp(dir=os.getcwd())
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            topdir = util.extract_archive(archive, dest, show_progress=False)
+        self.assertEqual(topdir, os.path.join(dest, 'pkg'))
+        with open(os.path.join(topdir, 'link.txt'), encoding='utf-8') as fin:
+            self.assertEqual(fin.read(), 'hello\n')
+
+    def test_extract_archive_unsafe_link(self):
+        """An archive with a link that points outside the destination raises OSError and isn't extracted."""
+        archive = _make_archive(os.path.join(os.getcwd(), 'unsafe.tgz'), {'passwd': '/etc/passwd'})
+        dest = tempfile.mkdtemp(dir=os.getcwd())
+        with self.assertRaises(OSError):
+            util.extract_archive(archive, dest, show_progress=False)
+        self.assertFalse(os.path.lexists(os.path.join(dest, 'pkg', 'passwd')))
+
+
+    def test_extract_archive_truncated(self):
+        """A truncated archive, such as an interrupted download, raises OSError."""
+        # Create a tarfile, truncate it, and then attempt to extract it, requiring
+        # that OSError is raised.
+        for with_dir in True, False:
+            path = os.path.join(os.getcwd(), f'truncated-{with_dir}.tgz')
+            with tarfile.open(path, 'w:gz') as tar:
+                if with_dir:
+                    info = tarfile.TarInfo('pkg')
+                    info.type = tarfile.DIRTYPE
+                    tar.addfile(info)
+                data = os.urandom(64 * 1024)
+                info = tarfile.TarInfo('pkg/data.bin')
+                info.size = len(data)
+                tar.addfile(info, io.BytesIO(data))
+            with open(path, 'r+b') as fout:
+                fout.truncate(os.path.getsize(path) // 2)
+            for show_progress in False, True:
+                with self.subTest(with_dir=with_dir, show_progress=show_progress):
+                    dest = tempfile.mkdtemp(dir=os.getcwd())
+                    with self.assertRaises(OSError):
+                        util.extract_archive(path, dest, show_progress=show_progress)
+
+
+class VerifyArchiveTest(tests.TestCase):
+    """Tests for :any:`util.verify_archive`."""
+
+    def test_verify_archive_truncated(self):
+        """An archive cut short after its first members is refused, though its top-level directory can be read."""
+        path = os.path.join(os.getcwd(), 'large.tgz')
+        with tarfile.open(path, 'w:gz') as tar:
+            info = tarfile.TarInfo('pkg')
+            info.type = tarfile.DIRTYPE
+            tar.addfile(info)
+            data = os.urandom(512 * 1024)
+            info = tarfile.TarInfo('pkg/data.bin')
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
+        util.verify_archive(path)
+        with open(path, 'r+b') as fout:
+            fout.truncate(os.path.getsize(path) * 3 // 4)
+        self.assertEqual(util.archive_toplevel(path), 'pkg')
+        with self.assertRaises(OSError):
+            util.verify_archive(path)
+
+
+class RmtreeTest(tests.TestCase):
+    """Tests for :any:`util.rmtree`."""
+
+    def test_onexc(self):
+        """rmtree passes each failure's exception to `onexc`, without deprecation warnings."""
+        path = tempfile.mkdtemp(dir=os.getcwd())
+        with open(os.path.join(path, 'file'), 'w', encoding='utf-8'):
+            pass
+        failures = []
+        with mock.patch('os.unlink', side_effect=PermissionError('not allowed')), warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            util.rmtree(path, onexc=lambda function, failed, exc: failures.append(exc), attempts=1)
+        self.assertTrue(failures)
+        self.assertIsInstance(failures[0], PermissionError)
+
+
+class PageOutputTest(tests.TestCase):
+    """Tests for :any:`util.page_output`."""
+
+    def test_page_output_uses_pager(self):
+        """The text goes to the pager command in ``PAGER``, which may have arguments and a path with a space."""
+        pager_dir = tempfile.mkdtemp(prefix='with space', dir=os.getcwd())
+        paged = os.path.join(pager_dir, 'paged')
+        script = os.path.join(pager_dir, 'pager.sh')
+        with open(script, 'w', encoding='utf-8') as fout:
+            fout.write('cat > "$1"\n')
+        with mock.patch.dict(os.environ, {'PAGER': f'sh {shlex.quote(script)} {shlex.quote(paged)}'}):
+            os.environ.pop('__TAUCMDR_DISABLE_PAGER__', None)
+            util.page_output('h\u00e9llo pager')
+        with open(paged, encoding='utf-8') as fin:
+            self.assertEqual(fin.read(), 'hello pager')
+
+
+class TemporaryDirectoryTest(tests.TestCase):
+    """Tests for :any:`util.mkdtemp`, :any:`util.cleanup_dtemp` and :any:`util.tmpfs_prefix`."""
+
+    def _run_python(self, code, tmpdir):
+        user_prefix = tempfile.mkdtemp(dir=os.getcwd())
+        env = dict(tests.storage_env(os.environ.get('__TAUCMDR_DB_BACKEND__'), user_prefix), TMPDIR=tmpdir)
+        return tests.run_python_subprocess(['-X', 'dev', '-c', code], env=env, cwd=os.getcwd())
+
+    def test_leftover_dtemp_cleaned_at_exit(self):
+        """A directory from mkdtemp that's never cleaned up is deleted at exit without a warning."""
+        tmpdir = tempfile.mkdtemp(dir=os.getcwd())
+        proc = self._run_python('from taucmdr import util\nprint(util.mkdtemp().name)\n', tmpdir)
+        self.assertSucceeded(proc)
+        path = proc.stdout.strip().splitlines()[-1]
+        self.assertTrue(path.startswith(tmpdir), proc.stdout)
+        self.assertFalse(os.path.exists(path))
+        self.assertNotIn('Implicitly cleaning up', proc.stdout + proc.stderr)
+
+    def test_error_dir_kept_at_exit(self):
+        """A directory on the error stack is copied to the temporary directory at exit."""
+        tmpdir = tempfile.mkdtemp(dir=os.getcwd())
+        code = ("import os\n"
+                "from taucmdr import util\n"
+                "build = os.path.join(util.mkdtemp().name, 'build')\n"
+                "os.mkdir(build)\n"
+                "open(os.path.join(build, 'marker'), 'w').close()\n"
+                "util.add_error_stack(build)\n")
+        proc = self._run_python(code, tmpdir)
+        self.assertSucceeded(proc)
+        self.assertEqual(len(glob.glob(os.path.join(tmpdir, 'build-*', 'marker'))), 1, proc.stdout + proc.stderr)
+        self.assertNotIn('Implicitly cleaning up', proc.stdout + proc.stderr)
+
+    def test_error_dirs_same_name_kept_at_exit(self):
+        """Error directories with the same name, including one kept by an earlier run, are both copied."""
+        tmpdir = tempfile.mkdtemp(dir=os.getcwd())
+        os.mkdir(os.path.join(tmpdir, 'build'))
+        code = ("import os\n"
+                "from taucmdr import util\n"
+                "for i in range(2):\n"
+                "    build = os.path.join(util.mkdtemp().name, 'build')\n"
+                "    os.mkdir(build)\n"
+                "    open(os.path.join(build, f'marker{i}'), 'w').close()\n"
+                "    util.add_error_stack(build)\n")
+        proc = self._run_python(code, tmpdir)
+        self.assertSucceeded(proc)
+        self.assertEqual(len(glob.glob(os.path.join(tmpdir, 'build-*', 'marker0'))), 1, proc.stdout + proc.stderr)
+        self.assertEqual(len(glob.glob(os.path.join(tmpdir, 'build-*', 'marker1'))), 1, proc.stdout + proc.stderr)
+
+    def test_error_dir_copy_failure_at_exit(self):
+        """A copy of an error directory that fails doesn't stop the exit hook from deleting the other directories."""
+        tmpdir = tempfile.mkdtemp(dir=os.getcwd())
+        code = ("import os\n"
+                "from taucmdr import util\n"
+                "util.add_error_stack(os.path.join(util.mkdtemp().name, 'missing'))\n"
+                "print(util.mkdtemp().name)\n")
+        proc = self._run_python(code, tmpdir)
+        self.assertSucceeded(proc)
+        leftover = proc.stdout.splitlines()[0]
+        self.assertTrue(leftover.startswith(tmpdir), proc.stdout)
+        self.assertFalse(os.path.exists(leftover))
+        self.assertIn("Couldn't keep temporary directory", proc.stdout + proc.stderr)
+        self.assertEqual(glob.glob(os.path.join(tmpdir, 'missing-*')), [])
+        self.assertNotIn('Implicitly cleaning up', proc.stdout + proc.stderr)
+
+    @staticmethod
+    def _record_mkdtemp(made):
+        real_mkdtemp = util.mkdtemp
+        def record(*args, **kwargs):
+            path = real_mkdtemp(*args, **kwargs)
+            made.append(path)
+            return path
+        return mock.patch.object(util, 'mkdtemp', side_effect=record)
+
+    def test_tmpfs_prefix_rejected_candidate_removed(self):
+        """A candidate that can't run executables is deleted."""
+        made = []
+        real_check_call = util.subprocess.check_call
+        calls = []
+        def check_call(*args, **kwargs):
+            calls.append(args)
+            if len(calls) == 1:
+                raise util.subprocess.CalledProcessError(1, args[0])
+            return real_check_call(*args, **kwargs)
+        with self._record_mkdtemp(made), mock.patch('taucmdr.util.subprocess.check_call', side_effect=check_call):
+            prefix = util.tmpfs_prefix()
+        self.addCleanup(lambda: util.cleanup_dtemp(prefix))
+        self.assertGreater(len(made), 1)
+        self.assertIs(prefix, made[-1])
+        self.assertFalse(os.path.exists(made[0].name))
+        self.assertNotIn(made[0], util._DTEMP_STACK)  # pylint: disable=protected-access
+
+    def test_tmpfs_prefix_fallback_kept(self):
+        """When free space can't be counted, the first usable candidate is kept and the others are deleted."""
+        made = []
+        with self._record_mkdtemp(made), mock.patch('taucmdr.util.os.statvfs', side_effect=OSError('no statvfs')):
+            prefix = util.tmpfs_prefix()
+        self.addCleanup(lambda: util.cleanup_dtemp(prefix))
+        self.assertEqual([path for path in made if os.path.isdir(path.name)], [prefix])
+        for path in made:
+            if path is not prefix:
+                self.assertNotIn(path, util._DTEMP_STACK)  # pylint: disable=protected-access
+
+    def test_cleanup_dtemp(self):
+        """cleanup_dtemp deletes a directory whether or not mkdtemp made it."""
+        path = util.mkdtemp(dir=os.getcwd())
+        util.cleanup_dtemp(path)
+        self.assertFalse(os.path.exists(path.name))
+        self.assertNotIn(path, util._DTEMP_STACK)  # pylint: disable=protected-access
+        path = tempfile.TemporaryDirectory(dir=os.getcwd())  # pylint: disable=consider-using-with
+        util.cleanup_dtemp(path)
+        self.assertFalse(os.path.exists(path.name))
+
+    def test_dtemp_error_warning_names_paths(self):
+        """The exit hook's warning gives the full path of each directory it kept."""
+        build = os.path.join(tempfile.mkdtemp(dir=os.getcwd()), 'build')
+        os.mkdir(build)
+        dest = tempfile.mkdtemp(dir=os.getcwd())
+        with mock.patch.object(util, '_DTEMP_ERROR_STACK', [build]), mock.patch.object(util, '_DTEMP_STACK', []), \
+                mock.patch.object(tempfile, 'tempdir', dest), self.assertLogs(util.LOGGER, 'WARNING') as logs:
+            util._cleanup_dtemp()  # pylint: disable=protected-access
+        kept = glob.glob(os.path.join(dest, 'build-*'))
+        self.assertEqual(len(kept), 1)
+        self.assertIn(kept[0], '\n'.join(logs.output))

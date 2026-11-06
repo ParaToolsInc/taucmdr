@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,15 +53,15 @@ class StorageDispatch(AbstractStorage):
 
     default_backend = os.environ.get('__TAUCMDR_DB_BACKEND__', 'auto')
 
-    def __init__(self, name=None, prefix=None, kind=None):
+    def __init__(self, name=None, prefix=None, kind=None, create_prefix=True):
         super().__init__(name)
         LOGGER.debug("Initialized StorageDispatch name = %s kind = %s", name, kind)
         if kind == 'project':
             self._local_storage = ProjectStorage()
             self._sqlite_storage = SQLiteProjectStorage()
         else:
-            self._local_storage = LocalFileStorage(name, prefix)
-            self._sqlite_storage = SQLiteLocalFileStorage(name, prefix)
+            self._local_storage = LocalFileStorage(name, prefix, create_prefix)
+            self._sqlite_storage = SQLiteLocalFileStorage(name, prefix, create_prefix)
         self._backend = None
         self.set_backend(self.default_backend)
 
@@ -212,7 +212,7 @@ class StorageDispatch(AbstractStorage):
                               in `keys` may match or if False then all keys in `keys` must match.
 
         Returns:
-            Record: The matching data record if `keys` was a self.Record.eid_type or dict.
+            StorageRecord: The matching data record if `keys` was a self.Record.eid_type or dict.
             list: All matching data records if `keys` was a list or tuple.
             None: No record found or ``bool(keys) == False``.
 
@@ -249,7 +249,7 @@ class StorageDispatch(AbstractStorage):
 
         Either `regex` or `test` may be specified, not both.
         If `regex` is given, then all records with `field` matching the regular expression are returned.
-        If test is given then all records with `field` set to a value that caues `test` to return True are returned.
+        If test is given then all records with `field` set to a value that causes `test` to return True are returned.
         If neither is given, return all records where `field` is set to any value.
 
         Args:
@@ -298,7 +298,7 @@ class StorageDispatch(AbstractStorage):
             table_name (str): Name of the table to operate on.  See :any:`AbstractStorage.table`.
 
         Returns:
-            Record: The new record.
+            StorageRecord: The new record.
 
         Raises:
             TypeError: If bytes, bytearray or memoryview found in data

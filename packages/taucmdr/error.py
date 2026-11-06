@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,11 +46,11 @@ class Error(Exception):
     Attributes:
         value: Some value attached to the error, typically a string but could be anything with a __str__ method.
         hints (list): String hints for the user to help resolve the error.
-        show_backtrace (bool): Set to True to include a backtrace in the error message.
-        message_fmt (str): Format string for the error message.
     """
+    #: Set to True to include a backtrace in the error message.
     show_backtrace = False
 
+    #: Format string for the error message.
     message_fmt = ("An unexpected %(typename)s exception was raised:\n"
                    "\n"
                    "%(value)s\n"
@@ -120,7 +120,6 @@ class ConfigurationError(Error):
             *hints: Hint messages to help the user resolve this error.
         """
         if not hints:
-            hints = list()
             hints = ["Try `%s --help`" % os.path.basename(TAUCMDR_SCRIPT)]
         super().__init__(value, *hints)
 

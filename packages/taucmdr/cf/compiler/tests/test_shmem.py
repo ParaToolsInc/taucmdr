@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,56 @@
 Functions used for unit tests of shmem.py.
 """
 
-
+import os
 from taucmdr import tests
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.compiler import InstalledCompiler
+from taucmdr.cf.compiler.host import CC
+from taucmdr.cf.compiler.mpi import SYSTEM, MPI_CC
+from taucmdr.cf.compiler.shmem import OPENSHMEM, SHMEM_CC
+from taucmdr.cf.software.tau_installation import TauInstallation
 
-@tests.not_implemented
-class ShmemTest(tests.TestCase):
-    pass
+
+class OpenSHMEMWrapperTest(tests.TestCase):
+    """Tests for probing OpenSHMEM compiler wrappers."""
+
+    def _make_compiler(self, name, script):
+        dirname = os.path.join(tests.get_test_workdir(), self.id())
+        os.makedirs(dirname)
+        path = os.path.join(dirname, name)
+        with open(path, 'w', encoding='utf-8') as fout:
+            fout.write('#!/bin/sh\n' + script)
+        os.chmod(path, 0o755)
+        return path
+
+    def test_showme_wrapper(self):
+        """An Open MPI style wrapper that accepts -showme reports its include and library paths."""
+        host_cc = TauInstallation.get_minimal().compilers[CC].absolute_path
+        path = self._make_compiler('oshcc', (
+            'if [ "$1" = "-showme" ]; then\n'
+            '  echo "%s -I/fake/openmpi/include -L/fake/openmpi/lib -loshmem -lmpi"\n'
+            '  exit 0\n'
+            'fi\n'
+            'exit 1\n') % host_cc)
+        comp = InstalledCompiler(path, OPENSHMEM.members[SHMEM_CC][0])
+        self.assertIsNotNone(comp.wrapped)
+        self.assertEqual(comp.wrapped.absolute_path, host_cc)
+        self.assertIs(comp.wrapped.info.role, CC)
+        self.assertListEqual(comp.include_path, ['/fake/openmpi/include'])
+        self.assertListEqual(comp.library_path, ['/fake/openmpi/lib'])
+        self.assertListEqual(comp.libraries, ['oshmem', 'mpi'])
+
+    def test_no_showme_wrapper(self):
+        """A reference OpenSHMEM style compiler that rejects -showme isn't an error."""
+        path = self._make_compiler('oshcc', 'echo "unrecognized command-line option" >&2\nexit 1\n')
+        comp = InstalledCompiler(path, OPENSHMEM.members[SHMEM_CC][0])
+        self.assertIsNone(comp.wrapped)
+        self.assertListEqual(comp.include_path, [])
+        self.assertListEqual(comp.library_path, [])
+
+    def test_required_wrapper(self):
+        """Families that don't set optional_wrapper still reject commands that don't accept the show flags."""
+        path = self._make_compiler('mpicc', 'echo "unrecognized command-line option" >&2\nexit 1\n')
+        info = next(info for info in SYSTEM.members[MPI_CC] if info.command == 'mpicc')
+        with self.assertRaises(ConfigurationError):
+            InstalledCompiler(path, info)

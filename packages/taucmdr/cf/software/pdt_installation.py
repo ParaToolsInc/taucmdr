@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,7 @@ from taucmdr import logger, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import AutotoolsInstallation
-from taucmdr.cf.platforms import TauMagic, X86_64, INTEL_KNL, IBM_BGQ, PPC64LE, LINUX, DARWIN, IBM_CNK,\
-    ARM64
+from taucmdr.cf.platforms import TauMagic, X86_64, PPC64LE, LINUX, DARWIN, CRAY_CNL, ARM64
 from taucmdr.cf.compiler.host import CC, CXX, PGI, NVHPC, GNU, INTEL
 
 
@@ -53,9 +52,48 @@ PDT_LITE_REPOS = [
 
 REPOS = {None: PDT_REPOS,
          X86_64: {None: PDT_REPOS,
-                  LINUX: PDT_LITE_REPOS},
-         INTEL_KNL: {None: PDT_REPOS,
-                     LINUX: PDT_LITE_REPOS}}
+                  LINUX: PDT_LITE_REPOS}}
+
+_DARWIN_COMMANDS = ['cparse',
+                    'cxxparse',
+                    'edgcpfe',
+                    'f90fe',
+                    'f90parse',
+                    'f95parse',
+                    'gfparse',
+                    'pdbcomment',
+                    'pdbconv',
+                    'pdbhtml',
+                    'pdbmerge',
+                    'pdbstmt',
+                    'pdbtree',
+                    'pdtf90disp',
+                    'pdtflint',
+                    'taucpdisp',
+                    'xmlgen']
+
+_ARM64_LINUX_COMMANDS = ['cparse',
+                         'cparse4101',
+                         'cxxparse',
+                         'cxxparse4101',
+                         'edgcpfe',
+                         'edgcpfe4101',
+                         'f90parse',
+                         'f95parse',
+                         'gfparse',
+                         'gfparse48',
+                         'gfparse485',
+                         'pdbcomment',
+                         'pdbconv',
+                         'pdbhtml',
+                         'pdbmerge',
+                         'pdbstmt',
+                         'pdbtree',
+                         'pdtflint',
+                         'taucpdisp',
+                         'taucpdisp4101',
+                         'tau_instrumentor',
+                         'xmlgen']
 
 COMMANDS = {None:
             ['cparse',
@@ -84,48 +122,7 @@ COMMANDS = {None:
              'tau_instrumentor',
              'upcparse',
              'xmlgen'],
-            X86_64:
-            {DARWIN:
-             ['cparse',
-              'cxxparse',
-              'edgcpfe',
-              'f90fe',
-              'f90parse',
-              'f95parse',
-              'gfparse',
-              'pdbcomment',
-              'pdbconv',
-              'pdbhtml',
-              'pdbmerge',
-              'pdbstmt',
-              'pdbtree',
-              'pdtf90disp',
-              'pdtflint',
-              'taucpdisp',
-              'xmlgen']},
-            IBM_BGQ:
-            {IBM_CNK:
-             ['cparse',
-              'cxxparse',
-              'edg44-c-roseparse',
-              'edg44-cxx-roseparse',
-              'edg44-upcparse',
-              'edgcpfe',
-              'f90fe',
-              'f90parse',
-              'f95parse',
-              'gfparse',
-              'pdbcomment',
-              'pdbconv',
-              'pdbhtml',
-              'pdbmerge',
-              'pdbstmt',
-              'pdbtree',
-              'pdtf90disp',
-              'pdtflint',
-              'taucpdisp',
-              'tau_instrumentor',
-              'xmlgen']},
+            X86_64: {DARWIN: _DARWIN_COMMANDS},
             PPC64LE:
             {LINUX:
              ['cparse',
@@ -150,30 +147,9 @@ COMMANDS = {None:
               'taucpdisp4101',
               'tau_instrumentor',
               'xmlgen']},
-            ARM64:
-            {LINUX:
-             ['cparse',
-              'cparse410',
-              'cxxparse',
-              'cxxparse4101',
-              'edgcpfe',
-              'edgcpfe4101',
-              'f90parse',
-              'f95parse',
-              'gfparse',
-              'gfparse48',
-              'gfparse485',
-              'pdbcomment',
-              'pdbconv',
-              'pdbhtml',
-              'pdbmerge',
-              'pdbstmt',
-              'pdbtree',
-              'pdtflint',
-              'taucpdisp',
-              'taucpdisp4101',
-              'tau_instrumentor',
-              'xmlgen']}}
+            ARM64: {LINUX: _ARM64_LINUX_COMMANDS,
+                    DARWIN: _DARWIN_COMMANDS,
+                    CRAY_CNL: _ARM64_LINUX_COMMANDS}}
 
 class PdtInstallation(AutotoolsInstallation):
     """Encapsulates a PDT installation.

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,9 @@ class ProgressIndicator:
     _indent = '    '
 
     def __init__(self, label, total_size=0, block_size=1, show_cpu=True, auto_refresh=0.25):
-        mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', 'full').lower()
+        # Each redraw starts with a carriage return, which a log file or CI log shows as a new line.
+        default_mode = 'full' if sys.stdout.isatty() else 'disabled'
+        mode = os.environ.get('__TAUCMDR_PROGRESS_BARS__', default_mode).lower()
         if mode not in ('full', 'disabled'):
             raise ConfigurationError('Invalid value for __TAUCMDR_PROGRESS_BARS__ environment variable: %s' % mode)
         self.label = label
@@ -181,6 +183,8 @@ class ProgressIndicator:
             label (str): Display label for the progress phase.
             implicit (bool): If True, phase is automatically popped when the next phase is pushed.
         """
+        if self._mode == 'disabled':
+            return
         if self.auto_refresh:
             if self._thread is None:
                 self._thread = threading.Thread(target=self._thread_progress)
@@ -207,6 +211,8 @@ class ProgressIndicator:
             self.update()
 
     def pop_phase(self):
+        if self._mode == 'disabled':
+            return
         if self.auto_refresh:
             self._updating.acquire()
         if self._phases:
@@ -227,7 +233,7 @@ class ProgressIndicator:
     def update(self, count=None, block_size=None, total_size=None):
         """Show progress.
 
-        Updates `block_size` or `total_size` if given for compatibility with :any:`urllib.urlretrieve`.
+        Updates `block_size` or `total_size` if given for compatibility with :py:func:`urllib.request.urlretrieve`.
 
         Args:
             count (int): Number of blocks of `block_size` that have been completed.
@@ -240,6 +246,8 @@ class ProgressIndicator:
             self.block_size = block_size
         if total_size is not None:
             self.total_size = total_size
+        if self._mode == 'disabled':
+            return
         if self.auto_refresh:
             if threading.current_thread() is not self._thread:
                 if not self._phases:
@@ -267,11 +275,9 @@ class ProgressIndicator:
             width = (self._line_remaining//4) if show_bar else (self._line_remaining-2)
             self._draw_bar(cpu_load, width, '|', 'white', 'on_white')
             self._line_append("]")
-        if show_bar and self._line_remaining > 20:
-            self._line_append(" ")
+        if show_bar:
             completed = float(self.count*self.block_size)
             percent = max(min(completed / self.total_size, 1.0), 0.0)
-            self._line_append("[%0.1f%% " % (100*percent))
             if completed == 0:
                 eta = '(unknown)'
             else:
@@ -279,9 +285,13 @@ class ProgressIndicator:
                 etadate = datetime.now() + timedelta(seconds=time_remaining)
                 eta = '%s-%s-%s %02d:%02d' % (
                     etadate.year, etadate.month, etadate.day, etadate.hour, etadate.minute)
-            width = self._line_remaining - 4 - len(eta)
-            self._draw_bar(percent, width, '>', 'green', 'on_green')
-            self._line_append("] %s" % eta)
+            head = " [%0.1f%% " % (100*percent)
+            tail = "] %s" % eta
+            width = self._line_remaining - len(head) - len(tail)
+            if width > 0:
+                self._line_append(head)
+                self._draw_bar(percent, width, '>', 'green', 'on_green')
+                self._line_append(tail)
         self._line_flush()
 
 

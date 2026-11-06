@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017, ParaTools, Inc.
+# Copyright (c) 2017-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ Functions used for unit tests of export.py.
 
 import os
 from taucmdr import tests, util, EXIT_SUCCESS
+from taucmdr.cf.platforms import HOST_OS, DARWIN
 from taucmdr.cf.compiler.host import CC
 from taucmdr.cf.compiler.mpi import MPI_CC
 from taucmdr.cli.commands.trial.create import COMMAND as trial_create_cmd
@@ -70,6 +71,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     def test_export_merged_profile(self):
         self.reset_project_storage(['--mpi', '--profile', 'merged', '--trace', 'none'])
         expr = Project.selected().experiment()
@@ -82,7 +84,9 @@ class ExportTest(tests.TestCase):
         export_file = expr['name'] + '.trial0.xml.gz'
         self.assertTrue(os.path.exists(export_file))
 
+    @tests.skipIf(HOST_OS is DARWIN, "Score-P isn't built on Darwin")
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     def test_export_cubex(self):
         self.reset_project_storage(['--mpi', '--profile', 'cubex', '--trace', 'none'])
         if util.which('nvc') and self.getCompiler(CC) == util.which('nvc') :
@@ -111,6 +115,7 @@ class ExportTest(tests.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
     @tests.skipUnlessHaveCompiler(MPI_CC)
+    @tests.skipUnless(util.which('mpirun'), "mpirun required for this test")
     def test_export_otf2(self):
         self.reset_project_storage(['--mpi', '--trace', 'otf2', '--profile', 'none'])
         expr = Project.selected().experiment()

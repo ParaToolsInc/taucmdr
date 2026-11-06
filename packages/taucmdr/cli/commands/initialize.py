@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ from taucmdr.cli.commands.project.create import COMMAND as project_create_cmd
 from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
+from taucmdr.cf.platforms import DARWIN, HOST_OS
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from taucmdr.cf.storage.storage_dispatch import AVAILABLE_BACKENDS
@@ -135,8 +136,8 @@ class InitializeCommand(AbstractCommand):
 
         # Change defaults so that measurements are created unless explicitly disabled
         measurement_group = parser.add_argument_group('measurement arguments')
-        measurement_group['--source-inst'].default = 'automatic'
-        measurement_group['--compiler-inst'].default = 'fallback'
+        measurement_group['--source-inst'].default = 'automatic' if HOST_OS is not DARWIN else 'never'
+        measurement_group['--compiler-inst'].default = 'fallback' if HOST_OS is not DARWIN else 'always'
         measurement_group['--profile'].default = 'tau'
         measurement_group['--trace'].default = 'otf2'
         measurement_group['--sample'].default = True
@@ -152,8 +153,7 @@ class InitializeCommand(AbstractCommand):
             PROJECT_STORAGE.disconnect_filesystem()
             util.rmtree(PROJECT_STORAGE.prefix, ignore_errors=True)
             raise
-        else:
-            project_select_cmd.main([project_name])
+        project_select_cmd.main([project_name])
 
     def _create_measurement(self, name, args, **kwargs):
         args = ArgumentsNamespace(**dict(vars(args), **kwargs))
@@ -184,7 +184,7 @@ class InitializeCommand(AbstractCommand):
 
         # Target was created so let's see if we can use binutils on this target.
         targ = Target.controller(PROJECT_STORAGE).one({'name': target_name})
-        if not targ['binutils_source']:
+        if not targ['binutils_source'] and targ.operating_system() is not DARWIN:
             self.logger.info("GNU binutils unavailable: disabling sampling and compiler-based instrumentation")
             args.sample = False
             args.compiler_inst = 'never'

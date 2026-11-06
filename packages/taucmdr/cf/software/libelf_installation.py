@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,6 @@ The ELF library provides an interface to read, modify or create ELF files in
             an architecture-independent way.
 """
 
-import os
 from taucmdr.cf.software.installation import AutotoolsInstallation
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.software import SoftwarePackageError
@@ -60,5 +59,7 @@ class LibelfInstallation(AutotoolsInstallation):
 
     def configure(self, flags):
         flags.extend(['--disable-debuginfod'])
-        # Libelf's configure script requires CC to be a GNU compiler, so we have to set the environment variable before running the configure script
-        return super().configure(flags, env={'CC':GNU.installation()[CC].unwrap().absolute_path, 'CFLAGS': '-Wno-error', 'CXXFLAGS': '-Wno-error'})
+        # Libelf's configure script requires CC to be a GNU compiler, so we have to set the environment variable
+        # before running the configure script
+        return super().configure(flags, env={'CC': GNU.installation()[CC].unwrap().absolute_path,
+                                             'CFLAGS': '-Wno-error', 'CXXFLAGS': '-Wno-error'})

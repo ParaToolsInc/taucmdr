@@ -1,0 +1,103 @@
+#
+# Copyright (c) 2026, ParaTools, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# (1) Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+# (2) Redistributions in binary form must reproduce the above copyright notice,
+#     this list of conditions and the following disclaimer in the documentation
+#     and/or other materials provided with the distribution.
+# (3) Neither the name of ParaTools, Inc. nor the names of its contributors may
+#     be used to endorse or promote products derived from this software without
+#     specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+"""Tests for progress.py."""
+
+import io
+import os
+import re
+from unittest import mock
+from taucmdr import logger, progress, tests, util
+
+
+class ProgressIndicatorTest(tests.TestCase):
+    """Tests for :any:`progress.ProgressIndicator`."""
+
+    def _draw(self, width, load, count):
+        """Return the download progress as would be drawn on a terminal `width` characters wide."""
+        out = io.StringIO()
+        with mock.patch.dict(os.environ, {'__TAUCMDR_PROGRESS_BARS__': 'full'}), \
+                mock.patch.object(logger, 'LINE_WIDTH', width), \
+                mock.patch.object(progress, 'load_average', return_value=load), \
+                mock.patch('sys.stdout', new=out):
+            with progress.ProgressIndicator('Downloading', total_size=1000, auto_refresh=0) as indicator:
+                indicator.update(count=count)
+        return [line for line in re.split('[\r\n]', util.uncolor_text(out.getvalue())) if line]
+
+    def test_line_width(self):
+        for width in range(30, 160):
+            for load in (None, 0.5, 1.0):
+                for count in (0, 745, 1000):
+                    with self.subTest(width=width, load=load, count=count):
+                        lines = self._draw(width, load, count)
+                        self.assertTrue(lines)
+                        for line in lines:
+                            self.assertEqual(len(line), len(logger.LINE_MARKER) + width, line)
+
+    @staticmethod
+    def _output(mode, isatty):
+        """Return progress bar expected output.
+
+        Args:
+            mode (str): Value of ``__TAUCMDR_PROGRESS_BARS__``, or None.
+            isatty (bool): Whether stdout is a terminal.
+        """
+        out = io.StringIO()
+        out.isatty = lambda: isatty
+        env = dict(os.environ)
+        env.pop('__TAUCMDR_PROGRESS_BARS__', None)
+        if mode is not None:
+            env['__TAUCMDR_PROGRESS_BARS__'] = mode
+        with mock.patch.dict(os.environ, env, clear=True), mock.patch('sys.stdout', new=out):
+            with progress.ProgressIndicator('Setting permissions', total_size=100, auto_refresh=0) as indicator:
+                indicator.push_phase('Inner')
+                for i in range(100):
+                    indicator.update(i)
+                indicator.pop_phase()
+        return out.getvalue()
+
+    def test_disabled_draws_nothing(self):
+        self.assertEqual(self._output('disabled', isatty=True), '')
+
+    def test_no_terminal_defaults_to_disabled(self):
+        self.assertEqual(self._output(None, isatty=False), '')
+
+    def test_terminal_defaults_to_full(self):
+        self.assertIn('Setting permissions', self._output(None, isatty=True))
+
+    def test_full_without_terminal(self):
+        self.assertIn('Setting permissions', self._output('full', isatty=False))
+
+    def test_disabled_keeps_no_phases(self):
+        out = io.StringIO()
+        with mock.patch.dict(os.environ, {'__TAUCMDR_PROGRESS_BARS__': 'disabled'}), mock.patch('sys.stdout', new=out):
+            with progress.ProgressIndicator('Building', auto_refresh=0) as indicator:
+                for i in range(10):
+                    indicator.push_phase('Step %d' % i)
+                    indicator.phase('Implicit %d' % i)
+                    indicator.pop_phase()
+                self.assertEqual(indicator._phases, [])  # pylint: disable=protected-access
+        self.assertEqual(out.getvalue(), '')

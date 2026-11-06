@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -131,8 +131,7 @@ class SelectCommand(AbstractCommand):
         if len(acc) > 1:
             self.parser.error("Project '%s' has multiple %ss. Please specify which to use." %
                               (proj['name'], model_name))
-        elif len(acc) == 1:
-            return acc.pop()
+        return acc.pop()
 
     def _parse_explicit_experiment(self, args, acc):
         model_name = 'experiment'

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,8 @@ class MainCommand(AbstractCommand):
 
     def _construct_parser(self):
         usage = "%s [arguments] <subcommand> [options]"  % self.command
-        _green = lambda x: "{:<35}".format(util.color_text(x, 'green'))
+        def _green(text):
+            return "{:<35}".format(util.color_text(text, 'green'))
         epilog_parts = ["", cli.commands_description(), "",
                         util.color_text("Shortcuts:", attrs=["bold"]),
                         _green("  %(command)s <compiler>") + "Execute a compiler command",
@@ -128,8 +129,10 @@ class MainCommand(AbstractCommand):
         # Try to execute as a TAU command
         try:
             return cli.execute_command([cmd], cmd_args)
-        except UnknownCommandError:
-            pass
+        except UnknownCommandError as err:
+            # Raised by a command that was found, e.g. `help` given a name that isn't a command
+            if err.value != cmd:
+                raise
 
         # Check shortcuts
         shortcut = None
@@ -154,7 +157,7 @@ class MainCommand(AbstractCommand):
         LOGGER.debug('No shortcut found for %r', cmd)
 
         # Not sure what to do at this point, so advise the user and exit
-        LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", TAUCMDR_SCRIPT, cmd)
+        LOGGER.info("Unknown command.  Calling `%s help %s` to get advice.", os.path.basename(TAUCMDR_SCRIPT), cmd)
         return cli.execute_command(['help'], [cmd])
 
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -24,14 +24,80 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""Test functions.
+"""Unit tests for :py:mod:`taucmdr.model.target`."""
 
-Functions used for unit tests of target.py.
-"""
-
-
+import os
+import tempfile
+from unittest import mock
 from taucmdr import tests
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.platforms import DARWIN, HOST_OS
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
+from taucmdr.cli.commands.target.list import COMMAND as target_list_cmd
+from taucmdr.model import target
+from taucmdr.model.target import Target
 
-@tests.not_implemented
+
 class TargetTest(tests.TestCase):
-    pass
+    """Tests for :any:`taucmdr.model.target.Target`."""
+
+    def _target_with(self, data):
+        self.reset_project_storage()
+        PROJECT_STORAGE.update(data, {'name': 'targ1'}, table_name=Target.name)
+        return Target.controller(PROJECT_STORAGE).one({'name': 'targ1'})
+
+    def test_unknown_host_arch(self):
+        """A target saved with an architecture this version doesn't know gives a clear error."""
+        targ = self._target_with({'host_arch': 'NoSuchArch'})
+        self.assertCommandReturnValue(0, target_list_cmd, [])
+        with self.assertRaisesRegex(ConfigurationError, 'NoSuchArch'):
+            targ.architecture()
+
+    def test_unknown_host_os(self):
+        """A target saved with an operating system this version doesn't know gives a clear error."""
+        targ = self._target_with({'host_os': 'NoSuchOS'})
+        self.assertCommandReturnValue(0, target_list_cmd, [])
+        with self.assertRaisesRegex(ConfigurationError, 'NoSuchOS'):
+            targ.operating_system()
+
+    def test_legacy_ompt_source(self):
+        """A target stored with a removed OMPT download variant still loads and lists."""
+        self.reset_project_storage()
+        PROJECT_STORAGE.update({'ompt_source': 'download-tr6'}, {'name': 'targ1'}, table_name=Target.name)
+        stored = PROJECT_STORAGE.get({'name': 'targ1'}, table_name=Target.name)
+        self.assertEqual(stored['ompt_source'], 'download-tr6')
+        targ = Target.controller(PROJECT_STORAGE).one({'name': 'targ1'})
+        self.assertEqual(targ.sources()['ompt'], 'download')
+        self.assertCommandReturnValue(0, target_list_cmd, [])
+
+    def test_tau_source_override_missing(self):
+        """An override_tau_source file with a missing directory produces a warning."""
+        system_prefix = tempfile.mkdtemp(dir=os.getcwd())
+        missing = os.path.join(system_prefix, 'no-such-tau')
+        with open(os.path.join(system_prefix, 'override_tau_source'), 'w', encoding='utf-8') as fout:
+            fout.write(missing)
+        with mock.patch.object(target, 'SYSTEM_STORAGE', mock.Mock(prefix=system_prefix)), \
+                self.assertLogs('taucmdr.model.target', 'WARNING') as logs:
+            self.assertEqual(target.tau_source_default(), 'download')
+        self.assertIn(missing, logs.output[0])
+
+    def test_pdt_default(self):
+        self.assertEqual(Target.attributes['pdt_source']['default'], None if HOST_OS is DARWIN else 'download')
+
+
+class DarwinTargetTest(tests.DarwinTestCase):
+    """Tests for targets on macOS."""
+
+    def test_pdt_default(self):
+        self.assertEqual(self.python("from taucmdr.model.target import Target\n"
+                                     "print(Target.attributes['pdt_source']['default'])"), 'None')
+
+    def test_pdt_refused(self):
+        self.assertSucceeded(self.tau('initialize', '--bare'))
+        proc = self.tau('target', 'create', 'targ1', '--pdt', 'download')
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn('pdt', (proc.stdout + proc.stderr).lower())
+
+    def test_target_without_pdt(self):
+        self.assertSucceeded(self.tau('initialize', '--bare'))
+        self.assertSucceeded(self.tau('target', 'create', 'targ1'))

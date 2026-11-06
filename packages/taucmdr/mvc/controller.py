@@ -1,5 +1,5 @@
 #.language
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -180,7 +180,7 @@ class Controller:
         """Check if a record exists.
 
         Args:
-            keys: See :any:`AbstractStorage.exists`.
+            keys: See :any:`AbstractStorage.contains`.
 
         Returns:
             bool: True if a record matching `keys` exists, False otherwise.
@@ -246,10 +246,8 @@ class Controller:
                 foreign = props['collection']
             except KeyError:
                 return value
-            else:
-                return foreign.controller(self.storage).search(value, context=context)
-        else:
-            return foreign.controller(self.storage).one(value, context=context)
+            return foreign.controller(self.storage).search(value, context=context)
+        return foreign.controller(self.storage).one(value, context=context)
 
     def _check_unique(self, data, match_any=True):
         unique = {attr: data[attr] for attr, props in self.model.attributes.items() if 'unique' in props}
@@ -273,7 +271,7 @@ class Controller:
         with self.storage as database:
             record = database.insert(data, table_name=self.model.name)
             for attr, foreign in self.model.associations.items():
-                if 'model' or 'collection' in self.model.attributes[attr]:
+                if 'model' in self.model.attributes[attr] or 'collection' in self.model.attributes[attr]:
                     affected = record.get(attr, None)
                     if affected:
                         foreign_cls, via = foreign
@@ -488,7 +486,7 @@ class Controller:
         """Associates a record with another record.
 
         Args:
-            record (Record): Record to associate.
+            record (StorageRecord): Record to associate.
             foreign_model (Model): Foreign record's data model.
             affected (list): Identifiers for the records that will be updated to associate with `record`.
             via (str): The name of the associated foreign attribute.
@@ -513,7 +511,7 @@ class Controller:
         """Disassociates a record from another record.
 
         Args:
-            record (Record): Record to disassociate.
+            record (StorageRecord): Record to disassociate.
             foreign_model (Model): Foreign record's data model.
             affected (list): Identifiers for the records that will be updated to disassociate from `record`.
             via (str): The name of the associated foreign attribute.

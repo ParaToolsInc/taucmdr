@@ -55,7 +55,9 @@ local.properties
 registry
 installed
 system
+!/packages/taucmdr/cli/commands/system/
 .tau
+!/.testfiles/storage/*/*/project/.tau/
 
 # TAU Commander pylint report
 pylint.md
@@ -87,12 +89,14 @@ benchmarks
 
 # Python coverage data
 .coverage
+.coverage.*
+coverage.xml
 
 # Python packaging files
 # general things to ignore
 /VERSION
 /build
-/dist
+/dist/
 /taucmdr-*
 packages/*.sh
 packages/*.tgz
@@ -122,6 +126,13 @@ id_rsa_Travis2GH.pub
 # Test output files
 test-timings*.csv
 TEST-*.xml
+
+# sphinx-apidoc output (see docs/documentation.rst)
+/docs/modules.rst
+/docs/taucmdr*.rst
+
+# Command reference, written by docs/_ext/cli_reference.py
+/docs/cli/
 
 # JetBrains settings
 .idea

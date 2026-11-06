@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -86,9 +86,9 @@ class ProjectStorage(LocalFileStorage):
                                    "Use '-@ user' option for user level storage.") from err
             try:
                 util.mkdirp(project_prefix)
-            except Exception as err:
+            except Exception as mkdir_err:
                 raise StorageError("Failed to access %s filesystem prefix '%s': %s" %
-                                   (self.name, project_prefix, err)) from err
+                                   (self.name, project_prefix, mkdir_err)) from mkdir_err
             # Exclude project storage directory from git
             with open(os.path.join(self.prefix, '.gitignore'), 'w+') as fout:
                 fout.write('/*\n')
@@ -98,14 +98,14 @@ class ProjectStorage(LocalFileStorage):
         """Disconnects the database and filesystem and recursively deletes the filesystem.
 
         Args:
-            *args: Passed through to :any:`disconnect_filesystem`.
-            **kwargs: Keyword arguments for :any:`disconnect_filesystem` or :any:`shutil.rmtree`.
+            *args: Passed through to :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem`.
+            **kwargs: Keyword arguments for :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem` or :any:`shutil.rmtree`.
         """
         self.disconnect_filesystem(*args, **kwargs)
         ignore_errors = kwargs.pop('ignore_errors', False)
-        onerror = kwargs.pop('onerror', None)
+        onexc = kwargs.pop('onexc', None)
         if self._prefix:
-            util.rmtree(self._prefix, ignore_errors=ignore_errors, onerror=onerror)
+            util.rmtree(self._prefix, ignore_errors=ignore_errors, onexc=onexc)
             self._prefix = None
 
     @property
@@ -122,7 +122,6 @@ class ProjectStorage(LocalFileStorage):
             ProjectStorageError: Neither the current directory nor any of its parent directories contain
                                  a TAU Commander project directory.
         """
-        from taucmdr.cf.storage.levels import USER_STORAGE, SYSTEM_STORAGE
         if self._prefix:
             return self._prefix
         cwd = os.getcwd()
@@ -130,8 +129,8 @@ class ProjectStorage(LocalFileStorage):
             # Only check current working directory for project directory
             prefix = os.path.realpath(os.path.join(cwd, PROJECT_DIR))
             if os.path.isdir(prefix):
-                for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                for level_name in 'user', 'system':
+                    if os.path.exists(os.path.join(prefix, level_name + ".json")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)
@@ -147,8 +146,8 @@ class ProjectStorage(LocalFileStorage):
         while root and root != lastroot:
             prefix = os.path.realpath(os.path.join(root, PROJECT_DIR))
             if os.path.isdir(prefix):
-                for exclude_storage in USER_STORAGE, SYSTEM_STORAGE:
-                    if os.path.exists(os.path.join(prefix, exclude_storage.name + ".json")):
+                for level_name in 'user', 'system':
+                    if os.path.exists(os.path.join(prefix, level_name + ".json")):
                         break
                 else:
                     LOGGER.debug("Located project storage prefix '%s'", prefix)

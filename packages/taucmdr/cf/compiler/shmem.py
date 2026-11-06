@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,10 @@ SHMEM_COMPILERS = Knowledgebase('SHMEM', 'Compilers supporting Symmetric Hierarc
                                 CXX=('SHMEM C++', 'SHMEM_CXX'),
                                 FC=('SHMEM Fortran', ('SHMEM_FC', 'SHMEM_F77', 'SHMEM_F90')))
 
+# Open MPI's OSHMEM wrappers accept '-showme' but the OpenSHMEM reference compilers don't,
+# so only use the wrapper's include and library paths when '-showme' works.
 OPENSHMEM = SHMEM_COMPILERS.add('OpenSHMEM',
+                                show_wrapper_flags=['-showme'], optional_wrapper=True,
                                 CC='oshcc', CXX=('oshcxx', 'oshc++', 'oshCC'), FC='oshfort')
 
 SOS = SHMEM_COMPILERS.add('SOS',
