@@ -34,7 +34,7 @@ import os
 from unittest import mock
 from taucmdr import tests
 from taucmdr.cli import arguments
-from taucmdr.cli.arguments import ParsePackagePathAction
+from taucmdr.cli.arguments import ParseBooleanAction, ParsePackagePathAction
 
 
 def _help_text(description=None):
@@ -129,3 +129,29 @@ class ParsePackagePathActionTest(tests.TestCase):
         with self.assertRaises(argparse.ArgumentError) as ctx:
             self._parse('no/such/widget.tgz')
         self.assertIn('Keyword, valid path, or URL required', str(ctx.exception))
+
+
+class ParseBooleanActionTest(tests.TestCase):
+    """Tests for the T/F argument action."""
+
+    def setUp(self):
+        super().setUp()
+        self._action = ParseBooleanAction(option_strings=['--flag'], dest='flag')
+        self._namespace = argparse.Namespace()
+
+    def _parse(self, value):
+        self._action(None, self._namespace, value)
+        return getattr(self._namespace, self._action.dest)
+
+    def test_true_and_false_spellings(self):
+        """Common spellings of true and false parse to booleans."""
+        for value in ('T', 'true', 'Yes', '1', 'on'):
+            self.assertIs(self._parse(value), True)
+        for value in ('F', 'false', 'No', '0', 'off'):
+            self.assertIs(self._parse(value), False)
+
+    def test_other_values_rejected(self):
+        """Anything else is an argument error."""
+        with self.assertRaises(argparse.ArgumentError) as ctx:
+            self._parse('maybe')
+        self.assertIn('Boolean value required', str(ctx.exception))
