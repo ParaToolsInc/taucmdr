@@ -30,14 +30,17 @@ Functions used for unit tests of installation.py.
 """
 
 import os
+import multiprocessing
 import shutil
+import stat
 import tempfile
 from unittest import mock
 from taucmdr import tests
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler import InstalledCompilerSet
 from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, DARWIN, LINUX, X86_64, PPC64LE
-from taucmdr.cf.software.installation import Installation
+from taucmdr.cf.software import SoftwarePackageError
+from taucmdr.cf.software.installation import Installation, parallel_make_flags
 
 
 _REPOS = ['http://example.com/widget.tgz', 'http://mirror.example.com/widget.tgz']
@@ -117,3 +120,153 @@ class InstallationSourceTest(tests.TestCase):
                 inst.acquire_source(reuse_archive=False)
         self.assertIn(url, ctx.exception.value)
         self.assertIn(url, ctx.exception.hints[0])
+
+
+class InstallationVerifyTest(tests.TestCase):
+    """Tests for verify() against a fabricated installation prefix."""
+
+    def setUp(self):
+        super().setUp()
+        self._prefix = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self._prefix, ignore_errors=True)
+
+    def _touch(self, *parts, executable=False):
+        path = os.path.join(self._prefix, *parts)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8'):
+            pass
+        if executable:
+            os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR)
+        return path
+
+    def _widget(self, commands=(), libraries=(), headers=()):
+        return _widget(self._prefix,
+                       commands={None: list(commands)},
+                       libraries={None: list(libraries)},
+                       headers={None: list(headers)})
+
+    def test_no_lists_means_nothing_to_verify(self):
+        """Packages without commands, libraries, or headers verify nothing beyond the prefix."""
+        inst = _widget(self._prefix)
+        self.assertEqual(inst.verify_commands, [])
+        self.assertEqual(inst.verify_libraries, [])
+        self.assertEqual(inst.verify_headers, [])
+        inst.verify()
+
+    def test_complete_installation_verifies(self):
+        """Executable commands, libraries, and headers in the usual places pass."""
+        self._touch('bin', 'widget-cli', executable=True)
+        self._touch('lib', 'libwidget.so')
+        self._touch('include', 'widget.h')
+        self._widget(['widget-cli'], ['libwidget.so'], ['widget.h']).verify()
+
+    def test_missing_prefix_rejected(self):
+        """The prefix itself must exist."""
+        inst = self._widget()
+        shutil.rmtree(self._prefix)
+        with self.assertRaises(SoftwarePackageError):
+            inst.verify()
+
+    def test_missing_command_rejected(self):
+        """A missing command fails verification."""
+        with self.assertRaises(SoftwarePackageError) as ctx:
+            self._widget(['widget-cli']).verify()
+        self.assertIn('is missing', str(ctx.exception))
+
+    def test_non_executable_command_rejected(self):
+        """A command that exists but is not executable fails verification."""
+        self._touch('bin', 'widget-cli')
+        with self.assertRaises(SoftwarePackageError) as ctx:
+            self._widget(['widget-cli']).verify()
+        self.assertIn('not executable', str(ctx.exception))
+
+    def test_library_in_lib64_accepted(self):
+        """Distributions that install into lib64 (e.g. SuSE) pass."""
+        self._touch('lib64', 'libwidget.so')
+        self._widget(libraries=['libwidget.so']).verify()
+
+    def test_missing_library_rejected(self):
+        """A library missing from lib and lib64 fails verification."""
+        with self.assertRaises(SoftwarePackageError) as ctx:
+            self._widget(libraries=['libwidget.so']).verify()
+        self.assertIn('not accessible', str(ctx.exception))
+
+    def test_missing_header_rejected(self):
+        """A missing header fails verification."""
+        self._touch('include', 'widget.h')
+        with self.assertRaises(SoftwarePackageError):
+            self._widget(headers=['widget.h', 'widget_config.h']).verify()
+
+
+class InstallationEnvironmentTest(tests.TestCase):
+    """Tests for the compile-time and runtime environments an installation contributes."""
+
+    _LIBRARY_PATH = 'DYLD_LIBRARY_PATH' if HOST_OS is DARWIN else 'LD_LIBRARY_PATH'
+
+    def setUp(self):
+        super().setUp()
+        self._prefix = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self._prefix, ignore_errors=True)
+
+    def _widget_with_dirs(self):
+        os.makedirs(os.path.join(self._prefix, 'bin'))
+        os.makedirs(os.path.join(self._prefix, 'lib'))
+        return _widget(self._prefix)
+
+    def test_bin_and_lib_paths_prepended(self):
+        """PATH and the loader path start with the installation's directories."""
+        inst = self._widget_with_dirs()
+        library_path = self._LIBRARY_PATH
+        opts, env = inst.compiletime_config(['-O2'], {'PATH': '/usr/bin', library_path: '/usr/lib'})
+        self.assertEqual(opts, ['-O2'])
+        self.assertEqual(env['PATH'], os.pathsep.join([inst.bin_path, '/usr/bin']))
+        self.assertEqual(env[library_path], '/usr/lib')
+        opts, env = inst.runtime_config(None, {'PATH': '/usr/bin', library_path: '/usr/lib'})
+        self.assertEqual(opts, [])
+        self.assertEqual(env['PATH'], os.pathsep.join([inst.bin_path, '/usr/bin']))
+        self.assertEqual(env[library_path], os.pathsep.join([inst.lib_path, '/usr/lib']))
+
+    def test_paths_created_when_absent(self):
+        """Without a PATH or loader path in the environment the installation's directories become them."""
+        inst = self._widget_with_dirs()
+        _, env = inst.compiletime_config(env={'HOME': '/h'})
+        self.assertEqual(env['PATH'], inst.bin_path)
+        _, env = inst.runtime_config(env={'HOME': '/h'})
+        self.assertEqual(env['PATH'], inst.bin_path)
+        self.assertEqual(env[self._LIBRARY_PATH], inst.lib_path)
+
+    def test_missing_directories_leave_environment_alone(self):
+        """An installation without bin or lib directories changes nothing."""
+        inst = _widget(self._prefix)
+        env = {'PATH': '/usr/bin'}
+        self.assertEqual(inst.compiletime_config(env=env)[1], env)
+        self.assertEqual(inst.runtime_config(env=env)[1], env)
+
+
+class ParallelMakeFlagsTest(tests.TestCase):
+    """Tests for :any:`parallel_make_flags`."""
+
+    _DEFAULT = ['-j', str(max(1, multiprocessing.cpu_count() - 1))]
+
+    def test_explicit_count(self):
+        """An explicit job count is used as-is."""
+        self.assertEqual(parallel_make_flags(4), ['-j', '4'])
+
+    def test_environment_override(self):
+        """__TAUCMDR_MAX_MAKE_JOBS__ sets the job count."""
+        with mock.patch.dict(os.environ, {'__TAUCMDR_MAX_MAKE_JOBS__': '3'}):
+            self.assertEqual(parallel_make_flags(), ['-j', '3'])
+
+    def test_invalid_environment_override(self):
+        """A non-positive count is an error; a non-numeric one falls back to the default."""
+        with mock.patch.dict(os.environ, {'__TAUCMDR_MAX_MAKE_JOBS__': '0'}):
+            with self.assertRaises(ConfigurationError):
+                parallel_make_flags()
+        with mock.patch.dict(os.environ, {'__TAUCMDR_MAX_MAKE_JOBS__': 'lots'}):
+            self.assertEqual(parallel_make_flags(), self._DEFAULT)
+
+    def test_default_leaves_one_core_free(self):
+        """Without an override, all but one core are used."""
+        with mock.patch.dict(os.environ):
+            os.environ.pop('__TAUCMDR_MAX_MAKE_JOBS__', None)
+            self.assertEqual(parallel_make_flags(), self._DEFAULT)
