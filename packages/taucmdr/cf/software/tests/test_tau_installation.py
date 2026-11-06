@@ -41,7 +41,7 @@ import tempfile
 from types import SimpleNamespace
 from unittest import mock
 from taucmdr import tests, util
-from taucmdr.error import ConfigurationError
+from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.platforms import (HOST_ARCH, HOST_OS, ARM64, PPC64LE, X86_64, CRAY_CNL, DARWIN, LINUX,
                                   SHARED_LIBRARY_SUFFIX)
 from taucmdr.cf.compiler.host import CC
@@ -651,3 +651,89 @@ class TauNightlySourceTest(tests.TestCase):
         self.assertEqual(tau.src, NIGHTLY)
         self.assertEqual(tau.srcs, [])
         self.assertEqual(tau.srcs_avail, [NIGHTLY])
+
+
+class LauncherAppfileTest(tests.TestCase):
+    """Tests for rewriting launcher application files (mpirun --app, srun --multi-prog) to use tau_exec."""
+    # pylint: disable=protected-access
+
+    _TAU_EXEC = ['tau_exec', '-T', 'mpi']
+
+    @staticmethod
+    def _write_appfile(*lines):
+        path = os.path.abspath('app.cfg')
+        with open(path, 'w', encoding='utf-8') as fout:
+            fout.write('\n'.join(lines) + '\n')
+        return path
+
+    @staticmethod
+    def _read_lines(path):
+        with open(path, encoding='utf-8') as fin:
+            return [line.split() for line in fin if line.strip()]
+
+    def test_mpirun_appfile_rewritten(self):
+        """Each command line gets tau_exec in front of its executable; comments and blank lines are dropped."""
+        appfile = self._write_appfile('# rank layout', '', '-np 2 ls -l', '-np 1 hostname')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--app', appfile], self._TAU_EXEC)
+        self.assertEqual(cmd[:2], ['mpirun', '--app'])
+        self.assertEqual(len(cmd), 3)
+        self.assertNotEqual(cmd[2], appfile)
+        self.assertTrue(cmd[2].endswith('.tau'))
+        self.assertEqual(self._read_lines(cmd[2]),
+                         [['-np', '2'] + self._TAU_EXEC + ['ls', '-l'],
+                          ['-np', '1'] + self._TAU_EXEC + ['hostname']])
+
+    def test_srun_multi_prog_inserts_after_rank_spec(self):
+        """Slurm multi-prog lines start with a task range, so tau_exec always goes in second position."""
+        appfile = self._write_appfile('0 ls', '1-3 hostname -s')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['srun', '-n', '4', '--multi-prog', appfile, '--label'], self._TAU_EXEC)
+        self.assertEqual(cmd[:4], ['srun', '-n', '4', '--multi-prog'])
+        self.assertEqual(cmd[5:], ['--label'])
+        self.assertEqual(self._read_lines(cmd[4]),
+                         [['0'] + self._TAU_EXEC + ['ls'],
+                          ['1-3'] + self._TAU_EXEC + ['hostname', '-s']])
+
+    def test_appfile_flag_with_equals(self):
+        """The --flag=file spelling is rewritten in place, keeping the equals form."""
+        appfile = self._write_appfile('-np 2 ls')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['mpirun', '-np', '2', '--app=' + appfile, '--verbose'], self._TAU_EXEC)
+        self.assertEqual(cmd[:3], ['mpirun', '-np', '2'])
+        self.assertEqual(cmd[4:], ['--verbose'])
+        self.assertTrue(cmd[3].startswith('--app='))
+        self.assertTrue(cmd[3].endswith('.tau'))
+        self.assertEqual(self._read_lines(cmd[3][len('--app='):]), [['-np', '2'] + self._TAU_EXEC + ['ls']])
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['srun', '--multi-prog=' + appfile], self._TAU_EXEC)
+        self.assertEqual(len(cmd), 2)
+        self.assertTrue(cmd[1].startswith('--multi-prog='))
+        self.assertTrue(cmd[1].endswith('.tau'))
+
+    def test_other_flags_with_equals_ignored(self):
+        """A --key=value flag that is not the application-file flag is skipped, not mistaken for it."""
+        appfile = self._write_appfile('-np 2 ls')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['mpirun', '--mca=btl=tcp', '--app', appfile], self._TAU_EXEC)
+        self.assertEqual(cmd[:3], ['mpirun', '--mca=btl=tcp', '--app'])
+        self.assertTrue(cmd[3].endswith('.tau'))
+        with self.assertRaises(InternalError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--mca=btl=tcp'], self._TAU_EXEC)
+
+    def test_unknown_launcher_rejected(self):
+        """Launchers without a known application-file flag cannot be rewritten."""
+        appfile = self._write_appfile('-np 2 ls')
+        for launcher in ('aprun', 'my_launcher'):
+            with self.assertRaises(InternalError):
+                TauInstallation._rewrite_launcher_appfile_cmd(None, [launcher, '--app', appfile], self._TAU_EXEC)
+
+    def test_missing_appfile_flag_rejected(self):
+        """A launcher command with no application-file flag cannot be rewritten."""
+        with self.assertRaises(InternalError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-np', '4'], self._TAU_EXEC)
+
+    def test_line_without_executable_rejected(self):
+        """A command line that names no executable is a configuration error, not silently passed through."""
+        appfile = self._write_appfile('-np 2 no_such_program_for_taucmdr_tests')
+        with self.assertRaises(ConfigurationError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-app', appfile], self._TAU_EXEC)
