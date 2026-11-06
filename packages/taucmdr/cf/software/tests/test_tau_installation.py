@@ -362,7 +362,7 @@ def _touch(*parts):
 
 def _fake_python(headers=True, **config):
     """Make a fake Python 3.99 installed in a new directory for testing purposes.
-    
+
     Args:
         headers (bool): If True then the installation has ``Python.h``.
         **config: ``sysconfig`` configuration variables to override.
@@ -640,3 +640,14 @@ class TauConfigurationHashTest(tests.TestCase):
         self.assertIn('-DTAU_MAX_COUNTERS=26', useropts)
         for count in 1, 25, 26:
             self.assertFalse([opt for opt in self._tau(metrics=_metrics(count))._useropts() if 'TAU_MAX_THREADS' in opt])
+
+
+class TauNightlySourceTest(tests.TestCase):
+    """Tests for the sources of a TAU installation given the 'nightly' keyword."""
+
+    def test_nightly_resolves_to_url(self):
+        """'nightly' downloads the nightly archive, and error messages name its URL rather than the keyword."""
+        tau = TauInstallation({'tau': 'nightly'}, HOST_ARCH, HOST_OS, TauInstallation.get_minimal().compilers)
+        self.assertEqual(tau.src, NIGHTLY)
+        self.assertEqual(tau.srcs, [])
+        self.assertEqual(tau.srcs_avail, [NIGHTLY])

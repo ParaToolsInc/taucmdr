@@ -159,6 +159,8 @@ class Installation:
                 self.srcs_avail = [self.src]
         else:
             self.src = src
+            self.srcs = []
+            self.srcs_avail = [self.src]
         self.unmanaged = os.path.isdir(self.src)
 
     def uid_items(self):
@@ -324,10 +326,11 @@ class Installation:
                 return str(archive)
         if self.src is None:
             archive_prefix = os.path.join(highest_writable_storage().prefix, "src")
-            hints = ("If a firewall is blocking access to this server, use another method to download "
-                     "'%s' and copy that file to '%s' before trying this operation." % (self.src, archive_prefix),
+            sources = ', '.join(self.srcs_avail)
+            hints = (f"If a firewall is blocking access to this server, use another method to download "
+                     f"'{sources}' and copy that file to '{archive_prefix}' before trying this operation.",
                      "Check that the file or directory is accessible")
-            raise ConfigurationError("Cannot acquire source archive '%s'." % ', '.join(self.srcs_avail), *hints)
+            raise ConfigurationError(f"Cannot acquire source archive '{sources}'.", *hints)
         return str(archive)
 
     def _prepare_src(self, reuse_archive=True):
