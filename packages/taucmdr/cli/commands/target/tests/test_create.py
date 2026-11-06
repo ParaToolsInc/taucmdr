@@ -98,7 +98,8 @@ class CreateTest(tests.TestCase):
             self.assertCommandReturnValue(0, create_cmd, ['targ02', '--python-interpreter', os.path.basename(link)])
         self.assertEqual(self.getCompiler(PY, 'targ02'), link)
 
-    @tests.skipUnless(util.which('icc'), "Intel compilers required for this test")
+    @tests.skipUnless(util.which('icc') and util.which('icpc') and util.which('ifort'),
+                      "Intel C, C++, and Fortran compilers required for this test")
     def test_host_family_intel(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'Intel'])
