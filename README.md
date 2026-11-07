@@ -82,6 +82,6 @@ Leadership Computing Facility (OLCF) at Oak Ridge National Laboratory.
 
 ---------------------------------------------------------------------------
 
-[CI img]: https://github.com/ParaToolsInc/taucmdr/actions/workflows/CI.yml/badge.svg?branch=master "GH Actions CI image"
+[CI img]: https://github.com/ParaToolsInc/taucmdr/actions/workflows/CI.yml/badge.svg?branch=master&event=push "GH Actions CI image"
 [Coverage img]: https://codecov.io/github/ParaToolsInc/taucmdr/coverage.svg?branch=master "Unit test code coverage image"
 [License img]: https://img.shields.io/badge/license-BSD--3-blue.svg "View BSD-3 License"
