@@ -694,9 +694,13 @@ class ApplicationCommandTest(tests.TestCase):
 class DataFormatTest(tests.TestCase):
     """Tests for guessing performance data formats from file names."""
 
-    def test_directory_is_tau_profile(self):
-        """Any directory is taken to hold TAU's native profile format."""
+    def test_tau_profile(self):
+        """A directory or a profile.<node>.<context>.<thread> file is TAU's native profile format."""
         self.assertEqual(TauInstallation.get_data_format(os.getcwd()), 'tau')
+        for path in ('profile.0.0.0', os.path.join('trial', 'MULTI__TIME', 'profile.12.0.3')):
+            with self.subTest(path=path):
+                self.assertEqual(TauInstallation.get_data_format(path), 'tau')
+        self.assertEqual(TauInstallation.get_data_format('profile.xml'), 'merged')
 
     def test_extensions(self):
         """Known extensions map to their formats, including gzipped merged profiles."""

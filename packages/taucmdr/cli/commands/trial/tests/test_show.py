@@ -29,7 +29,8 @@
 Functions used for unit tests of show.py.
 """
 
-
+import glob
+import os
 from taucmdr import tests
 from taucmdr.cli.commands.trial import show, create
 from taucmdr.cf.compiler.host import CC
@@ -56,3 +57,13 @@ class ShowTest(tests.TestCase):
         self.assertIn('Current trial/metric directory: 0', stdout)
         self.assertIn('Current trial/metric directory: 2', stdout)
         self.assertNotIn('Current trial/metric directory: 1', stdout)
+
+    def test_profile_file(self):
+        """A TAU profile file is shown with the other profiles in its directory."""
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
+        profile, = glob.glob(os.path.join('.tau', '**', 'profile.0.0.0'), recursive=True)
+        stdout, stderr = self.assertCommandReturnValue(None, show.COMMAND, [profile, '--profile-tool', 'pprof'])
+        self.assertFalse(stderr)
+        self.assertIn('Current trial/metric directory: 0', stdout)
