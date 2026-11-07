@@ -1684,7 +1684,7 @@ class TauInstallation(Installation):
                 break
         else:
             raise InternalError(f"None of '{appfile_flags}' found in '{cmd}'")
-        tau_appfile = os.path.join(util.mkdtemp().name, appfile+".tau")
+        tau_appfile = os.path.join(util.mkdtemp().name, os.path.basename(appfile) + ".tau")
         LOGGER.debug("Rewriting '%s' as '%s'", appfile, tau_appfile)
         with open(tau_appfile, 'w') as fout, open(appfile) as fin:
             for lineno, line in enumerate(fin, 1):
