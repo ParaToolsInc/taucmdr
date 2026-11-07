@@ -671,6 +671,21 @@ class LauncherAppfileTest(tests.TestCase):
         with open(path, encoding='utf-8') as fin:
             return [line.split() for line in fin if line.strip()]
 
+    def test_rewritten_appfile_in_temporary_directory(self):
+        """The rewritten file goes to a new directory, never beside or over the user's file, for any path form."""
+        absolute = self._write_appfile('-np 2 ls')
+        os.makedirs('cfg', exist_ok=True)
+        relative = os.path.join('cfg', 'app.cfg')
+        shutil.copy(absolute, relative)
+        for appfile in (absolute, relative):
+            with self.subTest(appfile=appfile):
+                cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+                    None, ['mpirun', '--app=' + appfile], self._TAU_EXEC)
+                rewritten = cmd[1][len('--app='):]
+                self.assertEqual(os.path.basename(rewritten), 'app.cfg.tau')
+                self.assertNotEqual(os.path.dirname(rewritten), os.path.dirname(os.path.abspath(appfile)))
+                self.assertEqual(self._read_lines(rewritten), [['-np', '2'] + self._TAU_EXEC + ['ls']])
+
     def test_mpirun_appfile_rewritten(self):
         """Each command line gets tau_exec in front of its executable; comments and blank lines are dropped."""
         appfile = self._write_appfile('# rank layout', '', '-np 2 ls -l', '-np 1 hostname')
@@ -717,8 +732,9 @@ class LauncherAppfileTest(tests.TestCase):
             None, ['mpirun', '--mca=btl=tcp', '--app', appfile], self._TAU_EXEC)
         self.assertEqual(cmd[:3], ['mpirun', '--mca=btl=tcp', '--app'])
         self.assertTrue(cmd[3].endswith('.tau'))
-        with self.assertRaises(InternalError):
+        with self.assertRaises(InternalError) as ctx:
             TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--mca=btl=tcp'], self._TAU_EXEC)
+        self.assertIn('None of', ctx.exception.value)
 
     def test_unknown_launcher_rejected(self):
         """Launchers without a known application-file flag cannot be rewritten."""
@@ -728,9 +744,10 @@ class LauncherAppfileTest(tests.TestCase):
                 TauInstallation._rewrite_launcher_appfile_cmd(None, [launcher, '--app', appfile], self._TAU_EXEC)
 
     def test_missing_appfile_flag_rejected(self):
-        """A launcher command with no application-file flag cannot be rewritten."""
-        with self.assertRaises(InternalError):
+        """A space-separated flag at the end of the command has no value, so the command cannot be parsed."""
+        with self.assertRaises(InternalError) as ctx:
             TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-np', '4'], self._TAU_EXEC)
+        self.assertIn('Unable to parse', ctx.exception.value)
 
     def test_line_without_executable_rejected(self):
         """A command line that names no executable is a configuration error, not silently passed through."""
