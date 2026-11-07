@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -91,6 +91,9 @@ class TrialShowCommand(AbstractCommand):
                     dataset.setdefault(fmt, []).append(path)
         for path in data_files:
             fmt = tau.get_data_format(path)
+            if fmt == 'tau' and not os.path.isdir(path):
+                # TAU's profile tools read every profile file in a directory.
+                path = os.path.dirname(os.path.abspath(path))
             dataset.setdefault(fmt, []).append(path)
         return tau.show_data_files(dataset, profile_tools, trace_tools)
 
