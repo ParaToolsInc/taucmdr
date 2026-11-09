@@ -91,10 +91,14 @@ class TrialShowCommand(AbstractCommand):
                     dataset.setdefault(fmt, []).append(path)
         for path in data_files:
             fmt = tau.get_data_format(path)
-            if fmt == 'tau' and not os.path.isdir(path):
-                # TAU's profile tools read every profile file in a directory.
-                path = os.path.dirname(os.path.abspath(path))
-            dataset.setdefault(fmt, []).append(path)
+            if fmt == 'tau':
+                path = os.path.abspath(path)
+                if not os.path.isdir(path):
+                    # TAU's profile tools read every profile file in a directory.
+                    path = os.path.dirname(path)
+            paths = dataset.setdefault(fmt, [])
+            if path not in paths:
+                paths.append(path)
         return tau.show_data_files(dataset, profile_tools, trace_tools)
 
 

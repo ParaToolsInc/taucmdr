@@ -31,6 +31,7 @@ Functions used for unit tests of show.py.
 
 import glob
 import os
+import shutil
 from taucmdr import tests
 from taucmdr.cli.commands.trial import show, create
 from taucmdr.cf.compiler.host import CC
@@ -67,3 +68,16 @@ class ShowTest(tests.TestCase):
         stdout, stderr = self.assertCommandReturnValue(None, show.COMMAND, [profile, '--profile-tool', 'pprof'])
         self.assertFalse(stderr)
         self.assertIn('Current trial/metric directory: 0', stdout)
+
+    def test_profiles_in_one_dir(self):
+        """Profile files and their directory, given together, show that directory once."""
+        self.reset_project_storage()
+        self.assertManagedBuild(0, CC, [], 'hello.c')
+        self.assertCommandReturnValue(0, create.COMMAND, ['./a.out'])
+        profile, = glob.glob(os.path.join('.tau', '**', 'profile.0.0.0'), recursive=True)
+        profile_dir = os.path.dirname(profile)
+        other = shutil.copy(profile, os.path.join(profile_dir, 'profile.1.0.0'))
+        argv = [profile, other, profile_dir, '--profile-tool', 'pprof']
+        stdout, stderr = self.assertCommandReturnValue(None, show.COMMAND, argv)
+        self.assertFalse(stderr)
+        self.assertEqual(stdout.count('Current trial/metric directory: 0'), 1)
