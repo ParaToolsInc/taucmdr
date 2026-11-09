@@ -1831,8 +1831,8 @@ class TauInstallation(Installation):
             ConfigurationError: Cannot determine the file's data format.
         """
         root, ext = os.path.splitext(path)
-        # TAU writes profile.<node>.<context>.<thread>
-        if os.path.isdir(path) or re.fullmatch(r'profile\.\d+\.\d+\.\d+', os.path.basename(path)):
+        # TAU writes profile.<node>.<context>.<thread>, with node -1 if MPI (or similar) was never initialized
+        if os.path.isdir(path) or re.fullmatch(r'profile\.-?\d+\.\d+\.\d+', os.path.basename(path)):
             return 'tau'
         if ext == '.ppk':
             return 'ppk'

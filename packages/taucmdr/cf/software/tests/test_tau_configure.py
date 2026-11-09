@@ -697,7 +697,8 @@ class DataFormatTest(tests.TestCase):
     def test_tau_profile(self):
         """A directory or a profile.<node>.<context>.<thread> file is TAU's native profile format."""
         self.assertEqual(TauInstallation.get_data_format(os.getcwd()), 'tau')
-        for path in ('profile.0.0.0', os.path.join('trial', 'MULTI__TIME', 'profile.12.0.3')):
+        # TAU numbers the node -1 when process-level parallelism was never initialized.
+        for path in ('profile.0.0.0', 'profile.-1.0.0', os.path.join('trial', 'MULTI__TIME', 'profile.12.0.3')):
             with self.subTest(path=path):
                 self.assertEqual(TauInstallation.get_data_format(path), 'tau')
         self.assertEqual(TauInstallation.get_data_format('profile.xml'), 'merged')
