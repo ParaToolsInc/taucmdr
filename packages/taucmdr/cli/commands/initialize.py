@@ -26,6 +26,7 @@
 #
 """``initialize`` subcommand."""
 
+import glob
 import os
 import platform
 from taucmdr import util, PROJECT_DIR
@@ -229,6 +230,22 @@ class InitializeCommand(AbstractCommand):
                          '--application', application_name,
                          '--measurement', measurement_name])
 
+    @staticmethod
+    def _path_tau_makefiles(args: ArgumentsNamespace) -> list[str]:
+        """Return the makefiles of the TAU on PATH if the new project will build its own TAU instead.
+
+        A TAU is found from ``tau_exec`` on PATH; its makefiles are in the ``lib`` directory beside the real
+        ``bin`` directory, which also covers the ``<prefix>/bin`` link Spack adds.  Nothing is returned when
+        the command line chooses a TAU with ``--tau`` or ``--from-tau-makefile``.
+        """
+        if hasattr(args, 'forced_makefile') or args.tau_source != 'download':
+            return []
+        tau_exec = util.which('tau_exec')
+        if not tau_exec:
+            return []
+        lib = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(tau_exec))), 'lib')
+        return sorted(glob.glob(os.path.join(lib, 'Makefile.tau*')))
+
     def main(self, argv):
         args = self._parse_args(argv)
         vargs = vars(args)
@@ -245,6 +262,12 @@ class InitializeCommand(AbstractCommand):
             proj = proj_ctrl.selected()
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
+            makefiles = [] if args.bare else self._path_tau_makefiles(args)
+            if makefiles:
+                self.logger.info("This project will build its own TAU, but there is a TAU on PATH with these "
+                                 "configurations:\n%s\nTo use one instead, stop now (Ctrl-C) and run:\n"
+                                 "    tau initialize --from-tau-makefile <makefile>",
+                                 '\n'.join(f'    {makefile}' for makefile in makefiles))
             PROJECT_STORAGE.connect_filesystem()
             try:
                 self._create_project(args)

@@ -31,8 +31,9 @@ Functions used for unit tests of initialize.py.
 """
 
 import os
+import tempfile
 from unittest import mock
-from taucmdr import tests
+from taucmdr import tests, util
 from taucmdr.cf.platforms import DARWIN, LINUX
 from taucmdr.cli.commands import initialize as initialize_module
 from taucmdr.cli.commands.initialize import COMMAND as initialize_cmd
@@ -191,3 +192,43 @@ class PopulateProjectTest(tests.TestCase):
         self.assertEqual(set(measurements), {'baseline', 'sample', 'profile', 'source-inst', 'compiler-inst', 'trace'})
         self.assertEqual(selected, 'sample')
         self.assertEqual(measurements['profile'].compiler_inst, 'fallback')
+
+
+class PathTauTest(tests.TestCase):
+    """Tests for the TAU on PATH that `tau initialize` suggests instead of building its own."""
+    # pylint: disable=protected-access
+
+    def _path_tau(self, argv: list[str]) -> tuple[list[str], str]:
+        """Put a Spack-style TAU on PATH and parse `argv`.
+
+        The TAU's ``<prefix>/bin`` and ``<prefix>/lib`` are links into ``<prefix>/x86_64``, as Spack makes them.
+
+        Returns:
+            tuple: The makefiles `tau initialize` would suggest, and the real path of the TAU's one makefile.
+        """
+        prefix = os.path.join(tempfile.mkdtemp(dir=tests.get_test_workdir()), 'tau-2.36-saeqry5xlqejukg2m')
+        for sub in 'bin', 'lib':
+            os.makedirs(os.path.join(prefix, 'x86_64', sub))
+            os.symlink(os.path.join('x86_64', sub), os.path.join(prefix, sub))
+        tau_exec = os.path.join(prefix, 'x86_64', 'bin', 'tau_exec')
+        with open(tau_exec, 'w') as fout:
+            fout.write('#!/bin/sh\n')
+        os.chmod(tau_exec, 0o755)
+        makefile = os.path.join(prefix, 'x86_64', 'lib', 'Makefile.tau-mpi-pthread')
+        with open(makefile, 'w') as fout:
+            fout.write('TAU_ARCH=x86_64\n')
+        args = initialize_cmd.parser.parse_args(argv)
+        path = os.pathsep.join([os.path.join(prefix, 'bin'), os.environ.get('PATH', '')])
+        with mock.patch.dict(os.environ, {'PATH': path}), mock.patch.dict(util._WHICH_CACHE, clear=True):
+            return initialize_cmd._path_tau_makefiles(args), os.path.realpath(makefile)
+
+    def test_suggested(self):
+        """With the default ``--tau download``, the makefiles of the TAU on PATH are suggested."""
+        found, makefile = self._path_tau([])
+        self.assertEqual(found, [makefile])
+
+    def test_tau_chosen(self):
+        """Nothing is suggested when the command line already chooses a TAU."""
+        for argv in ['--tau', 'nightly'], ['--from-tau-makefile', os.devnull]:
+            with self.subTest(argv=argv):
+                self.assertEqual(self._path_tau(argv)[0], [])

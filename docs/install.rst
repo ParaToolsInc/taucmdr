@@ -122,6 +122,15 @@ path::
 
    tau system configure --tau-config=/path/to/tau
 
+A project can instead use one configuration of an existing TAU, for example one that Spack installed,
+by giving its makefile::
+
+   tau initialize --from-tau-makefile /path/to/tau/lib/Makefile.tau-mpi-pthread
+
+The path may go through the ``<prefix>/lib`` link that Spack adds.  TAU Commander uses that
+configuration as it is and doesn't check that it supports every measurement.  When ``tau initialize``
+is about to build TAU and finds a TAU on ``PATH``, it lists that TAU's makefiles first.
+
 
 .. _offline-install:
 
