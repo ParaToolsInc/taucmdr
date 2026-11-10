@@ -283,12 +283,14 @@ def tau_install_layout(path: str) -> tuple[str, str]:
 
 def tau_makefile_arch(makefile: str) -> str | None:
     """Return the TAU architecture a TAU makefile was configured for (its ``TAU_ARCH``), or None if it's not set."""
+    tau_arch = None
     with open(makefile) as fin:
         for line in fin:
             key, sep, value = line.partition('=')
             if sep and key.strip() == 'TAU_ARCH':
-                return value.strip()
-    return None
+                # As in make, the last setting wins and '#' starts a comment.
+                tau_arch = value.split('#', 1)[0].strip()
+    return tau_arch
 
 
 def tau_makefile_target(makefile: str) -> dict[str, str | None]:

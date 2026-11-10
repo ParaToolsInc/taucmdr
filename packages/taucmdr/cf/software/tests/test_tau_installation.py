@@ -844,6 +844,14 @@ class TauMakefileTargetTest(tests.TestCase):
         self.assertEqual(found[FC.keyword], gfortran)
         self.assertEqual(found['pdt_source'], os.path.join(pkgdir, 'pdt'))
 
+    def test_arch_syntax(self):
+        """``TAU_ARCH`` is read as make reads it: the last setting wins, and ``#`` starts a comment."""
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, 'unknown-arch',
+                                extra=f'TAU_ARCH = {HOST_TAU_MAGIC.name}  #ENDIF##TAU_ARCH#\n')
+        found = tau_makefile_target(makefile)
+        self.assertEqual((found['host_arch'], found['host_os']),
+                         (HOST_TAU_MAGIC.architecture.name, HOST_TAU_MAGIC.operating_system.name))
+
     def test_directory(self):
         """A directory given as the makefile is a configuration error."""
         with self.assertRaisesRegex(ConfigurationError, 'Invalid TAU makefile'):
