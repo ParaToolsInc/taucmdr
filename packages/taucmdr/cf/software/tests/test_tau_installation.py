@@ -818,6 +818,32 @@ class TauMakefileTargetTest(tests.TestCase):
                                 extra=''.join(f'{line}\n' for line in lines))
         self.assertEqual(tau_makefile_target(makefile)[CC.keyword], gcc)
 
+    def test_makefile_variables(self):
+        """Variables are expanded as make does, comments are dropped, and the last setting wins.
+
+        TAU's makefiles set ``TAU_F90`` twice, the second time from ``FULL_FORTRAN``, which names the compiler
+        TAU was configured with. A variable may be set after the line that uses it, and one that refers to
+        itself expands to nothing.
+        """
+        version = 'echo "GNU Fortran (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."'
+        other = _script(os.path.join(tempfile.mkdtemp(dir=tests.get_test_workdir()), 'gfortran'), version)
+        gfortran = _script(os.path.join(tempfile.mkdtemp(dir=tests.get_test_workdir()), 'gfortran'), version)
+        pkgdir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        lines = [f'TAU_F90 = {other} $(F90_ABI) #ENDIF##GNU_GFORTRAN#',
+                 f'FULL_FORTRAN={gfortran}  #ENDIF##FORTRAN_SPECIFIED#',
+                 'TAU_F90 = $(FULL_FORTRAN) $(F90_ABI) $(TAU_F90_OPT) #ENDIF##FORTRAN_SPECIFIED#',
+                 'F90_ABI = $(F90_ABI)',
+                 'PDTDIR = $(PDT_PREFIX)/pdt',
+                 f'PDT_PREFIX = {os.path.dirname(pkgdir)}/$(PDT_NAME)',
+                 f'PDT_NAME = {os.path.basename(pkgdir)}']
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name,
+                                extra=''.join(f'{line}\n' for line in lines))
+        os.mkdir(os.path.join(pkgdir, 'pdt'))
+        with self.assertNoLogs('taucmdr.cf.software.tau_installation', 'WARNING'):
+            found = tau_makefile_target(makefile)
+        self.assertEqual(found[FC.keyword], gfortran)
+        self.assertEqual(found['pdt_source'], os.path.join(pkgdir, 'pdt'))
+
     def test_packages(self):
         """Package directories in the makefile are used if they exist, and an empty one means no package."""
         pkgdir = tempfile.mkdtemp(dir=tests.get_test_workdir())

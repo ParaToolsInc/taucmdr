@@ -340,7 +340,7 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
                          "PAPIDIR": ("papi_source", os.path.abspath),
                          "PDTDIR": ("pdt_source", os.path.abspath),
                          "SCOREPDIR": ("scorep_source", os.path.abspath)}
-        tau_r = ''
+        variables: dict[str, str] = {}
         for line in fin:
             if line.startswith('#'):
                 continue
@@ -348,10 +348,20 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
                 key, val = (x.strip() for x in line.split('=', 1))
             except ValueError:
                 continue
-            if key == 'TAU_R':
-                tau_r = val.split()[0]
-            elif key in compiler_parts:
-                path = util.which(val.strip().split()[0].replace('$(TAU_R)', tau_r))
+            # As in make, the last setting wins, even when it comes after a line that uses the variable.
+            variables[key] = val.split('#', 1)[0]
+
+        def expand(text: str, seen: frozenset[str] = frozenset()) -> str:
+            """Expand each ``$(NAME)`` in `text` as make does; a variable that refers to itself expands to nothing."""
+            def value(match: re.Match[str]) -> str:
+                name = match.group(1)
+                return '' if name in seen else expand(variables.get(name, ''), seen | {name})
+            return re.sub(r'\$\((\w+)\)', value, text)
+
+        for key, val in variables.items():
+            if key in compiler_parts:
+                words = expand(val).split()
+                path = util.which(words[0]) if words else None
                 if not path:
                     LOGGER.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
                     continue
@@ -367,7 +377,7 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
                         found.setdefault(comp.info.role.keyword, comp.absolute_path)
             elif key in package_parts:
                 attr, operator = package_parts[key]
-                path = val.strip()
+                path = expand(val).strip()
                 if not path:
                     path = None
                 else:
