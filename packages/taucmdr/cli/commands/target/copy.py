@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -107,6 +107,8 @@ class TargetCopyCommand(CopyCommand):
         TauInstallation.check_env_compat()
         args = self._parse_args(argv)
         store = arguments.parse_storage_flag(args)[0]
+        if hasattr(args, 'forced_makefile'):
+            target_create_cmd.parse_tau_makefile(args)
         compilers = target_create_cmd.parse_compiler_flags(args)
         data = {attr: getattr(args, attr) for attr in self.model.attributes if hasattr(args, attr)}
         for keyword, comp in compilers.items():

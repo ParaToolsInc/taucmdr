@@ -52,7 +52,7 @@ from taucmdr.util import get_command_output
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags, new_os_environ
-from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
+from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet, Knowledgebase, InstalledCompiler
 from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -289,6 +289,90 @@ def tau_makefile_arch(makefile: str) -> str | None:
             if sep and key.strip() == 'TAU_ARCH':
                 return value.strip()
     return None
+
+
+def tau_makefile_target(makefile: str) -> dict[str, str | None]:
+    """Find the target configuration a TAU makefile was built for.
+
+    Args:
+        makefile (str): Path to a TAU makefile.
+
+    Raises:
+        ConfigurationError: The makefile can't be read, or its ``TAU_ARCH`` is missing, unknown, or ambiguous.
+
+    Returns:
+        dict: Target attribute values by attribute name: the host architecture and OS, the TAU installation,
+        and the compilers (with any compilers they wrap) and package directories the makefile names.
+    """
+    # Parsing a TAU Makefile is a really hairy operation, so let's lift the limits
+    # pylint: disable=too-many-locals
+    if not util.path_accessible(makefile):
+        raise ConfigurationError(f"Invalid TAU makefile: {makefile}")
+    tau_arch_name = tau_makefile_arch(makefile)
+    if not tau_arch_name:
+        raise ConfigurationError(f"TAU Makefile '{makefile}' does not set TAU_ARCH")
+    matches = [arch for arch in TauMagic.all() if arch.name == tau_arch_name]
+    if len(matches) == 1:
+        tau_arch = matches[0]
+    elif not matches:
+        raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" %
+                                 (makefile, tau_arch_name))
+    else:
+        for arch in matches:
+            if arch.architecture == HOST_ARCH and arch.operating_system == HOST_OS:
+                tau_arch = arch
+                break
+        else:
+            parts = [f"TAU Makefile '{makefile}' targets an ambiguous TAU architecture: {tau_arch_name}",
+                     "It could be any of these:"]
+            parts.extend([f"  - {arch.operating_system.name} on {arch.architecture.name}"
+                          for arch in matches])
+            raise ConfigurationError("\n".join(parts))
+    found = {'host_arch': tau_arch.architecture.name,
+             'host_os': tau_arch.operating_system.name,
+             'tau_source': tau_install_layout(makefile)[0]}
+    with open(makefile) as fin:
+        compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
+        package_parts = {"BFDINCLUDE": ("binutils_source",
+                                        lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))),
+                         "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
+                         "PAPIDIR": ("papi_source", os.path.abspath),
+                         "PDTDIR": ("pdt_source", os.path.abspath),
+                         "SCOREPDIR": ("scorep_source", os.path.abspath)}
+        tau_r = ''
+        for line in fin:
+            if line.startswith('#'):
+                continue
+            try:
+                key, val = (x.strip() for x in line.split('=', 1))
+            except ValueError:
+                continue
+            if key == 'TAU_R':
+                tau_r = val.split()[0]
+            elif key in compiler_parts:
+                path = util.which(val.strip().split()[0].replace('$(TAU_R)', tau_r))
+                if not path:
+                    LOGGER.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
+                    continue
+                if Knowledgebase.find_compiler(os.path.basename(path)):
+                    # probe() picks the family when a name like 'cc' fits several.
+                    comp = InstalledCompiler.probe(path)
+                    found[comp.info.role.keyword] = comp.absolute_path
+                    while comp.wrapped:
+                        comp = comp.wrapped
+                        found[comp.info.role.keyword] = comp.absolute_path
+            elif key in package_parts:
+                attr, operator = package_parts[key]
+                path = val.strip()
+                if not path:
+                    path = None
+                else:
+                    path = operator(path)
+                    if not os.path.exists(path):
+                        LOGGER.warning("'%s' referenced by TAU Makefile '%s' doesn't exist", path, makefile)
+                        continue
+                found[attr] = path
+    return found
 
 
 class TauInstallation(Installation):
