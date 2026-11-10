@@ -43,12 +43,15 @@ from unittest import mock
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.platforms import (HOST_ARCH, HOST_OS, ARM64, PPC64LE, X86_64, CRAY_CNL, DARWIN, LINUX,
-                                  SHARED_LIBRARY_SUFFIX)
-from taucmdr.cf.compiler.host import CC
+                                  SHARED_LIBRARY_SUFFIX, HOST_TAU_MAGIC)
+from taucmdr.cf.compiler.caf import CAF_FC
+from taucmdr.cf.compiler.host import CC, FC
 from taucmdr.cf.software import installation
 from taucmdr.cf.software.installation import Installation
-from taucmdr.cf.software.tau_installation import NIGHTLY, TauInstallation, complete_nightly_names, python_build_paths
+from taucmdr.cf.software.tau_installation import (NIGHTLY, TauInstallation, complete_nightly_names, python_build_paths,
+                                                  tau_makefile_target)
 from taucmdr.cli.commands.system.tests.test_fetch import make_archive
+from taucmdr.cli.commands.target.tests.test_create import _tau_tree
 
 
 class TauInstallationTest(tests.TestCase):
@@ -754,3 +757,39 @@ class LauncherAppfileTest(tests.TestCase):
         appfile = self._write_appfile('-np 2 no_such_program_for_taucmdr_tests')
         with self.assertRaises(ConfigurationError):
             TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-app', appfile], self._TAU_EXEC)
+
+
+def _script(path: str, body: str) -> str:
+    """Write an executable shell script to `path` that runs `body`, and return `path`."""
+    with open(path, 'w') as fout:
+        fout.write(f'#!/bin/sh\n{body}\n')
+    os.chmod(path, 0o755)
+    return path
+
+
+class TauMakefileTargetTest(tests.TestCase):
+    """Tests for :any:`tau_makefile_target`."""
+
+    def test_cray_cc(self):
+        """A Cray ``cc`` in ``FULL_CC`` is the host C compiler, though Cray's UPC compiler is also ``cc``.
+
+        The ``cc`` wraps a GNU ``gcc``, which is also a host C compiler, but the wrapper stays the C compiler.
+        """
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        gcc = _script(os.path.join(bindir, 'gcc'),
+                      'echo "gcc (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."')
+        # With -craype-verbose, craype's wrappers print the command they run.
+        cray_cc = _script(os.path.join(bindir, 'cc'), f'echo "{gcc} --version -E"')
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'FULL_CC={cray_cc}\n')
+        self.assertEqual(tau_makefile_target(makefile)[CC.keyword], cray_cc)
+
+    def test_caf(self):
+        """``TAU_F90=caf`` sets the coarray Fortran compiler to ``caf`` and the Fortran compiler to its ``gfortran``."""
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        gfortran = _script(os.path.join(bindir, 'gfortran'),
+                           'echo "GNU Fortran (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."')
+        caf = _script(os.path.join(bindir, 'caf'), f'echo "{gfortran} -fcoarray=lib -lcaf_mpi"')
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'TAU_F90={caf}\n')
+        found = tau_makefile_target(makefile)
+        self.assertEqual(found[CAF_FC.keyword], caf)
+        self.assertEqual(found[FC.keyword], gfortran)
