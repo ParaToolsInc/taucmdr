@@ -44,8 +44,10 @@ from taucmdr.cli.commands.target.create import COMMAND as create_cmd
 from taucmdr.model.target import Target
 
 
-def _tau_tree(arch_dir: str, tau_arch: str | None, spack_links: bool = False) -> tuple[str, str]:
+def _tau_tree(arch_dir: str, tau_arch: str | None, spack_links: bool = False, extra: str = '') -> tuple[str, str]:
     """Make a TAU installation holding one makefile in `arch_dir`, with ``TAU_ARCH`` set to `tau_arch` if given.
+
+    The makefile ends with the lines in `extra`.
 
     With `spack_links`, add the ``<prefix>/lib`` link to ``<arch_dir>/lib`` that Spack adds, and give the
     makefile's path through that link, as Spack's ``TAU_MAKEFILE`` does.
@@ -61,6 +63,7 @@ def _tau_tree(arch_dir: str, tau_arch: str | None, spack_links: bool = False) ->
         fout.write(f'CONFIG_ARCH={arch_dir}\n')
         if tau_arch:
             fout.write(f'TAU_ARCH={tau_arch}\n')
+        fout.write(extra)
     if spack_links:
         os.symlink(os.path.join(arch_dir, 'lib'), os.path.join(prefix, 'lib'))
         makefile = os.path.join(prefix, 'lib', os.path.basename(makefile))
@@ -114,6 +117,15 @@ class CreateTest(tests.TestCase):
         _, makefile = _tau_tree(HOST_TAU_MAGIC.name, 'bogus')
         with self.assertRaisesRegex(ConfigurationError, 'unrecognized TAU architecture: bogus'):
             self.exec_command(create_cmd, ['targ02', '--from-tau-makefile', makefile])
+
+    @tests.skipUnless(util.which('cc'), "cc required for this test")
+    def test_makefile_generic_cc(self):
+        """A makefile's ``cc`` is identified by the first compiler family that accepts it, not always Cray."""
+        self.reset_project_storage()
+        cc = util.which('cc')
+        prefix, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'FULL_CC={cc}\n')
+        self._assert_from_makefile(prefix, makefile)
+        self.assertEqual(self.getCompiler(CC, 'targ02'), cc)
 
     def test_makefile_no_arch(self):
         """A makefile without ``TAU_ARCH`` is refused, even in a directory named after a TAU architecture."""
