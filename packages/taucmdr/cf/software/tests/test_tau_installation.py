@@ -844,6 +844,11 @@ class TauMakefileTargetTest(tests.TestCase):
         self.assertEqual(found[FC.keyword], gfortran)
         self.assertEqual(found['pdt_source'], os.path.join(pkgdir, 'pdt'))
 
+    def test_directory(self):
+        """A directory given as the makefile is a configuration error."""
+        with self.assertRaisesRegex(ConfigurationError, 'Invalid TAU makefile'):
+            tau_makefile_target(tempfile.mkdtemp(dir=tests.get_test_workdir()))
+
     def test_packages(self):
         """Package directories in the makefile are used if they exist, and an empty one means no package."""
         pkgdir = tempfile.mkdtemp(dir=tests.get_test_workdir())

@@ -304,7 +304,7 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
         dict: Target attribute values by attribute name: the host architecture and OS, the TAU installation,
         and the compilers (with any compilers they wrap) and package directories the makefile names.
     """
-    if not util.path_accessible(makefile):
+    if not os.path.isfile(makefile) or not util.path_accessible(makefile):
         raise ConfigurationError(f"Invalid TAU makefile: {makefile}")
     tau_arch_name = tau_makefile_arch(makefile)
     if not tau_arch_name:
