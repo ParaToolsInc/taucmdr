@@ -44,7 +44,7 @@ from taucmdr.cf.compiler.caf import CAF_COMPILERS
 from taucmdr.cf.compiler.python import PYTHON_INTERPRETERS
 from taucmdr.cf.platforms import TauMagic, HOST_ARCH, HOST_OS, CRAY_CNL
 from taucmdr.cf.software.tau_installation import (TauInstallation, TAU_MINIMAL_COMPILERS, tau_makefile_arch,
-                                                  tau_makefile_layout)
+                                                  tau_install_layout)
 
 
 
@@ -106,7 +106,7 @@ class TargetCreateCommand(CreateCommand):
         self.logger.info("  --host-arch='%s'", args.host_arch)
         args.host_os = tau_arch.operating_system.name
         self.logger.info("  --host-os='%s'", args.host_os)
-        args.tau_source = tau_makefile_layout(makefile)[0]
+        args.tau_source = tau_install_layout(makefile)[0]
         self.logger.info("  --taucmdr='%s'", args.tau_source)
         with open(makefile) as fin:
             compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
