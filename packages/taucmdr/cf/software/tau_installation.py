@@ -300,7 +300,8 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
         makefile (str): Path to a TAU makefile.
 
     Raises:
-        ConfigurationError: The makefile can't be read, or its ``TAU_ARCH`` is missing, unknown, or ambiguous.
+        ConfigurationError: The makefile can't be read, its ``TAU_ARCH`` is missing, unknown, or ambiguous, or a
+            compiler it names is found but can't be identified.  A compiler that isn't found is skipped instead.
 
     Returns:
         dict: Target attribute values by attribute name: the host architecture and OS, the TAU installation,
