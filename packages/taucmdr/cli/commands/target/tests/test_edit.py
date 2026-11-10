@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ParaTools, Inc.
+# Copyright (c) 2016-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,14 @@
 Functions used for unit tests of edit.py.
 """
 
-
+import os
 from taucmdr import tests, util
+from taucmdr.error import ConfigurationError
+from taucmdr.cf.platforms import HOST_TAU_MAGIC
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.target import edit
+from taucmdr.cli.commands.target.tests.test_create import _tau_tree
+from taucmdr.model.target import Target
 
 class EditTest(tests.TestCase):
     """Tests for :any:`target.delete`."""
@@ -69,6 +74,21 @@ class EditTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, edit.COMMAND, argv)
         self.assertIn('target edit <target_name> [arguments]', stderr)
         self.assertIn('target edit: error: ambiguous option: --mpi could match --mpi-', stderr)
+
+    def test_from_tau_makefile(self):
+        """``--from-tau-makefile`` takes the TAU installation from the makefile, as ``target create`` does."""
+        self.reset_project_storage()
+        prefix, makefile = _tau_tree('custom', HOST_TAU_MAGIC.name)
+        self.assertCommandReturnValue(0, edit.COMMAND, ['targ1', '--from-tau-makefile', makefile])
+        targ = Target.controller(PROJECT_STORAGE).one({'name': 'targ1'})
+        self.assertEqual(targ['tau_source'], os.path.realpath(prefix))
+
+    def test_from_missing_tau_makefile(self):
+        """A missing makefile is refused with a configuration error, not a ``target create`` usage error."""
+        self.reset_project_storage()
+        missing = os.path.join(tests.get_test_workdir(), 'Makefile.tau-missing')
+        with self.assertRaisesRegex(ConfigurationError, 'Invalid TAU makefile'):
+            self.exec_command(edit.COMMAND, ['targ1', '--from-tau-makefile', missing])
 
     @tests.skipUnless(util.which('mpicc'), "MPI compilers required for this test")
     def test_no_mpi(self):
