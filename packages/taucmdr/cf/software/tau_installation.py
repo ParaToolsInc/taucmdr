@@ -304,8 +304,6 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
         dict: Target attribute values by attribute name: the host architecture and OS, the TAU installation,
         and the compilers (with any compilers they wrap) and package directories the makefile names.
     """
-    # Parsing a TAU Makefile is a really hairy operation, so let's lift the limits
-    # pylint: disable=too-many-locals
     if not util.path_accessible(makefile):
         raise ConfigurationError(f"Invalid TAU makefile: {makefile}")
     tau_arch_name = tau_makefile_arch(makefile)
