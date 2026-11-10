@@ -41,14 +41,17 @@ import tempfile
 from types import SimpleNamespace
 from unittest import mock
 from taucmdr import tests, util
-from taucmdr.error import ConfigurationError
+from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.platforms import (HOST_ARCH, HOST_OS, ARM64, PPC64LE, X86_64, CRAY_CNL, DARWIN, LINUX,
-                                  SHARED_LIBRARY_SUFFIX)
-from taucmdr.cf.compiler.host import CC
+                                  SHARED_LIBRARY_SUFFIX, HOST_TAU_MAGIC)
+from taucmdr.cf.compiler.caf import CAF_FC
+from taucmdr.cf.compiler.host import CC, CXX, FC
 from taucmdr.cf.software import installation
 from taucmdr.cf.software.installation import Installation
-from taucmdr.cf.software.tau_installation import NIGHTLY, TauInstallation, complete_nightly_names, python_build_paths
+from taucmdr.cf.software.tau_installation import (NIGHTLY, TauInstallation, complete_nightly_names, python_build_paths,
+                                                  tau_makefile_target)
 from taucmdr.cli.commands.system.tests.test_fetch import make_archive
+from taucmdr.cli.commands.target.tests.test_create import _tau_tree
 
 
 class TauInstallationTest(tests.TestCase):
@@ -362,7 +365,7 @@ def _touch(*parts):
 
 def _fake_python(headers=True, **config):
     """Make a fake Python 3.99 installed in a new directory for testing purposes.
-    
+
     Args:
         headers (bool): If True then the installation has ``Python.h``.
         **config: ``sysconfig`` configuration variables to override.
@@ -640,3 +643,245 @@ class TauConfigurationHashTest(tests.TestCase):
         self.assertIn('-DTAU_MAX_COUNTERS=26', useropts)
         for count in 1, 25, 26:
             self.assertFalse([opt for opt in self._tau(metrics=_metrics(count))._useropts() if 'TAU_MAX_THREADS' in opt])
+
+
+class TauNightlySourceTest(tests.TestCase):
+    """Tests for the sources of a TAU installation given the 'nightly' keyword."""
+
+    def test_nightly_resolves_to_url(self):
+        """'nightly' downloads the nightly archive, and error messages name its URL rather than the keyword."""
+        tau = TauInstallation({'tau': 'nightly'}, HOST_ARCH, HOST_OS, TauInstallation.get_minimal().compilers)
+        self.assertEqual(tau.src, NIGHTLY)
+        self.assertEqual(tau.srcs, [])
+        self.assertEqual(tau.srcs_avail, [NIGHTLY])
+
+
+class LauncherAppfileTest(tests.TestCase):
+    """Tests for rewriting launcher application files (mpirun --app, srun --multi-prog) to use tau_exec."""
+    # pylint: disable=protected-access
+
+    _TAU_EXEC = ['tau_exec', '-T', 'mpi']
+
+    @staticmethod
+    def _write_appfile(*lines):
+        path = os.path.abspath('app.cfg')
+        with open(path, 'w', encoding='utf-8') as fout:
+            fout.write('\n'.join(lines) + '\n')
+        return path
+
+    @staticmethod
+    def _read_lines(path):
+        with open(path, encoding='utf-8') as fin:
+            return [line.split() for line in fin if line.strip()]
+
+    def test_rewritten_appfile_in_temporary_directory(self):
+        """The rewritten file goes to a new directory, never beside or over the user's file, for any path form."""
+        absolute = self._write_appfile('-np 2 ls')
+        os.makedirs('cfg', exist_ok=True)
+        relative = os.path.join('cfg', 'app.cfg')
+        shutil.copy(absolute, relative)
+        for appfile in (absolute, relative):
+            with self.subTest(appfile=appfile):
+                cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+                    None, ['mpirun', '--app=' + appfile], self._TAU_EXEC)
+                rewritten = cmd[1][len('--app='):]
+                self.assertEqual(os.path.basename(rewritten), 'app.cfg.tau')
+                self.assertNotEqual(os.path.dirname(rewritten), os.path.dirname(os.path.abspath(appfile)))
+                self.assertEqual(self._read_lines(rewritten), [['-np', '2'] + self._TAU_EXEC + ['ls']])
+
+    def test_mpirun_appfile_rewritten(self):
+        """Each command line gets tau_exec in front of its executable; comments and blank lines are dropped."""
+        appfile = self._write_appfile('# rank layout', '', '-np 2 ls -l', '-np 1 hostname')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--app', appfile], self._TAU_EXEC)
+        self.assertEqual(cmd[:2], ['mpirun', '--app'])
+        self.assertEqual(len(cmd), 3)
+        self.assertNotEqual(cmd[2], appfile)
+        self.assertTrue(cmd[2].endswith('.tau'))
+        self.assertEqual(self._read_lines(cmd[2]),
+                         [['-np', '2'] + self._TAU_EXEC + ['ls', '-l'],
+                          ['-np', '1'] + self._TAU_EXEC + ['hostname']])
+
+    def test_srun_multi_prog_inserts_after_rank_spec(self):
+        """Slurm multi-prog lines start with a task range, so tau_exec always goes in second position."""
+        appfile = self._write_appfile('0 ls', '1-3 hostname -s')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['srun', '-n', '4', '--multi-prog', appfile, '--label'], self._TAU_EXEC)
+        self.assertEqual(cmd[:4], ['srun', '-n', '4', '--multi-prog'])
+        self.assertEqual(cmd[5:], ['--label'])
+        self.assertEqual(self._read_lines(cmd[4]),
+                         [['0'] + self._TAU_EXEC + ['ls'],
+                          ['1-3'] + self._TAU_EXEC + ['hostname', '-s']])
+
+    def test_appfile_flag_with_equals(self):
+        """The --flag=file spelling is rewritten in place, keeping the equals form."""
+        appfile = self._write_appfile('-np 2 ls')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['mpirun', '-np', '2', '--app=' + appfile, '--verbose'], self._TAU_EXEC)
+        self.assertEqual(cmd[:3], ['mpirun', '-np', '2'])
+        self.assertEqual(cmd[4:], ['--verbose'])
+        self.assertTrue(cmd[3].startswith('--app='))
+        self.assertTrue(cmd[3].endswith('.tau'))
+        self.assertEqual(self._read_lines(cmd[3][len('--app='):]), [['-np', '2'] + self._TAU_EXEC + ['ls']])
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['srun', '--multi-prog=' + appfile], self._TAU_EXEC)
+        self.assertEqual(len(cmd), 2)
+        self.assertTrue(cmd[1].startswith('--multi-prog='))
+        self.assertTrue(cmd[1].endswith('.tau'))
+
+    def test_other_flags_with_equals_ignored(self):
+        """A --key=value flag that is not the application-file flag is skipped, not mistaken for it."""
+        appfile = self._write_appfile('-np 2 ls')
+        cmd = TauInstallation._rewrite_launcher_appfile_cmd(
+            None, ['mpirun', '--mca=btl=tcp', '--app', appfile], self._TAU_EXEC)
+        self.assertEqual(cmd[:3], ['mpirun', '--mca=btl=tcp', '--app'])
+        self.assertTrue(cmd[3].endswith('.tau'))
+        with self.assertRaises(InternalError) as ctx:
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '--mca=btl=tcp'], self._TAU_EXEC)
+        self.assertIn('None of', ctx.exception.value)
+
+    def test_unknown_launcher_rejected(self):
+        """Launchers without a known application-file flag cannot be rewritten."""
+        appfile = self._write_appfile('-np 2 ls')
+        for launcher in ('aprun', 'my_launcher'):
+            with self.assertRaises(InternalError):
+                TauInstallation._rewrite_launcher_appfile_cmd(None, [launcher, '--app', appfile], self._TAU_EXEC)
+
+    def test_missing_appfile_flag_rejected(self):
+        """A space-separated flag at the end of the command has no value, so the command cannot be parsed."""
+        with self.assertRaises(InternalError) as ctx:
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-np', '4'], self._TAU_EXEC)
+        self.assertIn('Unable to parse', ctx.exception.value)
+
+    def test_line_without_executable_rejected(self):
+        """A command line that names no executable is a configuration error, not silently passed through."""
+        appfile = self._write_appfile('-np 2 no_such_program_for_taucmdr_tests')
+        with self.assertRaises(ConfigurationError):
+            TauInstallation._rewrite_launcher_appfile_cmd(None, ['mpirun', '-app', appfile], self._TAU_EXEC)
+
+
+def _script(path: str, body: str) -> str:
+    """Write an executable shell script to `path` that runs `body`, and return `path`."""
+    with open(path, 'w') as fout:
+        fout.write(f'#!/bin/sh\n{body}\n')
+    os.chmod(path, 0o755)
+    return path
+
+
+# What GNU gcc prints for --version, which identifies it as a GNU compiler.
+_GCC_VERSION = 'echo "gcc (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."'
+
+
+class TauMakefileTargetTest(tests.TestCase):
+    """Tests for :any:`tau_makefile_target`."""
+
+    def test_cray_cc(self):
+        """A Cray ``cc`` in ``FULL_CC`` is the host C compiler, though Cray's UPC compiler is also ``cc``.
+
+        The ``cc`` wraps a GNU ``gcc``, which is also a host C compiler, but the wrapper stays the C compiler.
+        """
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        gcc = _script(os.path.join(bindir, 'gcc'), _GCC_VERSION)
+        # With -craype-verbose, craype's wrappers print the command they run.
+        cray_cc = _script(os.path.join(bindir, 'cc'), f'echo "{gcc} --version -E"')
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'FULL_CC={cray_cc}\n')
+        self.assertEqual(tau_makefile_target(makefile)[CC.keyword], cray_cc)
+
+    def test_caf(self):
+        """``TAU_F90=caf`` sets the coarray Fortran compiler to ``caf`` and the Fortran compiler to its ``gfortran``."""
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        gfortran = _script(os.path.join(bindir, 'gfortran'),
+                           'echo "GNU Fortran (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."')
+        caf = _script(os.path.join(bindir, 'caf'), f'echo "{gfortran} -fcoarray=lib -lcaf_mpi"')
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'TAU_F90={caf}\n')
+        found = tau_makefile_target(makefile)
+        self.assertEqual(found[CAF_FC.keyword], caf)
+        self.assertEqual(found[FC.keyword], gfortran)
+
+    def test_skipped_compilers(self):
+        """A compiler that isn't there, or that TAU Commander doesn't know, is left out with no error."""
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        unknown = _script(os.path.join(bindir, 'notacompiler'), 'exit 0')
+        extra = f'FULL_CC={bindir}/missing-cc\nFULL_CXX={unknown}\n'
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=extra)
+        with self.assertLogs('taucmdr.cf.software.tau_installation', 'WARNING') as logs:
+            found = tau_makefile_target(makefile)
+        self.assertNotIn(CC.keyword, found)
+        self.assertNotIn(CXX.keyword, found)
+        self.assertIn('Failed to parse FULL_CC', logs.output[0])
+
+    def test_makefile_syntax(self):
+        """Lines without ``=`` are skipped, and ``$(TAU_R)`` in a compiler path is expanded."""
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        gcc = _script(os.path.join(bindir, 'gcc'), _GCC_VERSION)
+        lines = ['include other.mk', f'TAU_R={bindir}', 'FULL_CC=$(TAU_R)/gcc -O2']
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name,
+                                extra=''.join(f'{line}\n' for line in lines))
+        self.assertEqual(tau_makefile_target(makefile)[CC.keyword], gcc)
+
+    def test_makefile_variables(self):
+        """Variables are expanded as make does, comments are dropped, and the last setting wins.
+
+        TAU's makefiles set ``TAU_F90`` twice, the second time from ``FULL_FORTRAN``, which names the compiler
+        TAU was configured with. A variable may be set after the line that uses it, and one that refers to
+        itself expands to nothing.
+        """
+        version = 'echo "GNU Fortran (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."'
+        other = _script(os.path.join(tempfile.mkdtemp(dir=tests.get_test_workdir()), 'gfortran'), version)
+        gfortran = _script(os.path.join(tempfile.mkdtemp(dir=tests.get_test_workdir()), 'gfortran'), version)
+        pkgdir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        lines = [f'TAU_F90 = {other} $(F90_ABI) #ENDIF##GNU_GFORTRAN#',
+                 f'FULL_FORTRAN={gfortran}  #ENDIF##FORTRAN_SPECIFIED#',
+                 'TAU_F90 = $(FULL_FORTRAN) $(F90_ABI) $(TAU_F90_OPT) #ENDIF##FORTRAN_SPECIFIED#',
+                 'F90_ABI = $(F90_ABI)',
+                 'PDTDIR = $(PDT_PREFIX)/pdt',
+                 f'PDT_PREFIX = {os.path.dirname(pkgdir)}/$(PDT_NAME)',
+                 f'PDT_NAME = {os.path.basename(pkgdir)}']
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name,
+                                extra=''.join(f'{line}\n' for line in lines))
+        os.mkdir(os.path.join(pkgdir, 'pdt'))
+        with self.assertNoLogs('taucmdr.cf.software.tau_installation', 'WARNING'):
+            found = tau_makefile_target(makefile)
+        self.assertEqual(found[FC.keyword], gfortran)
+        self.assertEqual(found['pdt_source'], os.path.join(pkgdir, 'pdt'))
+
+    def test_arch_syntax(self):
+        """``TAU_ARCH`` is read as make reads it: the last setting wins, and ``#`` starts a comment."""
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, 'unknown-arch',
+                                extra=f'TAU_ARCH = {HOST_TAU_MAGIC.name}  #ENDIF##TAU_ARCH#\n')
+        found = tau_makefile_target(makefile)
+        self.assertEqual((found['host_arch'], found['host_os']),
+                         (HOST_TAU_MAGIC.architecture.name, HOST_TAU_MAGIC.operating_system.name))
+
+    def test_directory(self):
+        """A directory given as the makefile is a configuration error."""
+        with self.assertRaisesRegex(ConfigurationError, 'Invalid TAU makefile'):
+            tau_makefile_target(tempfile.mkdtemp(dir=tests.get_test_workdir()))
+
+    def test_packages(self):
+        """Package directories in the makefile are used if they exist, and an empty one means no package."""
+        pkgdir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        missing = os.path.join(pkgdir, 'missing')
+        lines = [f'PDTDIR={pkgdir}', f'PAPIDIR={missing}', f'BFDINCLUDE=-I{pkgdir}/include', 'UNWIND_INC=']
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name,
+                                extra=''.join(f'{line}\n' for line in lines))
+        with self.assertLogs('taucmdr.cf.software.tau_installation', 'WARNING') as logs:
+            found = tau_makefile_target(makefile)
+        self.assertEqual(found['pdt_source'], pkgdir)
+        self.assertEqual(found['binutils_source'], pkgdir)
+        self.assertIsNone(found['libunwind_source'])
+        self.assertNotIn('papi_source', found)
+        self.assertIn(f"'{missing}' referenced by TAU Makefile", logs.output[0])
+
+    def test_shared_arch(self):
+        """A ``TAU_ARCH`` that several platforms share is the host's; on another host the error lists them."""
+        _, makefile = _tau_tree('craycnl', 'craycnl')
+        module = 'taucmdr.cf.software.tau_installation'
+        with mock.patch.multiple(module, HOST_ARCH=X86_64, HOST_OS=CRAY_CNL):
+            found = tau_makefile_target(makefile)
+        self.assertEqual((found['host_arch'], found['host_os']), (X86_64.name, CRAY_CNL.name))
+        with mock.patch.multiple(module, HOST_ARCH=X86_64, HOST_OS=LINUX), \
+             self.assertRaises(ConfigurationError) as ctx:
+            tau_makefile_target(makefile)
+        self.assertIn('ambiguous TAU architecture: craycnl', ctx.exception.value)
+        self.assertIn('CNL on x86_64', ctx.exception.value)
+        self.assertIn('CNL on aarch64', ctx.exception.value)

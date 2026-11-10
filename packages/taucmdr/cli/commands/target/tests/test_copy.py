@@ -29,9 +29,13 @@
 Functions used for unit tests of copy.py.
 """
 
-
+import os
 from taucmdr import tests, util
+from taucmdr.cf.platforms import HOST_TAU_MAGIC
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.target import copy
+from taucmdr.cli.commands.target.tests.test_create import _tau_tree
+from taucmdr.model.target import Target
 
 class CopyTest(tests.TestCase):
     """Tests for :any:`target.delete`."""
@@ -69,6 +73,14 @@ class CopyTest(tests.TestCase):
         _, stderr = self.assertNotCommandReturnValue(0, copy.COMMAND, argv)
         self.assertIn('target copy <target_name> <copy_name> [arguments]', stderr)
         self.assertIn('target copy: error: ambiguous option: --mpi could match --mpi-', stderr)
+
+    def test_from_tau_makefile(self):
+        """``--from-tau-makefile`` takes the TAU installation from the makefile, as ``target create`` does."""
+        self.reset_project_storage()
+        prefix, makefile = _tau_tree('custom', HOST_TAU_MAGIC.name)
+        self.assertCommandReturnValue(0, copy.COMMAND, ['targ1', 'targ2', '--from-tau-makefile', makefile])
+        targ = Target.controller(PROJECT_STORAGE).one({'name': 'targ2'})
+        self.assertEqual(targ['tau_source'], os.path.realpath(prefix))
 
     def test_compilerarg(self):
         self.reset_project_storage()

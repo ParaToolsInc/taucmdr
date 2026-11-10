@@ -31,13 +31,43 @@ Functions used for unit tests of create.py.
 #pylint: disable=missing-docstring
 
 import os
+import tempfile
 from unittest import mock
 from taucmdr import tests, util
 from taucmdr.error import ConfigurationError
 from taucmdr.cf.compiler.host import CC, CXX, FC
 from taucmdr.cf.compiler.python import PY
 from taucmdr.cf.compiler.tests.test_python import versioned_python_link
+from taucmdr.cf.platforms import HOST_ARCH, HOST_OS, HOST_TAU_MAGIC
+from taucmdr.cf.storage.levels import PROJECT_STORAGE
 from taucmdr.cli.commands.target.create import COMMAND as create_cmd
+from taucmdr.model.target import Target
+
+
+def _tau_tree(arch_dir: str, tau_arch: str | None, spack_links: bool = False, extra: str = '') -> tuple[str, str]:
+    """Make a TAU installation holding one makefile in `arch_dir`, with ``TAU_ARCH`` set to `tau_arch` if given.
+
+    The makefile ends with the lines in `extra`.
+
+    With `spack_links`, add the ``<prefix>/lib`` link to ``<arch_dir>/lib`` that Spack adds, and give the
+    makefile's path through that link, as Spack's ``TAU_MAKEFILE`` does.
+
+    Returns:
+        tuple: The installation prefix and the makefile path to give ``--from-tau-makefile``.
+    """
+    prefix = os.path.join(tempfile.mkdtemp(dir=tests.get_test_workdir()), 'tau-2.36-saeqry5xlqejukg2m')
+    lib = os.path.join(prefix, arch_dir, 'lib')
+    os.makedirs(lib)
+    makefile = os.path.join(lib, 'Makefile.tau-mpi-pthread')
+    with open(makefile, 'w') as fout:
+        fout.write(f'CONFIG_ARCH={arch_dir}\n')
+        if tau_arch:
+            fout.write(f'TAU_ARCH={tau_arch}\n')
+        fout.write(extra)
+    if spack_links:
+        os.symlink(os.path.join(arch_dir, 'lib'), os.path.join(prefix, 'lib'))
+        makefile = os.path.join(prefix, 'lib', os.path.basename(makefile))
+    return prefix, makefile
 
 
 class CreateTest(tests.TestCase):
@@ -54,6 +84,55 @@ class CreateTest(tests.TestCase):
         self.reset_project_storage()
         _, stderr = self.assertNotCommandReturnValue(0, create_cmd, [])
         self.assertIn('error: the following arguments are required', stderr)
+
+    def test_ompt_tr4_tr6_rejected(self):
+        """The retired --ompt download-tr4/download-tr6 keywords are refused at parse time with a hint."""
+        self.reset_project_storage()
+        for value in ('download-tr4', 'download-tr6'):
+            _, stderr = self.assertNotCommandReturnValue(0, create_cmd, ['targ02', '--ompt', value])
+            self.assertIn(f"argument --ompt: '{value}' is no longer supported", stderr)
+            self.assertIn("Use 'download' instead", stderr)
+
+    def _assert_from_makefile(self, prefix: str, makefile: str) -> None:
+        """Create a target from `makefile` and check it uses the TAU installed at `prefix` on this host."""
+        self.assertCommandReturnValue(0, create_cmd, ['targ02', '--from-tau-makefile', makefile])
+        targ = Target.controller(PROJECT_STORAGE).one({'name': 'targ02'})
+        self.assertEqual(targ['tau_source'], os.path.realpath(prefix))
+        self.assertEqual(targ['host_arch'], HOST_ARCH.name)
+        self.assertEqual(targ['host_os'], HOST_OS.name)
+
+    def test_makefile_spack_link(self):
+        """A makefile given through Spack's ``<prefix>/lib`` link is found in its architecture directory."""
+        self.reset_project_storage()
+        self._assert_from_makefile(*_tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, spack_links=True))
+
+    def test_makefile_exec_prefix(self):
+        """The architecture comes from ``TAU_ARCH`` in the makefile, not the name of its directory."""
+        self.reset_project_storage()
+        self._assert_from_makefile(*_tau_tree('custom', HOST_TAU_MAGIC.name))
+
+    def test_makefile_unknown_arch(self):
+        """A makefile whose ``TAU_ARCH`` names no known TAU architecture is refused."""
+        self.reset_project_storage()
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, 'bogus')
+        with self.assertRaisesRegex(ConfigurationError, 'unrecognized TAU architecture: bogus'):
+            self.exec_command(create_cmd, ['targ02', '--from-tau-makefile', makefile])
+
+    @tests.skipUnless(util.which('cc'), "cc required for this test")
+    def test_makefile_generic_cc(self):
+        """A makefile's ``cc`` is identified by the first compiler family that accepts it, not always Cray."""
+        self.reset_project_storage()
+        cc = util.which('cc')
+        prefix, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'FULL_CC={cc}\n')
+        self._assert_from_makefile(prefix, makefile)
+        self.assertEqual(self.getCompiler(CC, 'targ02'), cc)
+
+    def test_makefile_no_arch(self):
+        """A makefile without ``TAU_ARCH`` is refused, even in a directory named after a TAU architecture."""
+        self.reset_project_storage()
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, None)
+        with self.assertRaisesRegex(ConfigurationError, 'does not set TAU_ARCH'):
+            self.exec_command(create_cmd, ['targ02', '--from-tau-makefile', makefile])
 
     def test_h_arg(self):
         self.reset_project_storage()
@@ -90,7 +169,8 @@ class CreateTest(tests.TestCase):
             self.assertCommandReturnValue(0, create_cmd, ['targ02', '--python-interpreter', os.path.basename(link)])
         self.assertEqual(self.getCompiler(PY, 'targ02'), link)
 
-    @tests.skipUnless(util.which('icc'), "Intel compilers required for this test")
+    @tests.skipUnless(util.which('icc') and util.which('icpc') and util.which('ifort'),
+                      "Intel C, C++, and Fortran compilers required for this test")
     def test_host_family_intel(self):
         self.reset_project_storage()
         stdout, stderr = self.assertCommandReturnValue(0, create_cmd, ['test_targ', '--compilers', 'Intel'])

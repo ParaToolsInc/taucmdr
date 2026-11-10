@@ -52,7 +52,7 @@ from taucmdr.util import get_command_output
 from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.software import SoftwarePackageError
 from taucmdr.cf.software.installation import Installation, parallel_make_flags, new_os_environ
-from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet
+from taucmdr.cf.compiler import host as host_compilers, InstalledCompilerSet, Knowledgebase, InstalledCompiler
 from taucmdr.cf.compiler.host import CC, CXX, FC, UPC, GNU, APPLE_LLVM, IBM
 from taucmdr.cf.compiler.mpi import MPI_CC, MPI_CXX, MPI_FC
 from taucmdr.cf.compiler.shmem import SHMEM_CC, SHMEM_CXX, SHMEM_FC
@@ -263,6 +263,135 @@ def complete_nightly_names(src_dir):
     return sorted(changed)
 
 
+def tau_install_layout(path: str) -> tuple[str, str]:
+    """Find the TAU installation that a file in its ``bin`` or ``lib`` directory belongs to.
+
+    TAU installs its files as ``<prefix>/<arch>/bin/*`` and ``<prefix>/<arch>/lib/*``, e.g. its makefiles as
+    ``<prefix>/<arch>/lib/Makefile.tau-*``.  Links are resolved first, so a file given through a link, like
+    the ``<prefix>/bin`` and ``<prefix>/lib`` that Spack adds, is found in its real ``<arch>`` directory.
+    ``<arch>`` is usually the TAU architecture, but TAU's ``-exec-prefix`` option can rename it.
+
+    Args:
+        path (str): Path to a file in a TAU installation's ``bin`` or ``lib`` directory, e.g. a TAU makefile.
+
+    Returns:
+        tuple: The installation prefix and the name of its ``<arch>`` directory.
+    """
+    arch_dir = os.path.dirname(os.path.dirname(os.path.realpath(path)))
+    return os.path.dirname(arch_dir), os.path.basename(arch_dir)
+
+
+def tau_makefile_arch(makefile: str) -> str | None:
+    """Return the TAU architecture a TAU makefile was configured for (its ``TAU_ARCH``), or None if it's not set."""
+    tau_arch = None
+    with open(makefile) as fin:
+        for line in fin:
+            key, sep, value = line.partition('=')
+            if sep and key.strip() == 'TAU_ARCH':
+                # As in make, the last setting wins and '#' starts a comment.
+                tau_arch = value.split('#', 1)[0].strip()
+    return tau_arch
+
+
+def tau_makefile_target(makefile: str) -> dict[str, str | None]:
+    """Find the target configuration a TAU makefile was built for.
+
+    Args:
+        makefile (str): Path to a TAU makefile.
+
+    Raises:
+        ConfigurationError: The makefile can't be read, its ``TAU_ARCH`` is missing, unknown, or ambiguous, or a
+            compiler it names is found but can't be identified.  A compiler that isn't found is skipped instead.
+
+    Returns:
+        dict: Target attribute values by attribute name: the host architecture and OS, the TAU installation,
+        and the compilers (with any compilers they wrap) and package directories the makefile names.
+    """
+    if not os.path.isfile(makefile) or not util.path_accessible(makefile):
+        raise ConfigurationError(f"Invalid TAU makefile: {makefile}")
+    tau_arch_name = tau_makefile_arch(makefile)
+    if not tau_arch_name:
+        raise ConfigurationError(f"TAU Makefile '{makefile}' does not set TAU_ARCH")
+    matches = [arch for arch in TauMagic.all() if arch.name == tau_arch_name]
+    if len(matches) == 1:
+        tau_arch = matches[0]
+    elif not matches:
+        raise ConfigurationError("TAU Makefile '%s' targets an unrecognized TAU architecture: %s" %
+                                 (makefile, tau_arch_name))
+    else:
+        for arch in matches:
+            if arch.architecture == HOST_ARCH and arch.operating_system == HOST_OS:
+                tau_arch = arch
+                break
+        else:
+            parts = [f"TAU Makefile '{makefile}' targets an ambiguous TAU architecture: {tau_arch_name}",
+                     "It could be any of these:"]
+            parts.extend([f"  - {arch.operating_system.name} on {arch.architecture.name}"
+                          for arch in matches])
+            raise ConfigurationError("\n".join(parts))
+    found = {'host_arch': tau_arch.architecture.name,
+             'host_os': tau_arch.operating_system.name,
+             'tau_source': tau_install_layout(makefile)[0]}
+    with open(makefile) as fin:
+        # Each key names a language, which picks the role when a command like Cray's 'cc' fills several.
+        compiler_parts = {"FULL_CC": (CC, MPI_CC, SHMEM_CC),
+                          "FULL_CXX": (CXX, MPI_CXX, SHMEM_CXX, CUDA_CXX),
+                          "TAU_F90": (FC, MPI_FC, SHMEM_FC, CAF_FC, CUDA_FC)}
+        package_parts = {"BFDINCLUDE": ("binutils_source",
+                                        lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))),
+                         "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
+                         "PAPIDIR": ("papi_source", os.path.abspath),
+                         "PDTDIR": ("pdt_source", os.path.abspath),
+                         "SCOREPDIR": ("scorep_source", os.path.abspath)}
+        variables: dict[str, str] = {}
+        for line in fin:
+            if line.startswith('#'):
+                continue
+            try:
+                key, val = (x.strip() for x in line.split('=', 1))
+            except ValueError:
+                continue
+            # As in make, the last setting wins, even when it comes after a line that uses the variable.
+            variables[key] = val.split('#', 1)[0]
+
+        def expand(text: str, seen: frozenset[str] = frozenset()) -> str:
+            """Expand each ``$(NAME)`` in `text` as make does; a variable that refers to itself expands to nothing."""
+            def value(match: re.Match[str]) -> str:
+                name = match.group(1)
+                return '' if name in seen else expand(variables.get(name, ''), seen | {name})
+            return re.sub(r'\$\((\w+)\)', value, text)
+
+        for key, val in variables.items():
+            if key in compiler_parts:
+                words = expand(val).split()
+                path = util.which(words[0]) if words else None
+                if not path:
+                    LOGGER.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
+                    continue
+                known = {info.role for info in Knowledgebase.find_compiler(os.path.basename(path))}
+                role = next((role for role in compiler_parts[key] if role in known), None)
+                if role:
+                    # probe() picks the family when a name like 'cc' fits several.
+                    comp = InstalledCompiler.probe(path, role=role)
+                    found[role.keyword] = comp.absolute_path
+                    while comp.wrapped:
+                        comp = comp.wrapped
+                        # A wrapper like Cray's 'cc' can wrap a compiler in its own role; keep the wrapper.
+                        found.setdefault(comp.info.role.keyword, comp.absolute_path)
+            elif key in package_parts:
+                attr, operator = package_parts[key]
+                path = expand(val).strip()
+                if not path:
+                    path = None
+                else:
+                    path = operator(path)
+                    if not os.path.exists(path):
+                        LOGGER.warning("'%s' referenced by TAU Makefile '%s' doesn't exist", path, makefile)
+                        continue
+                found[attr] = path
+    return found
+
+
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
 
@@ -460,10 +589,12 @@ class TauInstallation(Installation):
         self._all_sources = sources
         if self.src == 'nightly':
             self.src = NIGHTLY
+            self.srcs_avail = [NIGHTLY]
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
-        self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
-        self._lib_subdir = os.path.join(self.tau_magic.name, 'lib')
+        arch_subdir = tau_install_layout(forced_makefile)[1] if forced_makefile else self.tau_magic.name
+        self._bin_subdir = os.path.join(arch_subdir, 'bin')
+        self._lib_subdir = os.path.join(arch_subdir, 'lib')
         self.verbose = logger.LOG_LEVEL == 'DEBUG'
         self.minimal = minimal
         self.application_linkage = application_linkage
@@ -1168,8 +1299,7 @@ class TauInstallation(Installation):
         """
         self.check_env_compat()
         if self.forced_makefile:
-            forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
-            self._set_install_prefix(forced_install_prefix)
+            self._set_install_prefix(tau_install_layout(self.forced_makefile)[0])
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
             return None
         unmanaged_hints = ["Allow TAU Commander to manage your TAU configurations",
@@ -1669,7 +1799,7 @@ class TauInstallation(Installation):
             raise InternalError("Application configuration file flags for '%s' are unknown" % launcher)
         for i, flag in enumerate(cmd[1:], 1):
             try:
-                flag, appfile = str(flag.split('='))
+                flag, appfile = flag.split('=', 1)
                 with_equals = True
             except ValueError:
                 try:
@@ -1683,7 +1813,7 @@ class TauInstallation(Installation):
                 break
         else:
             raise InternalError(f"None of '{appfile_flags}' found in '{cmd}'")
-        tau_appfile = os.path.join(util.mkdtemp().name, appfile+".tau")
+        tau_appfile = os.path.join(util.mkdtemp().name, os.path.basename(appfile) + ".tau")
         LOGGER.debug("Rewriting '%s' as '%s'", appfile, tau_appfile)
         with open(tau_appfile, 'w') as fout, open(appfile) as fin:
             for lineno, line in enumerate(fin, 1):
@@ -1830,7 +1960,8 @@ class TauInstallation(Installation):
             ConfigurationError: Cannot determine the file's data format.
         """
         root, ext = os.path.splitext(path)
-        if os.path.isdir(path) or root == 'profile':
+        # TAU writes profile.<node>.<context>.<thread>, with node -1 if MPI (or similar) was never initialized
+        if os.path.isdir(path) or re.fullmatch(r'profile\.-?\d+\.\d+\.\d+', os.path.basename(path)):
             return 'tau'
         if ext == '.ppk':
             return 'ppk'

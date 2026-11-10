@@ -52,6 +52,13 @@ from taucmdr.cf.storage.levels import PROJECT_STORAGE, SYSTEM_STORAGE
 
 LOGGER = logger.get_logger(__name__)
 
+# --ompt keywords for OMPT versions that TAU no longer supports.
+_RETIRED_OMPT_KEYWORDS = ('download-tr4', 'download-tr6')
+
+# Reason shown when a retired --ompt keyword is given on the command line.
+_OMPT_TR_REJECTED = ("is no longer supported. Upstream TAU removed TR4/TR6 differentiation "
+                     "in favor of OMPT 5.0. Use 'download' instead.")
+
 
 def _require_compiler_family(family, *hints):
     """Creates a compatibility callback to check a compiler family.
@@ -490,7 +497,8 @@ def attributes():
             'argparse': {'flags': ('--ompt',),
                          'group': 'software package',
                          'metavar': '(<path>|<url>|download|None)',
-                         'action': ParsePackagePathAction},
+                         'action': ParsePackagePathAction,
+                         'rejected': dict.fromkeys(_RETIRED_OMPT_KEYWORDS, _OMPT_TR_REJECTED)},
             'rebuild_required': True
         },
         'libotf2_source': {
@@ -649,7 +657,7 @@ class Target(Model):
         for attr, val in self.items():
             if val and attr.endswith('_source'):
                 # TAU no longer supports the OMPT versions these variants downloaded.
-                if attr == 'ompt_source' and val in ('download-tr4', 'download-tr6'):
+                if attr == 'ompt_source' and val in _RETIRED_OMPT_KEYWORDS:
                     val = 'download'
                 sources[attr.replace('_source', '')] = val
         return sources

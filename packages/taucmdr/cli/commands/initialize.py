@@ -26,6 +26,7 @@
 #
 """``initialize`` subcommand."""
 
+import glob
 import os
 import platform
 from taucmdr import util, PROJECT_DIR
@@ -45,6 +46,7 @@ from taucmdr.cli.commands.project.select import COMMAND as project_select_cmd
 from taucmdr.cli.commands.select import COMMAND as select_cmd
 from taucmdr.cli.commands.dashboard import COMMAND as dashboard_cmd
 from taucmdr.cf.platforms import DARWIN, HOST_OS
+from taucmdr.cf.software.tau_installation import tau_install_layout
 from taucmdr.cf.storage.project import ProjectStorageError
 from taucmdr.cf.storage.levels import PROJECT_STORAGE, STORAGE_LEVELS
 from taucmdr.cf.storage.storage_dispatch import AVAILABLE_BACKENDS
@@ -229,6 +231,21 @@ class InitializeCommand(AbstractCommand):
                          '--application', application_name,
                          '--measurement', measurement_name])
 
+    @staticmethod
+    def _path_tau_makefiles(args: ArgumentsNamespace) -> list[str]:
+        """Return the makefiles of the TAU on PATH if the new project will build its own TAU instead.
+
+        A TAU is found from ``tau_exec`` on PATH, through any links such as the ``<prefix>/bin`` Spack adds.
+        Nothing is returned when the command line chooses a TAU with ``--tau`` or ``--from-tau-makefile``.
+        """
+        if hasattr(args, 'forced_makefile') or args.tau_source != 'download':
+            return []
+        tau_exec = util.which('tau_exec')
+        if not tau_exec:
+            return []
+        prefix, arch_subdir = tau_install_layout(tau_exec)
+        return sorted(glob.glob(os.path.join(prefix, arch_subdir, 'lib', 'Makefile.tau*')))
+
     def main(self, argv):
         args = self._parse_args(argv)
         vargs = vars(args)
@@ -245,6 +262,12 @@ class InitializeCommand(AbstractCommand):
             proj = proj_ctrl.selected()
         except ProjectStorageError:
             self.logger.debug("No project found, initializing a new project.")
+            makefiles = [] if args.bare else self._path_tau_makefiles(args)
+            if makefiles:
+                self.logger.info("This project will build its own TAU, but there is a TAU on PATH with these "
+                                 "configurations:\n%s\nTo use one instead, stop now (Ctrl-C) and run:\n"
+                                 "    tau initialize --from-tau-makefile <makefile>",
+                                 '\n'.join(f'    {makefile}' for makefile in makefiles))
             PROJECT_STORAGE.connect_filesystem()
             try:
                 self._create_project(args)
