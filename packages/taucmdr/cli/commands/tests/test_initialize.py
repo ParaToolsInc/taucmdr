@@ -232,3 +232,13 @@ class PathTauTest(tests.TestCase):
         for argv in ['--tau', 'nightly'], ['--from-tau-makefile', os.devnull]:
             with self.subTest(argv=argv):
                 self.assertEqual(self._path_tau(argv)[0], [])
+
+    def test_hint_logged(self):
+        """The suggested makefiles are listed with the command that uses one."""
+        makefile = '/opt/tau/x86_64/lib/Makefile.tau-mpi-pthread'
+        with mock.patch.object(initialize_cmd, '_path_tau_makefiles', return_value=[makefile]), \
+             self.assertLogs(initialize_cmd.logger, 'INFO') as logs:
+            self.reset_project_storage()
+        hint = next(line for line in logs.output if 'there is a TAU on PATH' in line)
+        self.assertIn(f'    {makefile}\n', hint)
+        self.assertIn('tau initialize --from-tau-makefile <makefile>', hint)

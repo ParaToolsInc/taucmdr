@@ -45,7 +45,7 @@ from taucmdr.error import ConfigurationError, InternalError
 from taucmdr.cf.platforms import (HOST_ARCH, HOST_OS, ARM64, PPC64LE, X86_64, CRAY_CNL, DARWIN, LINUX,
                                   SHARED_LIBRARY_SUFFIX, HOST_TAU_MAGIC)
 from taucmdr.cf.compiler.caf import CAF_FC
-from taucmdr.cf.compiler.host import CC, FC
+from taucmdr.cf.compiler.host import CC, CXX, FC
 from taucmdr.cf.software import installation
 from taucmdr.cf.software.installation import Installation
 from taucmdr.cf.software.tau_installation import (NIGHTLY, TauInstallation, complete_nightly_names, python_build_paths,
@@ -767,6 +767,10 @@ def _script(path: str, body: str) -> str:
     return path
 
 
+# What GNU gcc prints for --version, which identifies it as a GNU compiler.
+_GCC_VERSION = 'echo "gcc (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."'
+
+
 class TauMakefileTargetTest(tests.TestCase):
     """Tests for :any:`tau_makefile_target`."""
 
@@ -776,8 +780,7 @@ class TauMakefileTargetTest(tests.TestCase):
         The ``cc`` wraps a GNU ``gcc``, which is also a host C compiler, but the wrapper stays the C compiler.
         """
         bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
-        gcc = _script(os.path.join(bindir, 'gcc'),
-                      'echo "gcc (GCC) 14.2.0"; echo "Copyright (C) 2024 Free Software Foundation, Inc."')
+        gcc = _script(os.path.join(bindir, 'gcc'), _GCC_VERSION)
         # With -craype-verbose, craype's wrappers print the command they run.
         cray_cc = _script(os.path.join(bindir, 'cc'), f'echo "{gcc} --version -E"')
         _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=f'FULL_CC={cray_cc}\n')
@@ -793,3 +796,53 @@ class TauMakefileTargetTest(tests.TestCase):
         found = tau_makefile_target(makefile)
         self.assertEqual(found[CAF_FC.keyword], caf)
         self.assertEqual(found[FC.keyword], gfortran)
+
+    def test_skipped_compilers(self):
+        """A compiler that isn't there, or that TAU Commander doesn't know, is left out with no error."""
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        unknown = _script(os.path.join(bindir, 'notacompiler'), 'exit 0')
+        extra = f'FULL_CC={bindir}/missing-cc\nFULL_CXX={unknown}\n'
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name, extra=extra)
+        with self.assertLogs('taucmdr.cf.software.tau_installation', 'WARNING') as logs:
+            found = tau_makefile_target(makefile)
+        self.assertNotIn(CC.keyword, found)
+        self.assertNotIn(CXX.keyword, found)
+        self.assertIn('Failed to parse FULL_CC', logs.output[0])
+
+    def test_makefile_syntax(self):
+        """Lines without ``=`` are skipped, and ``$(TAU_R)`` in a compiler path is expanded."""
+        bindir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        gcc = _script(os.path.join(bindir, 'gcc'), _GCC_VERSION)
+        lines = ['include other.mk', f'TAU_R={bindir}', 'FULL_CC=$(TAU_R)/gcc -O2']
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name,
+                                extra=''.join(f'{line}\n' for line in lines))
+        self.assertEqual(tau_makefile_target(makefile)[CC.keyword], gcc)
+
+    def test_packages(self):
+        """Package directories in the makefile are used if they exist, and an empty one means no package."""
+        pkgdir = tempfile.mkdtemp(dir=tests.get_test_workdir())
+        missing = os.path.join(pkgdir, 'missing')
+        lines = [f'PDTDIR={pkgdir}', f'PAPIDIR={missing}', f'BFDINCLUDE=-I{pkgdir}/include', 'UNWIND_INC=']
+        _, makefile = _tau_tree(HOST_TAU_MAGIC.name, HOST_TAU_MAGIC.name,
+                                extra=''.join(f'{line}\n' for line in lines))
+        with self.assertLogs('taucmdr.cf.software.tau_installation', 'WARNING') as logs:
+            found = tau_makefile_target(makefile)
+        self.assertEqual(found['pdt_source'], pkgdir)
+        self.assertEqual(found['binutils_source'], pkgdir)
+        self.assertIsNone(found['libunwind_source'])
+        self.assertNotIn('papi_source', found)
+        self.assertIn(f"'{missing}' referenced by TAU Makefile", logs.output[0])
+
+    def test_shared_arch(self):
+        """A ``TAU_ARCH`` that several platforms share is the host's; on another host the error lists them."""
+        _, makefile = _tau_tree('craycnl', 'craycnl')
+        module = 'taucmdr.cf.software.tau_installation'
+        with mock.patch.multiple(module, HOST_ARCH=X86_64, HOST_OS=CRAY_CNL):
+            found = tau_makefile_target(makefile)
+        self.assertEqual((found['host_arch'], found['host_os']), (X86_64.name, CRAY_CNL.name))
+        with mock.patch.multiple(module, HOST_ARCH=X86_64, HOST_OS=LINUX), \
+             self.assertRaises(ConfigurationError) as ctx:
+            tau_makefile_target(makefile)
+        self.assertIn('ambiguous TAU architecture: craycnl', ctx.exception.value)
+        self.assertIn('CNL on x86_64', ctx.exception.value)
+        self.assertIn('CNL on aarch64', ctx.exception.value)
