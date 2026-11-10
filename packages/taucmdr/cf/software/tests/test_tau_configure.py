@@ -536,6 +536,16 @@ class GetMakefileTest(tests.TestCase):
         self.assertEqual(self._get_makefile(tau), forced)
         self.assertEqual(tau._tau_makefile, forced)
 
+    def test_forced_arch_directory(self):
+        """A forced makefile's bin and lib are beside it, whatever its architecture directory is named."""
+        prefix = os.path.join(os.sep, 'spack', 'tau-2.36-saeqry5xlqejukg2m')
+        tau = _tau(forced_makefile=os.path.join(prefix, 'custom', 'lib', 'Makefile.tau-mpi'))
+        with mock.patch.object(TauInstallation, 'check_env_compat'):
+            tau.install()
+        self.assertEqual(tau.install_prefix, prefix)
+        self.assertEqual(tau.bin_path, os.path.join(prefix, 'custom', 'bin'))
+        self.assertEqual(tau.lib_path, os.path.join(prefix, 'custom', 'lib'))
+
     def test_matches_configuration(self):
         """The makefile is found from the configuration tags alone, cached, and carries the configuration's UID."""
         tau = _tau()

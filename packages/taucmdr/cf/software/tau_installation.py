@@ -263,6 +263,33 @@ def complete_nightly_names(src_dir):
     return sorted(changed)
 
 
+def tau_makefile_layout(makefile: str) -> tuple[str, str]:
+    """Find the TAU installation a TAU makefile belongs to.
+
+    TAU installs its makefiles as ``<prefix>/<arch>/lib/Makefile.tau-*``.  Links are resolved first, so a
+    makefile given through a link, like the ``<prefix>/lib`` that Spack adds, is found in its real ``<arch>``
+    directory.  ``<arch>`` is usually the TAU architecture, but TAU's ``-exec-prefix`` option can rename it.
+
+    Args:
+        makefile (str): Path to a TAU makefile.
+
+    Returns:
+        tuple: The installation prefix and the name of its ``<arch>`` directory.
+    """
+    arch_dir = os.path.dirname(os.path.dirname(os.path.realpath(makefile)))
+    return os.path.dirname(arch_dir), os.path.basename(arch_dir)
+
+
+def tau_makefile_arch(makefile: str) -> str | None:
+    """Return the TAU architecture a TAU makefile was configured for (its ``TAU_ARCH``), or None if it's not set."""
+    with open(makefile) as fin:
+        for line in fin:
+            key, sep, value = line.partition('=')
+            if sep and key.strip() == 'TAU_ARCH':
+                return value.strip()
+    return None
+
+
 class TauInstallation(Installation):
     """Encapsulates a TAU installation.
 
@@ -463,8 +490,9 @@ class TauInstallation(Installation):
             self.srcs_avail = [NIGHTLY]
         self.tau_magic = TauMagic.find((self.target_arch, self.target_os))
         # TAU puts installation files (bin, lib, etc.) in a magically named subfolder
-        self._bin_subdir = os.path.join(self.tau_magic.name, 'bin')
-        self._lib_subdir = os.path.join(self.tau_magic.name, 'lib')
+        arch_subdir = tau_makefile_layout(forced_makefile)[1] if forced_makefile else self.tau_magic.name
+        self._bin_subdir = os.path.join(arch_subdir, 'bin')
+        self._lib_subdir = os.path.join(arch_subdir, 'lib')
         self.verbose = logger.LOG_LEVEL == 'DEBUG'
         self.minimal = minimal
         self.application_linkage = application_linkage
@@ -1169,8 +1197,7 @@ class TauInstallation(Installation):
         """
         self.check_env_compat()
         if self.forced_makefile:
-            forced_install_prefix = os.path.abspath(os.path.join(os.path.dirname(self.forced_makefile), '..', '..'))
-            self._set_install_prefix(forced_install_prefix)
+            self._set_install_prefix(tau_makefile_layout(self.forced_makefile)[0])
             LOGGER.warning("TAU makefile was forced! Not verifying TAU installation")
             return None
         unmanaged_hints = ["Allow TAU Commander to manage your TAU configurations",
