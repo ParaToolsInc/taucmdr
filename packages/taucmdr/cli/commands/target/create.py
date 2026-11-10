@@ -131,18 +131,9 @@ class TargetCreateCommand(CreateCommand):
                     if not path:
                         self.logger.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
                         continue
-                    # A name like 'cc' fits several compiler families; use the first one the compiler passes.
-                    comp, error = None, None
-                    for info in Knowledgebase.find_compiler(os.path.basename(path)):
-                        try:
-                            comp = InstalledCompiler(path, info)
-                        except ConfigurationError as err:
-                            error = err
-                        else:
-                            break
-                    if error and not comp:
-                        raise error
-                    if comp:
+                    if Knowledgebase.find_compiler(os.path.basename(path)):
+                        # probe() picks the family when a name like 'cc' fits several.
+                        comp = InstalledCompiler.probe(path)
                         attr = comp.info.role.keyword
                         setattr(args, attr, comp.absolute_path)
                         self.logger.info("  --%s='%s'", attr.lower().replace("_", "-"), comp.absolute_path)
