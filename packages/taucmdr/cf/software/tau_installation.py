@@ -330,7 +330,10 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
              'host_os': tau_arch.operating_system.name,
              'tau_source': tau_install_layout(makefile)[0]}
     with open(makefile) as fin:
-        compiler_parts = ("FULL_CC", "FULL_CXX", "TAU_F90")
+        # Each key names a language, which picks the role when a command like Cray's 'cc' fills several.
+        compiler_parts = {"FULL_CC": (CC, MPI_CC, SHMEM_CC),
+                          "FULL_CXX": (CXX, MPI_CXX, SHMEM_CXX, CUDA_CXX),
+                          "TAU_F90": (FC, MPI_FC, SHMEM_FC, CAF_FC, CUDA_FC)}
         package_parts = {"BFDINCLUDE": ("binutils_source",
                                         lambda x: os.path.dirname(shlex.split(x)[0].lstrip("-I"))),
                          "UNWIND_INC": ("libunwind_source", lambda x: os.path.dirname(x.lstrip("-I"))),
@@ -352,13 +355,16 @@ def tau_makefile_target(makefile: str) -> dict[str, str | None]:
                 if not path:
                     LOGGER.warning("Failed to parse %s in TAU Makefile '%s'", key, makefile)
                     continue
-                if Knowledgebase.find_compiler(os.path.basename(path)):
+                known = {info.role for info in Knowledgebase.find_compiler(os.path.basename(path))}
+                role = next((role for role in compiler_parts[key] if role in known), None)
+                if role:
                     # probe() picks the family when a name like 'cc' fits several.
-                    comp = InstalledCompiler.probe(path)
-                    found[comp.info.role.keyword] = comp.absolute_path
+                    comp = InstalledCompiler.probe(path, role=role)
+                    found[role.keyword] = comp.absolute_path
                     while comp.wrapped:
                         comp = comp.wrapped
-                        found[comp.info.role.keyword] = comp.absolute_path
+                        # A wrapper like Cray's 'cc' can wrap a compiler in its own role; keep the wrapper.
+                        found.setdefault(comp.info.role.keyword, comp.absolute_path)
             elif key in package_parts:
                 attr, operator = package_parts[key]
                 path = val.strip()
