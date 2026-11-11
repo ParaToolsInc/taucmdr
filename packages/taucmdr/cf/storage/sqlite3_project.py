@@ -79,7 +79,8 @@ class SQLiteProjectStorage(SQLiteLocalFileStorage):
 
         Args:
             *args: Passed through to :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem`.
-            **kwargs: Keyword arguments for :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem` or :any:`shutil.rmtree`.
+            **kwargs: Keyword arguments for :any:`shutil.rmtree` or
+                :py:meth:`~taucmdr.cf.storage.local_file.LocalFileStorage.disconnect_filesystem`.
         """
         self.disconnect_filesystem(*args, **kwargs)
         ignore_errors = kwargs.pop('ignore_errors', False)

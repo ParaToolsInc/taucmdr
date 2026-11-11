@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ParaTools, Inc.
+# Copyright (c) 2015-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ class TrackedInstance:
         >>> water
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *_args, **_kwargs):
         """Ensure that __instances__ is set and track new instances."""
         instance = object.__new__(cls)
         if "__instances__" not in cls.__dict__:

@@ -407,10 +407,12 @@ class Controller:
                         self._disassociate(model, foreign_model, affected_keys, via)
                 for foreign_model, via in model.references:
                     # pylint complains because `model` is changing on every iteration so we'll have
-                    # a different lambda function `test` on each iteration.  This is exactly what
+                    # a different function `test` on each iteration.  This is exactly what
                     # we want so we disable the warning.
                     # pylint: disable=cell-var-from-loop, undefined-loop-variable
-                    test = lambda x: model.eid in x if isinstance(x, list) else model.eid == x
+                    def test(value):
+                        """Return True if `value` is, or is a list holding, the deleted record's ID."""
+                        return model.eid in value if isinstance(value, list) else model.eid == value
                     affected = database.match(via, test=test, table_name=foreign_model.name)
                     affected_keys = [record.eid for record in affected]
                     if affected_keys:

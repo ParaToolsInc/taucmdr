@@ -205,7 +205,7 @@ class ScorepInstallation(AutotoolsInstallation):
             raise SoftwarePackageError("Score-P installation at '%s' was configured with extra flags %s" %
                                        (self.install_prefix, ' '.join(extra_flags)))
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         flags.extend(self._get_flags())
         # Score-P does strange things when PYTHON is set in the environment.
         # From vendor/otf2/configure --help:
@@ -213,4 +213,4 @@ class ScorepInstallation(AutotoolsInstallation):
         #               needed when developing. Python version 2.5 or above, but no
         #               support for python 3. Use PYTHON=: to disable python support.
         os.environ['PYTHON'] = ':'
-        return super().configure(flags)
+        return super().configure(flags, env)

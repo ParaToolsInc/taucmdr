@@ -211,6 +211,7 @@ class ProgressIndicator:
             self.update()
 
     def pop_phase(self):
+        """End the current progress phase."""
         if self._mode == 'disabled':
             return
         if self.auto_refresh:

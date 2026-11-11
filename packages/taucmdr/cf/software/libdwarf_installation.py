@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, ParaTools, Inc.
+# Copyright (c) 2020-2026, ParaTools, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -50,11 +50,11 @@ class LibdwarfInstallation(AutotoolsInstallation):
 
         self.add_dependency('libelf', sources)
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         flags.extend(['--with-pic'])
 
         libelf = self.dependencies.get('libelf')
         os.environ['LDFLAGS'] = '-L%s' % libelf.lib_path
         os.environ['CPPFLAGS'] = '-I%s' % libelf.include_path
 
-        return super().configure(flags)
+        return super().configure(flags, env)

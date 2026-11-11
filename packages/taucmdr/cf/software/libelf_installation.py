@@ -57,9 +57,10 @@ class LibelfInstallation(AutotoolsInstallation):
         super().__init__('libelf', 'libelf', sources,
                                                  target_arch, target_os, compilers, REPOS, None, LIBRARIES, HEADERS)
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
+        """Configure libelf with the GNU C compiler, which its configure script requires."""
         flags.extend(['--disable-debuginfod'])
         # Libelf's configure script requires CC to be a GNU compiler, so we have to set the environment variable
         # before running the configure script
-        return super().configure(flags, env={'CC': GNU.installation()[CC].unwrap().absolute_path,
+        return super().configure(flags, env={**(env or {}), 'CC': GNU.installation()[CC].unwrap().absolute_path,
                                              'CFLAGS': '-Wno-error', 'CXXFLAGS': '-Wno-error'})

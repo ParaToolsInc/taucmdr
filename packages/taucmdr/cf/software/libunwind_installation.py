@@ -67,7 +67,7 @@ class LibunwindInstallation(AutotoolsInstallation):
         super().__init__('libunwind', 'libunwind', sources, target_arch, target_os,
                                                     compilers, REPOS, None, LIBRARIES, HEADERS)
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         """Configure libunwind."""
         os.environ['CC'] = self.compilers[CC].unwrap().absolute_path
         os.environ['CXX'] = self.compilers[CXX].unwrap().absolute_path
@@ -82,7 +82,7 @@ class LibunwindInstallation(AutotoolsInstallation):
             for line in fileinput.input(crasher_c, inplace=True):
                 # fileinput.input with inplace=1 redirects stdout to the input file ... freaky
                 sys.stdout.write(line.replace('r = c(1);', 'r = 1;'))
-        return super().configure(flags)
+        return super().configure(flags, env)
 
     def make(self, flags):
         """Build libunwind.

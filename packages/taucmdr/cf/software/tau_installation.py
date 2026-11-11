@@ -1335,7 +1335,7 @@ class TauInstallation(Installation):
                     LOGGER.info('Installing %s to:\n    %s', self.title, self.install_prefix)
                     try:
                         shutil.move(self._prepare_src(), self.install_prefix)
-                    except Exception as err:
+                    except shutil.Error as err:
                         LOGGER.debug("Exception thrown by shutil.move, attempting to continue.")
                         # On some docker fuse mounted file systems shutil.move was failing with symlinks
                         # after upgrading from Python 2.7 to 3.x. The failure appears to be in calls to copystat

@@ -581,8 +581,9 @@ class Model(StorageRecord, metaclass=ModelMeta):
             If ``bob['hungry'] == False`` or if the 'hungry' attribute were not set then all
             the above expressions do nothing.
         """
-        def as_tuple(x):
-            return x if isinstance(x, tuple) else (x,)
+        def as_tuple(value):
+            """Return `value` if it is a tuple, otherwise a one-item tuple holding it."""
+            return value if isinstance(value, tuple) else (value,)
         for attr, props in self.attributes.items():
             try:
                 compat = props['compat']
