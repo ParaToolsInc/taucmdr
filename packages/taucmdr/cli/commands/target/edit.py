@@ -56,9 +56,11 @@ class TargetEditCommand(EditCommand):
 
     @staticmethod
     def _family_flag_action(kbase, family_attr):
+        """Return an argparse action that sets every compiler in the chosen `kbase` family."""
         class Action(arguments.Action):
             # pylint: disable=too-few-public-methods
             def __call__(self, parser, namespace, values, option_string=None):
+                """Set each compiler of the family named by `values`."""
                 try:
                     delattr(namespace, family_attr)
                 except AttributeError:

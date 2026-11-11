@@ -65,6 +65,7 @@ class BinutilsInstallation(AutotoolsInstallation):
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
     def configure(self, flags, env=None):
+        """Configure binutils as shared, position-independent libraries, without gas, gprof, or translations."""
         from taucmdr.cf.platforms import DARWIN, PPC64LE
         flags.extend(['--disable-nls', '--disable-werror'])
         # We don't need these and they force a dependency on texinfo

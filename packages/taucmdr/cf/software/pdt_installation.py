@@ -198,6 +198,7 @@ class PdtInstallation(AutotoolsInstallation):
             self.verify()
 
     def configure(self, flags, env=None):
+        """Run PDT's configure script, selecting the C++ compiler family."""
         family_flags = {GNU.name: '-GNU', INTEL.name: '-icpc', PGI.name: '-pgCC', NVHPC.name: '-nvc++'}
         compiler_flag = family_flags.get(self.compilers[CXX].info.family.name, '')
         cmd = ['./configure', '-prefix=' + self.install_prefix, compiler_flag] + flags
