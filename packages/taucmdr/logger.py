@@ -71,7 +71,8 @@ def get_terminal_size():
     # type: () -> Tuple[int, int]
     """Discover the size of the user's terminal.
 
-    Several methods are attempted depending on the user's OS.
+    The COLUMNS and LINES environment variables set the width and height.
+    Otherwise several methods are attempted depending on the user's OS.
     If no method succeeds then default to (80, 25).
 
     Returns:
@@ -79,8 +80,9 @@ def get_terminal_size():
     """
     default_width = 80
     default_height = 25
-    dims = _get_term_size_env()
-    if not dims:
+    env_width, env_height = _get_term_size_env()
+    dims = default_width, default_height
+    if env_width is None or env_height is None:
         current_os = platform.system()
         if current_os == 'Windows':
             dims = _get_term_size_windows()
@@ -95,8 +97,10 @@ def get_terminal_size():
         dims = list(map(int, dims))
     except ValueError:
         dims = default_width, default_height
-    width = dims[0] if dims[0] >= 10 else default_width
-    height = dims[1] if dims[1] >= 1 else default_height
+    width = dims[0] if env_width is None else env_width
+    height = dims[1] if env_height is None else env_height
+    width = width if width >= 10 else default_width
+    height = height if height >= 1 else default_height
     return width, height
 
 
@@ -187,20 +191,22 @@ def _get_term_size_posix():
 
 
 def _get_term_size_env():
-    # type: () -> Optional[Any]
+    # type: () -> Tuple[Optional[int], Optional[int]]
     """Discover the size of the user's terminal via environment variables.
 
-    The user may set the LINES and COLUMNS environment variables to control TAU Commander's
+    The user may set the COLUMNS and LINES environment variables to control TAU Commander's
     console dimension calculations.
 
     Returns:
-        tuple: (width, height) tuple giving the dimensions of the user's terminal window in characters,
-               or None if the size could not be determined.
+        tuple: (width, height) tuple from COLUMNS and LINES, with None for a variable
+               that is unset or not an integer.
     """
-    try:
-        return (int(os.environ['LINES']), int(os.environ['COLUMNS']))
-    except (KeyError, ValueError):
-        return None
+    def value(name: str) -> int | None:
+        try:
+            return int(os.environ[name])
+        except (KeyError, ValueError):
+            return None
+    return value('COLUMNS'), value('LINES')
 
 
 class LogFormatter(logging.Formatter):
