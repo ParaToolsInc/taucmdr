@@ -58,12 +58,12 @@ class TargetEditCommand(EditCommand):
     def _family_flag_action(kbase, family_attr):
         class Action(arguments.Action):
             # pylint: disable=too-few-public-methods
-            def __call__(self, parser, namespace, value, *args, **kwargs):
+            def __call__(self, parser, namespace, values, option_string=None):
                 try:
                     delattr(namespace, family_attr)
                 except AttributeError:
                     pass
-                family = InstalledCompilerFamily(kbase.families[value])
+                family = InstalledCompilerFamily(kbase.families[values])
                 for comp in family:
                     setattr(namespace, comp.info.role.keyword, comp.absolute_path)
         return Action

@@ -78,13 +78,13 @@ class PapiInstallation(AutotoolsInstallation):
 
         return src_prefix
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         cc_path = self.compilers[CC].unwrap().absolute_path
         cxx_path = self.compilers[CXX].unwrap().absolute_path
         os.environ['CC'] = cc_path
         os.environ['CXX'] = cxx_path
         flags.extend(['CC='+cc_path, 'CXX='+cxx_path])
-        return super().configure(flags)
+        return super().configure(flags, env)
 
     def make(self, flags):
         # PAPI's tests often fail to compile, so disable them.

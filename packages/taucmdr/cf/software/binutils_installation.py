@@ -64,7 +64,7 @@ class BinutilsInstallation(AutotoolsInstallation):
         super().__init__('binutils', 'GNU Binutils', sources,
                                                    target_arch, target_os, compilers, REPOS, None, LIBRARIES, None)
 
-    def configure(self, flags):
+    def configure(self, flags, env=None):
         from taucmdr.cf.platforms import DARWIN, PPC64LE
         flags.extend(['--disable-nls', '--disable-werror'])
         # We don't need these and they force a dependency on texinfo
@@ -81,7 +81,7 @@ class BinutilsInstallation(AutotoolsInstallation):
             flags.append('CXXFLAGS=-fPIC')
         if self.target_arch is PPC64LE:
             flags.append('--disable-largefile')
-        return super().configure(flags)
+        return super().configure(flags, env)
 
     def make_install(self, flags):
         super().make_install(flags)

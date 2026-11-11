@@ -138,6 +138,7 @@ class AbstractStorage(metaclass=ABCMeta):
     def disconnect_database(self, *args, **kwargs):
         """Close the database for reading and writing."""
 
+    @property
     @abstractmethod
     def prefix(self) -> str:
         """Get the filesystem prefix for file storage.
