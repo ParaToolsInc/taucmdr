@@ -83,18 +83,19 @@ _COLOR_CONTROL_RE = re.compile('\033\\[([0-9]|3[0-8]|4[0-8])m')
 
 
 def _cleanup_dtemp():
+    """At exit, keep copies of failed builds' temporary directories, then delete all temporary directories."""
     if _DTEMP_ERROR_STACK:
         _paths = []
-        for dir in _DTEMP_ERROR_STACK:
-            name = os.path.basename(os.path.normpath(dir))
+        for path in _DTEMP_ERROR_STACK:
+            name = os.path.basename(os.path.normpath(path))
             dst = None
             try:
                 # Use a temporary directory with a unique name, so an earlier run's
                 # copy of the same package doesn't interfere with this one.
                 dst = tempfile.mkdtemp(prefix=f'{name}-', dir=tempfile.gettempdir())
-                shutil.copytree(os.path.normpath(dir), dst, dirs_exist_ok=True)
+                shutil.copytree(os.path.normpath(path), dst, dirs_exist_ok=True)
             except OSError as err:
-                LOGGER.warning("Couldn't keep temporary directory '%s': %s", dir, err)
+                LOGGER.warning("Couldn't keep temporary directory '%s': %s", path, err)
                 if dst:
                     # os.rmdir removes only an empty directory, so a partial copy is kept.
                     with suppress(OSError):
@@ -455,24 +456,24 @@ def is_clean_container(obj):
     visited = set()
     while stack:
         if is_dictlike:
-            k, v = stack.pop()
+            k, value = stack.pop()
             if isinstance(k, bad_types):
                 return False
             if isinstance(k, sequence_types):
                 if not is_clean_container(k):
                     return False
-            if isinstance(v, dict):
+            if isinstance(value, dict):
                 if k not in visited:
-                    stack.extend(v.items())
-                elif isinstance(v, bad_types):
+                    stack.extend(value.items())
+                elif isinstance(value, bad_types):
                     return False
                 visited.add(k)
         else:
-            v = stack.pop()
-        if isinstance(v, sequence_types):
-            if not is_clean_container(v):
+            value = stack.pop()
+        if isinstance(value, sequence_types):
+            if not is_clean_container(value):
                 return False
-        elif isinstance(v, bad_types):
+        elif isinstance(value, bad_types):
             return False
     return True
 

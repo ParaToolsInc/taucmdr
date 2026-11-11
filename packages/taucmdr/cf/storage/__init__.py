@@ -28,8 +28,10 @@
 TAU Storage Containers.
 
 A storage container provides a record database, a persistent filesystem, and a key/value store.
-The database is accessed via member methods like :py:meth:`AbstractStorage.insert`, :py:meth:`AbstractStorage.search`, etc.
-The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via :py:meth:`AbstractStorage.prefix`.
+The database is accessed via member methods like :py:meth:`AbstractStorage.insert`,
+:py:meth:`AbstractStorage.search`, etc.
+The filesystem is accessed via its filesystem prefix (e.g. ``/usr/local/packages``) via
+:py:meth:`AbstractStorage.prefix`.
 The key/value store is accessed via the `[]` operator, i.e. treat the storage object like a dictionary.
 """
 

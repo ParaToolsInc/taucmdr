@@ -79,11 +79,11 @@ class PapiInstallation(AutotoolsInstallation):
         return src_prefix
 
     def configure(self, flags):
-        cc = self.compilers[CC].unwrap().absolute_path
-        cxx = self.compilers[CXX].unwrap().absolute_path
-        os.environ['CC'] = cc
-        os.environ['CXX'] = cxx
-        flags.extend(['CC='+cc, 'CXX='+cxx])
+        cc_path = self.compilers[CC].unwrap().absolute_path
+        cxx_path = self.compilers[CXX].unwrap().absolute_path
+        os.environ['CC'] = cc_path
+        os.environ['CXX'] = cxx_path
+        flags.extend(['CC='+cc_path, 'CXX='+cxx_path])
         return super().configure(flags)
 
     def make(self, flags):

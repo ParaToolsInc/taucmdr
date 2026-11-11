@@ -202,6 +202,7 @@ def _get_term_size_env():
                that is unset or not an integer.
     """
     def value(name: str) -> int | None:
+        """Return the environment variable `name` as an integer, or None if it is unset or not an integer."""
         try:
             return int(os.environ[name])
         except (KeyError, ValueError):
