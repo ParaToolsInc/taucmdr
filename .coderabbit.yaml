@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://www.coderabbit.ai/integrations/schema.v2.json
+reviews:
+  auto_review:
+    # Review each pull request once, when it opens, to stay within the
+    # open-source rate limit. Ask for another with `@coderabbitai review`.
+    auto_incremental_review: false
